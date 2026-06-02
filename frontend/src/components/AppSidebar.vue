@@ -1,0 +1,98 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import {
+  BookOpen,
+  GraduationCap,
+  ClipboardList,
+  Briefcase,
+  Users,
+  SlidersHorizontal,
+  LogOut,
+} from 'lucide-vue-next';
+import { useAuthStore } from '@/stores/auth';
+import BrainGainLogo from './BrainGainLogo.vue';
+
+const auth = useAuthStore();
+const router = useRouter();
+
+const isAdmin = computed(() => auth.user?.isAdmin ?? false);
+const isTrainer = computed(() => auth.user?.isTrainer ?? false);
+
+const initials = computed(() =>
+  (auth.user?.name ?? '?')
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase(),
+);
+
+function logout(): void {
+  auth.logout();
+  router.push('/login');
+}
+</script>
+
+<template>
+  <aside
+    class="flex w-60 shrink-0 flex-col border-r border-line bg-bg-sidebar px-4 py-6"
+  >
+    <div class="px-2">
+      <BrainGainLogo :size="40" show-wordmark />
+    </div>
+
+    <nav class="mt-8 flex flex-1 flex-col gap-1">
+      <RouterLink to="/dashboard" class="nav-item" active-class="nav-active">
+        <BookOpen class="h-4 w-4" /> My Trainings
+      </RouterLink>
+
+      <template v-if="isAdmin || isTrainer">
+        <RouterLink to="/trainings" class="nav-item" active-class="nav-active">
+          <GraduationCap class="h-4 w-4" /> Trainings
+        </RouterLink>
+        <RouterLink to="/trainees" class="nav-item" active-class="nav-active">
+          <ClipboardList class="h-4 w-4" /> Trainees
+        </RouterLink>
+      </template>
+
+      <template v-if="isAdmin">
+        <RouterLink to="/roles" class="nav-item" active-class="nav-active">
+          <Briefcase class="h-4 w-4" /> Job Roles
+        </RouterLink>
+        <RouterLink to="/users" class="nav-item" active-class="nav-active">
+          <Users class="h-4 w-4" /> Users
+        </RouterLink>
+        <RouterLink to="/settings" class="nav-item" active-class="nav-active">
+          <SlidersHorizontal class="h-4 w-4" /> Settings
+        </RouterLink>
+      </template>
+    </nav>
+
+    <div class="mt-4 flex items-center gap-3 rounded-lg border border-line bg-white/70 px-3 py-2.5">
+      <div
+        class="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-sans text-xs font-bold text-white"
+      >
+        {{ initials }}
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="truncate text-sm font-semibold text-ink">{{ auth.user?.name }}</div>
+        <div class="truncate font-mono text-[10px] text-ink-light">
+          {{ isAdmin ? 'admin' : isTrainer ? 'trainer' : 'member' }}
+        </div>
+      </div>
+      <button class="text-ink-light hover:text-accent" title="Log out" @click="logout">
+        <LogOut class="h-4 w-4" />
+      </button>
+    </div>
+  </aside>
+</template>
+
+<style scoped>
+.nav-item {
+  @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition hover:bg-white/60;
+}
+.nav-active {
+  @apply bg-white font-semibold text-accent shadow-soft;
+}
+</style>

@@ -1,0 +1,115 @@
+[
+  {
+    "id": "33ef3bf0-ec51-4108-a12e-f047e70aa78e",
+    "name": "Laboratory Safety Basics",
+    "description": "Core safety procedures for working in the dosimetry lab.",
+    "durationHours": 2,
+    "category": "Safety",
+    "ownerId": "0ed039f8-bc69-4957-b494-4e6eeef00bb8",
+    "cycleYears": 1,
+    "windowBeforeMonths": 2,
+    "windowAfterMonths": 1,
+    "materialLinks": [
+      {
+        "label": "Lab Safety Handbook (OneDrive)",
+        "url": "https://onedrive.live.com/?id=demo-safety-handbook"
+      },
+      {
+        "label": "Emergency Procedures (OneDrive)",
+        "url": "https://onedrive.live.com/?id=demo-emergency"
+      }
+    ],
+    "questions": [
+      {
+        "id": "23087a7f-6fe9-47cb-8815-114fee114886",
+        "text": "What should you do first in case of a chemical spill?",
+        "options": [
+          "Ignore it",
+          "Alert others and contain the area",
+          "Take a photo",
+          "Leave the building"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "id": "6dea7a53-fe52-4659-b3b0-315af27e71cf",
+        "text": "Where is personal protective equipment (PPE) stored?",
+        "options": [
+          "At home",
+          "In the designated PPE cabinet",
+          "Anywhere convenient",
+          "It is optional"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "id": "2b8bccd5-3e99-4ab3-a7ec-80ade69df98f",
+        "text": "How often must this training be repeated?",
+        "options": [
+          "Never",
+          "Every month",
+          "Every year",
+          "Every 10 years"
+        ],
+        "correctIndex": 2
+      }
+    ],
+    "createdAt": "2026-06-02T14:20:54.398Z"
+  },
+  {
+    "id": "654b0a9b-ee67-40c8-b06b-29bdf69e026c",
+    "name": "Quality Management Intro",
+    "description": "Introduction to ISO quality processes used across the company.",
+    "durationHours": 3,
+    "category": "Compliance",
+    "ownerId": "0ed039f8-bc69-4957-b494-4e6eeef00bb8",
+    "cycleYears": 3,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [
+      {
+        "label": "QM Handbook (OneDrive)",
+        "url": "https://onedrive.live.com/?id=demo-qm-handbook"
+      }
+    ],
+    "questions": [
+      {
+        "id": "7c08481f-7f5c-4f42-8c32-46f791a4799a",
+        "text": "What does ISO 9001 primarily address?",
+        "options": [
+          "Quality management systems",
+          "Environmental policy",
+          "IT security",
+          "Payroll"
+        ],
+        "correctIndex": 0
+      },
+      {
+        "id": "741e0cda-d4fd-4ebb-a502-caf67ded7b8c",
+        "text": "Who is responsible for quality?",
+        "options": [
+          "Only managers",
+          "Only auditors",
+          "Everyone",
+          "No one"
+        ],
+        "correctIndex": 2
+      }
+    ],
+    "createdAt": "2026-06-02T14:20:54.398Z"
+  },
+  {
+    "id": "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+    "name": "SOP-10.00 Product Life Cycle",
+    "description": "",
+    "durationHours": 1,
+    "category": "Development",
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 1,
+    "windowBeforeMonths": 1,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T14:32:18.157Z"
+  }
+]
