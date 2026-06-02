@@ -908,27 +908,31 @@ fontFamily: {
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "strict": true,
     "jsx": "preserve",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "skipLibCheck": true,
+    "noUnusedLocals": false,
     "isolatedModules": true,
+    "useDefineForClassFields": true,
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue", "vite.config.ts"]
 }
 ```
  
-**Backend `tsconfig.json`** — CommonJS, so `tsx` runs it without any ESM/`"type": "module"` configuration:
+**Backend `tsconfig.json`** — CommonJS at runtime (no `"type": "module"` in `package.json`), so `tsx` runs it
+without any ESM configuration:
 ```json
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
@@ -938,6 +942,11 @@ fontFamily: {
   "include": ["src/**/*.ts"]
 }
 ```
+ 
+> **tsconfig gotchas (TypeScript 5.4+):** use **lowercase** `moduleResolution` values — the editor's JSON schema
+> rejects `"Node"`/`"Bundler"`. Prefer `"nodenext"` over `"node"`/`"node10"` (the latter is deprecated and removed
+> in TS 7.0; `nodenext` requires `module: "nodenext"` to match). Do **not** set `baseUrl` — it is likewise
+> deprecated; modern TS resolves `paths` (the `@/*` alias) relative to the tsconfig file location on its own.
  
 ---
  
