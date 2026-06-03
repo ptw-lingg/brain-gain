@@ -160,6 +160,11 @@ Build **BrainGain**, a modern training management web application written entire
  
 ```
 braingain/
+├── requirements/              # Requirements docs — MUST stay in sync (see "Requirements & Traceability")
+│   ├── README.md              # how the requirement docs relate + maintenance checklist
+│   ├── stakeholder-requirements.md   # SR-… : what stakeholders need & why
+│   ├── system-requirements.md        # SYS-… : how the system must behave (traced to SR + this prompt)
+│   └── traceability-matrix.md        # SR ⇄ SYS ⇄ implementing code
 ├── backend/
 │   ├── src/
 │   │   ├── index.ts            # Express app entry point + error handler
@@ -1039,9 +1044,44 @@ without any ESM configuration:
 8. **Admin access control enforced at all three layers** — Vue Router guard, sidebar `v-if`, and backend `requireAdmin` middleware. Never rely on a single layer alone.
 9. **Quiz grading & pass threshold are server-side** — the backend grades submitted answers against the stored `correctIndex` values and compares to the global `Settings.passThreshold`. Never trust a client-submitted score, and never expose `correctIndex` to a user taking the test. This is consistent with the three-layer security stance above.
 10. **Training ownership enforced server-side** — trainers may only mutate trainings they own (`requireAdminOrOwner`); the filtered UI list is convenience, not the security boundary.
+11. **Requirements stay in sync** — the `requirements/` docs are part of the deliverable and must always match this prompt and the code (see "Requirements & Traceability" below). No feature is "done" until its `SR-…`/`SYS-…`/traceability entries are updated.
+---
+ 
+## Requirements & Traceability
+
+This prompt is the **narrative source of truth** for the design. Alongside it, the repo keeps a derived,
+individually-numbered requirements set under [`requirements/`](requirements/) that **must be kept up to date
+with every change**:
+
+| File | Level | IDs | Content |
+|---|---|---|---|
+| `requirements/stakeholder-requirements.md` | Stakeholder | `SR-…` | *What* stakeholders need and *why* (priority M/S/C, with a **Source**). |
+| `requirements/system-requirements.md` | System | `SYS-…` | *How* the system must behave; each carries a **Trace** to the `SR-…` it satisfies. |
+| `requirements/traceability-matrix.md` | Trace | — | Maps every `SYS-…` to the implementing file · symbol/endpoint, plus a reverse `SR → SYS → code` index. |
+| `requirements/README.md` | Guide | — | How the docs relate, conventions, and the per-change maintenance checklist. |
+
+**Standing rule — treat the requirements as living artifacts.** Whenever you add, change, or remove a feature
+(in this prompt or in code):
+
+1. **Update this prompt** (the relevant spec section, data model, route table, permission matrix, page
+   description) — as is already done for the *training ordering* and *Entra ID SSO* features.
+2. **Reflect the change in the requirements docs in the same change:**
+   - Add/modify the affected `SYS-…` (and a `SR-…` if it is a genuinely new stakeholder need).
+   - Update the **traceability-matrix** row(s) to point at the new/changed file(s)/endpoint(s).
+3. **Keep IDs stable** — never renumber. Add new IDs (e.g. `SR-110`, `SYS-TRN-10`) and mark superseded ones
+   rather than reusing numbers, so history and external references stay valid.
+4. **Note how it was verified** (endpoint probe, settings round-trip, UI run, token-validation check, test).
+5. **Check coverage** — every `SR-…` should map to at least one `SYS-…`, and every `SYS-…` to code; update
+   the coverage/reverse-index tables so nothing is orphaned.
+
+When (re)generating the project from this prompt, **generate the `requirements/` folder too**, derived from
+the spec above and consistent with the matrix.
+
 ---
  
 ## Deliverable
  
-Generate the complete source code for all files listed in the project structure above. Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login with email/password or **Microsoft Entra ID SSO** (when an admin has enabled it in Settings); view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
+Generate the complete source code for all files listed in the project structure above — **including the
+`requirements/` documents**, derived from this prompt and kept consistent per "Requirements & Traceability".
+Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login with email/password or **Microsoft Entra ID SSO** (when an admin has enabled it in Settings); view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
  
