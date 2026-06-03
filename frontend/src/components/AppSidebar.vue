@@ -8,6 +8,7 @@ import {
   Briefcase,
   Users,
   SlidersHorizontal,
+  ListChecks,
   LogOut,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
@@ -65,6 +66,9 @@ function logout(): void {
         </RouterLink>
         <RouterLink to="/settings" class="nav-item" active-class="nav-active">
           <SlidersHorizontal class="h-4 w-4" /> Settings
+        </RouterLink>
+        <RouterLink to="/requirements" class="nav-item" active-class="nav-active">
+          <ListChecks class="h-4 w-4" /> Requirements
         </RouterLink>
       </template>
     </nav>

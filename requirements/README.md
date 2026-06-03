@@ -1,60 +1,67 @@
 # BrainGain — Requirements
 
-This folder holds the requirements for **BrainGain**, a training-management web app. The documents are
-organized as a classic requirements hierarchy — from stakeholder needs, down to system behavior, down to the
-code that implements them — so any requirement can be traced in both directions.
+Requirements for **BrainGain** are stored as **linkable, traceable objects** in a single machine-readable
+dataset. Any tool can load it, follow the links, and render a traceability graph; the human-readable Markdown
+docs and the in-app viewer are all produced from it.
 
-## Documents
+## Source of truth
 
-| Document | Level | Answers | Audience |
-|---|---|---|---|
-| [`stakeholder-requirements.md`](./stakeholder-requirements.md) | Stakeholder (`SR-…`) | *What* do stakeholders need, and *why*? | Product owner, stakeholders |
-| [`system-requirements.md`](./system-requirements.md) | System (`SYS-…`) | *How* must the system behave to meet those needs? | Engineers, reviewers, QA |
-| [`traceability-matrix.md`](./traceability-matrix.md) | Trace | *Where* is each requirement realized in code? | Engineers, auditors |
+| File | Role |
+|---|---|
+| **`requirements.json`** | **The single source of truth.** Every requirement (and actors, enums, out-of-scope) is a typed object with a stable `id` and typed `links`. **Edit this.** |
+| `schema/requirements.schema.json` | JSON Schema (draft 2020-12) — the formal contract. `requirements.json` references it via `$schema`, so editors validate on save. |
+| `tools/build.mjs` | Validator + generator (plain Node, no deps). Validates integrity and regenerates the Markdown views + the app's data copy. |
 
-## How they relate
+### Generated artifacts — do **not** edit by hand
 
-```
-Stakeholder needs            System behavior                 Implementation
-─────────────────            ───────────────                 ──────────────
-stakeholder-requirements ──▶ system-requirements   ──▶       backend/ + frontend/ source
-        SR-xxx        derives        SYS-…          realized by   (files · symbols · endpoints)
-          ▲                            │                              │
-          └──────────── traceability-matrix.md ────────────────────────┘
-                 (links SR ⇄ SYS ⇄ code, both directions)
-```
+- `stakeholder-requirements.md`, `system-requirements.md`, `traceability-matrix.md` — rendered views.
+- `../frontend/src/data/requirements.generated.json` — the copy the in-app viewer imports.
 
-- Each **`SYS-…`** requirement names the **`SR-…`** it derives from (its **Trace** column).
-- The **traceability matrix** maps every **`SYS-…`** to the implementing code and provides a reverse index
-  from each **`SR-…`** to its system requirements and code areas.
-- Design decisions (tech stack, API contracts, data shapes, validation, access-control model, the SSO flow)
-  come from the product prompt [`../brain-gain.md`](../brain-gain.md), which remains the narrative spec; the
-  requirements documents distill it into individually-numbered, verifiable statements.
+## The object model (`requirements.json`)
 
-## Sources
+- `meta` — project/version/updated + a pointer to the narrative spec (`../brain-gain.md`).
+- `enums` — `priority` (M/S/C), `source`, `status`, `linkType` (each `{id,label}`).
+- `actors` — Administrator / Trainer / Member / Business owner.
+- `requirements[]` — the core objects:
+  - Common: `id`, `type` (`stakeholder` | `system`), `category`, `title`, `text`, `status`.
+  - Stakeholder: `priority`, `source` (+ optional `sourceNote`).
+  - System: `links[]` (`{type:"derivedFrom", target:"SR-…"}`), `implementedBy[]` (`{path, symbol}`),
+    optional `verifiedBy[]` and `specRefs[]`.
+- `outOfScope[]`.
 
-These requirements were reverse-engineered from:
+**Links are one-directional in storage** (`SYS --derivedFrom--> SR`); the inverse (`SR satisfiedBy SYS`) and
+the `SR → code` rollup are **computed** by the generator and the viewer, never duplicated.
 
-1. **[`../brain-gain.md`](../brain-gain.md)** — the original stakeholder request log (and its refinements)
-   plus the elaborated functional/technical spec.
-2. **Features delivered during development** — training drag-and-drop **ordering** and **Microsoft Entra ID
-   SSO**, including their agreed design decisions (admin-configurable SSO in Settings, keep password login,
-   domain-restricted just-in-time provisioning).
+IDs: `SR-\d{3}` (stakeholder) and `SYS-<AREA>-\d{2}` (system). **IDs are stable — never renumber;** add new
+ones and mark superseded ones (`status: "superseded"`, optional `supersedes` link).
 
-## Conventions
+## How to view
 
-- **IDs are stable.** Don't renumber; add new IDs (e.g. `SR-110`, `SYS-TRN-10`) and mark superseded ones.
-- **Priority** (stakeholder doc): **M** = Must · **S** = Should · **C** = Could.
-- **Keep it current.** When behavior changes, update the relevant `SYS-…`, its `brain-gain.md` section, and
-  the traceability row in the same change.
+- **In-app:** sign in as an admin → **Requirements** in the sidebar (`/requirements`). Browse, filter, and
+  click `SR ⇄ SYS ⇄ code` traces in both directions.
+- **As docs:** the generated Markdown files in this folder.
+- **As data:** load `requirements.json` (validate against the schema) in any tool.
 
-## Maintenance checklist (per change)
+## Maintenance workflow (per change)
 
-- [ ] New/changed behavior captured as a `SYS-…` (and a `SR-…` if it's a new stakeholder need).
-- [ ] `traceability-matrix.md` row added/updated to point at the implementing file(s)/endpoint(s).
-- [ ] `../brain-gain.md` updated if the design decision changed.
-- [ ] Verification noted (how the requirement was checked).
+1. **Edit `requirements.json`** — add/modify the requirement object(s) and their `links` / `implementedBy` /
+   `verifiedBy`. Add a new `SR-…` only for a genuinely new stakeholder need.
+2. **Run the generator:**
+   ```
+   node requirements/tools/build.mjs            # validate + regenerate views
+   node requirements/tools/build.mjs --check     # validate + fail on drift (CI / pre-commit)
+   ```
+   It enforces: unique ids, id patterns, enum membership, all link targets resolve, every system requirement
+   has a `derivedFrom` + `implementedBy`, and every stakeholder requirement is covered by ≥1 system
+   requirement.
+3. **Commit** `requirements.json` together with the regenerated artifacts.
+4. Update the matching section of [`../brain-gain.md`](../brain-gain.md) if the design decision changed.
 
-> **Gap:** the repository currently has **no automated test suite**. Functional requirements are verified
-> manually / via ad-hoc scripts today; introducing unit/integration tests is the recommended next step to
-> make the matrix continuously verifiable.
+> See [`../brain-gain.md`](../brain-gain.md) → "Requirements & Traceability" for the standing rule that keeps
+> the prompt, the code, and these requirements in sync.
+
+## Notes
+
+- The generator is dependency-free; the JSON Schema is the contract for external tools (add `ajv` later if you
+  want programmatic schema validation in CI).
+- There is no automated test suite yet; `build.mjs --check` is the integrity gate and can run in CI.

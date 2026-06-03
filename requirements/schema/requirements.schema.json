@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://braingain.app/requirements.schema.json",
+  "title": "BrainGain Requirements",
+  "description": "Schema for requirements.json — the canonical, linkable, traceable requirements dataset.",
+  "type": "object",
+  "required": ["meta", "enums", "actors", "requirements"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "meta": {
+      "type": "object",
+      "required": ["project", "version", "updated"],
+      "additionalProperties": true,
+      "properties": {
+        "project": { "type": "string" },
+        "version": { "type": "string" },
+        "updated": { "type": "string" },
+        "specDoc": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "enums": {
+      "type": "object",
+      "required": ["priority", "source", "status", "linkType"],
+      "additionalProperties": false,
+      "properties": {
+        "priority": { "$ref": "#/$defs/enumList" },
+        "source": { "$ref": "#/$defs/enumList" },
+        "status": { "$ref": "#/$defs/enumList" },
+        "linkType": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "inverse": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "outOfScope": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/requirement" }
+    }
+  },
+  "$defs": {
+    "enumList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "idRef": {
+      "type": "string",
+      "pattern": "^(SR-\\d{3}|SYS-[A-Z]+-\\d{2})$"
+    },
+    "link": {
+      "type": "object",
+      "required": ["type", "target"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["derivedFrom", "relatedTo", "supersedes"] },
+        "target": { "$ref": "#/$defs/idRef" }
+      }
+    },
+    "codeRef": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" }
+      }
+    },
+    "verify": {
+      "type": "object",
+      "required": ["method"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "specRef": {
+      "type": "object",
+      "required": ["doc", "section"],
+      "additionalProperties": false,
+      "properties": {
+        "doc": { "type": "string" },
+        "section": { "type": "string" }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "required": ["id", "type", "category", "title", "text", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/idRef" },
+        "type": { "enum": ["stakeholder", "system"] },
+        "category": { "type": "string" },
+        "title": { "type": "string" },
+        "text": { "type": "string" },
+        "status": { "enum": ["proposed", "approved", "implemented", "verified", "superseded"] },
+        "priority": { "enum": ["M", "S", "C"] },
+        "source": { "type": "string" },
+        "sourceNote": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "links": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "implementedBy": { "type": "array", "items": { "$ref": "#/$defs/codeRef" } },
+        "verifiedBy": { "type": "array", "items": { "$ref": "#/$defs/verify" } },
+        "specRefs": { "type": "array", "items": { "$ref": "#/$defs/specRef" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "stakeholder" } } },
+          "then": { "required": ["priority", "source"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "system" } } },
+          "then": {
+            "required": ["links", "implementedBy"],
+            "properties": {
+              "links": {
+                "minItems": 1,
+                "contains": {
+                  "type": "object",
+                  "required": ["type"],
+                  "properties": { "type": { "const": "derivedFrom" } }
+                }
+              },
+              "implementedBy": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

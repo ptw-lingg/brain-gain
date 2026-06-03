@@ -1,0 +1,2878 @@
+{
+  "$schema": "./schema/requirements.schema.json",
+  "meta": {
+    "project": "BrainGain",
+    "version": "1.0.0",
+    "updated": "2026-06-03",
+    "specDoc": "../brain-gain.md",
+    "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs."
+  },
+  "enums": {
+    "priority": [
+      {
+        "id": "M",
+        "label": "Must-have"
+      },
+      {
+        "id": "S",
+        "label": "Should-have"
+      },
+      {
+        "id": "C",
+        "label": "Could-have"
+      }
+    ],
+    "source": [
+      {
+        "id": "original-brief",
+        "label": "Original brief"
+      },
+      {
+        "id": "refinement",
+        "label": "Refinement"
+      },
+      {
+        "id": "spec",
+        "label": "Spec"
+      },
+      {
+        "id": "ordering-feature",
+        "label": "Training-ordering feature"
+      },
+      {
+        "id": "sso-feature",
+        "label": "Microsoft Entra ID SSO feature"
+      }
+    ],
+    "status": [
+      {
+        "id": "proposed",
+        "label": "Proposed"
+      },
+      {
+        "id": "approved",
+        "label": "Approved"
+      },
+      {
+        "id": "implemented",
+        "label": "Implemented"
+      },
+      {
+        "id": "verified",
+        "label": "Verified"
+      },
+      {
+        "id": "superseded",
+        "label": "Superseded"
+      }
+    ],
+    "linkType": [
+      {
+        "id": "derivedFrom",
+        "label": "Derived from",
+        "inverse": "satisfiedBy"
+      },
+      {
+        "id": "relatedTo",
+        "label": "Related to",
+        "inverse": "relatedTo"
+      },
+      {
+        "id": "supersedes",
+        "label": "Supersedes",
+        "inverse": "supersededBy"
+      }
+    ]
+  },
+  "actors": [
+    {
+      "id": "admin",
+      "name": "Administrator",
+      "description": "Owns the system. Manages users, job roles, trainings, and global settings. Sees and edits everything."
+    },
+    {
+      "id": "trainer",
+      "name": "Trainer",
+      "description": "Owns and manages their own trainings (material, quiz, recurrence). Sees who must take their trainings. Cannot manage users/roles/system settings."
+    },
+    {
+      "id": "member",
+      "name": "Member (Learner)",
+      "description": "A regular employee. Completes the trainings their job roles require."
+    },
+    {
+      "id": "business-owner",
+      "name": "Organization / Business owner",
+      "description": "Wants demonstrable, auditable training compliance with low administrative effort."
+    }
+  ],
+  "outOfScope": [
+    {
+      "id": "OOS-1",
+      "text": "Public self-service registration (admins create accounts)."
+    },
+    {
+      "id": "OOS-2",
+      "text": "A relational/SQL database or multi-server deployment."
+    },
+    {
+      "id": "OOS-3",
+      "text": "Multi-tenant Microsoft sign-in (SSO is single-tenant)."
+    },
+    {
+      "id": "OOS-4",
+      "text": "Reporting/export beyond the trainee email-copy convenience."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "SR-001",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Email/password authentication",
+      "text": "Users shall authenticate with an email address and password; there is no public self-registration.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-002",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Land on relevant trainings after sign-in",
+      "text": "After signing in, a user shall land on a view listing the trainings relevant to them.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-003",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Admin-only editing, reliably enforced",
+      "text": "Trainings, Job Roles, and Users shall be editable only by an administrator. Access control must be enforced reliably, not merely hidden in the UI.",
+      "priority": "M",
+      "source": "refinement",
+      "status": "approved"
+    },
+    {
+      "id": "SR-004",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Three access levels",
+      "text": "The system shall distinguish three access levels — Member, Trainer, and Administrator — and show each only the capabilities appropriate to their level.",
+      "priority": "M",
+      "source": "spec",
+      "sourceNote": "roles",
+      "status": "approved"
+    },
+    {
+      "id": "SR-005",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Persistent session",
+      "text": "A user's session shall persist across page reloads and expire after a reasonable period without re-login.",
+      "priority": "S",
+      "source": "spec",
+      "sourceNote": "JWT 7-day",
+      "status": "approved"
+    },
+    {
+      "id": "SR-006",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Sign in with Microsoft Entra ID",
+      "text": "Users shall be able to sign in with their Microsoft Entra ID (Azure AD) work account as an alternative to email/password.",
+      "priority": "S",
+      "source": "sso-feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-007",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "SSO optional & configurable",
+      "text": "Microsoft SSO shall be optional and configurable by an administrator; when it is not configured/enabled, the application behaves exactly as a password-only app.",
+      "priority": "M",
+      "source": "sso-feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-008",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Configure SSO in-app",
+      "text": "An administrator shall configure SSO (enable/disable, tenant, application, permitted email domains) from within the application (Settings), without code or environment changes.",
+      "priority": "M",
+      "source": "sso-feature",
+      "sourceNote": "stakeholder decision",
+      "status": "approved"
+    },
+    {
+      "id": "SR-009",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Domain-restricted provisioning & linking",
+      "text": "When a person signs in via SSO and matches an existing user (by email), their account shall be linked without changing their existing roles/permissions. If unmatched and their email domain is allowed, a new member-level account shall be created automatically; otherwise sign-in shall be refused.",
+      "priority": "M",
+      "source": "sso-feature",
+      "sourceNote": "domain-restricted provisioning",
+      "status": "approved"
+    },
+    {
+      "id": "SR-010",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Keep password login alongside SSO",
+      "text": "Email/password login shall remain available alongside SSO.",
+      "priority": "M",
+      "source": "sso-feature",
+      "sourceNote": "stakeholder decision: keep both",
+      "status": "approved"
+    },
+    {
+      "id": "SR-020",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "Admin manages users",
+      "text": "An administrator shall create, edit, and delete users (name, email, password, access level).",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-021",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "User belongs to several roles",
+      "text": "A user shall be assignable to several job roles.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-022",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "Mark trainer/administrator",
+      "text": "An administrator shall be able to mark a user as a Trainer or Administrator.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-030",
+      "type": "stakeholder",
+      "category": "Job Roles",
+      "title": "Editable job-role list",
+      "text": "An administrator shall maintain a simple, editable list of job roles (name, description).",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-031",
+      "type": "stakeholder",
+      "category": "Job Roles",
+      "title": "Role requires trainings",
+      "text": "Each job role shall require several trainings; the administrator chooses which trainings a role demands.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-032",
+      "type": "stakeholder",
+      "category": "Job Roles",
+      "title": "Required trainings derived from roles",
+      "text": "The trainings a user must complete shall be derived from the union of their roles' required trainings (with duplicates removed).",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-040",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Editable training list",
+      "text": "The system shall maintain an editable list of trainings (name, description, category, duration).",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-041",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Learning material links",
+      "text": "Each training shall reference learning material (links to documents, e.g. OneDrive) that learners open to study.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-042",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Multiple-choice quiz",
+      "text": "Each training shall include a multiple-choice quiz with a defined correct answer per question.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-043",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Recurrence cycle",
+      "text": "Each training shall define a recurrence cycle (how often, in years, it must be repeated).",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-044",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Due window",
+      "text": "Each training shall define a due window — how early before the due date it becomes available and how long after it remains in grace before counting as overdue.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-045",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Trainer owns their trainings",
+      "text": "A trainer shall own and manage only their own trainings; an administrator manages all trainings and may assign a training's owner.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-046",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Admin reorders via drag-and-drop",
+      "text": "An administrator shall be able to reorder trainings via drag-and-drop, defining an explicit display order.",
+      "priority": "S",
+      "source": "ordering-feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-047",
+      "type": "stakeholder",
+      "category": "Trainings",
+      "title": "Order respected everywhere",
+      "text": "The administrator-defined training order shall be respected consistently in every view that lists trainings (admin list, learner dashboard, trainee oversight, role editor).",
+      "priority": "S",
+      "source": "ordering-feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-050",
+      "type": "stakeholder",
+      "category": "Training Sessions & Assessment",
+      "title": "Material → quiz → result flow",
+      "text": "A learner shall complete a training as a flow: review material → take the quiz → see the result.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-051",
+      "type": "stakeholder",
+      "category": "Training Sessions & Assessment",
+      "title": "Server-side grading",
+      "text": "The quiz shall be graded by the system, comparing the score to a configurable pass threshold; the learner must not be able to influence their own score, and correct answers must not be exposed to someone taking the test.",
+      "priority": "M",
+      "source": "spec",
+      "sourceNote": "server-side grading",
+      "status": "approved"
+    },
+    {
+      "id": "SR-052",
+      "type": "stakeholder",
+      "category": "Training Sessions & Assessment",
+      "title": "Unlimited retries; record only passes",
+      "text": "A learner shall be able to retry the quiz as often as needed; only a passing attempt is recorded. Failed attempts leave the training in its current due state.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-053",
+      "type": "stakeholder",
+      "category": "Training Sessions & Assessment",
+      "title": "Computed due status",
+      "text": "The system shall compute each training's due status per user (never taken, up-to-date, due now, overdue) from the last passing attempt and the training's cycle/window.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-060",
+      "type": "stakeholder",
+      "category": "Learner Dashboard",
+      "title": "Dashboard of required trainings",
+      "text": "The dashboard shall show the trainings required of the signed-in user, each with its current due status and a clear call to start.",
+      "priority": "M",
+      "source": "original-brief",
+      "sourceNote": "/ Spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-061",
+      "type": "stakeholder",
+      "category": "Learner Dashboard",
+      "title": "Friendly empty state",
+      "text": "The dashboard shall present a friendly empty state when no trainings are assigned.",
+      "priority": "C",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-070",
+      "type": "stakeholder",
+      "category": "Trainee Oversight",
+      "title": "Who must take each training",
+      "text": "A trainer/administrator shall see, grouped by training, who is required to take it and each person's due status.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-071",
+      "type": "stakeholder",
+      "category": "Trainee Oversight",
+      "title": "Filter due & copy emails",
+      "text": "They shall be able to filter to only those who are due/overdue and copy the relevant email addresses to the clipboard for reminders.",
+      "priority": "S",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-080",
+      "type": "stakeholder",
+      "category": "Global Settings",
+      "title": "Global pass threshold",
+      "text": "An administrator shall set a single global pass threshold that applies to all trainings at once.",
+      "priority": "M",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SR-081",
+      "type": "stakeholder",
+      "category": "Global Settings",
+      "title": "Manage SSO from Settings",
+      "text": "An administrator shall manage SSO configuration from the same Settings area (see SR-008).",
+      "priority": "M",
+      "source": "sso-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-008"
+        }
+      ]
+    },
+    {
+      "id": "SR-090",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Polished, professional UI + icon",
+      "text": "The application shall present a polished, professional, modern interface with a distinctive app icon/logo.",
+      "priority": "M",
+      "source": "original-brief",
+      "sourceNote": "fantastic user interface; very good icon",
+      "status": "approved"
+    },
+    {
+      "id": "SR-091",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Pastel-blue palette",
+      "text": "The visual design shall use a pastel colour palette, specifically pastel blue (not purple).",
+      "priority": "M",
+      "source": "original-brief",
+      "sourceNote": "+ refinement",
+      "status": "approved"
+    },
+    {
+      "id": "SR-092",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Technical typography",
+      "text": "Typography shall have a technical, engineered feel.",
+      "priority": "S",
+      "source": "refinement",
+      "sourceNote": "fonts more technical",
+      "status": "approved"
+    },
+    {
+      "id": "SR-093",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Responsive & accessible",
+      "text": "The interface shall be responsive (usable on mobile and desktop) and accessible (keyboard navigable, clear focus, sensible labels).",
+      "priority": "M",
+      "source": "spec",
+      "sourceNote": "/ NFR",
+      "status": "approved"
+    },
+    {
+      "id": "SR-094",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Clear operation feedback",
+      "text": "Data operations shall give clear feedback: loading indicators while fetching and success/error notifications on actions.",
+      "priority": "S",
+      "source": "spec",
+      "sourceNote": "/ NFR",
+      "status": "approved"
+    },
+    {
+      "id": "SR-100",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "TypeScript everywhere",
+      "text": "The application shall be written in TypeScript for both frontend and backend.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-101",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "JSON-file persistence",
+      "text": "Data shall be persisted to local JSON files (no external database).",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-102",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "Vue frontend",
+      "text": "The frontend shall be built with Vue (not React).",
+      "priority": "M",
+      "source": "refinement",
+      "sourceNote": "Use Vue instead of React",
+      "status": "approved"
+    },
+    {
+      "id": "SR-103",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "All entities editable via UI",
+      "text": "All managed entities (users, roles, trainings, settings) shall be editable through the user interface.",
+      "priority": "M",
+      "source": "original-brief",
+      "status": "approved"
+    },
+    {
+      "id": "SR-104",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "Server-side security enforcement",
+      "text": "Security-sensitive operations (login result/grading/ownership/access checks, SSO token validation) shall be enforced on the server, never trusted from the client.",
+      "priority": "M",
+      "source": "spec",
+      "sourceNote": "/ SSO feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-105",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "No secrets to clients",
+      "text": "Secrets shall not be exposed to clients; SSO must operate without storing a client secret, so that its configuration can safely be admin-editable.",
+      "priority": "M",
+      "source": "sso-feature",
+      "sourceNote": "design constraint",
+      "status": "approved"
+    },
+    {
+      "id": "SR-106",
+      "type": "stakeholder",
+      "category": "Non-Functional & Constraints",
+      "title": "Easy to run; seed demo data",
+      "text": "The system shall be easy to run for evaluation, seeding demo data (an admin, a trainer, a member) on first start.",
+      "priority": "S",
+      "source": "spec",
+      "status": "approved"
+    },
+    {
+      "id": "SYS-ARCH-01",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "Monorepo backend + frontend",
+      "text": "The product shall be a monorepo with a backend/ (Express + TypeScript) and a frontend/ (Vue 3 + TypeScript, Vite).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-100"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-102"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/"
+        },
+        {
+          "path": "frontend/"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Tech Stack"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-02",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "Run via tsx; UUID ids",
+      "text": "The backend shall run via tsx (tsx watch in dev, tsx in prod) with no build step required; IDs shall be generated with crypto.randomUUID().",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-100"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-106"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/package.json",
+          "symbol": "scripts dev/start (tsx)"
+        },
+        {
+          "path": "backend/src/",
+          "symbol": "crypto.randomUUID()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Setup & Running"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-03",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "Vue 3 + Pinia + Router + axios",
+      "text": "The frontend shall use Vue 3 Composition API, Pinia for state, Vue Router 4, and axios (baseURL /api); Vite shall proxy /api to the backend.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-102"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/main.ts",
+          "symbol": "Pinia+Router"
+        },
+        {
+          "path": "frontend/src/api/client.ts"
+        },
+        {
+          "path": "frontend/vite.config.ts",
+          "symbol": "server.proxy['/api']"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Tech Stack"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-04",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "Tailwind + lucide + fonts",
+      "text": "Styling shall use Tailwind CSS v3, icons lucide-vue-next, and Google Fonts Space Grotesk + DM Mono; no external UI component library.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-090"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-091"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-092"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/tailwind.config.js"
+        },
+        {
+          "path": "frontend/index.html",
+          "symbol": "Google Fonts"
+        },
+        {
+          "path": "frontend/src/style.css"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Design System — Pastel Blue Theme"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-05",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "JSON-file persistence",
+      "text": "Persistence shall be JSON files via fs/promises; there shall be no external database.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-101"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/fileStore.ts"
+        },
+        {
+          "path": "backend/src/data/*.json"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "fileStore.ts — Generic JSON Store"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-06",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "First-run seed",
+      "text": "On first run only (when no users exist), the backend shall seed an admin, a trainer, a member, a job role, two trainings, and the settings file.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-106"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/seed.ts",
+          "symbol": "seed()"
+        },
+        {
+          "path": "backend/src/index.ts"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Seed Data"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ARCH-07",
+      "type": "system",
+      "category": "Architecture & Technology",
+      "title": "Strict TypeScript, no any",
+      "text": "The codebase shall use strict TypeScript with no any types (use unknown + guards).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-100"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/tsconfig.json"
+        },
+        {
+          "path": "frontend/tsconfig.json",
+          "symbol": "strict"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Quality Requirements"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-01",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "Generic JSON stores",
+      "text": "The store shall keep users/roles/trainings/sessions as JSON arrays and settings as a single object; generic helpers auto-initialize missing files and serialize with 2-space indentation.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-101"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-103"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/fileStore.ts",
+          "symbol": "readStore/writeStore/readSettings/writeSettings"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "fileStore.ts — Generic JSON Store"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-02",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "User entity",
+      "text": "User = { id, email, passwordHash?, name, roleIds[], isAdmin, isTrainer, entraOid?, createdAt }. passwordHash optional (SSO-only users); entraOid is the linked Entra object id.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-001"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-009"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-021"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-022"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "User"
+        },
+        {
+          "path": "frontend/src/types/index.ts"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-03",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "JobRole entity",
+      "text": "JobRole = { id, name, description, trainingIds[] }.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-030"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-031"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "JobRole"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-04",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "Training entity",
+      "text": "Training = { id, name, description, durationHours, category, ownerId, cycleYears (1-5), windowBeforeMonths (0-3), windowAfterMonths (0-3), order, materialLinks[], questions[], createdAt }.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-040"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-041"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-042"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-043"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-044"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "Training"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-05",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "Question; answer key stripped",
+      "text": "Question = { id, text, options[], correctIndex }; correctIndex shall never be sent to a non-owner (a PublicTraining shape strips it).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-042"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-051"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "Question/PublicTraining"
+        },
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "toPublic()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-06",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "Settings entity",
+      "text": "Settings = { passThreshold (0-1, default 0.8), entra: { enabled, tenantId, clientId, allowedDomains[] } }; reading backfills defaults onto older files via a shallow merge.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-080"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-008"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "Settings/EntraSsoSettings"
+        },
+        {
+          "path": "backend/src/services/fileStore.ts",
+          "symbol": "DEFAULT_SETTINGS + readSettings merge"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "entra defaults backfilled; passThreshold preserved"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-07",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "SafeUser strips secrets",
+      "text": "The client-facing SafeUser shall be Omit<User, 'passwordHash' | 'entraOid'>; a shared toSafeUser() shall strip both before any user is returned.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-105"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "SafeUser"
+        },
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "toSafeUser()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DATA-08",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "TrainingSession; passes only",
+      "text": "TrainingSession = { id, userId, trainingId, completedAt, scorePct }; only passing attempts shall be persisted.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-052"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-053"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "TrainingSession"
+        },
+        {
+          "path": "backend/src/routes/sessions.ts",
+          "symbol": "persist-if-passed"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Data Models (TypeScript)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-01",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "POST /login",
+      "text": "POST /api/auth/login { email, password } shall match email case-insensitively, verify with bcrypt.compare, and on success return { token, user: SafeUser }; 400 on missing fields, 401 on bad credentials.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-001"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-002"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /login"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "admin login returns token + user"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-02",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "bcrypt rounds 10",
+      "text": "Passwords shall be hashed with bcryptjs, salt rounds 10.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-001"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-104"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "bcrypt.hash(...,10)"
+        },
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "bcrypt.hash(...,10)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-03",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "JWT 7d",
+      "text": "The session token shall be a JWT signed with JWT_SECRET, payload { id, email, isAdmin, isTrainer }, expiry 7d.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-005"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/middleware/auth.ts",
+          "symbol": "signToken(), JWT_SECRET"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-04",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "GET /me rehydrate",
+      "text": "GET /api/auth/me (authenticated) shall return the current SafeUser, used to rehydrate the user after a page refresh.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-005"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "GET /me"
+        },
+        {
+          "path": "frontend/src/stores/auth.ts",
+          "symbol": "fetchMe()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-05",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "Token storage + interceptors",
+      "text": "The frontend shall store the token in localStorage; axios shall attach Authorization: Bearer <token> to every request; on a 401 it shall clear the token and redirect to /login.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-005"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/api/client.ts",
+          "symbol": "request + 401 interceptors"
+        },
+        {
+          "path": "frontend/src/stores/auth.ts"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "State Management (Pinia)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-06",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "No registration endpoint",
+      "text": "There shall be no public registration endpoint.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-001"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "(no register route)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-07",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "SSO-only cannot password-login",
+      "text": "A user without a passwordHash (SSO-only) shall be unable to log in with a password (login returns 401).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-009"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-010"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /login guard !user.passwordHash"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "bad/no-password credentials → 401"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Routes (/api/auth)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-01",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "MSAL popup → ID token",
+      "text": "The browser shall obtain an Entra ID token using MSAL.js (@azure/msal-browser) popup flow with scopes openid profile email.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-006"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/auth/msal.ts",
+          "symbol": "signInWithEntra() (loginPopup, scopes)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-02",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "Public /sso/config",
+      "text": "GET /api/auth/sso/config (public) shall return { enabled: false }, or { enabled: true, clientId, authority } when configured; the login page shows the Microsoft button only when enabled.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-006"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-007"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "GET /sso/config"
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.vue",
+          "symbol": "onMounted fetch + v-if ssoEnabled"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "returns enabled flag + clientId/authority"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-03",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "POST /sso/entra guards",
+      "text": "POST /api/auth/sso/entra { idToken } shall return 503 when SSO is disabled/unconfigured, 400 when idToken is absent.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-007"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /sso/entra (503/400 guards)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "503 when disabled; 400 without idToken"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-04",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "ID-token validation",
+      "text": "The backend shall validate the ID token server-side with jwks-rsa + jsonwebtoken: enforce RS256, aud = client id, iss = https://login.microsoftonline.com/{tenant}/v2.0, tid = tenant, expiry with 300s clock tolerance; JWKS cached per tenant. Invalid tokens → 401.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-104"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-006"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/entra.ts",
+          "symbol": "verifyEntraIdToken(), jwksClientFor()"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "unit-check",
+          "note": "self-signed-key checks: RS256/aud/iss/tid/exp/alg enforced"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-05",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "Claim extraction",
+      "text": "From the validated token the system shall read oid, email (email then preferred_username), and name; a token missing oid or any email shall be rejected.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-009"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/entra.ts",
+          "symbol": "claim extraction"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "unit-check",
+          "note": "missing oid/email rejected; preferred_username fallback"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-06",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "Link / provision resolution",
+      "text": "User resolution: (1) match by entraOid; else (2) match by email and link entraOid without changing roles/admin/trainer flags — 409 if the email is already linked to a different entraOid; else (3) if the email domain is in allowedDomains, auto-create a member; else (4) 403.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-009"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /sso/entra resolution"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "code-review",
+          "note": "link/provision/409/403 branches reviewed"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-07",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "Issue same app JWT",
+      "text": "On success the endpoint shall issue the same app JWT (signToken) and return { token, user: SafeUser }, identical to password login, so all downstream session handling is unchanged.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-006"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-010"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "signToken() + toSafeUser()"
+        },
+        {
+          "path": "frontend/src/stores/auth.ts",
+          "symbol": "loginWithEntra()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-08",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "No client secret; graceful off",
+      "text": "SSO shall require no client secret; its configuration shall be admin-editable and, when absent/disabled, the app shall behave exactly as a password-only app.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-007"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-008"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-105"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/entra.ts",
+          "symbol": "isEntraConfigured()"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "no-config path leaves app password-only"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SSO-09",
+      "type": "system",
+      "category": "Authentication — Microsoft Entra ID SSO",
+      "title": "SPA registration assumptions",
+      "text": "Operation shall assume an Azure Single-Page Application registration, single-tenant, with the redirect URI set to the app origin and delegated permissions openid/profile/email.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-006"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/auth/msal.ts",
+          "symbol": "redirectUri window.location.origin"
+        },
+        {
+          "path": "frontend/src/pages/SettingsPage.vue",
+          "symbol": "redirect URI hint"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Microsoft Entra ID (Azure AD) SSO"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-01",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Auth middleware set",
+      "text": "The backend shall provide middleware: authenticate (401), requireAdmin (403), requireTrainerOrAdmin (403), requireAdminOrOwner (403 unless admin or the training's owner).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-004"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/middleware/auth.ts",
+          "symbol": "authenticate/requireAdmin/requireTrainerOrAdmin/requireAdminOrOwner"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Auth Middleware"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-02",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Admin-only mutations",
+      "text": "All mutating endpoints on /api/roles and /api/users, and PUT /api/settings, shall require admin.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "router.use(authenticate, requireAdmin)"
+        },
+        {
+          "path": "backend/src/routes/roles.ts"
+        },
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "PUT"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Admin Guard — Three Layers of Enforcement"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-03",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Training mutation guards",
+      "text": "POST /api/trainings shall require trainer-or-admin; PUT/DELETE /api/trainings/:id shall require admin-or-owner; only admins may set/change ownerId; PUT /api/trainings/reorder shall require admin.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "requireTrainerOrAdmin/requireAdminOrOwner/requireAdmin"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-04",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Router guard",
+      "text": "The frontend router shall enforce route meta requiresAuth/requiresAdmin/requiresTrainerOrAdmin, redirecting unauthenticated users to /login and unauthorized users to /dashboard; after a refresh it shall fetchMe() before role checks.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-004"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/router/index.ts",
+          "symbol": "beforeEach + meta"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Admin Guard — Three Layers of Enforcement"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-05",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Role-gated sidebar",
+      "text": "The sidebar shall render only the navigation items appropriate to the user's level (defense-in-depth, not the sole control).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-004"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/AppSidebar.vue",
+          "symbol": "role-gated nav v-if"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Admin Guard — Three Layers of Enforcement"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-06",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Permission matrix",
+      "text": "The system shall conform to the documented API permission matrix for every role/endpoint pair.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-004"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "brain-gain.md",
+          "symbol": "API permission matrix"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Admin Guard — Three Layers of Enforcement"
+        }
+      ]
+    },
+    {
+      "id": "SYS-USR-01",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "/api/users CRUD",
+      "text": "/api/users shall provide admin-only CRUD: create { name, email, password, roleIds, isAdmin, isTrainer }; update with optional password (blank keeps the current one).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-020"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-022"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "CRUD"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Users Routes (/api/users)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-USR-02",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "Users page",
+      "text": "The Users page shall list users in a table and edit them in a slide-out drawer with a role multi-select and isAdmin/isTrainer toggles.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-020"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-021"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-022"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/UsersPage.vue"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "UsersPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ROL-01",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "/api/roles CRUD",
+      "text": "/api/roles shall provide admin-only CRUD.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-030"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/roles.ts",
+          "symbol": "CRUD (mutations requireAdmin)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Roles Routes (/api/roles)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ROL-02",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "Role editor training multiselect",
+      "text": "The Role editor shall present a multi-select checkbox list of all trainings, writing the selection to trainingIds.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-031"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/RoleForm.vue"
+        },
+        {
+          "path": "frontend/src/pages/RolesPage.vue"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "RolesPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ROL-03",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "Role editor honours order",
+      "text": "The Role editor's training list shall follow the admin-defined training order.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-047"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/RolesPage.vue",
+          "symbol": "GET /trainings (server-ordered)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "RolesPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-01",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "GET / ordered",
+      "text": "GET /api/trainings shall return trainings sorted by order ascending; admins see all, trainers may pass ?mine=1; correctIndex stripped for non-owners.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-040"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-047"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-051"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "GET / (readOrderedTrainings, ?mine, toPublic)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "order respected; answer key stripped"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-02",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "GET /:id",
+      "text": "GET /api/trainings/:id shall return one training, answer key stripped for non-owners (used by the session quiz).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-050"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "GET /:id"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-03",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "POST / append order",
+      "text": "POST /api/trainings shall set a trainer's own ownerId (admins may target any owner) and append the new training to the end of the order (order = max + 1).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "POST / (order = max+1, owner rules)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-04",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "PUT /:id preserves order",
+      "text": "PUT /api/trainings/:id shall update an owned/any training (admin-or-owner) without changing order; only admins may change ownerId.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "PUT /:id (order preserved; admin-only ownerId)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-05",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "DELETE /:id",
+      "text": "DELETE /api/trainings/:id shall be permitted only to admin-or-owner.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "DELETE /:id"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-06",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "PUT /reorder",
+      "text": "PUT /api/trainings/reorder { ids[] } (admin-only) shall set each training's order to its position in the array; it shall be registered before the /:id route.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "PUT /reorder (before /:id)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "reorder persists; admin-only (trainer 403)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-07",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "Order is single source",
+      "text": "The list endpoints (/, /mine, /trainees) shall sort by order; legacy records missing order shall be backfilled by file position and persisted, making order the single source of truth.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-047"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "readOrderedTrainings() (backfill + sort)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "order respected across /, /mine, /trainees"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-08",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "Drag-and-drop reorder UI",
+      "text": "The Trainings page shall let admins reorder via drag-and-drop (grip handle); a normal row click still opens the editor; trainers shall not see the handle; dropping persists the new order via the reorder endpoint.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-046"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/TrainingsPage.vue",
+          "symbol": "onDragStart/Over/End, persistOrder; grip v-if isAdmin"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "TrainingsPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TRN-09",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "Training editor fields",
+      "text": "The training editor shall manage cycleYears (1-5), windowBeforeMonths/windowAfterMonths (0-3), materialLinks (label+url), questions (text/options/correctIndex), and — admin only — ownerId.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-041"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-042"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-043"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-044"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-045"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/TrainingForm.vue"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "TrainingsPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DUE-01",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "computeDue()",
+      "text": "A single computeDue() shall derive status from the last passing session: dueDate = lastPassed + cycleYears, windowOpen = dueDate − windowBeforeMonths, windowClose = dueDate + windowAfterMonths, yielding never/up-to-date/due/overdue; reused by both /mine and /trainees.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-053"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/due.ts",
+          "symbol": "computeDue(), sessionsFor()"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DUE-02",
+      "type": "system",
+      "category": "Trainings, Ordering & Due Status",
+      "title": "GET /mine",
+      "text": "GET /api/trainings/mine shall return DueTraining[] for the current user's required trainings (union of role trainingIds, deduped), in order, with server-computed status.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-032"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-060"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-047"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "GET /mine (requiredTrainingIds + computeDue)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SES-01",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "Session flow",
+      "text": "The Session page (/session/:trainingId) shall implement the flow material → quiz → result.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-050"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/SessionPage.vue"
+        },
+        {
+          "path": "frontend/src/router/index.ts",
+          "symbol": "session/:trainingId route"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "SessionPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SES-02",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "POST /grade server-side",
+      "text": "POST /api/sessions/grade { trainingId, answers[] } shall grade server-side against stored correctIndex, compare scorePct to Settings.passThreshold, persist a TrainingSession only if passed, and return { scorePct, passed, passThreshold }.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-051"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-052"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/sessions.ts",
+          "symbol": "POST /grade"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Sessions Routes (/api/sessions)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SES-03",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "Unlimited retries",
+      "text": "A learner shall be able to submit /grade repeatedly; failed attempts shall not be recorded and shall leave the due state unchanged.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-052"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/sessions.ts",
+          "symbol": "POST /grade (no persist on fail)"
+        },
+        {
+          "path": "frontend/src/pages/SessionPage.vue",
+          "symbol": "retry"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Sessions Routes (/api/sessions)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SES-04",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "GET /sessions/mine",
+      "text": "GET /api/sessions/mine shall return the current user's passing sessions.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-053"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/sessions.ts",
+          "symbol": "GET /mine"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Sessions Routes (/api/sessions)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SET-01",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "GET /settings",
+      "text": "GET /api/settings (any authenticated user) shall return the full Settings.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-080"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "GET /"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "returns passThreshold + entra"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Settings Routes (/api/settings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SET-02",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "PUT /settings merge",
+      "text": "PUT /api/settings (admin) shall be a partial merge: validate/clamp passThreshold to 0.5–1 when present, and when entra is present coerce booleans, trim ids, and accept allowedDomains as an array or comma-separated string — so SSO and threshold save independently.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-080"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-008"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "PUT / (merge, clamp, sanitizeDomains)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "merge independence; domain sanitization"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Settings Routes (/api/settings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-SET-03",
+      "type": "system",
+      "category": "Sessions & Settings",
+      "title": "Settings page cards",
+      "text": "The Settings page shall present a pass-threshold card and an Entra ID SSO card (enable toggle; tenant id; client id; allowed domains; a hint showing the SPA redirect URI), each with its own save action.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-080"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-081"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-008"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/SettingsPage.vue",
+          "symbol": "save/saveSso"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "settings round-trip persists"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "SettingsPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DSH-01",
+      "type": "system",
+      "category": "Dashboard & Trainee Oversight",
+      "title": "Dashboard cards",
+      "text": "The Dashboard shall load /api/trainings/mine and render a responsive card grid; each card shows name, description, duration, category, a due-status pill, and a Start action; an empty state shall be shown when nothing is assigned.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-060"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-061"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/DashboardPage.vue"
+        },
+        {
+          "path": "frontend/src/components/TrainingCard.vue"
+        },
+        {
+          "path": "frontend/src/utils/display.ts",
+          "symbol": "dueLabel/dueClasses"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "DashboardPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-OVS-01",
+      "type": "system",
+      "category": "Dashboard & Trainee Oversight",
+      "title": "GET /trainees grouped",
+      "text": "GET /api/trainings/trainees shall return TraineeGroup[] (admins: all trainings; trainers: owned), grouped per training in order, each trainee carrying server-computed status and dueDate.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-070"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-047"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "GET /trainees (requireTrainerOrAdmin, grouped, ordered)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Trainings Routes (/api/trainings)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-OVS-02",
+      "type": "system",
+      "category": "Dashboard & Trainee Oversight",
+      "title": "Trainees page",
+      "text": "The Trainees page shall show collapsible per-training groups, a 'only due/overdue' filter, and per-group + global copy-emails actions that write a '; '-separated recipient list to the clipboard with a confirming toast.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-070"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-071"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/TraineesPage.vue",
+          "symbol": "groups, only-due filter, copy-emails"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "TraineesPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-01",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Pastel-blue palette",
+      "text": "The theme shall use the defined pastel-blue CSS-variable palette (background #F0F6FF, sidebar #E0EDFF, accent #2B78E4, pastel blue/cyan/mint/steel/sky/slate); no purple/rose/peach.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-091"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/style.css"
+        },
+        {
+          "path": "frontend/tailwind.config.js"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Design System — Pastel Blue Theme"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-02",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Typography pairing",
+      "text": "Headings/nav/buttons shall use Space Grotesk; body/inputs/badges/metadata shall use DM Mono (technical aesthetic).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-092"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/index.html",
+          "symbol": "font links"
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "symbol": "fontFamily"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Design System — Pastel Blue Theme"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-03",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Logo component",
+      "text": "A BrainGainLogo SVG component (stylized brain + upward arrow, pastel-blue gradient, size prop) shall render cleanly at 32 px, 48 px, and 256 px.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-090"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/BrainGainLogo.vue"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "App Icon / Logo (BrainGainLogo.vue)"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-04",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Sidebar + content layout",
+      "text": "The layout shall be a fixed 240 px sidebar + scrollable content, collapsing to a bottom tab bar on mobile.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-093"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/AppLayout.vue"
+        },
+        {
+          "path": "frontend/src/components/AppSidebar.vue"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Layout"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-05",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Responsive & accessible",
+      "text": "The UI shall be responsive (375 px–1440 px) and accessible (keyboard navigable, visible focus rings, sensible aria-labels).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-093"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/*"
+        },
+        {
+          "path": "frontend/src/pages/*"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Quality Requirements"
+        }
+      ]
+    },
+    {
+      "id": "SYS-UI-06",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Loading + toasts",
+      "text": "Every data fetch shall show a loading/skeleton state; every API call shall be wrapped in try/catch surfacing success/error toasts via a global toast store.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-094"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/stores/toast.ts"
+        },
+        {
+          "path": "frontend/src/App.vue",
+          "symbol": "toast host"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Quality Requirements"
+        }
+      ]
+    },
+    {
+      "id": "SYS-NFR-01",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "Server-side enforcement",
+      "text": "All security-sensitive logic — credential checks, quiz grading, ownership and access checks, and SSO token validation — shall be enforced on the server and never trusted from the client.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-104"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/middleware/auth.ts"
+        },
+        {
+          "path": "backend/src/routes/sessions.ts",
+          "symbol": "grading"
+        },
+        {
+          "path": "backend/src/services/entra.ts",
+          "symbol": "token validation"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Quality Requirements"
+        }
+      ]
+    },
+    {
+      "id": "SYS-NFR-02",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "No secret leakage",
+      "text": "The system shall never transmit passwordHash, entraOid, correctIndex, or any secret to clients, and SSO shall function without storing a client secret.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-051"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-105"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "toSafeUser"
+        },
+        {
+          "path": "backend/src/routes/trainings.ts",
+          "symbol": "toPublic"
+        },
+        {
+          "path": "backend/src/services/entra.ts",
+          "symbol": "no client secret"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "Quality Requirements"
+        }
+      ]
+    }
+  ]
+}

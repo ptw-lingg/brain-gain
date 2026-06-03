@@ -8,6 +8,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"],
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "noUnusedLocals": false,
     "isolatedModules": true,
     "useDefineForClassFields": true,

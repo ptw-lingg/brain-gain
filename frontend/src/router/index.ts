@@ -10,6 +10,7 @@ import TraineesPage from '@/pages/TraineesPage.vue';
 import RolesPage from '@/pages/RolesPage.vue';
 import UsersPage from '@/pages/UsersPage.vue';
 import SettingsPage from '@/pages/SettingsPage.vue';
+import RequirementsPage from '@/pages/RequirementsPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,6 +29,7 @@ const router = createRouter({
         { path: 'roles', component: RolesPage, meta: { requiresAdmin: true } },
         { path: 'users', component: UsersPage, meta: { requiresAdmin: true } },
         { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
+        { path: 'requirements', component: RequirementsPage, meta: { requiresAdmin: true } },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },

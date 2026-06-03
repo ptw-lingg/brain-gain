@@ -160,11 +160,16 @@ Build **BrainGain**, a modern training management web application written entire
  
 ```
 braingain/
-├── requirements/              # Requirements docs — MUST stay in sync (see "Requirements & Traceability")
-│   ├── README.md              # how the requirement docs relate + maintenance checklist
-│   ├── stakeholder-requirements.md   # SR-… : what stakeholders need & why
-│   ├── system-requirements.md        # SYS-… : how the system must behave (traced to SR + this prompt)
-│   └── traceability-matrix.md        # SR ⇄ SYS ⇄ implementing code
+├── requirements/              # Requirements as linkable, traceable objects (see "Requirements & Traceability")
+│   ├── requirements.json      # SINGLE SOURCE OF TRUTH — typed requirement objects + typed links
+│   ├── schema/
+│   │   └── requirements.schema.json   # JSON Schema (draft 2020-12) — the formal contract
+│   ├── tools/
+│   │   └── build.mjs          # validate + regenerate the Markdown views & the app's data copy (--check)
+│   ├── README.md              # the model + maintenance workflow
+│   ├── stakeholder-requirements.md   # GENERATED view — SR-… : what stakeholders need & why
+│   ├── system-requirements.md        # GENERATED view — SYS-… : how the system behaves (traced to SR)
+│   └── traceability-matrix.md        # GENERATED view — SR ⇄ SYS ⇄ implementing code
 ├── backend/
 │   ├── src/
 │   │   ├── index.ts            # Express app entry point + error handler
@@ -202,6 +207,8 @@ braingain/
     │   │   └── client.ts       # Axios instance with JWT + 401 interceptors
     │   ├── auth/
     │   │   └── msal.ts         # MSAL.js wrapper for "Sign in with Microsoft" (popup → ID token)
+    │   ├── data/
+    │   │   └── requirements.generated.json  # GENERATED copy of requirements.json (imported by RequirementsPage)
     │   ├── components/
     │   │   ├── BrainGainLogo.vue   # SVG app icon component (size + wordmark props)
     │   │   ├── AppSidebar.vue
@@ -217,7 +224,8 @@ braingain/
     │   │   ├── TraineesPage.vue    # Admin/trainer: who needs my trainings, grouped, with copy-emails
     │   │   ├── RolesPage.vue       # Admin: manage job roles
     │   │   ├── UsersPage.vue       # Admin: manage users (slide-out drawer) + role assignment
-    │   │   └── SettingsPage.vue    # Admin: edit global pass threshold
+    │   │   ├── SettingsPage.vue    # Admin: edit global pass threshold + Entra SSO config
+    │   │   └── RequirementsPage.vue # Admin: browse requirements objects + SR⇄SYS⇄code traces
     │   ├── stores/
     │   │   ├── auth.ts             # Pinia auth store (login, fetchMe, logout)
     │   │   └── toast.ts            # Pinia toast store (success/error)
@@ -226,7 +234,8 @@ braingain/
     │   ├── utils/
     │   │   └── display.ts          # due-status labels/colors, date + category helpers
     │   └── types/
-    │       └── index.ts            # Shared TypeScript types
+    │       ├── index.ts            # Shared TypeScript types
+    │       └── requirements.ts     # Types for the generated requirements dataset
     ├── public/
     │   └── favicon.svg
     ├── index.html
@@ -560,9 +569,10 @@ Design an SVG icon showing a **stylized brain** with an **upward trend arrow** g
 | Trainees | `ClipboardList` | Admins + trainers | Read-only — who must do my trainings + copy emails |
 | Job Roles | `Briefcase` | Admins only | Full CRUD |
 | Users | `Users` | Admins only | Full CRUD |
-| Settings | `SlidersHorizontal` | Admins only | Edit global pass threshold |
+| Settings | `SlidersHorizontal` | Admins only | Edit global pass threshold + Entra SSO config |
+| Requirements | `ListChecks` | Admins only | Read-only — browse requirement objects + `SR⇄SYS⇄code` traces |
  
-> Regular users (neither admin nor trainer) see **only** the "My Trainings" page. Trainers additionally see "Trainings" but their list is filtered to trainings they own. The "Job Roles", "Users", and "Settings" items appear for admins only. Navigating directly to a forbidden route redirects to `/dashboard`.
+> Regular users (neither admin nor trainer) see **only** the "My Trainings" page. Trainers additionally see "Trainings" but their list is filtered to trainings they own. The "Job Roles", "Users", "Settings", and "Requirements" items appear for admins only. Navigating directly to a forbidden route redirects to `/dashboard`.
  
 ### Pages
  
@@ -1044,38 +1054,45 @@ without any ESM configuration:
 8. **Admin access control enforced at all three layers** — Vue Router guard, sidebar `v-if`, and backend `requireAdmin` middleware. Never rely on a single layer alone.
 9. **Quiz grading & pass threshold are server-side** — the backend grades submitted answers against the stored `correctIndex` values and compares to the global `Settings.passThreshold`. Never trust a client-submitted score, and never expose `correctIndex` to a user taking the test. This is consistent with the three-layer security stance above.
 10. **Training ownership enforced server-side** — trainers may only mutate trainings they own (`requireAdminOrOwner`); the filtered UI list is convenience, not the security boundary.
-11. **Requirements stay in sync** — the `requirements/` docs are part of the deliverable and must always match this prompt and the code (see "Requirements & Traceability" below). No feature is "done" until its `SR-…`/`SYS-…`/traceability entries are updated.
+11. **Requirements stay in sync** — `requirements/requirements.json` (the linkable, traceable requirements dataset) is part of the deliverable and must always match this prompt and the code (see "Requirements & Traceability" below). No feature is "done" until its `SR-…`/`SYS-…` objects are updated and `node requirements/tools/build.mjs --check` passes.
 ---
  
 ## Requirements & Traceability
 
-This prompt is the **narrative source of truth** for the design. Alongside it, the repo keeps a derived,
-individually-numbered requirements set under [`requirements/`](requirements/) that **must be kept up to date
-with every change**:
+This prompt is the **narrative source of truth** for the design. Alongside it, the repo keeps the requirements
+as **linkable, traceable objects** under [`requirements/`](requirements/), which **must be kept up to date
+with every change**. Requirements are stored as machine-readable data, not prose:
 
-| File | Level | IDs | Content |
-|---|---|---|---|
-| `requirements/stakeholder-requirements.md` | Stakeholder | `SR-…` | *What* stakeholders need and *why* (priority M/S/C, with a **Source**). |
-| `requirements/system-requirements.md` | System | `SYS-…` | *How* the system must behave; each carries a **Trace** to the `SR-…` it satisfies. |
-| `requirements/traceability-matrix.md` | Trace | — | Maps every `SYS-…` to the implementing file · symbol/endpoint, plus a reverse `SR → SYS → code` index. |
-| `requirements/README.md` | Guide | — | How the docs relate, conventions, and the per-change maintenance checklist. |
+| File | Role |
+|---|---|
+| `requirements/requirements.json` | **Single source of truth.** Typed requirement objects (`SR-…` stakeholder, `SYS-…` system) with stable ids, typed `links` (`derivedFrom`), `implementedBy` (`path · symbol`), `verifiedBy`, `specRefs`, plus actors/enums/out-of-scope. |
+| `requirements/schema/requirements.schema.json` | JSON Schema (draft 2020-12) — the formal contract; `requirements.json` references it via `$schema`. |
+| `requirements/tools/build.mjs` | Validator + generator (plain Node, no deps). Validates integrity and regenerates the views below. |
+| `requirements/{stakeholder-requirements,system-requirements,traceability-matrix}.md` | **Generated** human-readable views. |
+| `frontend/src/data/requirements.generated.json` | **Generated** copy imported by the in-app viewer. |
+| `frontend/src/pages/RequirementsPage.vue` | Admin `/requirements` page — browse, filter, and click `SR ⇄ SYS ⇄ code` traces both ways. |
 
-**Standing rule — treat the requirements as living artifacts.** Whenever you add, change, or remove a feature
+**Standing rule — treat the requirements as living data.** Whenever you add, change, or remove a feature
 (in this prompt or in code):
 
 1. **Update this prompt** (the relevant spec section, data model, route table, permission matrix, page
-   description) — as is already done for the *training ordering* and *Entra ID SSO* features.
-2. **Reflect the change in the requirements docs in the same change:**
-   - Add/modify the affected `SYS-…` (and a `SR-…` if it is a genuinely new stakeholder need).
-   - Update the **traceability-matrix** row(s) to point at the new/changed file(s)/endpoint(s).
-3. **Keep IDs stable** — never renumber. Add new IDs (e.g. `SR-110`, `SYS-TRN-10`) and mark superseded ones
-   rather than reusing numbers, so history and external references stay valid.
-4. **Note how it was verified** (endpoint probe, settings round-trip, UI run, token-validation check, test).
-5. **Check coverage** — every `SR-…` should map to at least one `SYS-…`, and every `SYS-…` to code; update
-   the coverage/reverse-index tables so nothing is orphaned.
+   description) — as already done for the *training ordering* and *Entra ID SSO* features.
+2. **Edit `requirements/requirements.json`** in the same change:
+   - Add/modify the affected `SYS-…` object — its `links` (`derivedFrom` an `SR-…`), `implementedBy`,
+     `verifiedBy` — and a new `SR-…` object only for a genuinely new stakeholder need.
+   - **Keep IDs stable** — never renumber. Add new ids (e.g. `SR-110`, `SYS-TRN-10`) and mark superseded ones
+     (`status: "superseded"`) rather than reusing numbers.
+3. **Run the generator** to validate and refresh every generated artifact:
+   ```
+   node requirements/tools/build.mjs            # validate + regenerate views + the app data copy
+   node requirements/tools/build.mjs --check     # validate + fail on drift (CI / pre-commit)
+   ```
+   It enforces: unique ids, id patterns, enum membership, all link targets resolve, every `SYS-…` has a
+   `derivedFrom` + `implementedBy`, and every `SR-…` is covered by ≥1 `SYS-…` — so nothing is orphaned.
+4. **Commit** `requirements.json` together with the regenerated files.
 
-When (re)generating the project from this prompt, **generate the `requirements/` folder too**, derived from
-the spec above and consistent with the matrix.
+When (re)generating the project from this prompt, **generate the `requirements/` dataset (and its schema,
+generator, generated views, and the `/requirements` viewer) too**, consistent with the spec above.
 
 ---
  
