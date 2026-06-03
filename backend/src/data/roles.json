@@ -51,5 +51,309 @@
       "91e3c885-a123-4ed2-9574-ed5fa35787db",
       "f039fa8a-2a02-4d1b-8481-1cab4d544e61"
     ]
+  },
+  {
+    "id": "a5361106-7b75-4405-8379-630e0fb3085d",
+    "name": "Director Research & Development",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "7785e467-1b57-4197-884b-504513e018b1",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "647aae31-ae8a-4479-9850-d4b182ab4c8c",
+      "1ff7533e-c176-422c-9234-dbdcec2259e6",
+      "f2699e0d-b7ef-4699-9e11-9378d67caf0b",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1"
+    ]
+  },
+  {
+    "id": "b66515df-a69d-442d-8f00-839b9a7e637f",
+    "name": "Electrical Engineer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db"
+    ]
+  },
+  {
+    "id": "0e213ca8-4400-4371-b7b5-c2f2059e803d",
+    "name": "Engineering Manager",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "7785e467-1b57-4197-884b-504513e018b1",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "647aae31-ae8a-4479-9850-d4b182ab4c8c",
+      "1ff7533e-c176-422c-9234-dbdcec2259e6",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1"
+    ]
+  },
+  {
+    "id": "9da32880-e0ce-44dd-89e4-20e5080689ae",
+    "name": "Labeling Expert - IFU",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db"
+    ]
+  },
+  {
+    "id": "5f9d4466-f08f-42b2-9d5c-05b588933cb0",
+    "name": "Labeling Expert - Label",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db"
+    ]
+  },
+  {
+    "id": "c2bd3e90-be12-4697-929c-7fe59af70907",
+    "name": "Lead Software Developer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1"
+    ]
+  },
+  {
+    "id": "f58dee55-1201-49d9-8ad3-9e6976fc4668",
+    "name": "Mechanical Engineer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db"
+    ]
+  },
+  {
+    "id": "4061d3de-137b-4d35-a6b1-bbadb55edfb3",
+    "name": "Product Owner",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b"
+    ]
+  },
+  {
+    "id": "e1e18318-a165-4b0e-8f65-2fae070d894b",
+    "name": "Project Lead",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2"
+    ]
+  },
+  {
+    "id": "9ec4aeff-3be8-4f2c-beaa-75bdc967bed8",
+    "name": "Risk Manager RD",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2"
+    ]
+  },
+  {
+    "id": "fc96e6fd-903f-4107-a1b8-024ad4e6380a",
+    "name": "Security Expert",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f"
+    ]
+  },
+  {
+    "id": "7ef7f9d3-491d-4322-8e6b-30fc989f66c2",
+    "name": "Software Engineer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f"
+    ]
+  },
+  {
+    "id": "cdbaa403-e7f0-4256-9978-55a3e9effa7f",
+    "name": "Systems Engineer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1"
+    ]
+  },
+  {
+    "id": "bc841abf-ea70-4efe-805c-5ea506415972",
+    "name": "Test Lead",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b"
+    ]
+  },
+  {
+    "id": "6749b0d9-5a4d-4466-9665-ab5ca2311c49",
+    "name": "Tester",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b"
+    ]
+  },
+  {
+    "id": "7bce9d13-3dd2-44a0-b126-f7ade0f5d242",
+    "name": "Usability Moderator",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2"
+    ]
+  },
+  {
+    "id": "6051e3f5-bab9-4c6e-9b11-faf3b4ab5517",
+    "name": "UX/UI Designer",
+    "description": "",
+    "trainingIds": [
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "efde2ac6-d99d-426b-baea-b340854099c2",
+      "ec867de7-dd70-42d2-b156-309041f8fcc1",
+      "b6d07e12-fcf4-4353-b828-1f26afa36f7b"
+    ]
   }
 ]
