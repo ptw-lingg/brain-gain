@@ -33,7 +33,10 @@ export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
   await fs.writeFile(filePath(file), JSON.stringify(data, null, 2), 'utf-8');
 }
 
-const DEFAULT_SETTINGS: Settings = { passThreshold: 0.8 };
+const DEFAULT_SETTINGS: Settings = {
+  passThreshold: 0.8,
+  entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
+};
 
 export async function readSettings(): Promise<Settings> {
   await ensureDir();

@@ -176,13 +176,14 @@ braingain/
 │   │   │   └── auth.ts         # authenticate, requireAdmin, requireTrainerOrAdmin, requireAdminOrOwner
 │   │   ├── services/
 │   │   │   ├── fileStore.ts    # JSON array helpers + readSettings/writeSettings
-│   │   │   └── due.ts          # computeDue() — cycle + window → DueStatus
+│   │   │   ├── due.ts          # computeDue() — cycle + window → DueStatus
+│   │   │   └── entra.ts        # Entra ID token verification (jwks-rsa) + provisioning helpers
 │   │   └── data/               # JSON data files (auto-created if missing)
 │   │       ├── users.json
 │   │       ├── roles.json
 │   │       ├── trainings.json
 │   │       ├── sessions.json
-│   │       └── settings.json   # single object: { passThreshold }
+│   │       └── settings.json   # single object: { passThreshold, entra }
 │   ├── package.json
 │   └── tsconfig.json           # CommonJS (see "Backend tsconfig" below)
 │
@@ -194,6 +195,8 @@ braingain/
     │   ├── env.d.ts            # vite/client + *.vue shim
     │   ├── api/
     │   │   └── client.ts       # Axios instance with JWT + 401 interceptors
+    │   ├── auth/
+    │   │   └── msal.ts         # MSAL.js wrapper for "Sign in with Microsoft" (popup → ID token)
     │   ├── components/
     │   │   ├── BrainGainLogo.vue   # SVG app icon component (size + wordmark props)
     │   │   ├── AppSidebar.vue
@@ -279,11 +282,12 @@ export interface JobRole {
 export interface User {
   id: string;
   email: string;
-  passwordHash: string;   // bcrypt hash (never sent to frontend)
+  passwordHash?: string;  // bcrypt hash (never sent to frontend); absent for SSO-only users
   name: string;
   roleIds: string[];       // which job roles the user has
   isAdmin: boolean;        // can edit everything in the system
   isTrainer: boolean;      // owns & manages his own trainings only
+  entraOid?: string;       // Microsoft Entra ID object id, set when an account is linked via SSO
   createdAt: string;
 }
  
@@ -301,12 +305,19 @@ export interface TrainingSession {
 }
  
 // Global, admin-editable system settings (single object, not a list).
+export interface EntraSsoSettings {
+  enabled: boolean;
+  tenantId: string;          // Directory (tenant) ID
+  clientId: string;          // Application (client) ID
+  allowedDomains: string[];  // email domains permitted to auto-provision a new member
+}
 export interface Settings {
   passThreshold: number;    // 0–1, default 0.8 — applies to ALL trainings at once
+  entra: EntraSsoSettings;  // Microsoft Entra ID SSO config (admin-editable; holds no secrets)
 }
  
-// Frontend-safe user (no passwordHash)
-export interface SafeUser extends Omit<User, 'passwordHash'> {}
+// Frontend-safe user (no passwordHash, no entraOid)
+export type SafeUser = Omit<User, 'passwordHash' | 'entraOid'>;
 
 // Answer-stripped training — what a learner receives (no correctIndex on questions).
 // Returned by GET /api/trainings (non-owners), GET /api/trainings/:id, and inside /mine.
@@ -331,13 +342,13 @@ async function readStore<T>(file: 'users' | 'roles' | 'trainings' | 'sessions'):
 async function writeStore<T>(file: 'users' | 'roles' | 'trainings' | 'sessions', data: T[]): Promise<void>
  
 // Single-object helpers for settings.json (not an array):
-async function readSettings(): Promise<Settings>            // auto-inits to { passThreshold: 0.8 }
+async function readSettings(): Promise<Settings>            // auto-inits passThreshold 0.8 + disabled entra defaults
 async function writeSettings(data: Settings): Promise<void>
 ```
  
 - Array files stored at `backend/src/data/*.json` (`users`, `roles`, `trainings`, `sessions`)
 - `settings.json` holds a single `Settings` object, not an array
-- Auto-initialize with `[]` (arrays) or `{ passThreshold: 0.8 }` (settings) if the file doesn't exist
+- Auto-initialize with `[]` (arrays) or the default `Settings` (`passThreshold: 0.8` + disabled `entra`) if the file doesn't exist; the shallow merge backfills new fields onto older settings files
 - Parse/stringify with 2-space indentation
 ### Auth Routes (`/api/auth`)
  
@@ -345,13 +356,36 @@ async function writeSettings(data: Settings): Promise<void>
 |---|---|---|---|
 | POST | `/login` | `{ email, password }` | `{ token, user: SafeUser }` |
 | GET | `/me` | — (auth) | `SafeUser` for the current token — used to rehydrate the user after a page refresh |
+| GET | `/sso/config` | — (public) | `{ enabled: false }`, or `{ enabled: true, clientId, authority }` when Entra SSO is on. The login page reads this **before** authenticating to decide whether to show the Microsoft button and how to init MSAL |
+| POST | `/sso/entra` | `{ idToken }` | Exchange a Microsoft Entra **ID token** (obtained in the browser via MSAL) for our own app JWT. Returns `{ token, user: SafeUser }` — same shape as `/login`. `503` if SSO is disabled, `401` if the token is invalid, `403` if the email's domain is not allowed, `409` if the email is already linked to a different Microsoft account |
  
 - There is **no public `/register`** — admins create users via `POST /api/users` (below).
 - Hash passwords with `bcryptjs` (salt rounds: 10)
 - Sign JWT with `JWT_SECRET` env var (default `braingain-secret`)
 - Token payload: `{ id, email, isAdmin, isTrainer }`
 - Token expiry: `7d`
-- A shared `toSafeUser()` helper strips `passwordHash` before any user is returned.
+- A shared `toSafeUser()` helper strips `passwordHash` and `entraOid` before any user is returned.
+
+#### Microsoft Entra ID (Azure AD) SSO
+
+SSO is **optional and admin-configured** (see the Settings page) — when off, the app behaves exactly as a
+password-only app. The flow reuses the existing JWT session end-to-end:
+
+1. The browser signs in with **MSAL.js** (`@azure/msal-browser`, popup flow) and obtains an Entra **ID token**.
+2. It POSTs the ID token to `POST /api/auth/sso/entra`.
+3. The backend (`services/entra.ts`) **validates** the token against Microsoft's public keys via `jwks-rsa` +
+   `jsonwebtoken`: RS256 signature, `aud` = client ID, `iss` = `https://login.microsoftonline.com/{tenant}/v2.0`,
+   `tid` = tenant ID, expiry (5-min clock tolerance). It extracts `oid`, `email`/`preferred_username`, `name`.
+4. **User resolution (domain-restricted auto-provision):** match a local user by `entraOid`, else by email
+   (linking `entraOid` to the existing user — roles/admin flags are never changed). If no match and the email
+   domain is in `Settings.entra.allowedDomains`, auto-create a **member-level** user (no password); otherwise
+   reject. An empty allow-list means SSO only works for users that already exist.
+5. The backend issues the same app JWT via `signToken(...)`, so the axios interceptor, router guard, `/me`, and
+   all `require*` guards are unchanged. No client secret is used (ID-token validation only), which is why the
+   config can safely live in admin-editable `Settings`.
+
+**Azure app registration:** platform **Single-page application (SPA)**, redirect URI = the app origin (e.g.
+`http://localhost:5173`), single-tenant, delegated permissions **openid / profile / email**.
 ### Users Routes (`/api/users`) — Admin only
  
 | Method | Path | Body | Description |
@@ -438,8 +472,8 @@ A user "needs" a training if any of their `roleIds` maps to a `JobRole` whose `t
  
 | Method | Path | Body | Description |
 |---|---|---|---|
-| GET | `/` | — | Any authenticated user — read `{ passThreshold }` (client needs it to display the pass bar) |
-| PUT | `/` | `{ passThreshold }` | **Admin only** — update the global threshold applied to all trainings at once |
+| GET | `/` | — | Any authenticated user — read the full `Settings` (`passThreshold` + `entra`). SSO fields are not secrets |
+| PUT | `/` | `{ passThreshold?, entra? }` | **Admin only** — **partial merge**: only the fields present are updated, so saving SSO config and the pass threshold are independent. `entra` is sanitized (booleans coerced, ids trimmed, `allowedDomains` accepts an array or a comma-separated string) |
  
 ### Auth Middleware
  
@@ -536,6 +570,11 @@ Design an SVG icon showing a **stylized brain** with an **upward trend arrow** g
 - Soft drop shadow, rounded card (`border-radius: 24px`)
 - No registration form needed (admin creates users)
 - On success: `router.push('/dashboard')`
+- **"Sign in with Microsoft" button (Entra ID SSO):** on mount, fetch `GET /api/auth/sso/config`; only when
+  `enabled` is the button shown (below an "or" divider). Clicking it opens the MSAL popup
+  (`auth/msal.ts` → `signInWithEntra`), then calls `authStore.loginWithEntra(idToken)` and redirects to
+  `/dashboard`. Backend errors (401/403/503) surface in the same error line as password login; a cancelled
+  popup is ignored. The password form and demo accounts remain.
 #### `DashboardPage.vue` — "My Trainings"
  
 - Greeting: `"Good morning, [Name] 🌱"` (computed from `authStore.user.name`)
@@ -628,9 +667,14 @@ Route `/session/:trainingId`, auth required. A 3-step flow:
 - Save / Delete buttons
 #### `SettingsPage.vue` — Admin
  
-- Single setting: the global **pass threshold** for all trainings, shown as a percentage
-- Slider or number input (range 50–100%), bound to `passThreshold` (stored as a 0–1 fraction)
-- "Save" calls `PUT /api/settings`; a toast confirms the change applies to every training at once
+- **Pass threshold card:** the global **pass threshold** for all trainings, shown as a percentage. Slider or
+  number input (range 50–100%), bound to `passThreshold` (stored as a 0–1 fraction). "Save" calls
+  `PUT /api/settings { passThreshold }`; a toast confirms the change applies to every training at once.
+- **Microsoft Entra ID (SSO) card:** admin-editable SSO config — an **Enabled** toggle plus **Directory
+  (tenant) ID**, **Application (client) ID**, and **Allowed email domains** (comma-separated). Shows the SPA
+  redirect URI to register (the app origin). Its own "Save" calls `PUT /api/settings { entra }` (independent of
+  the threshold via the partial-merge PUT). This is the single source of truth that drives both the login-page
+  button (`/auth/sso/config`) and backend token validation.
 - `meta: { requiresAdmin: true }`
 ### Admin Guard — Three Layers of Enforcement
  
@@ -700,6 +744,8 @@ resolve role names), `GET /api/settings`, and the `/api/sessions` endpoints for 
 | `POST /api/sessions/grade`, `GET /api/sessions/mine` | ✅ own | ✅ own | ✅ own |
 | `GET /api/settings` | ✅ Read | ✅ Read | ✅ Read |
 | `PUT /api/settings` | ❌ 403 | ❌ 403 | ✅ |
+| `GET /api/auth/sso/config` | ✅ Public (pre-login) | ✅ | ✅ |
+| `POST /api/auth/sso/entra` | ✅ Public (pre-login) | ✅ | ✅ |
 | `GET /api/auth/me` | ✅ Own profile | ✅ | ✅ |
  
  
@@ -830,7 +876,8 @@ so `uuid`/`dotenv` are not needed.
     "express": "^4.19",
     "cors": "^2.8",
     "bcryptjs": "^2.4",
-    "jsonwebtoken": "^9.0"
+    "jsonwebtoken": "^9.0",
+    "jwks-rsa": "^4.0"
   },
   "devDependencies": {
     "typescript": "^5.4",
@@ -862,7 +909,8 @@ npm run dev
     "vue-router": "^4.3",
     "pinia": "^2.1",
     "axios": "^1.7",
-    "lucide-vue-next": "^0.400.0"
+    "lucide-vue-next": "^0.400.0",
+    "@azure/msal-browser": "^5.11"
   },
   "devDependencies": {
     "typescript": "^5.4",
@@ -995,5 +1043,5 @@ without any ESM configuration:
  
 ## Deliverable
  
-Generate the complete source code for all files listed in the project structure above. Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login; view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
+Generate the complete source code for all files listed in the project structure above. Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login with email/password or **Microsoft Entra ID SSO** (when an admin has enabled it in Settings); view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
  

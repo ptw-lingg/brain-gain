@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { Loader2 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
+import client from '@/api/client';
+import { signInWithEntra, type EntraConfig } from '@/auth/msal';
 import BrainGainLogo from '@/components/BrainGainLogo.vue';
 
 const auth = useAuthStore();
@@ -13,6 +15,53 @@ const email = ref('admin@braingain.app');
 const password = ref('admin123');
 const loading = ref(false);
 const error = ref('');
+
+// Microsoft Entra ID SSO — config is fetched at runtime; the button only shows when enabled.
+const ssoEnabled = ref(false);
+const ssoConfig = ref<EntraConfig | null>(null);
+const ssoLoading = ref(false);
+
+onMounted(async () => {
+  try {
+    const { data } = await client.get<{ enabled: boolean; clientId?: string; authority?: string }>(
+      '/auth/sso/config',
+    );
+    if (data.enabled && data.clientId && data.authority) {
+      ssoConfig.value = { clientId: data.clientId, authority: data.authority };
+      ssoEnabled.value = true;
+    }
+  } catch {
+    // No SSO config available → leave the button hidden.
+  }
+});
+
+/** True when MSAL reports the user closed/cancelled the popup — not a real error. */
+function isUserCancellation(e: unknown): boolean {
+  const code = (e as { errorCode?: unknown })?.errorCode;
+  return (
+    typeof code === 'string' &&
+    ['user_cancelled', 'popup_window_error', 'interaction_in_progress'].includes(code)
+  );
+}
+
+async function loginWithMicrosoft(): Promise<void> {
+  if (!ssoConfig.value) return;
+  error.value = '';
+  ssoLoading.value = true;
+  try {
+    const idToken = await signInWithEntra(ssoConfig.value);
+    await auth.loginWithEntra(idToken);
+    router.push('/dashboard');
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e)) {
+      error.value = e.response?.data?.error ?? 'Microsoft sign-in failed';
+    } else if (!isUserCancellation(e)) {
+      error.value = 'Microsoft sign-in failed';
+    }
+  } finally {
+    ssoLoading.value = false;
+  }
+}
 
 const demos = [
   { label: 'Admin', email: 'admin@braingain.app', password: 'admin123' },
@@ -77,6 +126,29 @@ async function submit(): Promise<void> {
           {{ loading ? 'Signing in…' : 'Sign in' }}
         </button>
       </form>
+
+      <template v-if="ssoEnabled">
+        <div class="my-5 flex items-center gap-3">
+          <div class="h-px flex-1 bg-line" />
+          <span class="font-mono text-[10px] uppercase tracking-wider text-ink-light">or</span>
+          <div class="h-px flex-1 bg-line" />
+        </div>
+        <button
+          type="button"
+          class="btn-ghost w-full"
+          :disabled="ssoLoading"
+          @click="loginWithMicrosoft"
+        >
+          <Loader2 v-if="ssoLoading" class="h-4 w-4 animate-spin" />
+          <svg v-else viewBox="0 0 21 21" class="h-4 w-4" aria-hidden="true">
+            <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+            <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+            <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+            <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+          </svg>
+          {{ ssoLoading ? 'Signing in…' : 'Sign in with Microsoft' }}
+        </button>
+      </template>
 
       <div class="mt-6 border-t border-line pt-4">
         <p class="text-center font-mono text-[10px] uppercase tracking-wider text-ink-light">

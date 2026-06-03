@@ -1,3 +1,9 @@
 {
-  "passThreshold": 0.8
+  "passThreshold": 0.8,
+  "entra": {
+    "enabled": false,
+    "tenantId": "",
+    "clientId": "",
+    "allowedDomains": []
+  }
 }

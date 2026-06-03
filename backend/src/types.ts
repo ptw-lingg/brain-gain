@@ -38,11 +38,12 @@ export interface JobRole {
 export interface User {
   id: string;
   email: string;
-  passwordHash: string; // bcrypt hash (never sent to frontend)
+  passwordHash?: string; // bcrypt hash (never sent to frontend); absent for SSO-only users
   name: string;
   roleIds: string[];
   isAdmin: boolean;
   isTrainer: boolean;
+  entraOid?: string; // Microsoft Entra ID object id, set when an account is linked via SSO
   createdAt: string;
 }
 
@@ -55,11 +56,21 @@ export interface TrainingSession {
   scorePct: number; // 0–1, fraction correct (>= passThreshold)
 }
 
-export interface Settings {
-  passThreshold: number; // 0–1, default 0.8
+// Microsoft Entra ID (Azure AD) single sign-on configuration — admin-editable via Settings.
+// Holds no secrets: this flow validates ID tokens only (no client secret / auth-code exchange).
+export interface EntraSsoSettings {
+  enabled: boolean;
+  tenantId: string; // Directory (tenant) ID
+  clientId: string; // Application (client) ID
+  allowedDomains: string[]; // email domains permitted to auto-provision a new member
 }
 
-export type SafeUser = Omit<User, 'passwordHash'>;
+export interface Settings {
+  passThreshold: number; // 0–1, default 0.8
+  entra: EntraSsoSettings;
+}
+
+export type SafeUser = Omit<User, 'passwordHash' | 'entraOid'>;
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
 

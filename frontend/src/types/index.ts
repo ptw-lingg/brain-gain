@@ -51,8 +51,16 @@ export interface TrainingSession {
   scorePct: number;
 }
 
+export interface EntraSsoSettings {
+  enabled: boolean;
+  tenantId: string;
+  clientId: string;
+  allowedDomains: string[];
+}
+
 export interface Settings {
   passThreshold: number;
+  entra: EntraSsoSettings;
 }
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
