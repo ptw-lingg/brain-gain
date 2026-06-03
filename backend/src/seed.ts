@@ -47,6 +47,7 @@ export async function seed(): Promise<void> {
     cycleYears: 1,
     windowBeforeMonths: 2,
     windowAfterMonths: 1,
+    order: 0,
     materialLinks: [
       {
         label: 'Lab Safety Handbook (OneDrive)',
@@ -90,6 +91,7 @@ export async function seed(): Promise<void> {
     cycleYears: 3,
     windowBeforeMonths: 3,
     windowAfterMonths: 3,
+    order: 1,
     materialLinks: [
       { label: 'QM Handbook (OneDrive)', url: 'https://onedrive.live.com/?id=demo-qm-handbook' },
     ],

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { ChevronDown, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { ChevronDown, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
@@ -30,6 +30,7 @@ function blankTraining(): Training {
     cycleYears: 1,
     windowBeforeMonths: 3,
     windowAfterMonths: 3,
+    order: 0,
     materialLinks: [],
     questions: [],
     createdAt: '',
@@ -132,6 +133,43 @@ async function remove(id: string): Promise<void> {
   }
 }
 
+// --- Drag-and-drop reordering (admin only) ---
+// `dragEnabled` is flipped on by the grip handle's mousedown so the row only
+// becomes draggable when grabbed by the handle (not when clicked to expand).
+const dragEnabled = ref(false);
+const dragIndex = ref<number | null>(null);
+
+function onDragStart(i: number): void {
+  dragIndex.value = i;
+  cancel(); // collapse any open editor so indexes stay stable while dragging
+}
+
+function onDragOver(i: number): void {
+  if (dragIndex.value === null || dragIndex.value === i) return;
+  const list = trainings.value;
+  const [moved] = list.splice(dragIndex.value, 1);
+  list.splice(i, 0, moved);
+  dragIndex.value = i; // follow the item to its new slot
+}
+
+function onDragEnd(): void {
+  dragEnabled.value = false;
+  dragIndex.value = null;
+}
+
+async function persistOrder(): Promise<void> {
+  const moved = dragIndex.value !== null;
+  onDragEnd();
+  if (!moved) return;
+  try {
+    await client.put('/trainings/reorder', { ids: trainings.value.map((t) => t.id) });
+    toast.success('Order saved');
+  } catch {
+    toast.error('Could not save order');
+    await load(); // restore the server's order on failure
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -141,7 +179,7 @@ onMounted(load);
       <div>
         <h1 class="page-title">Trainings</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // {{ isAdmin ? 'all trainings' : 'trainings you own' }} · {{ trainings.length }}
+          // {{ isAdmin ? 'all trainings' : 'trainings you own' }} · {{ trainings.length }}<span v-if="isAdmin"> · drag to reorder</span>
         </p>
       </div>
       <button class="btn-primary" @click="startCreate"><Plus class="h-4 w-4" /> Add Training</button>
@@ -174,12 +212,33 @@ onMounted(load);
     </div>
 
     <div v-else class="mt-6 flex flex-col gap-3">
-      <div v-for="t in trainings" :key="t.id" class="card overflow-hidden">
+      <div
+        v-for="(t, i) in trainings"
+        :key="t.id"
+        class="card overflow-hidden transition"
+        :class="dragIndex === i ? 'opacity-50 ring-2 ring-accent/50' : ''"
+        :draggable="isAdmin && dragEnabled"
+        @dragstart="onDragStart(i)"
+        @dragover.prevent="onDragOver(i)"
+        @drop="persistOrder"
+        @dragend="onDragEnd"
+      >
         <!-- Row -->
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
           @click="expandedId === t.id ? cancel() : startEdit(t)"
         >
+          <button
+            v-if="isAdmin"
+            type="button"
+            title="Drag to reorder"
+            class="-ml-1 shrink-0 cursor-grab touch-none text-ink-light transition hover:text-ink active:cursor-grabbing"
+            @click.stop
+            @mousedown="dragEnabled = true"
+            @mouseup="dragEnabled = false"
+          >
+            <GripVertical class="h-4 w-4" />
+          </button>
           <div class="min-w-0 flex-1">
             <div class="font-sans text-sm font-semibold text-ink">{{ t.name }}</div>
             <div class="truncate font-mono text-xs text-ink-light">{{ t.description }}</div>

@@ -251,6 +251,7 @@ export interface Training {
   cycleYears: number;       // 1–5: how often a user must repeat the session
   windowBeforeMonths: number;  // 0–3: how many months BEFORE the due date the window opens (set by trainer)
   windowAfterMonths: number;   // 0–3: grace months AFTER the due date before it counts as overdue (set by trainer)
+  order: number;            // admin-defined global display order (ascending); respected by every view
   materialLinks: MaterialLink[];   // links to OneDrive office documents
   questions: Question[];           // multiple-choice quiz for this training
   createdAt: string;
@@ -376,17 +377,24 @@ Create/update body: `{ name, description, durationHours, category, cycleYears, w
  
 | Method | Path | Body | Description |
 |---|---|---|---|
-| GET | `/` | — | List trainings. Admins see all; trainers may pass `?mine=1` to list only the trainings they own. Answer keys (`correctIndex`) are stripped for anyone who is not the owner/admin |
+| GET | `/` | — | List trainings, **sorted by `order` ascending**. Admins see all; trainers may pass `?mine=1` to list only the trainings they own. Answer keys (`correctIndex`) are stripped for anyone who is not the owner/admin |
+| PUT | `/reorder` | `{ ids: string[] }` | **Admin only.** Set the global display order — each training's `order` becomes its position in the supplied id array. Registered **before** `/:id`. Returns the full list sorted by the new order |
 | GET | `/mine` | — | The **current user's required trainings** (derived via their job roles → trainingIds, deduped) each wrapped with its computed due status. Powers the My Trainings dashboard. Returns `DueTraining[]` (see shape below) |
 | GET | `/trainees` | — | **Admin or trainer.** For each training (admin: all; trainer: only owned), the users who must do it — derived via job roles → trainingIds — each with their computed due status. See shape below |
 | GET | `/:id` | — | Single training, answer key stripped for non-owners (used by the session quiz) |
-| POST | `/` | create body | Create training. **Admin or trainer.** A trainer's new training gets `ownerId = req.user.id`; an admin may set any `ownerId` |
-| PUT | `/:id` | create body | Update training. **Admin or the owning trainer only** (`requireAdminOrOwner`). Only admins may change `ownerId` |
+| POST | `/` | create body | Create training. **Admin or trainer.** A trainer's new training gets `ownerId = req.user.id`; an admin may set any `ownerId`. New trainings are appended to the end of the order (`order = max(order) + 1`) |
+| PUT | `/:id` | create body | Update training. **Admin or the owning trainer only** (`requireAdminOrOwner`). Only admins may change `ownerId`. `order` is **not** mutated here — it is managed only via `PUT /reorder` |
 | DELETE | `/:id` | — | Delete training. **Admin or the owning trainer only** |
  
-> Route order matters: the literal paths `/mine` and `/trainees` are registered **before** the `/:id` param route.
+> Route order matters: the literal paths `/mine`, `/trainees`, and `/reorder` are registered **before** the `/:id`
+> param route (otherwise `"reorder"` is captured as an id).
 > Due-status logic lives in one place — `services/due.ts` `computeDue()` — and is reused by both `/mine` and
 > `/trainees`, so the dashboard and the trainer view never drift apart.
+>
+> **Ordering is the single source of truth across every view.** `GET /`, `/mine`, and `/trainees` all return
+> trainings sorted by `order`, so the dashboard, the trainings admin, the trainees view, and the role editor's
+> training list stay consistently ordered. A shared read helper backfills `order` for any legacy record missing it
+> (by current file position) and persists it once, so `order` becomes authoritative from then on.
  
 `GET /api/trainings/mine` response shape:
 ```typescript
@@ -454,8 +462,8 @@ A user "needs" a training if any of their `roleIds` maps to a `JobRole` whose `t
 | `user@braingain.app` | `user123` | member, holds the "Lab Technician" role |
 
 - Role **Lab Technician** requires both seeded trainings.
-- Trainings **"Laboratory Safety Basics"** (`cycleYears: 1`) and **"Quality Management Intro"** (`cycleYears: 3`),
-  each owned by the trainer, with `materialLinks` (OneDrive URLs) and 2–3 `questions`.
+- Trainings **"Laboratory Safety Basics"** (`cycleYears: 1`, `order: 0`) and **"Quality Management Intro"**
+  (`cycleYears: 3`, `order: 1`), each owned by the trainer, with `materialLinks` (OneDrive URLs) and 2–3 `questions`.
 - `settings.json` seeded with `{ passThreshold: 0.8 }`.
  
 Seed `settings.json` with `{ passThreshold: 0.8 }`.
@@ -582,6 +590,13 @@ Route `/session/:trainingId`, auth required. A 3-step flow:
 - Click row to expand and edit; "Save" / "Cancel" buttons appear
 - Delete with confirmation popover (use `v-if` toggle)
 - Soft row hover: pastel highlight
+- **Drag-and-drop reordering (admin only):** each row shows a grip handle (`GripVertical`) on the left. Admins drag
+  rows to set the global training order using native HTML5 drag events (no extra dependency). A `dragEnabled` flag is
+  flipped on the handle's `mousedown` so the row is only `:draggable` when grabbed by the handle — a normal click
+  still expands the editor. Rows reorder live during `dragover`; on `drop` the new id sequence is persisted via
+  `PUT /api/trainings/reorder` (toast on success; reload to restore the server order on failure). Trainers (who see
+  only their own filtered subset) do not get the handle. Because every view reads the server's `order`, dragging here
+  reorders the dashboard cards, the trainees groups, and the role editor's training list too.
 #### `TraineesPage.vue` — Admin / Trainer
  
 - Data: `GET /api/trainings/trainees` in `onMounted` → `TraineeGroup[]`. Trainers get only their owned trainings;
@@ -678,6 +693,7 @@ resolve role names), `GET /api/settings`, and the `/api/sessions` endpoints for 
 | `GET /api/trainings/trainees` | ❌ 403 | ✅ own trainings | ✅ all |
 | `POST /api/trainings` | ❌ 403 | ✅ (owns result) | ✅ |
 | `PUT/DELETE /api/trainings/:id` | ❌ 403 | ✅ own only | ✅ |
+| `PUT /api/trainings/reorder` | ❌ 403 | ❌ 403 | ✅ |
 | `GET /api/roles` | ✅ Read | ✅ Read | ✅ Read |
 | `POST/PUT/DELETE /api/roles` | ❌ 403 | ❌ 403 | ✅ |
 | `GET/PUT/DELETE /api/users` | ❌ 403 | ❌ 403 | ✅ |
@@ -979,5 +995,5 @@ without any ESM configuration:
  
 ## Deliverable
  
-Generate the complete source code for all files listed in the project structure above. Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login; view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities and edit the global pass threshold for all trainings at once.
+Generate the complete source code for all files listed in the project structure above. Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login; view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
  

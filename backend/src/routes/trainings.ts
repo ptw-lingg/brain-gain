@@ -14,6 +14,7 @@ import type {
 import { readStore, writeStore } from '../services/fileStore';
 import {
   authenticate,
+  requireAdmin,
   requireAdminOrOwner,
   requireTrainerOrAdmin,
   type AuthRequest,
@@ -68,6 +69,24 @@ function clamp(n: unknown, min: number, max: number, fallback: number): number {
   return Math.min(max, Math.max(min, Math.round(v)));
 }
 
+/**
+ * Read all trainings sorted by their explicit `order`. Legacy records written
+ * before ordering existed get backfilled (by current file position) and persisted,
+ * so the order field becomes the single source of truth from then on.
+ */
+async function readOrderedTrainings(): Promise<Training[]> {
+  const trainings = await readStore<Training>('trainings');
+  let changed = false;
+  trainings.forEach((t, i) => {
+    if (typeof t.order !== 'number' || !Number.isFinite(t.order)) {
+      t.order = i;
+      changed = true;
+    }
+  });
+  if (changed) await writeStore('trainings', trainings);
+  return [...trainings].sort((a, b) => a.order - b.order);
+}
+
 /** Trainings the given user is required to complete (via job roles), deduped. */
 async function requiredTrainingIds(userId: string): Promise<Set<string>> {
   const [users, roles] = await Promise.all([
@@ -85,7 +104,7 @@ async function requiredTrainingIds(userId: string): Promise<Set<string>> {
 
 // GET /api/trainings  (admin: all; trainer with ?mine=1: only owned)
 router.get('/', async (req: AuthRequest, res) => {
-  const trainings = await readStore<Training>('trainings');
+  const trainings = await readOrderedTrainings();
   const mine = req.query.mine === '1' || req.query.mine === 'true';
   const canSeeAnswers = (t: Training) => req.user?.isAdmin || t.ownerId === req.user?.id;
   let result = trainings;
@@ -99,7 +118,7 @@ router.get('/', async (req: AuthRequest, res) => {
 // GET /api/trainings/mine  — current user's required trainings + due status
 router.get('/mine', async (req: AuthRequest, res) => {
   const [trainings, sessions] = await Promise.all([
-    readStore<Training>('trainings'),
+    readOrderedTrainings(),
     readStore<TrainingSession>('sessions'),
   ]);
   const required = await requiredTrainingIds(req.user!.id);
@@ -115,7 +134,7 @@ router.get('/mine', async (req: AuthRequest, res) => {
 // GET /api/trainings/trainees  — who must do my (or all) trainings, grouped
 router.get('/trainees', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   const [trainings, roles, users, sessions] = await Promise.all([
-    readStore<Training>('trainings'),
+    readOrderedTrainings(),
     readStore<JobRole>('roles'),
     readStore<User>('users'),
     readStore<TrainingSession>('sessions'),
@@ -159,6 +178,12 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   }
   // Trainers always own what they create; admins may target any owner.
   const ownerId = req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : req.user!.id;
+  const trainings = await readStore<Training>('trainings');
+  // New trainings go to the end of the ordering.
+  const maxOrder = trainings.reduce(
+    (max, t) => (typeof t.order === 'number' && t.order > max ? t.order : max),
+    -1,
+  );
   const training: Training = {
     id: randomUUID(),
     name: b.name,
@@ -169,14 +194,32 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     cycleYears: clamp(b.cycleYears, 1, 5, 1),
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
     windowAfterMonths: clamp(b.windowAfterMonths, 0, 3, 3),
+    order: maxOrder + 1,
     materialLinks: sanitizeLinks(b.materialLinks),
     questions: sanitizeQuestions(b.questions),
     createdAt: new Date().toISOString(),
   };
-  const trainings = await readStore<Training>('trainings');
   trainings.push(training);
   await writeStore('trainings', trainings);
   return res.status(201).json(training);
+});
+
+// PUT /api/trainings/reorder  — admin sets the global display order
+// Must be registered before '/:id' so "reorder" isn't captured as an id.
+router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
+  const raw = (req.body ?? {}).ids;
+  const ids = Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : null;
+  if (!ids) return res.status(400).json({ error: 'ids must be an array of training ids' });
+  const trainings = await readStore<Training>('trainings');
+  const position = new Map(ids.map((id, i) => [id, i]));
+  // Any training not listed (e.g. created concurrently) is appended, keeping its relative order.
+  let tail = ids.length;
+  const reordered = trainings.map((t) => ({
+    ...t,
+    order: position.has(t.id) ? (position.get(t.id) as number) : tail++,
+  }));
+  await writeStore('trainings', reordered);
+  return res.json([...reordered].sort((a, b) => a.order - b.order));
 });
 
 // PUT /api/trainings/:id  — admin or owning trainer
@@ -196,6 +239,7 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     durationHours: b.durationHours != null ? Number(b.durationHours) || 0 : current.durationHours,
     category: typeof b.category === 'string' ? b.category : current.category,
     ownerId,
+    order: typeof current.order === 'number' ? current.order : idx, // managed only via reorder
     cycleYears: b.cycleYears != null ? clamp(b.cycleYears, 1, 5, current.cycleYears) : current.cycleYears,
     windowBeforeMonths:
       b.windowBeforeMonths != null

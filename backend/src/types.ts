@@ -22,6 +22,7 @@ export interface Training {
   cycleYears: number; // 1–5: how often a user must repeat the session
   windowBeforeMonths: number; // 0–3: months before the due date the window opens
   windowAfterMonths: number; // 0–3: grace months after the due date before overdue
+  order: number; // admin-defined display order across all views (ascending)
   materialLinks: MaterialLink[];
   questions: Question[];
   createdAt: string;

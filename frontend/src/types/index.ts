@@ -20,6 +20,7 @@ export interface Training {
   cycleYears: number;
   windowBeforeMonths: number;
   windowAfterMonths: number;
+  order: number;
   materialLinks: MaterialLink[];
   questions: Question[];
   createdAt: string;
