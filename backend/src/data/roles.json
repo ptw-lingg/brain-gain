@@ -3,24 +3,53 @@
     "id": "a2d004db-80d0-4e01-80aa-1a42a1ddc871",
     "name": "Change Manager RD",
     "description": "",
-    "trainingIds": []
+    "trainingIds": [
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61"
+    ]
   },
   {
     "id": "8a7c65c1-6382-4644-837a-63261d2ac256",
     "name": "Compliance Engineer",
     "description": "",
-    "trainingIds": []
+    "trainingIds": [
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "5c321dd7-d79f-4898-869c-62130f325d27",
+      "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+      "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+      "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61"
+    ]
   },
   {
     "id": "b7b099c1-8fec-4738-ac3d-4f32fdecc863",
     "name": "Design Transfer Lead",
     "description": "",
-    "trainingIds": []
+    "trainingIds": [
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61"
+    ]
   },
   {
     "id": "4fe912e3-d50a-4653-bea5-74b51c631293",
     "name": "Design Transfer Specialist",
     "description": "",
-    "trainingIds": []
+    "trainingIds": [
+      "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
+      "911c1823-0c2b-40a3-b525-1fe099182273",
+      "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+      "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+      "91e3c885-a123-4ed2-9574-ed5fa35787db",
+      "f039fa8a-2a02-4d1b-8481-1cab4d544e61"
+    ]
   }
 ]

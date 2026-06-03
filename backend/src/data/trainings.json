@@ -1,109 +1,10 @@
 [
   {
-    "id": "33ef3bf0-ec51-4108-a12e-f047e70aa78e",
-    "name": "Laboratory Safety Basics",
-    "description": "Core safety procedures for working in the dosimetry lab.",
-    "durationHours": 2,
-    "category": "Safety",
-    "ownerId": "0ed039f8-bc69-4957-b494-4e6eeef00bb8",
-    "cycleYears": 1,
-    "windowBeforeMonths": 2,
-    "windowAfterMonths": 1,
-    "materialLinks": [
-      {
-        "label": "Lab Safety Handbook (OneDrive)",
-        "url": "https://onedrive.live.com/?id=demo-safety-handbook"
-      },
-      {
-        "label": "Emergency Procedures (OneDrive)",
-        "url": "https://onedrive.live.com/?id=demo-emergency"
-      }
-    ],
-    "questions": [
-      {
-        "id": "23087a7f-6fe9-47cb-8815-114fee114886",
-        "text": "What should you do first in case of a chemical spill?",
-        "options": [
-          "Ignore it",
-          "Alert others and contain the area",
-          "Take a photo",
-          "Leave the building"
-        ],
-        "correctIndex": 1
-      },
-      {
-        "id": "6dea7a53-fe52-4659-b3b0-315af27e71cf",
-        "text": "Where is personal protective equipment (PPE) stored?",
-        "options": [
-          "At home",
-          "In the designated PPE cabinet",
-          "Anywhere convenient",
-          "It is optional"
-        ],
-        "correctIndex": 1
-      },
-      {
-        "id": "2b8bccd5-3e99-4ab3-a7ec-80ade69df98f",
-        "text": "How often must this training be repeated?",
-        "options": [
-          "Never",
-          "Every month",
-          "Every year",
-          "Every 10 years"
-        ],
-        "correctIndex": 2
-      }
-    ],
-    "createdAt": "2026-06-02T14:20:54.398Z"
-  },
-  {
-    "id": "654b0a9b-ee67-40c8-b06b-29bdf69e026c",
-    "name": "Quality Management Intro",
-    "description": "Introduction to ISO quality processes used across the company.",
-    "durationHours": 3,
-    "category": "Compliance",
-    "ownerId": "0ed039f8-bc69-4957-b494-4e6eeef00bb8",
-    "cycleYears": 3,
-    "windowBeforeMonths": 3,
-    "windowAfterMonths": 3,
-    "materialLinks": [
-      {
-        "label": "QM Handbook (OneDrive)",
-        "url": "https://onedrive.live.com/?id=demo-qm-handbook"
-      }
-    ],
-    "questions": [
-      {
-        "id": "7c08481f-7f5c-4f42-8c32-46f791a4799a",
-        "text": "What does ISO 9001 primarily address?",
-        "options": [
-          "Quality management systems",
-          "Environmental policy",
-          "IT security",
-          "Payroll"
-        ],
-        "correctIndex": 0
-      },
-      {
-        "id": "741e0cda-d4fd-4ebb-a502-caf67ded7b8c",
-        "text": "Who is responsible for quality?",
-        "options": [
-          "Only managers",
-          "Only auditors",
-          "Everyone",
-          "No one"
-        ],
-        "correctIndex": 2
-      }
-    ],
-    "createdAt": "2026-06-02T14:20:54.398Z"
-  },
-  {
     "id": "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
     "name": "SOP-10.00 Product Life Cycle",
     "description": "",
     "durationHours": 1,
-    "category": "Development",
+    "category": "Product Life Cycle",
     "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
     "cycleYears": 1,
     "windowBeforeMonths": 1,
@@ -111,5 +12,271 @@
     "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T14:32:18.157Z"
+  },
+  {
+    "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
+    "name": "SOP-10.01 Design and Development Planning",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T14:55:48.130Z"
+  },
+  {
+    "id": "5c321dd7-d79f-4898-869c-62130f325d27",
+    "name": "SOP-10.02 Design Input",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T14:58:30.564Z"
+  },
+  {
+    "id": "911c1823-0c2b-40a3-b525-1fe099182273",
+    "name": "SOP-10.03 Design Output",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T14:58:59.018Z"
+  },
+  {
+    "id": "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
+    "name": "SOP-10.04 Design Verification and Validation",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T14:59:40.488Z"
+  },
+  {
+    "id": "90d2e37b-b87e-4ea2-8ee4-300b03473403",
+    "name": "SOP-10.05 Design Transfer",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:03.809Z"
+  },
+  {
+    "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
+    "name": "SOP-10.06 Post-Market Surveillance",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:19.047Z"
+  },
+  {
+    "id": "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
+    "name": "SOP-10.07 Risk Management",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:30.086Z"
+  },
+  {
+    "id": "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
+    "name": "SOP-10.08 Usability Engineering",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:37.823Z"
+  },
+  {
+    "id": "7785e467-1b57-4197-884b-504513e018b1",
+    "name": "SOP-10.09 Clinical Evaluation",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:44.810Z"
+  },
+  {
+    "id": "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
+    "name": "SOP-10.10 Document Review and Approval",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:00:54.318Z"
+  },
+  {
+    "id": "efde2ac6-d99d-426b-baea-b340854099c2",
+    "name": "SOP-10.11 Software Development Life Cycle",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:01:04.539Z"
+  },
+  {
+    "id": "91e3c885-a123-4ed2-9574-ed5fa35787db",
+    "name": "SOP-10.12 Change Management",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:01:13.746Z"
+  },
+  {
+    "id": "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
+    "name": "SOP-10.13 Product Registration and Change Notification",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:01:30.301Z"
+  },
+  {
+    "id": "647aae31-ae8a-4479-9850-d4b182ab4c8c",
+    "name": "SOP-10.14 Administration of Standards",
+    "description": "",
+    "durationHours": 1,
+    "category": "Product Life Cycle",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:01:43.944Z"
+  },
+  {
+    "id": "e5aeabac-56a6-4b80-ab71-9e770f9df9bd",
+    "name": "SOP-20.01 Lieferantenmanagement",
+    "description": "",
+    "durationHours": 1,
+    "category": "General",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:01:54.769Z"
+  },
+  {
+    "id": "1ff7533e-c176-422c-9234-dbdcec2259e6",
+    "name": "SOP-21.01 Lenkung von Dokumenten und Aufzeichnungen",
+    "description": "",
+    "durationHours": 1,
+    "category": "General",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:02:04.521Z"
+  },
+  {
+    "id": "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
+    "name": "SOP-21.07 Validierung Qualitätsrelevanter Software",
+    "description": "",
+    "durationHours": 1,
+    "category": "General",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:02:15.054Z"
+  },
+  {
+    "id": "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
+    "name": "AA Good Documentation Practice: Handschriftliche Aufzeichnungen",
+    "description": "",
+    "durationHours": 1,
+    "category": "General",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:02:32.297Z"
+  },
+  {
+    "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",
+    "name": "SOP-22.02 Wartung-, Instandhaltung- und Beauftragung-Prozess",
+    "description": "",
+    "durationHours": 1,
+    "category": "General",
+    "ownerId": "999ef61e-287e-4e48-a00b-555278c19592",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "materialLinks": [],
+    "questions": [],
+    "createdAt": "2026-06-02T15:02:46.793Z"
   }
 ]
