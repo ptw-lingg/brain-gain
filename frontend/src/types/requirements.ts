@@ -2,7 +2,8 @@
 // frontend/src/data/requirements.generated.json). Mirrors requirements/schema/requirements.schema.json.
 
 export type RequirementType = 'stakeholder' | 'system';
-export type LinkType = 'derivedFrom' | 'relatedTo' | 'supersedes';
+export type LinkType = 'derivedFrom' | 'relatedTo' | 'supersedes' | 'validates';
+export type TestType = 'acceptance' | 'usability' | 'accessibility';
 
 export interface EnumItem {
   id: string;
@@ -50,10 +51,30 @@ export interface Requirement {
   specRefs?: SpecRef[];
 }
 
+export interface TestCase {
+  id: string;
+  testType: TestType;
+  title: string;
+  method: string;
+  preconditions?: string;
+  links: RequirementLink[]; // type: 'validates' → stakeholder requirement id
+  steps: string[];
+  expected: string;
+  metric?: string;
+}
+
 export interface RequirementsDoc {
   meta: { project: string; version: string; updated: string; specDoc?: string; description?: string };
-  enums: { priority: EnumItem[]; source: EnumItem[]; status: EnumItem[]; linkType: LinkTypeItem[] };
+  enums: {
+    priority: EnumItem[];
+    source: EnumItem[];
+    status: EnumItem[];
+    linkType: LinkTypeItem[];
+    testType?: EnumItem[];
+    method?: EnumItem[];
+  };
   actors: Actor[];
   outOfScope?: { id: string; text: string }[];
   requirements: Requirement[];
+  tests: TestCase[];
 }

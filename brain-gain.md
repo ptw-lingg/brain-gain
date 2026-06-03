@@ -169,7 +169,8 @@ braingain/
 │   ├── README.md              # the model + maintenance workflow
 │   ├── stakeholder-requirements.md   # GENERATED view — SR-… : what stakeholders need & why
 │   ├── system-requirements.md        # GENERATED view — SYS-… : how the system behaves (traced to SR)
-│   └── traceability-matrix.md        # GENERATED view — SR ⇄ SYS ⇄ implementing code
+│   ├── traceability-matrix.md        # GENERATED view — SR ⇄ SYS ⇄ implementing code
+│   └── validation-plan.md            # GENERATED view — VT-… : validation tests (acceptance/usability/accessibility) per SR
 ├── backend/
 │   ├── src/
 │   │   ├── index.ts            # Express app entry point + error handler
@@ -1065,10 +1066,10 @@ with every change**. Requirements are stored as machine-readable data, not prose
 
 | File | Role |
 |---|---|
-| `requirements/requirements.json` | **Single source of truth.** Typed requirement objects (`SR-…` stakeholder, `SYS-…` system) with stable ids, typed `links` (`derivedFrom`), `implementedBy` (`path · symbol`), `verifiedBy`, `specRefs`, plus actors/enums/out-of-scope. |
+| `requirements/requirements.json` | **Single source of truth.** Typed requirement objects (`SR-…` stakeholder, `SYS-…` system) with stable ids and typed `links` (`derivedFrom`), `implementedBy`, `verifiedBy`, `specRefs`; **validation tests** (`VT-…`, `validates` an `SR-…`, with `testType` acceptance/usability/accessibility, steps, expected, metric); plus actors/enums/out-of-scope. |
 | `requirements/schema/requirements.schema.json` | JSON Schema (draft 2020-12) — the formal contract; `requirements.json` references it via `$schema`. |
 | `requirements/tools/build.mjs` | Validator + generator (plain Node, no deps). Validates integrity and regenerates the views below. |
-| `requirements/{stakeholder-requirements,system-requirements,traceability-matrix}.md` | **Generated** human-readable views. |
+| `requirements/{stakeholder-requirements,system-requirements,traceability-matrix,validation-plan}.md` | **Generated** human-readable views (incl. the validation test plan). |
 | `frontend/src/data/requirements.generated.json` | **Generated** copy imported by the in-app viewer. |
 | `frontend/src/pages/RequirementsPage.vue` | Admin `/requirements` page — browse, filter, and click `SR ⇄ SYS ⇄ code` traces both ways. |
 
@@ -1080,15 +1081,18 @@ with every change**. Requirements are stored as machine-readable data, not prose
 2. **Edit `requirements/requirements.json`** in the same change:
    - Add/modify the affected `SYS-…` object — its `links` (`derivedFrom` an `SR-…`), `implementedBy`,
      `verifiedBy` — and a new `SR-…` object only for a genuinely new stakeholder need.
-   - **Keep IDs stable** — never renumber. Add new ids (e.g. `SR-110`, `SYS-TRN-10`) and mark superseded ones
-     (`status: "superseded"`) rather than reusing numbers.
+   - Add/modify a **validation test** (`VT-…`) that `validates` the affected `SR-…` — including a usability or
+     accessibility test where the change touches UX. Every stakeholder requirement must stay validated.
+   - **Keep IDs stable** — never renumber. Add new ids (e.g. `SR-110`, `SYS-TRN-10`, `VT-110`) and mark
+     superseded ones (`status: "superseded"`) rather than reusing numbers.
 3. **Run the generator** to validate and refresh every generated artifact:
    ```
    node requirements/tools/build.mjs            # validate + regenerate views + the app data copy
    node requirements/tools/build.mjs --check     # validate + fail on drift (CI / pre-commit)
    ```
    It enforces: unique ids, id patterns, enum membership, all link targets resolve, every `SYS-…` has a
-   `derivedFrom` + `implementedBy`, and every `SR-…` is covered by ≥1 `SYS-…` — so nothing is orphaned.
+   `derivedFrom` + `implementedBy`, every `SR-…` is covered by ≥1 `SYS-…`, and **every `SR-…` has ≥1
+   validation test (`VT-…`)** — so nothing is orphaned or unvalidated.
 4. **Commit** `requirements.json` together with the regenerated files.
 
 When (re)generating the project from this prompt, **generate the `requirements/` dataset (and its schema,

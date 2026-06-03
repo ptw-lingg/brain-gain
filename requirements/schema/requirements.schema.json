@@ -4,7 +4,7 @@
   "title": "BrainGain Requirements",
   "description": "Schema for requirements.json — the canonical, linkable, traceable requirements dataset.",
   "type": "object",
-  "required": ["meta", "enums", "actors", "requirements"],
+  "required": ["meta", "enums", "actors", "requirements", "tests"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
@@ -28,6 +28,8 @@
         "priority": { "$ref": "#/$defs/enumList" },
         "source": { "$ref": "#/$defs/enumList" },
         "status": { "$ref": "#/$defs/enumList" },
+        "testType": { "$ref": "#/$defs/enumList" },
+        "method": { "$ref": "#/$defs/enumList" },
         "linkType": {
           "type": "array",
           "items": {
@@ -71,6 +73,10 @@
     "requirements": {
       "type": "array",
       "items": { "$ref": "#/$defs/requirement" }
+    },
+    "tests": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/testCase" }
     }
   },
   "$defs": {
@@ -95,8 +101,33 @@
       "required": ["type", "target"],
       "additionalProperties": false,
       "properties": {
-        "type": { "enum": ["derivedFrom", "relatedTo", "supersedes"] },
+        "type": { "enum": ["derivedFrom", "relatedTo", "supersedes", "validates"] },
         "target": { "$ref": "#/$defs/idRef" }
+      }
+    },
+    "testCase": {
+      "type": "object",
+      "required": ["id", "testType", "title", "method", "links", "steps", "expected"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^VT-([A-Z][0-9]{2}|[0-9]{3})$" },
+        "testType": { "enum": ["acceptance", "usability", "accessibility"] },
+        "title": { "type": "string" },
+        "method": { "enum": ["manual", "api", "inspection", "e2e"] },
+        "preconditions": { "type": "string" },
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/link" },
+          "contains": {
+            "type": "object",
+            "required": ["type"],
+            "properties": { "type": { "const": "validates" } }
+          }
+        },
+        "steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "expected": { "type": "string" },
+        "metric": { "type": "string" }
       }
     },
     "codeRef": {

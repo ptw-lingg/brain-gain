@@ -15,6 +15,7 @@ docs and the in-app viewer are all produced from it.
 ### Generated artifacts — do **not** edit by hand
 
 - `stakeholder-requirements.md`, `system-requirements.md`, `traceability-matrix.md` — rendered views.
+- `validation-plan.md` — the validation test plan (acceptance + usability + accessibility).
 - `../frontend/src/data/requirements.generated.json` — the copy the in-app viewer imports.
 
 ## The object model (`requirements.json`)
@@ -27,18 +28,25 @@ docs and the in-app viewer are all produced from it.
   - Stakeholder: `priority`, `source` (+ optional `sourceNote`).
   - System: `links[]` (`{type:"derivedFrom", target:"SR-…"}`), `implementedBy[]` (`{path, symbol}`),
     optional `verifiedBy[]` and `specRefs[]`.
+- `tests[]` — **validation tests** (`VT-…`): `testType` (acceptance | usability | accessibility), `method`,
+  `links[]` (`{type:"validates", target:"SR-…"}`), `steps[]`, `expected`, optional `preconditions`/`metric`.
+  These validate stakeholder requirements ("are we building the right thing?"), including usability and
+  accessibility.
 - `outOfScope[]`.
 
-**Links are one-directional in storage** (`SYS --derivedFrom--> SR`); the inverse (`SR satisfiedBy SYS`) and
-the `SR → code` rollup are **computed** by the generator and the viewer, never duplicated.
+**Links are one-directional in storage** (`SYS --derivedFrom--> SR`, `VT --validates--> SR`); the inverses
+(`SR satisfiedBy SYS`, `SR validatedBy VT`) and the `SR → code` rollup are **computed** by the generator and
+the viewer, never duplicated.
 
 IDs: `SR-\d{3}` (stakeholder) and `SYS-<AREA>-\d{2}` (system). **IDs are stable — never renumber;** add new
 ones and mark superseded ones (`status: "superseded"`, optional `supersedes` link).
 
 ## How to view
 
-- **In-app:** sign in as an admin → **Requirements** in the sidebar (`/requirements`). Browse, filter, and
-  click `SR ⇄ SYS ⇄ code` traces in both directions.
+- **In-app:** sign in as an admin → **Requirements** in the sidebar (`/requirements`). Browse, filter
+  (including by **Validation tests**), and click `SR ⇄ SYS ⇄ code` and `SR ⇄ VT` traces in both directions; a
+  requirement's detail shows its **Validated by** tests, and a test shows what it **Validates** plus its
+  steps/expected/metric.
 - **As docs:** the generated Markdown files in this folder.
 - **As data:** load `requirements.json` (validate against the schema) in any tool.
 
@@ -52,8 +60,8 @@ ones and mark superseded ones (`status: "superseded"`, optional `supersedes` lin
    node requirements/tools/build.mjs --check     # validate + fail on drift (CI / pre-commit)
    ```
    It enforces: unique ids, id patterns, enum membership, all link targets resolve, every system requirement
-   has a `derivedFrom` + `implementedBy`, and every stakeholder requirement is covered by ≥1 system
-   requirement.
+   has a `derivedFrom` + `implementedBy`, every stakeholder requirement is covered by ≥1 system requirement,
+   and **every stakeholder requirement has ≥1 validation test** (`VT-…` whose `validates` targets it).
 3. **Commit** `requirements.json` together with the regenerated artifacts.
 4. Update the matching section of [`../brain-gain.md`](../brain-gain.md) if the design decision changed.
 

@@ -81,6 +81,43 @@
         "id": "supersedes",
         "label": "Supersedes",
         "inverse": "supersededBy"
+      },
+      {
+        "id": "validates",
+        "label": "Validates",
+        "inverse": "validatedBy"
+      }
+    ],
+    "testType": [
+      {
+        "id": "acceptance",
+        "label": "Acceptance"
+      },
+      {
+        "id": "usability",
+        "label": "Usability"
+      },
+      {
+        "id": "accessibility",
+        "label": "Accessibility"
+      }
+    ],
+    "method": [
+      {
+        "id": "manual",
+        "label": "Manual"
+      },
+      {
+        "id": "api",
+        "label": "API check"
+      },
+      {
+        "id": "inspection",
+        "label": "Inspection"
+      },
+      {
+        "id": "e2e",
+        "label": "End-to-end"
       }
     ]
   },
@@ -2873,6 +2910,961 @@
           "section": "Quality Requirements"
         }
       ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "VT-001",
+      "testType": "acceptance",
+      "title": "Email/password login",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-001"
+        },
+        {
+          "type": "validates",
+          "target": "SR-002"
+        }
+      ],
+      "preconditions": "Seeded admin account exists.",
+      "steps": [
+        "Open /login.",
+        "Enter correct admin email + password and submit.",
+        "Enter wrong password and submit."
+      ],
+      "expected": "Correct credentials sign in and land on the dashboard listing the user's relevant trainings; wrong credentials show an error and do not sign in."
+    },
+    {
+      "id": "VT-002",
+      "testType": "acceptance",
+      "title": "No public self-registration",
+      "method": "inspection",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-001"
+        }
+      ],
+      "steps": [
+        "Inspect the UI and API for any public registration route/form."
+      ],
+      "expected": "No registration endpoint or sign-up form exists; only an admin can create users."
+    },
+    {
+      "id": "VT-003",
+      "testType": "acceptance",
+      "title": "Admin-only editing is enforced server-side",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-003"
+        },
+        {
+          "type": "validates",
+          "target": "SR-004"
+        }
+      ],
+      "preconditions": "A member and a trainer account exist.",
+      "steps": [
+        "As a member, attempt to reach /users, /roles, /trainings via the UI.",
+        "As a member/trainer, call the mutating API endpoints directly (POST/PUT/DELETE) with a valid token.",
+        "As an admin, perform the same edits."
+      ],
+      "expected": "Non-admins do not see the admin nav, are redirected from admin routes, and receive 403 from the API; only the admin can edit."
+    },
+    {
+      "id": "VT-004",
+      "testType": "acceptance",
+      "title": "Role-appropriate capabilities",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-004"
+        }
+      ],
+      "steps": [
+        "Sign in as member, trainer, then admin and inspect the visible navigation and pages."
+      ],
+      "expected": "Member sees only My Trainings; trainer additionally sees Trainings/Trainees (own); admin sees all pages."
+    },
+    {
+      "id": "VT-005",
+      "testType": "acceptance",
+      "title": "Session persists across reloads",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-005"
+        }
+      ],
+      "preconditions": "Logged in.",
+      "steps": [
+        "Reload the page.",
+        "Clear the token / wait for expiry and reload."
+      ],
+      "expected": "Reload keeps the user signed in (token rehydrated); a missing/expired token redirects to /login."
+    },
+    {
+      "id": "VT-006",
+      "testType": "acceptance",
+      "title": "Microsoft SSO sign-in (coexists with password)",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-006"
+        },
+        {
+          "type": "validates",
+          "target": "SR-010"
+        }
+      ],
+      "preconditions": "SSO enabled with a real tenant; an allowed-domain account.",
+      "steps": [
+        "Click 'Sign in with Microsoft' and complete the popup.",
+        "Separately, sign in with a demo password account."
+      ],
+      "expected": "Both SSO and password login succeed and land on the dashboard with an app session."
+    },
+    {
+      "id": "VT-007",
+      "testType": "acceptance",
+      "title": "SSO optional / graceful when off",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-007"
+        }
+      ],
+      "preconditions": "SSO disabled in Settings.",
+      "steps": [
+        "Load /login.",
+        "GET /api/auth/sso/config.",
+        "POST /api/auth/sso/entra."
+      ],
+      "expected": "No Microsoft button shown; config returns { enabled:false }; the entra endpoint returns 503; password login works as normal."
+    },
+    {
+      "id": "VT-008",
+      "testType": "acceptance",
+      "title": "Configure SSO in-app (independent of threshold)",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-008"
+        },
+        {
+          "type": "validates",
+          "target": "SR-081"
+        }
+      ],
+      "preconditions": "Signed in as admin.",
+      "steps": [
+        "On Settings, fill tenant id, client id, allowed domains, toggle Enabled, Save.",
+        "Reload Settings.",
+        "Confirm the global pass threshold is unchanged."
+      ],
+      "expected": "Values persist; the login page now shows the Microsoft button; saving SSO does not alter the pass threshold."
+    },
+    {
+      "id": "VT-009",
+      "testType": "acceptance",
+      "title": "Domain-restricted provisioning & account linking",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-009"
+        }
+      ],
+      "preconditions": "SSO enabled; allowed domains set; an existing local user sharing one SSO email.",
+      "steps": [
+        "Sign in via SSO with an email whose domain is NOT allowed and no local match.",
+        "Sign in via SSO with an email matching an existing local user.",
+        "Sign in via SSO with a new allowed-domain email."
+      ],
+      "expected": "Unlisted-domain/no-match is refused (403); a matching email links the Entra account without changing the user's roles; a new allowed-domain user is auto-created as a member."
+    },
+    {
+      "id": "VT-020",
+      "testType": "acceptance",
+      "title": "Admin manages users",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-020"
+        },
+        {
+          "type": "validates",
+          "target": "SR-022"
+        }
+      ],
+      "preconditions": "Signed in as admin.",
+      "steps": [
+        "Create a user with name/email/password and admin & trainer toggles.",
+        "Edit the user (incl. changing the password).",
+        "Delete the user."
+      ],
+      "expected": "User is created, updated (blank password keeps the old one), and deleted; admin/trainer flags take effect."
+    },
+    {
+      "id": "VT-021",
+      "testType": "acceptance",
+      "title": "User belongs to several roles",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-021"
+        }
+      ],
+      "steps": [
+        "Assign two or more job roles to a user and save.",
+        "Reopen the user."
+      ],
+      "expected": "All assigned roles persist on the user."
+    },
+    {
+      "id": "VT-030",
+      "testType": "acceptance",
+      "title": "Admin manages job roles",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-030"
+        }
+      ],
+      "steps": [
+        "Create, edit, and delete a job role (name, description)."
+      ],
+      "expected": "Roles are created, updated, and removed."
+    },
+    {
+      "id": "VT-031",
+      "testType": "acceptance",
+      "title": "Role requires trainings",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-031"
+        }
+      ],
+      "steps": [
+        "In a role, select several required trainings and save.",
+        "Reopen the role."
+      ],
+      "expected": "The selected trainingIds persist on the role."
+    },
+    {
+      "id": "VT-032",
+      "testType": "acceptance",
+      "title": "Required trainings derived & deduplicated",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-032"
+        }
+      ],
+      "preconditions": "A user holds two roles that share a training.",
+      "steps": [
+        "Open that user's dashboard."
+      ],
+      "expected": "The shared training appears exactly once; the dashboard shows the union of all roles' trainings."
+    },
+    {
+      "id": "VT-040",
+      "testType": "acceptance",
+      "title": "Trainings are editable",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-040"
+        }
+      ],
+      "steps": [
+        "Create and edit a training's name, description, category, and duration."
+      ],
+      "expected": "Changes persist and appear in the trainings list."
+    },
+    {
+      "id": "VT-041",
+      "testType": "acceptance",
+      "title": "Material links open documents",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-041"
+        }
+      ],
+      "steps": [
+        "Add a material link to a training.",
+        "Open a session and click the material."
+      ],
+      "expected": "The linked document opens in a new tab."
+    },
+    {
+      "id": "VT-042",
+      "testType": "acceptance",
+      "title": "Multiple-choice quiz with correct answer",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-042"
+        }
+      ],
+      "steps": [
+        "Add questions with options and mark the correct option; save."
+      ],
+      "expected": "Questions persist with a defined correct answer per question."
+    },
+    {
+      "id": "VT-043",
+      "testType": "acceptance",
+      "title": "Recurrence cycle drives due date",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-043"
+        }
+      ],
+      "steps": [
+        "Set cycleYears on a training.",
+        "Pass it, then inspect the computed due date."
+      ],
+      "expected": "Due date = last passed + cycleYears."
+    },
+    {
+      "id": "VT-044",
+      "testType": "acceptance",
+      "title": "Due window transitions",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-044"
+        }
+      ],
+      "steps": [
+        "Set windowBefore/After months.",
+        "Evaluate status around the due date boundaries."
+      ],
+      "expected": "Status moves up-to-date → due (window opens) → overdue (after grace) per the configured window."
+    },
+    {
+      "id": "VT-045",
+      "testType": "acceptance",
+      "title": "Trainer ownership enforced",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-045"
+        }
+      ],
+      "steps": [
+        "As a trainer, attempt to edit a training owned by someone else (UI + direct API).",
+        "As an admin, reassign a training's owner."
+      ],
+      "expected": "A trainer can mutate only their own trainings (others → 403); only an admin can change ownerId."
+    },
+    {
+      "id": "VT-046",
+      "testType": "acceptance",
+      "title": "Drag-and-drop reorder persists",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-046"
+        }
+      ],
+      "preconditions": "Signed in as admin on Trainings.",
+      "steps": [
+        "Drag a training to a new position via the grip handle.",
+        "Reload the page."
+      ],
+      "expected": "The new order is saved and survives reload; trainers do not see the handle."
+    },
+    {
+      "id": "VT-047",
+      "testType": "acceptance",
+      "title": "Order respected in every view",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-047"
+        }
+      ],
+      "steps": [
+        "Reorder trainings as admin.",
+        "Inspect the learner dashboard, the trainees view, and the role editor's training list."
+      ],
+      "expected": "All views present trainings in the admin-defined order."
+    },
+    {
+      "id": "VT-050",
+      "testType": "acceptance",
+      "title": "Session flow material → quiz → result",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-050"
+        }
+      ],
+      "steps": [
+        "Start a session, review material, advance to the quiz, submit, view the result."
+      ],
+      "expected": "The three-step flow works and shows a pass/fail result."
+    },
+    {
+      "id": "VT-051",
+      "testType": "acceptance",
+      "title": "Server-side grading; answers hidden",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-051"
+        }
+      ],
+      "steps": [
+        "Fetch a training as a learner and inspect the quiz payload.",
+        "Submit answers to /api/sessions/grade.",
+        "Attempt to submit a fabricated score."
+      ],
+      "expected": "correctIndex is absent from the learner payload; the server computes the score and compares to the threshold; a client-supplied score is ignored."
+    },
+    {
+      "id": "VT-052",
+      "testType": "acceptance",
+      "title": "Unlimited retries; only passes recorded",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-052"
+        }
+      ],
+      "steps": [
+        "Fail the quiz, retry, then pass.",
+        "Inspect recorded sessions."
+      ],
+      "expected": "Failed attempts are not recorded and leave the training due; only the passing attempt is persisted."
+    },
+    {
+      "id": "VT-053",
+      "testType": "acceptance",
+      "title": "Due status computed correctly",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-053"
+        }
+      ],
+      "steps": [
+        "Create users/sessions to produce never / up-to-date / due / overdue states."
+      ],
+      "expected": "Each training shows the correct due status from the last passing attempt and the cycle/window."
+    },
+    {
+      "id": "VT-060",
+      "testType": "acceptance",
+      "title": "Dashboard shows required trainings + status",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-060"
+        }
+      ],
+      "steps": [
+        "Open the dashboard as a member with assigned roles."
+      ],
+      "expected": "All required trainings are listed with a due-status pill and a clear Start action."
+    },
+    {
+      "id": "VT-061",
+      "testType": "acceptance",
+      "title": "Friendly empty state",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-061"
+        }
+      ],
+      "preconditions": "A member with no roles.",
+      "steps": [
+        "Open the dashboard."
+      ],
+      "expected": "A friendly empty state is shown (no errors/blank screen)."
+    },
+    {
+      "id": "VT-070",
+      "testType": "acceptance",
+      "title": "Trainee oversight grouped by training",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-070"
+        }
+      ],
+      "steps": [
+        "Open Trainees as a trainer/admin."
+      ],
+      "expected": "Trainees are grouped per training, each with their due status."
+    },
+    {
+      "id": "VT-071",
+      "testType": "acceptance",
+      "title": "Filter due & copy emails",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-071"
+        }
+      ],
+      "steps": [
+        "Toggle 'only due/overdue'.",
+        "Click copy-emails for a group and 'copy all'."
+      ],
+      "expected": "The list filters to actionable trainees; the clipboard receives a ';'-separated recipient list with a confirming toast."
+    },
+    {
+      "id": "VT-080",
+      "testType": "acceptance",
+      "title": "Global pass threshold applies everywhere",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-080"
+        }
+      ],
+      "steps": [
+        "Set the pass threshold on Settings.",
+        "Take a quiz scoring just below and just above it."
+      ],
+      "expected": "Pass/fail is decided against the single global threshold for every training."
+    },
+    {
+      "id": "VT-100",
+      "testType": "acceptance",
+      "title": "TypeScript throughout",
+      "method": "inspection",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-100"
+        }
+      ],
+      "steps": [
+        "Run typecheck in backend and frontend."
+      ],
+      "expected": "Both projects are TypeScript and typecheck with no errors and no 'any' leakage."
+    },
+    {
+      "id": "VT-101",
+      "testType": "acceptance",
+      "title": "JSON-file persistence, no database",
+      "method": "inspection",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-101"
+        }
+      ],
+      "steps": [
+        "Inspect backend/src/data/*.json and dependencies."
+      ],
+      "expected": "Data is persisted in JSON files; no database engine or driver is present."
+    },
+    {
+      "id": "VT-102",
+      "testType": "acceptance",
+      "title": "Vue frontend",
+      "method": "inspection",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-102"
+        }
+      ],
+      "steps": [
+        "Inspect the frontend stack."
+      ],
+      "expected": "The frontend is Vue 3 (not React)."
+    },
+    {
+      "id": "VT-103",
+      "testType": "acceptance",
+      "title": "All entities editable via UI",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-103"
+        }
+      ],
+      "steps": [
+        "Edit a user, a role, a training, and settings entirely through the UI."
+      ],
+      "expected": "Every managed entity is fully editable in the interface."
+    },
+    {
+      "id": "VT-104",
+      "testType": "acceptance",
+      "title": "Security enforced server-side (no client bypass)",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-104"
+        }
+      ],
+      "steps": [
+        "Attempt grading, ownership, and access operations by calling the API directly while bypassing the UI."
+      ],
+      "expected": "All checks are enforced by the server regardless of client behaviour (403/validation as appropriate)."
+    },
+    {
+      "id": "VT-105",
+      "testType": "acceptance",
+      "title": "No secrets leak to clients",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-105"
+        }
+      ],
+      "steps": [
+        "Inspect /api/auth/me, /api/users, and training payloads.",
+        "Inspect SSO config handling."
+      ],
+      "expected": "Responses never contain passwordHash, entraOid, or correctIndex; no client secret is used or exposed by SSO."
+    },
+    {
+      "id": "VT-106",
+      "testType": "acceptance",
+      "title": "Easy run + first-run seed",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-106"
+        }
+      ],
+      "steps": [
+        "Start backend + frontend from a clean state."
+      ],
+      "expected": "Demo admin/trainer/member accounts are seeded on first start and the app is immediately usable."
+    },
+    {
+      "id": "VT-U01",
+      "testType": "usability",
+      "title": "First-login orientation",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-002"
+        },
+        {
+          "type": "validates",
+          "target": "SR-060"
+        },
+        {
+          "type": "validates",
+          "target": "SR-090"
+        }
+      ],
+      "preconditions": "5 representative users new to BrainGain.",
+      "steps": [
+        "Hand the user the app at /login with credentials.",
+        "Observe, without guidance, whether they understand what they must do next."
+      ],
+      "expected": "Users correctly identify that they have trainings to complete and where to start.",
+      "metric": "≥ 4/5 users self-orient within 30s; no critical confusion."
+    },
+    {
+      "id": "VT-U02",
+      "testType": "usability",
+      "title": "Find and start a due training",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-060"
+        },
+        {
+          "type": "validates",
+          "target": "SR-050"
+        },
+        {
+          "type": "validates",
+          "target": "SR-093"
+        },
+        {
+          "type": "validates",
+          "target": "SR-094"
+        }
+      ],
+      "steps": [
+        "Task: 'Start the training that is due for you.'",
+        "Time to completion and count wrong turns."
+      ],
+      "expected": "Users locate a due training and reach the session start unaided.",
+      "metric": "Task success ≥ 90%; median time < 60s; SUS ≥ 80 across 5 users."
+    },
+    {
+      "id": "VT-U03",
+      "testType": "usability",
+      "title": "Complete a training and retry on fail",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-050"
+        },
+        {
+          "type": "validates",
+          "target": "SR-052"
+        },
+        {
+          "type": "validates",
+          "target": "SR-094"
+        }
+      ],
+      "steps": [
+        "Task: read material, take the quiz, and pass it.",
+        "Have the user deliberately fail once."
+      ],
+      "expected": "Users move through material → quiz → result and discover how to retry without help; feedback is clear.",
+      "metric": "Task success ≥ 90%; retry discovered unaided by ≥ 4/5."
+    },
+    {
+      "id": "VT-U04",
+      "testType": "usability",
+      "title": "Author a training with a quiz",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-040"
+        },
+        {
+          "type": "validates",
+          "target": "SR-042"
+        },
+        {
+          "type": "validates",
+          "target": "SR-094"
+        }
+      ],
+      "preconditions": "Trainer/admin participants.",
+      "steps": [
+        "Task: create a training with one material link and two quiz questions."
+      ],
+      "expected": "Participants build a complete, valid training unaided.",
+      "metric": "Task success ≥ 80%; no blocking confusion on questions/correct-answer UI."
+    },
+    {
+      "id": "VT-U05",
+      "testType": "usability",
+      "title": "Reorder trainings",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-046"
+        },
+        {
+          "type": "validates",
+          "target": "SR-047"
+        }
+      ],
+      "preconditions": "Admin participants.",
+      "steps": [
+        "Task: 'Move a chosen training to the top of the list.'"
+      ],
+      "expected": "Participants discover the drag handle and reorder successfully; the change is clearly persisted.",
+      "metric": "Task success ≥ 80%; handle discovered unaided by ≥ 3/5."
+    },
+    {
+      "id": "VT-U06",
+      "testType": "usability",
+      "title": "Configure SSO from Settings",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-008"
+        }
+      ],
+      "preconditions": "Admin participants with tenant/client values to hand.",
+      "steps": [
+        "Task: enable Microsoft sign-in and restrict it to a domain.",
+        "Note whether the redirect-URI hint is understood."
+      ],
+      "expected": "Participants complete SSO configuration using the on-screen guidance.",
+      "metric": "Task success ≥ 80%; redirect-URI hint rated helpful."
+    },
+    {
+      "id": "VT-U07",
+      "testType": "usability",
+      "title": "Send reminders to due trainees",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-070"
+        },
+        {
+          "type": "validates",
+          "target": "SR-071"
+        }
+      ],
+      "preconditions": "Trainer/admin participants.",
+      "steps": [
+        "Task: 'Get the email addresses of everyone overdue for a training.'"
+      ],
+      "expected": "Participants filter to due/overdue and copy the right recipients.",
+      "metric": "Task success ≥ 90%; median time < 45s."
+    },
+    {
+      "id": "VT-U08",
+      "testType": "usability",
+      "title": "Brand & visual impression",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-090"
+        },
+        {
+          "type": "validates",
+          "target": "SR-091"
+        },
+        {
+          "type": "validates",
+          "target": "SR-092"
+        }
+      ],
+      "steps": [
+        "Show the app for 5 seconds, then ask for first impressions and descriptive words."
+      ],
+      "expected": "Users describe the UI as polished/professional and perceive the pastel-blue, technical aesthetic and recognisable logo.",
+      "metric": "≥ 4/5 positive first-impression; palette/fonts described as intended."
+    },
+    {
+      "id": "VT-U09",
+      "testType": "usability",
+      "title": "Feedback on actions (loading & toasts)",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-094"
+        }
+      ],
+      "steps": [
+        "Perform a save and a deliberately failing action on slow network."
+      ],
+      "expected": "Loading/skeleton states appear during fetches and success/error toasts clearly confirm or explain outcomes.",
+      "metric": "All observed actions give visible feedback within 1s."
+    },
+    {
+      "id": "VT-A01",
+      "testType": "accessibility",
+      "title": "Full keyboard operability",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-093"
+        }
+      ],
+      "steps": [
+        "Operate every primary flow (login, dashboard, session, admin edits) using only the keyboard."
+      ],
+      "expected": "All interactive elements are reachable and operable by keyboard with a visible focus indicator and logical tab order.",
+      "metric": "WCAG 2.1 AA 2.1.1 / 2.4.7 pass."
+    },
+    {
+      "id": "VT-A02",
+      "testType": "accessibility",
+      "title": "Names, roles, labels for assistive tech",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-093"
+        }
+      ],
+      "steps": [
+        "Inspect inputs, buttons, and icons with a screen reader / a11y inspector."
+      ],
+      "expected": "Form fields have associated labels and icon-only controls have accessible names.",
+      "metric": "No missing-name/label violations (e.g. axe)."
+    },
+    {
+      "id": "VT-A03",
+      "testType": "accessibility",
+      "title": "Colour contrast on pastel palette",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-093"
+        },
+        {
+          "type": "validates",
+          "target": "SR-091"
+        }
+      ],
+      "steps": [
+        "Measure text and UI contrast across cards, pills, nav, and inputs."
+      ],
+      "expected": "Text and essential UI meet WCAG AA contrast on the pastel-blue theme.",
+      "metric": "Contrast ≥ 4.5:1 (normal text) / 3:1 (large/UI)."
+    },
+    {
+      "id": "VT-A04",
+      "testType": "accessibility",
+      "title": "Responsive at 375px and 1440px",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-093"
+        }
+      ],
+      "steps": [
+        "View the app at 375px and 1440px widths."
+      ],
+      "expected": "Layout is usable at both sizes with no clipping/overlap; the sidebar collapses appropriately on mobile.",
+      "metric": "No horizontal scroll or obscured controls at 375px."
     }
   ]
 }
