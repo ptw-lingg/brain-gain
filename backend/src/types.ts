@@ -65,9 +65,22 @@ export interface EntraSsoSettings {
   allowedDomains: string[]; // email domains permitted to auto-provision a new member
 }
 
+// TLS certificate metadata shown in the UI. The private key and cert PEM are NEVER stored here or
+// returned by any API — only this non-secret metadata, derived from the active certificate.
+export interface TlsSettings {
+  source: 'self-signed' | 'uploaded';
+  subject: string;
+  issuer: string;
+  validFrom: string;
+  validTo: string;
+  fingerprint: string; // SHA-256
+  updatedAt: string;
+}
+
 export interface Settings {
   passThreshold: number; // 0–1, default 0.8
   entra: EntraSsoSettings;
+  tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
 }
 
 export type SafeUser = Omit<User, 'passwordHash' | 'entraOid'>;

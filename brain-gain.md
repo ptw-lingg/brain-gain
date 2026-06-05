@@ -153,6 +153,7 @@ Build **BrainGain**, a modern training management web application written entire
 | Data | JSON file storage (no database) via `fs/promises`; IDs via Node's built-in `crypto.randomUUID()` |
 | Icons | Lucide Vue Next (`lucide-vue-next`) |
 | Fonts | Google Fonts — `DM Mono` (body/UI) + `Space Grotesk` (display/headings) |
+| Delivery | **HTTPS only** — backend terminates TLS (`https` + `selfsigned` bootstrap) and serves the SPA; HTTP 308-redirects to HTTPS; admin uploads the certificate from Settings |
  
 ---
  
@@ -182,18 +183,20 @@ braingain/
 │   │   │   ├── roles.ts        # CRUD /api/roles
 │   │   │   ├── trainings.ts    # /api/trainings (+ /mine, /trainees, owner rules)
 │   │   │   ├── sessions.ts     # POST /api/sessions/grade, GET /api/sessions/mine
-│   │   │   └── settings.ts     # GET/PUT /api/settings (global pass threshold)
+│   │   │   └── settings.ts     # GET/PUT /api/settings (+ /certificate TLS endpoints)
 │   │   ├── middleware/
 │   │   │   └── auth.ts         # authenticate, requireAdmin, requireTrainerOrAdmin, requireAdminOrOwner
 │   │   ├── services/
 │   │   │   ├── fileStore.ts    # JSON array helpers + readSettings/writeSettings
 │   │   │   ├── due.ts          # computeDue() — cycle + window → DueStatus
-│   │   │   └── entra.ts        # Entra ID token verification (jwks-rsa) + provisioning helpers
+│   │   │   ├── entra.ts        # Entra ID token verification (jwks-rsa) + provisioning helpers
+│   │   │   └── tls.ts          # TLS cert load/generate/validate/store + HTTPS hot-swap (setSecureContext)
 │   │   └── data/               # JSON data files (auto-created if missing)
 │   │       ├── users.json
 │   │       ├── roles.json
 │   │       ├── trainings.json
 │   │       ├── sessions.json
+│   │       ├── tls/            # key.pem + cert.pem (+ chain) — git-ignored; never served or returned
 │   │       └── settings.json   # single object: { passThreshold, entra }
 │   ├── package.json
 │   └── tsconfig.json           # CommonJS (see "Backend tsconfig" below)
@@ -487,8 +490,26 @@ A user "needs" a training if any of their `roleIds` maps to a `JobRole` whose `t
  
 | Method | Path | Body | Description |
 |---|---|---|---|
-| GET | `/` | — | Any authenticated user — read the full `Settings` (`passThreshold` + `entra`). SSO fields are not secrets |
-| PUT | `/` | `{ passThreshold?, entra? }` | **Admin only** — **partial merge**: only the fields present are updated, so saving SSO config and the pass threshold are independent. `entra` is sanitized (booleans coerced, ids trimmed, `allowedDomains` accepts an array or a comma-separated string) |
+| GET | `/` | — | Any authenticated user — read the full `Settings` (`passThreshold` + `entra` + `tls` metadata). SSO/TLS fields are not secrets |
+| PUT | `/` | `{ passThreshold?, entra? }` | **Admin only** — **partial merge**: only the fields present are updated, so saving SSO config and the pass threshold are independent. `entra` is sanitized (booleans coerced, ids trimmed, `allowedDomains` accepts an array or a comma-separated string). `tls` is **not** settable here |
+| GET | `/certificate` | — | **Admin only** — current TLS certificate **metadata only** (subject/issuer/validity/fingerprint/source); never the key |
+| POST | `/certificate` | `{ cert, key, chain? }` (PEM) | **Admin only** — validate the cert + that the key matches it, persist under `data/tls/`, **hot-swap** the running HTTPS server (`setSecureContext`), store metadata. 400 on invalid/mismatched |
+| POST | `/certificate/self-signed` | — | **Admin only** — regenerate + apply a fresh self-signed certificate (revert) |
+ 
+### HTTPS / TLS delivery
+ 
+The app is delivered **only over HTTPS**. The backend terminates TLS and serves both the API and the built
+SPA (`frontend/dist`) from one HTTPS origin (`services/tls.ts` + `index.ts`):
+- **Bootstrap:** on first run, if no certificate exists, a **self-signed** cert is generated (`selfsigned`) and
+  stored under `backend/src/data/tls/` so HTTPS starts immediately (no lockout before an upload).
+- **Admin upload:** the Settings page posts cert/key/chain PEM to `POST /api/settings/certificate`; the server
+  validates (PEM parses and the private key matches the cert), persists the files, and hot-swaps the live
+  server via `setSecureContext` — no restart. The **private key is never returned** by any API; only `tls`
+  metadata is exposed.
+- **HTTP off:** a tiny HTTP listener (`HTTP_PORT`, default 3000) answers only with a **308 redirect** to the
+  HTTPS URL — no app/API content is served over HTTP. An **HSTS** header is set on all responses.
+- **Ports/env:** `HTTPS_PORT` (default 3001) and `HTTP_PORT` (default 3000). The Vite dev server also runs
+  HTTPS (`@vitejs/plugin-basic-ssl`) and proxies `/api` to the HTTPS backend (`secure:false` for self-signed).
  
 ### Auth Middleware
  
@@ -691,6 +712,11 @@ Route `/session/:trainingId`, auth required. A 3-step flow:
   redirect URI to register (the app origin). Its own "Save" calls `PUT /api/settings { entra }` (independent of
   the threshold via the partial-merge PUT). This is the single source of truth that drives both the login-page
   button (`/auth/sso/config`) and backend token validation.
+- **HTTPS / TLS certificate card:** shows the active certificate metadata (source, subject, issuer, validity,
+  fingerprint) with a warning when self-signed or expired, and file pickers for **Certificate**, **Private
+  key**, and optional **Chain** (PEM, read client-side via `FileReader` and POSTed to
+  `/settings/certificate`), plus a **Regenerate self-signed** action. The private key is sent to the server but
+  never returned.
 - `meta: { requiresAdmin: true }`
 ### Admin Guard — Three Layers of Enforcement
  
@@ -760,6 +786,7 @@ resolve role names), `GET /api/settings`, and the `/api/sessions` endpoints for 
 | `POST /api/sessions/grade`, `GET /api/sessions/mine` | ✅ own | ✅ own | ✅ own |
 | `GET /api/settings` | ✅ Read | ✅ Read | ✅ Read |
 | `PUT /api/settings` | ❌ 403 | ❌ 403 | ✅ |
+| `GET/POST /api/settings/certificate`, `POST …/self-signed` | ❌ 403 | ❌ 403 | ✅ (metadata only; key never returned) |
 | `GET /api/auth/sso/config` | ✅ Public (pre-login) | ✅ | ✅ |
 | `POST /api/auth/sso/entra` | ✅ Public (pre-login) | ✅ | ✅ |
 | `GET /api/auth/me` | ✅ Own profile | ✅ | ✅ |
@@ -878,12 +905,14 @@ router.beforeEach(async (to) => {
 cd backend
 npm install
 npm run dev          # tsx watch src/index.ts
-# Runs on http://localhost:3001 — auto-seeds demo data on first run
+# Serves HTTPS on https://localhost:3001 (HTTPS_PORT); HTTP on 3000 (HTTP_PORT) 308-redirects to HTTPS.
+# Auto-seeds demo data and generates a self-signed cert on first run (data/tls/). Use curl -k in dev.
 ```
  
 Scripts: `dev` (`tsx watch src/index.ts`), `start` (`tsx src/index.ts`), `build` (`tsc`), `typecheck` (`tsc --noEmit`).
 `tsx` runs TypeScript directly (no `ts-node` ESM friction on Windows); IDs use the built-in `crypto.randomUUID()`,
-so `uuid`/`dotenv` are not needed.
+so `uuid`/`dotenv` are not needed. The backend terminates **TLS** (`https`) and, when `frontend/dist` exists,
+serves the built SPA from the same HTTPS origin; the admin replaces the certificate from Settings.
  
 **Dependencies:**
 ```json
@@ -893,7 +922,8 @@ so `uuid`/`dotenv` are not needed.
     "cors": "^2.8",
     "bcryptjs": "^2.4",
     "jsonwebtoken": "^9.0",
-    "jwks-rsa": "^4.0"
+    "jwks-rsa": "^4.0",
+    "selfsigned": "^5.5"
   },
   "devDependencies": {
     "typescript": "^5.4",
@@ -913,8 +943,8 @@ so `uuid`/`dotenv` are not needed.
 cd frontend
 npm install
 npm run dev
-# Runs on http://localhost:5173
-# Proxies /api/* to localhost:3001
+# Runs on https://localhost:5173 (self-signed via @vitejs/plugin-basic-ssl)
+# Proxies /api/* to https://localhost:3001 (secure:false for the self-signed backend cert)
 ```
  
 **Dependencies:**
@@ -936,6 +966,7 @@ npm run dev
     "tailwindcss": "^3.4",
     "autoprefixer": "^10.4",
     "postcss": "^8.4",
+    "@vitejs/plugin-basic-ssl": "^1.2",
     "@types/node": "^20.0"
   }
 }
@@ -1104,5 +1135,5 @@ generator, generated views, and the `/requirements` viewer) too**, consistent wi
  
 Generate the complete source code for all files listed in the project structure above — **including the
 `requirements/` documents**, derived from this prompt and kept consistent per "Requirements & Traceability".
-Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login with email/password or **Microsoft Entra ID SSO** (when an admin has enabled it in Settings); view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), and edit the global pass threshold for all trainings at once.
+Each file should be complete and ready to run — no placeholders, no TODOs. The application should work end-to-end: login with email/password or **Microsoft Entra ID SSO** (when an admin has enabled it in Settings); view personal trainings with due status; start a session, read the OneDrive material, take the multiple-choice test, and be graded against the global pass threshold; (as a trainer) manage your own trainings including material links, quiz questions, and the 1–5 year cycle; and (as an admin) manage all entities, reorder trainings by drag-and-drop (an order respected by every view), edit the global pass threshold for all trainings at once, and upload the TLS certificate that secures the HTTPS-only site.
  

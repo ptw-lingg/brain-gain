@@ -36,6 +36,7 @@ export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
 const DEFAULT_SETTINGS: Settings = {
   passThreshold: 0.8,
   entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
+  tls: null,
 };
 
 export async function readSettings(): Promise<Settings> {

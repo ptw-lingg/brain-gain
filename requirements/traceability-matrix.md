@@ -126,6 +126,20 @@
 | SYS-NFR-01 | `backend/src/middleware/auth.ts`; `backend/src/routes/sessions.ts` · grading; `backend/src/services/entra.ts` · token validation | SR-104 | — |
 | SYS-NFR-02 | `backend/src/routes/auth.ts` · toSafeUser; `backend/src/routes/trainings.ts` · toPublic; `backend/src/services/entra.ts` · no client secret | SR-051, SR-105 | — |
 
+### HTTPS & TLS
+
+| SYS | Implemented by | Derived from | Verified |
+|---|---|---|---|
+| SYS-TLS-01 | `backend/src/index.ts` · https.createServer + express.static SPA fallback | SR-110 | api |
+| SYS-TLS-02 | `backend/src/index.ts` · http.createServer 308 redirect | SR-110 | api |
+| SYS-TLS-03 | `backend/src/services/tls.ts` · ensureCredentials / generateSelfSigned (selfsigned) | SR-110 | manual |
+| SYS-TLS-04 | `backend/src/services/tls.ts` · storeUploadedCredentials, data/tls files; `backend/src/types.ts` · TlsSettings (metadata only); `backend/.gitignore` · src/data/tls/ | SR-111, SR-105 | api |
+| SYS-TLS-05 | `backend/src/routes/settings.ts` · POST /certificate; `backend/src/services/tls.ts` · validateCredentials, applyCredentials (setSecureContext) | SR-111 | api |
+| SYS-TLS-06 | `backend/src/routes/settings.ts` · GET/POST /certificate (authenticate + requireAdmin) | SR-111, SR-105 | api |
+| SYS-TLS-07 | `frontend/src/pages/SettingsPage.vue` · HTTPS/TLS card (onFile, saveCertificate, regenerateSelfSigned) | SR-111 | — |
+| SYS-TLS-08 | `frontend/vite.config.ts` · basicSsl() + proxy https target | SR-110 | — |
+| SYS-TLS-09 | `backend/src/index.ts` · HSTS middleware | SR-110 | — |
+
 ## Reverse index — stakeholder requirement → system requirements → code
 
 | SR | Title | Satisfied by | Code areas |
@@ -174,5 +188,7 @@
 | SR-102 | Vue frontend | SYS-ARCH-01, SYS-ARCH-03 | `backend/`, `frontend/`, `frontend/src/main.ts`, `frontend/src/api/client.ts`, `frontend/vite.config.ts` |
 | SR-103 | All entities editable via UI | SYS-DATA-01 | `backend/src/services/fileStore.ts` |
 | SR-104 | Server-side security enforcement | SYS-AUTH-02, SYS-SSO-04, SYS-NFR-01 | `backend/src/routes/auth.ts`, `backend/src/routes/users.ts`, `backend/src/services/entra.ts`, `backend/src/middleware/auth.ts`, `backend/src/routes/sessions.ts` |
-| SR-105 | No secrets to clients | SYS-DATA-07, SYS-SSO-08, SYS-NFR-02 | `backend/src/types.ts`, `backend/src/routes/auth.ts`, `backend/src/services/entra.ts`, `backend/src/routes/trainings.ts` |
+| SR-105 | No secrets to clients | SYS-DATA-07, SYS-SSO-08, SYS-NFR-02, SYS-TLS-04, SYS-TLS-06 | `backend/src/types.ts`, `backend/src/routes/auth.ts`, `backend/src/services/entra.ts`, `backend/src/routes/trainings.ts`, `backend/src/services/tls.ts`, `backend/.gitignore`, `backend/src/routes/settings.ts` |
 | SR-106 | Easy to run; seed demo data | SYS-ARCH-02, SYS-ARCH-06 | `backend/package.json`, `backend/src/`, `backend/src/seed.ts`, `backend/src/index.ts` |
+| SR-110 | HTTPS-only delivery | SYS-TLS-01, SYS-TLS-02, SYS-TLS-03, SYS-TLS-08, SYS-TLS-09 | `backend/src/index.ts`, `backend/src/services/tls.ts`, `frontend/vite.config.ts` |
+| SR-111 | Admin-managed TLS certificate | SYS-TLS-04, SYS-TLS-05, SYS-TLS-06, SYS-TLS-07 | `backend/src/services/tls.ts`, `backend/src/types.ts`, `backend/.gitignore`, `backend/src/routes/settings.ts`, `frontend/src/pages/SettingsPage.vue` |

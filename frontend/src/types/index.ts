@@ -58,9 +58,20 @@ export interface EntraSsoSettings {
   allowedDomains: string[];
 }
 
+export interface TlsSettings {
+  source: 'self-signed' | 'uploaded';
+  subject: string;
+  issuer: string;
+  validFrom: string;
+  validTo: string;
+  fingerprint: string;
+  updatedAt: string;
+}
+
 export interface Settings {
   passThreshold: number;
   entra: EntraSsoSettings;
+  tls: TlsSettings | null;
 }
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';

@@ -2,7 +2,7 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 46 requirements · updated 2026-06-03.
+> Generated from `requirements.json` · 48 requirements · updated 2026-06-03.
 
 Priority: **M** = Must · **S** = Should · **C** = Could.
 
@@ -112,6 +112,13 @@ Priority: **M** = Must · **S** = Should · **C** = Could.
 | SR-104 | **Server-side security enforcement** — Security-sensitive operations (login result/grading/ownership/access checks, SSO token validation) shall be enforced on the server, never trusted from the client. | M | Spec (/ SSO feature) | Approved |
 | SR-105 | **No secrets to clients** — Secrets shall not be exposed to clients; SSO must operate without storing a client secret, so that its configuration can safely be admin-editable. | M | Microsoft Entra ID SSO feature (design constraint) | Approved |
 | SR-106 | **Easy to run; seed demo data** — The system shall be easy to run for evaluation, seeding demo data (an admin, a trainer, a member) on first start. | S | Spec | Approved |
+
+### HTTPS & TLS
+
+| ID | Requirement | Priority | Source | Status |
+|---|---|---|---|---|
+| SR-110 | **HTTPS-only delivery** — The application shall be delivered only over HTTPS (TLS). Plain HTTP shall not serve the app or API; HTTP requests are redirected to HTTPS. | M | HTTPS/TLS delivery feature | Approved |
+| SR-111 | **Admin-managed TLS certificate** — An administrator shall upload and replace the TLS certificate (and private key) from the Settings page, applied without downtime; the private key is never exposed to clients. | M | HTTPS/TLS delivery feature | Approved |
 
 ## Out of Scope
 

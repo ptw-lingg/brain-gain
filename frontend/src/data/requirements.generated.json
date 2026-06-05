@@ -42,6 +42,10 @@
       {
         "id": "sso-feature",
         "label": "Microsoft Entra ID SSO feature"
+      },
+      {
+        "id": "tls-feature",
+        "label": "HTTPS/TLS delivery feature"
       }
     ],
     "status": [
@@ -642,6 +646,32 @@
       "priority": "S",
       "source": "spec",
       "status": "approved"
+    },
+    {
+      "id": "SR-110",
+      "type": "stakeholder",
+      "category": "HTTPS & TLS",
+      "title": "HTTPS-only delivery",
+      "text": "The application shall be delivered only over HTTPS (TLS). Plain HTTP shall not serve the app or API; HTTP requests are redirected to HTTPS.",
+      "priority": "M",
+      "source": "tls-feature",
+      "status": "approved"
+    },
+    {
+      "id": "SR-111",
+      "type": "stakeholder",
+      "category": "HTTPS & TLS",
+      "title": "Admin-managed TLS certificate",
+      "text": "An administrator shall upload and replace the TLS certificate (and private key) from the Settings page, applied without downtime; the private key is never exposed to clients.",
+      "priority": "M",
+      "source": "tls-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-105"
+        }
+      ]
     },
     {
       "id": "SYS-ARCH-01",
@@ -2910,6 +2940,296 @@
           "section": "Quality Requirements"
         }
       ]
+    },
+    {
+      "id": "SYS-TLS-01",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Single HTTPS origin serves API + SPA",
+      "text": "The backend shall run an HTTPS server that serves both the /api routes and the built SPA (frontend/dist) from one origin; the SPA fallback returns index.html for non-/api GETs.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-110"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/index.ts",
+          "symbol": "https.createServer + express.static SPA fallback"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "api",
+          "note": "curl -k https://localhost:3001/api/health → ok; / returns SPA"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-02",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "HTTP redirects to HTTPS",
+      "text": "A minimal HTTP listener shall answer every request with a 308 redirect to the HTTPS URL; no app/API content is served over HTTP.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-110"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/index.ts",
+          "symbol": "http.createServer 308 redirect"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "api",
+          "note": "curl -I http://localhost:3000/x → 308 Location https://…"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-03",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Self-signed bootstrap on first run",
+      "text": "If no certificate exists at startup, the server shall generate and persist a self-signed certificate so HTTPS starts immediately (no lockout before an admin uploads a real cert).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-110"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/tls.ts",
+          "symbol": "ensureCredentials / generateSelfSigned (selfsigned)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "manual",
+          "note": "fresh data dir → data/tls/{cert,key}.pem generated; HTTPS up"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-04",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Cert/key stored privately; metadata-only exposure",
+      "text": "The private key and certificate shall be stored under data/tls/ (git-ignored) and never returned by any API; only non-secret metadata (subject/issuer/validity/fingerprint/source) is surfaced via Settings.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-111"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-105"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/tls.ts",
+          "symbol": "storeUploadedCredentials, data/tls files"
+        },
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "TlsSettings (metadata only)"
+        },
+        {
+          "path": "backend/.gitignore",
+          "symbol": "src/data/tls/"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "api",
+          "note": "no key/PEM in /settings or /settings/certificate responses"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-05",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Upload validates + hot-swaps the certificate",
+      "text": "POST /api/settings/certificate (admin) shall validate the PEM and that the private key matches the certificate, then hot-swap the running server via setSecureContext (no restart). Invalid/mismatched input → 400.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-111"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "POST /certificate"
+        },
+        {
+          "path": "backend/src/services/tls.ts",
+          "symbol": "validateCredentials, applyCredentials (setSecureContext)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "api",
+          "note": "valid cert → 200 + hot-swap; mismatched key/cert → 400"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-06",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Certificate endpoints are admin-only",
+      "text": "GET /api/settings/certificate returns metadata only; POST /api/settings/certificate and /certificate/self-signed require admin (403 otherwise).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-111"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-105"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "GET/POST /certificate (authenticate + requireAdmin)"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "api",
+          "note": "non-admin → 403; GET returns metadata only"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-07",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Settings TLS card",
+      "text": "The Settings page shall show the active certificate metadata and let an admin upload cert/key/chain PEM files (read client-side and POSTed) and regenerate a self-signed certificate.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-111"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/SettingsPage.vue",
+          "symbol": "HTTPS/TLS card (onFile, saveCertificate, regenerateSelfSigned)"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "SettingsPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-08",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "Dev server is HTTPS too",
+      "text": "The Vite dev server shall run over HTTPS (auto self-signed via @vitejs/plugin-basic-ssl) and proxy /api to the backend over HTTPS (secure:false).",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-110"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/vite.config.ts",
+          "symbol": "basicSsl() + proxy https target"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
+    },
+    {
+      "id": "SYS-TLS-09",
+      "type": "system",
+      "category": "HTTPS & TLS",
+      "title": "HSTS header",
+      "text": "Responses shall include a Strict-Transport-Security header so browsers only ever use HTTPS for this origin.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-110"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/index.ts",
+          "symbol": "HSTS middleware"
+        }
+      ],
+      "specRefs": [
+        {
+          "doc": "brain-gain.md",
+          "section": "HTTPS / TLS delivery"
+        }
+      ]
     }
   ],
   "tests": [
@@ -3865,6 +4185,126 @@
       ],
       "expected": "Layout is usable at both sizes with no clipping/overlap; the sidebar collapses appropriately on mobile.",
       "metric": "No horizontal scroll or obscured controls at 375px."
+    },
+    {
+      "id": "VT-110",
+      "testType": "acceptance",
+      "title": "App served over HTTPS",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-110"
+        }
+      ],
+      "steps": [
+        "Request the API and the SPA over HTTPS.",
+        "curl -k https://localhost:3001/api/health and https://localhost:3001/."
+      ],
+      "expected": "Both respond over TLS (health → {ok:true}; / serves the SPA index when built)."
+    },
+    {
+      "id": "VT-111",
+      "testType": "acceptance",
+      "title": "HTTP is redirected to HTTPS",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-110"
+        }
+      ],
+      "steps": [
+        "curl -I http://localhost:3000/anything."
+      ],
+      "expected": "Responds 308 with Location: https://…<HTTPS_PORT>/anything; no app/API content is served over HTTP."
+    },
+    {
+      "id": "VT-112",
+      "testType": "acceptance",
+      "title": "Self-signed cert auto-generated on first run",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-110"
+        }
+      ],
+      "preconditions": "Empty data/tls/ (fresh install).",
+      "steps": [
+        "Start the backend with no certificate present."
+      ],
+      "expected": "data/tls/{cert,key}.pem are generated and the HTTPS server starts successfully without manual setup."
+    },
+    {
+      "id": "VT-113",
+      "testType": "acceptance",
+      "title": "Certificate upload hot-swaps without downtime",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-111"
+        }
+      ],
+      "preconditions": "Signed in as admin; a valid cert+key.",
+      "steps": [
+        "POST /api/settings/certificate with cert+key PEM.",
+        "Continue making HTTPS requests."
+      ],
+      "expected": "Returns 200 + metadata; the server keeps serving and new connections use the uploaded certificate (no restart)."
+    },
+    {
+      "id": "VT-114",
+      "testType": "acceptance",
+      "title": "Invalid or mismatched certificate is rejected",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-111"
+        }
+      ],
+      "steps": [
+        "POST /api/settings/certificate with a key that does not match the cert (and with malformed PEM)."
+      ],
+      "expected": "Returns 400 with a clear error; the active certificate is unchanged."
+    },
+    {
+      "id": "VT-115",
+      "testType": "acceptance",
+      "title": "Private key is never exposed",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-111"
+        }
+      ],
+      "steps": [
+        "Inspect GET /api/settings and GET /api/settings/certificate responses.",
+        "Attempt to read the key via any API."
+      ],
+      "expected": "Responses contain only certificate metadata (subject/issuer/validity/fingerprint/source) — never the private key or cert PEM."
+    },
+    {
+      "id": "VT-U10",
+      "testType": "usability",
+      "title": "Admin installs a TLS certificate from Settings",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-111"
+        }
+      ],
+      "preconditions": "Admin participants with a cert + key file.",
+      "steps": [
+        "Task: 'Replace the site's certificate with the provided files.'",
+        "Observe use of the file pickers and the current-certificate panel."
+      ],
+      "expected": "Participants upload the cert/key and confirm the active certificate updated, unaided.",
+      "metric": "Task success ≥ 80%; the 'applies to new connections / reload' note understood."
     }
   ]
 }

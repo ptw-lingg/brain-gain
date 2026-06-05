@@ -2,11 +2,11 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 51 validation tests · updated 2026-06-03.
+> Generated from `requirements.json` · 58 validation tests · updated 2026-06-03.
 > Validation answers *"are we building the right thing?"* — each test exercises one or more **stakeholder**
 > requirements (`SR-…`), including usability and accessibility.
 
-## Acceptance tests (38)
+## Acceptance tests (44)
 
 #### VT-001 — Email/password login
 
@@ -313,7 +313,54 @@
   1. Start backend + frontend from a clean state.
 - **Expected:** Demo admin/trainer/member accounts are seeded on first start and the app is immediately usable.
 
-## Usability tests (9)
+#### VT-110 — App served over HTTPS
+
+- **Method:** API check · **Validates:** SR-110
+- **Steps:**
+  1. Request the API and the SPA over HTTPS.
+  2. curl -k https://localhost:3001/api/health and https://localhost:3001/.
+- **Expected:** Both respond over TLS (health → {ok:true}; / serves the SPA index when built).
+
+#### VT-111 — HTTP is redirected to HTTPS
+
+- **Method:** API check · **Validates:** SR-110
+- **Steps:**
+  1. curl -I http://localhost:3000/anything.
+- **Expected:** Responds 308 with Location: https://…<HTTPS_PORT>/anything; no app/API content is served over HTTP.
+
+#### VT-112 — Self-signed cert auto-generated on first run
+
+- **Method:** Manual · **Validates:** SR-110
+- **Preconditions:** Empty data/tls/ (fresh install).
+- **Steps:**
+  1. Start the backend with no certificate present.
+- **Expected:** data/tls/{cert,key}.pem are generated and the HTTPS server starts successfully without manual setup.
+
+#### VT-113 — Certificate upload hot-swaps without downtime
+
+- **Method:** API check · **Validates:** SR-111
+- **Preconditions:** Signed in as admin; a valid cert+key.
+- **Steps:**
+  1. POST /api/settings/certificate with cert+key PEM.
+  2. Continue making HTTPS requests.
+- **Expected:** Returns 200 + metadata; the server keeps serving and new connections use the uploaded certificate (no restart).
+
+#### VT-114 — Invalid or mismatched certificate is rejected
+
+- **Method:** API check · **Validates:** SR-111
+- **Steps:**
+  1. POST /api/settings/certificate with a key that does not match the cert (and with malformed PEM).
+- **Expected:** Returns 400 with a clear error; the active certificate is unchanged.
+
+#### VT-115 — Private key is never exposed
+
+- **Method:** API check · **Validates:** SR-111
+- **Steps:**
+  1. Inspect GET /api/settings and GET /api/settings/certificate responses.
+  2. Attempt to read the key via any API.
+- **Expected:** Responses contain only certificate metadata (subject/issuer/validity/fingerprint/source) — never the private key or cert PEM.
+
+## Usability tests (10)
 
 #### VT-U01 — First-login orientation
 
@@ -395,6 +442,16 @@
   1. Perform a save and a deliberately failing action on slow network.
 - **Expected:** Loading/skeleton states appear during fetches and success/error toasts clearly confirm or explain outcomes.
 - **Acceptance metric:** All observed actions give visible feedback within 1s.
+
+#### VT-U10 — Admin installs a TLS certificate from Settings
+
+- **Method:** Manual · **Validates:** SR-111
+- **Preconditions:** Admin participants with a cert + key file.
+- **Steps:**
+  1. Task: 'Replace the site's certificate with the provided files.'
+  2. Observe use of the file pickers and the current-certificate panel.
+- **Expected:** Participants upload the cert/key and confirm the active certificate updated, unaided.
+- **Acceptance metric:** Task success ≥ 80%; the 'applies to new connections / reload' note understood.
 
 ## Accessibility tests (4)
 
@@ -480,3 +537,5 @@
 | SR-104 | Server-side security enforcement | M | VT-104 |
 | SR-105 | No secrets to clients | M | VT-105 |
 | SR-106 | Easy to run; seed demo data | S | VT-106 |
+| SR-110 | HTTPS-only delivery | M | VT-110, VT-111, VT-112 |
+| SR-111 | Admin-managed TLS certificate | M | VT-113, VT-114, VT-115, VT-U10 |

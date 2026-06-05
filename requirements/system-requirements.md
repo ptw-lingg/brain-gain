@@ -2,7 +2,7 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 71 requirements · updated 2026-06-03.
+> Generated from `requirements.json` · 80 requirements · updated 2026-06-03.
 
 Each system requirement is **derived from** one or more stakeholder requirements (`SR-…`).
 
@@ -127,6 +127,20 @@ Each system requirement is **derived from** one or more stakeholder requirements
 | SYS-NFR-01 | **Server-side enforcement** — All security-sensitive logic — credential checks, quiz grading, ownership and access checks, and SSO token validation — shall be enforced on the server and never trusted from the client. | SR-104 | Implemented |
 | SYS-NFR-02 | **No secret leakage** — The system shall never transmit passwordHash, entraOid, correctIndex, or any secret to clients, and SSO shall function without storing a client secret. | SR-051, SR-105 | Implemented |
 
+### HTTPS & TLS
+
+| ID | Requirement | Derived from | Status |
+|---|---|---|---|
+| SYS-TLS-01 | **Single HTTPS origin serves API + SPA** — The backend shall run an HTTPS server that serves both the /api routes and the built SPA (frontend/dist) from one origin; the SPA fallback returns index.html for non-/api GETs. | SR-110 | Verified |
+| SYS-TLS-02 | **HTTP redirects to HTTPS** — A minimal HTTP listener shall answer every request with a 308 redirect to the HTTPS URL; no app/API content is served over HTTP. | SR-110 | Verified |
+| SYS-TLS-03 | **Self-signed bootstrap on first run** — If no certificate exists at startup, the server shall generate and persist a self-signed certificate so HTTPS starts immediately (no lockout before an admin uploads a real cert). | SR-110 | Verified |
+| SYS-TLS-04 | **Cert/key stored privately; metadata-only exposure** — The private key and certificate shall be stored under data/tls/ (git-ignored) and never returned by any API; only non-secret metadata (subject/issuer/validity/fingerprint/source) is surfaced via Settings. | SR-111, SR-105 | Verified |
+| SYS-TLS-05 | **Upload validates + hot-swaps the certificate** — POST /api/settings/certificate (admin) shall validate the PEM and that the private key matches the certificate, then hot-swap the running server via setSecureContext (no restart). Invalid/mismatched input → 400. | SR-111 | Verified |
+| SYS-TLS-06 | **Certificate endpoints are admin-only** — GET /api/settings/certificate returns metadata only; POST /api/settings/certificate and /certificate/self-signed require admin (403 otherwise). | SR-111, SR-105 | Verified |
+| SYS-TLS-07 | **Settings TLS card** — The Settings page shall show the active certificate metadata and let an admin upload cert/key/chain PEM files (read client-side and POSTed) and regenerate a self-signed certificate. | SR-111 | Implemented |
+| SYS-TLS-08 | **Dev server is HTTPS too** — The Vite dev server shall run over HTTPS (auto self-signed via @vitejs/plugin-basic-ssl) and proxy /api to the backend over HTTPS (secure:false). | SR-110 | Implemented |
+| SYS-TLS-09 | **HSTS header** — Responses shall include a Strict-Transport-Security header so browsers only ever use HTTPS for this origin. | SR-110 | Implemented |
+
 ## Coverage (stakeholder area → system requirements)
 
 | Stakeholder area | Stakeholder reqs | Covering system reqs |
@@ -140,4 +154,5 @@ Each system requirement is **derived from** one or more stakeholder requirements
 | Trainee Oversight | SR-070, SR-071 | SYS-OVS-01, SYS-OVS-02 |
 | Global Settings | SR-080, SR-081 | SYS-DATA-06, SYS-SET-01, SYS-SET-02, SYS-SET-03 |
 | User Experience & Design | SR-090, SR-091, SR-092, SR-093, SR-094 | SYS-ARCH-04, SYS-UI-01, SYS-UI-02, SYS-UI-03, SYS-UI-04, SYS-UI-05, SYS-UI-06 |
-| Non-Functional & Constraints | SR-100, SR-101, SR-102, SR-103, SR-104, SR-105, SR-106 | SYS-ARCH-01, SYS-ARCH-02, SYS-ARCH-03, SYS-ARCH-05, SYS-ARCH-06, SYS-ARCH-07, SYS-DATA-01, SYS-DATA-07, SYS-AUTH-02, SYS-SSO-04, SYS-SSO-08, SYS-NFR-01, SYS-NFR-02 |
+| Non-Functional & Constraints | SR-100, SR-101, SR-102, SR-103, SR-104, SR-105, SR-106 | SYS-ARCH-01, SYS-ARCH-02, SYS-ARCH-03, SYS-ARCH-05, SYS-ARCH-06, SYS-ARCH-07, SYS-DATA-01, SYS-DATA-07, SYS-AUTH-02, SYS-SSO-04, SYS-SSO-08, SYS-NFR-01, SYS-NFR-02, SYS-TLS-04, SYS-TLS-06 |
+| HTTPS & TLS | SR-110, SR-111 | SYS-TLS-01, SYS-TLS-02, SYS-TLS-03, SYS-TLS-04, SYS-TLS-05, SYS-TLS-06, SYS-TLS-07, SYS-TLS-08, SYS-TLS-09 |

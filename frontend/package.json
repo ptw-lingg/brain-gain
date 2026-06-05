@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.41",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
