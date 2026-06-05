@@ -55,26 +55,67 @@ app.use(
   },
 );
 
+// Bind a server, retrying briefly on EADDRINUSE instead of crashing. During a `tsx watch` reload the
+// previous process may not have released the port yet; retry for a short window, then give up.
+function listenWithRetry(
+  server: http.Server | https.Server,
+  port: number,
+  onListening: () => void,
+  retries = 20,
+  delayMs = 250,
+): void {
+  let remaining = retries;
+  server.on('listening', onListening);
+  server.on('error', (err: Error) => {
+    if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE' && remaining > 0) {
+      if (remaining === retries) {
+        console.warn(`⏳ Port ${port} is busy (likely a reload in flight) — retrying…`);
+      }
+      remaining -= 1;
+      setTimeout(() => server.listen(port), delayMs);
+      return;
+    }
+    console.error(`Failed to bind port ${port}:`, err.message);
+    process.exit(1);
+  });
+  server.listen(port);
+}
+
 seed()
   .then(async () => {
     const creds = await ensureCredentials();
-    const server = https.createServer({ key: creds.key, cert: creds.cert, ca: creds.ca }, app);
-    registerHttpsServer(server);
-    server.listen(HTTPS_PORT, () => {
+    const httpsServer = https.createServer({ key: creds.key, cert: creds.cert, ca: creds.ca }, app);
+    registerHttpsServer(httpsServer);
+    listenWithRetry(httpsServer, HTTPS_PORT, () => {
       console.log(`🔒 BrainGain served over HTTPS at https://localhost:${HTTPS_PORT}`);
     });
 
     // HTTP listener: redirect everything to HTTPS (no app content is served over HTTP).
-    http
-      .createServer((req, res) => {
-        const host = (req.headers.host ?? `localhost:${HTTP_PORT}`).split(':')[0];
-        const suffix = HTTPS_PORT === 443 ? '' : `:${HTTPS_PORT}`;
-        res.writeHead(308, { Location: `https://${host}${suffix}${req.url ?? '/'}` });
-        res.end();
-      })
-      .listen(HTTP_PORT, () => {
-        console.log(`↪  HTTP ${HTTP_PORT} redirects (308) to HTTPS`);
-      });
+    const httpRedirect = http.createServer((req, res) => {
+      const host = (req.headers.host ?? `localhost:${HTTP_PORT}`).split(':')[0];
+      const suffix = HTTPS_PORT === 443 ? '' : `:${HTTPS_PORT}`;
+      res.writeHead(308, { Location: `https://${host}${suffix}${req.url ?? '/'}` });
+      res.end();
+    });
+    listenWithRetry(httpRedirect, HTTP_PORT, () => {
+      console.log(`↪  HTTP ${HTTP_PORT} redirects (308) to HTTPS`);
+    });
+
+    // On a watch-reload or Ctrl-C, close both servers so their ports free up before the next
+    // process binds; force-exit if a lingering keep-alive connection holds them open.
+    const shutdown = (signal: string): void => {
+      console.log(`${signal} received — closing servers.`);
+      let pending = 2;
+      const done = (): void => {
+        pending -= 1;
+        if (pending <= 0) process.exit(0);
+      };
+      httpsServer.close(done);
+      httpRedirect.close(done);
+      setTimeout(() => process.exit(0), 1500).unref();
+    };
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
   })
   .catch((err) => {
     console.error('Failed to seed/start:', err);

@@ -12,7 +12,10 @@ import https from 'https';
 import selfsigned from 'selfsigned';
 import type { TlsSettings } from '../types';
 
-const TLS_DIR = path.join(__dirname, '..', 'data', 'tls');
+// Defaults to backend/src/data/tls; honors DATA_DIR so an isolated test data dir gets its own
+// auto-generated cert instead of sharing the committed dev certificate.
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data');
+const TLS_DIR = path.join(DATA_DIR, 'tls');
 const KEY_PATH = path.join(TLS_DIR, 'key.pem');
 const CERT_PATH = path.join(TLS_DIR, 'cert.pem');
 const CHAIN_PATH = path.join(TLS_DIR, 'chain.pem');

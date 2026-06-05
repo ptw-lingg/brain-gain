@@ -2,7 +2,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import type { Settings } from '../types';
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// Defaults to backend/src/data; override with DATA_DIR (used by the automated test harness to
+// run against an isolated, throwaway data directory).
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data');
 
 type ArrayFile = 'users' | 'roles' | 'trainings' | 'sessions';
 

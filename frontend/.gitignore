@@ -6,3 +6,10 @@ dist/
 # sibling shadows the real source. .ts/.vue are the single source of truth (tsconfig has noEmit).
 /src/**/*.js
 /vite.config.js
+
+# Playwright e2e artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/e2e/.server-state.json

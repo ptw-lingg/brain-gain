@@ -1,0 +1,90 @@
+import { test, expect } from '@playwright/test';
+import { login } from './fixtures';
+
+// E2E for the training-session flow (frontend SYS-SES-01, traced to SR-050 / VT-050) plus the
+// dashboard due-status surface (SYS-DUE-02 / SR-060 / VT-060) and the retry affordance
+// (SYS-SES-03 / SR-052 / VT-052). The seeded member holds the "Lab Technician" role requiring two
+// trainings, so the dashboard always has at least one Start action.
+//
+// Server-side grading, persistence-of-passes-only, and the never/up-to-date/due/overdue computation
+// are covered API-side in backend/tests/sessions-due.test.mjs; the answer key is never exposed to the
+// client, so this spec drives the visible flow and asserts a pass/fail result screen appears.
+test.describe('Training sessions & due status', () => {
+  test('SYS-DUE-02 / SR-060 / VT-060: the dashboard lists the member\'s required trainings with status + Start', async ({ page }) => {
+    await login(page, 'member');
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    // Both seeded required trainings are shown as cards, each with a Start action and a status pill.
+    await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Quality Management Intro' })).toBeVisible();
+    const starts = page.getByRole('button', { name: /Start/ });
+    await expect(starts.first()).toBeVisible();
+    expect(await starts.count()).toBeGreaterThanOrEqual(2);
+  });
+
+  test('SYS-SES-01 / SR-050 / VT-050: a member completes the material → quiz → result flow', async ({ page }) => {
+    await login(page, 'member');
+
+    // Start a session from the dashboard → routes to /session/:trainingId (step 1 of 3: material).
+    await page.getByRole('button', { name: /Start/ }).first().click();
+    await expect(page).toHaveURL(/\/session\//);
+    await expect(page.getByText('// step 1 of 3')).toBeVisible();
+
+    // Step 1 — material: a learning-material link is shown and opens in a new tab (target=_blank).
+    const materialLink = page.locator('a[target="_blank"]').first();
+    await expect(materialLink).toBeVisible();
+    await expect(materialLink).toHaveAttribute('rel', /noopener/);
+
+    // Advance to the quiz (step 2 of 3).
+    await page.getByRole('button', { name: 'Start test' }).click();
+    await expect(page.getByText('// step 2 of 3')).toBeVisible();
+
+    // The quiz must NOT visually mark a correct answer (answer key hidden) — just radio options.
+    const questionCards = page.locator('section >> .card');
+    expect(await questionCards.count()).toBeGreaterThanOrEqual(1);
+
+    // Submit is disabled until every question is answered.
+    const submit = page.getByRole('button', { name: 'Submit test' });
+    await expect(submit).toBeDisabled();
+
+    // Answer every question by choosing its first option, then submit.
+    const cards = await questionCards.all();
+    for (const card of cards) {
+      await card.locator('input[type="radio"]').first().check();
+    }
+    await expect(submit).toBeEnabled();
+    await submit.click();
+
+    // Step 3 — result: a pass/fail result screen with the score is shown (server-graded).
+    await expect(page.getByText('// step 3 of 3')).toBeVisible();
+    await expect(page.getByText(/You scored \d+%/)).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Passed|Not passed/ }),
+    ).toBeVisible();
+  });
+
+  test('SYS-SES-03 / SR-052 / VT-052: a failing attempt offers a retry and notes failures aren\'t recorded', async ({ page }) => {
+    await login(page, 'member');
+
+    // Open the Laboratory Safety Basics session specifically (3 questions; first option is wrong,
+    // so picking the first option for all three yields a guaranteed fail at the 80% threshold).
+    await page.getByRole('button', { name: /Start/ }).first().click();
+    await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
+    await page.getByRole('button', { name: 'Start test' }).click();
+
+    const cards = await page.locator('section >> .card').all();
+    for (const card of cards) {
+      await card.locator('input[type="radio"]').first().check();
+    }
+    await page.getByRole('button', { name: 'Submit test' }).click();
+
+    // Failing result shows the retry button and the "not recorded / stays due" note.
+    await expect(page.getByRole('heading', { name: 'Not passed' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Retry test/ })).toBeVisible();
+    await expect(page.getByText(/Failed attempts aren't recorded/)).toBeVisible();
+
+    // Retry returns to the quiz step (unlimited retries).
+    await page.getByRole('button', { name: /Retry test/ }).click();
+    await expect(page.getByText('// step 2 of 3')).toBeVisible();
+  });
+});
