@@ -1,12 +1,51 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Search, Link2, FileCode2, CheckCircle2, BookText, ClipboardCheck, ListOrdered } from 'lucide-vue-next';
+import { Search, Link2, FileCode2, CheckCircle2, ClipboardCheck, ListOrdered, FlaskConical, FileText, Download, X } from 'lucide-vue-next';
 import rawData from '@/data/requirements.generated.json';
 import type { Requirement, RequirementsDoc, TestCase } from '@/types/requirements';
+import type { TCreatedPdf } from 'pdfmake/interfaces';
+import { buildDocument, DOC_CATALOG, type DocInfo, type DocKind } from '@/utils/dmsDocuments';
+// pdfmake is heavy (~800 kB gzip) and only needed when a document is generated, so it is imported
+// lazily — keeping it out of the initial app bundle.
 
 const data = rawData as unknown as RequirementsDoc;
 const reqs = data.requirements;
 const tests = data.tests ?? [];
+const coverage = data.meta.coverage;
+
+// ---- controlled documents (preview, then download for the DMS)
+const docKinds = Object.keys(DOC_CATALOG) as DocKind[];
+const docModal = ref<{ info: DocInfo; url: string } | null>(null);
+const docBuilding = ref<DocKind | null>(null);
+let currentPdf: TCreatedPdf | null = null;
+let lastUrl: string | null = null;
+
+async function openDocument(kind: DocKind): Promise<void> {
+  docBuilding.value = kind;
+  docModal.value = null;
+  const { def, info } = buildDocument(kind, data);
+  const { createPdf } = await import('@/utils/pdf');
+  currentPdf = createPdf(def);
+  // Render to a blob URL so the in-app preview iframe shows the real PDF (the mandatory "view").
+  const blob = await currentPdf.getBlob();
+  if (lastUrl) URL.revokeObjectURL(lastUrl);
+  lastUrl = URL.createObjectURL(blob);
+  docModal.value = { info, url: lastUrl };
+  docBuilding.value = null;
+}
+// Download is only reachable from the open preview modal — the user must view the document first.
+function downloadDocument(): void {
+  if (currentPdf && docModal.value) currentPdf.download(docModal.value.info.fileName);
+}
+function closeDocument(): void {
+  if (lastUrl) URL.revokeObjectURL(lastUrl);
+  lastUrl = null;
+  currentPdf = null;
+  docModal.value = null;
+  docBuilding.value = null;
+}
+const testKindClass = (k: string) =>
+  k === 'backend' ? 'bg-pastel-cyan/60 text-ink' : k === 'e2e' ? 'bg-pastel-mint/60 text-emerald-700' : 'bg-pastel-slate/60 text-ink-muted';
 
 type Item = Requirement | TestCase;
 const isTest = (i: Item): i is TestCase => 'testType' in i;
@@ -133,6 +172,35 @@ const testTypeClass = (tt?: string) =>
       </div>
     </header>
 
+    <!-- Coverage summary + controlled-document generation -->
+    <div class="mt-4 card flex flex-wrap items-center gap-x-4 gap-y-3 p-4">
+      <div v-if="coverage" class="flex items-center gap-2">
+        <span class="pill bg-pastel-mint/60 text-emerald-700">
+          <CheckCircle2 class="h-3.5 w-3.5" /> {{ coverage.covered }}/{{ coverage.total }} ids covered
+        </span>
+        <span class="font-mono text-[11px] text-ink-light">
+          {{ coverage.backend }} backend · {{ coverage.e2e }} e2e · {{ coverage.manual }} manual ·
+          <span :class="coverage.gaps.length ? 'text-amber-600' : 'text-emerald-700'">{{ coverage.gaps.length }} gaps</span>
+        </span>
+      </div>
+      <div class="flex-1" />
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-mono text-[11px] text-ink-light">
+          Controlled documents <span class="text-ink-muted">· ISO 13485 / MDR / MDSAP</span>:
+        </span>
+        <button
+          v-for="k in docKinds"
+          :key="k"
+          class="btn-ghost !px-3 !py-1.5 !text-xs"
+          :title="DOC_CATALOG[k].title"
+          :disabled="docBuilding !== null"
+          @click="openDocument(k)"
+        >
+          <FileText class="h-4 w-4" /> {{ DOC_CATALOG[k].abbr }}<span v-if="docBuilding === k"> …</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="mt-6 flex flex-wrap items-center gap-2">
       <div class="relative min-w-[200px] flex-1">
@@ -248,11 +316,12 @@ const testTypeClass = (tt?: string) =>
           </ul>
         </div>
 
-        <div v-if="(selectedReq.specRefs ?? []).length" class="mt-4">
-          <p class="trace-h"><BookText class="h-3.5 w-3.5" /> Spec</p>
+        <div v-if="(selectedReq.testedBy ?? []).length" class="mt-4">
+          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Tested by</p>
           <ul class="mt-1 flex flex-col gap-1">
-            <li v-for="(s, i) in selectedReq.specRefs" :key="i" class="font-mono text-xs text-ink-muted">
-              {{ s.doc }} › {{ s.section }}
+            <li v-for="(t, i) in selectedReq.testedBy" :key="i" class="flex items-center gap-2 font-mono text-xs text-ink-muted">
+              <span class="pill text-[9px]" :class="testKindClass(t.kind)">{{ t.kind }}</span>
+              <span>{{ t.file }}</span>
             </li>
           </ul>
         </div>
@@ -296,8 +365,52 @@ const testTypeClass = (tt?: string) =>
           <span class="font-sans text-xs font-semibold text-ink-muted">Acceptance metric: </span>
           <span class="text-ink-muted">{{ selectedTest.metric }}</span>
         </p>
+
+        <p class="mt-3 text-sm">
+          <span class="font-sans text-xs font-semibold text-ink-muted">Execution: </span>
+          <span :class="selectedTest.automated ? 'text-emerald-700' : 'text-ink-muted'">
+            {{ selectedTest.automated ? 'Automated (CI test suite)' : 'Manual procedure' }}
+          </span>
+        </p>
+        <div v-if="(selectedTest.testedBy ?? []).length" class="mt-3">
+          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Test files</p>
+          <ul class="mt-1 flex flex-col gap-1">
+            <li v-for="(t, i) in selectedTest.testedBy" :key="i" class="flex items-center gap-2 font-mono text-xs text-ink-muted">
+              <span class="pill text-[9px]" :class="testKindClass(t.kind)">{{ t.kind }}</span>
+              <span>{{ t.file }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
+
+    <!-- Controlled-document preview → gated download -->
+    <Transition name="fade-slide">
+      <div v-if="docModal || docBuilding" class="fixed inset-0 z-40 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-ink/40" @click="closeDocument" />
+        <div class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift">
+          <div class="flex items-center justify-between border-b border-line px-5 py-3">
+            <div>
+              <h2 class="font-sans text-base font-bold text-ink">{{ docModal?.info.title ?? 'Generating document…' }}</h2>
+              <p class="font-mono text-[11px] text-ink-light">
+                <span v-if="docModal">{{ docModal.info.docId }} · review the preview, then download for your DMS</span>
+                <span v-else>Rendering preview…</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn-primary !px-3 !py-1.5 !text-xs" :disabled="!docModal" @click="downloadDocument">
+                <Download class="h-4 w-4" /> Download PDF
+              </button>
+              <button class="text-ink-light hover:text-ink" title="Close" @click="closeDocument"><X class="h-5 w-5" /></button>
+            </div>
+          </div>
+          <div class="flex-1 overflow-hidden bg-pastel-slate/20">
+            <iframe v-if="docModal" :src="docModal.url" class="h-full w-full border-0" title="Document preview" />
+            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">Generating preview…</div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 

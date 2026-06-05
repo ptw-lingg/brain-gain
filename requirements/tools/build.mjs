@@ -1,101 +1,145 @@
 #!/usr/bin/env node
-// Validate requirements.json and (re)generate the human-readable Markdown views from it.
+// Validate requirements.json, inject test+coverage data, and sync the app's data copy.
 //
-//   node requirements/tools/build.mjs           # validate + write the Markdown docs
-//   node requirements/tools/build.mjs --check    # validate + fail if the docs are out of date (CI / pre-commit)
+//   node requirements/tools/build.mjs           # validate + inject coverage + write JSON
+//   node requirements/tools/build.mjs --check    # validate + fail if JSON is out of date (CI / pre-commit)
 //
-// requirements.json is the single source of truth; the Markdown files below are generated artifacts.
+// requirements.json is the single source of truth. This tool:
+//   1. strips dead references to the removed brain-gain.md spec (idempotent),
+//   2. scans the test suites and writes each requirement's `testedBy` + each VT's `automated`/`testedBy`,
+//      plus a `meta.coverage` summary, INTO requirements.json,
+//   3. writes frontend/src/data/requirements.generated.json (the copy the in-app viewer imports).
+// It no longer emits the Markdown views (the dataset itself is the artifact).
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const reqDir = join(here, '..'); // requirements/
+const reqDir = join(here, '..');
 const repoRoot = join(reqDir, '..');
 const dataPath = join(reqDir, 'requirements.json');
+const generatedPath = join(repoRoot, 'frontend', 'src', 'data', 'requirements.generated.json');
 const rel = (p) => relative(repoRoot, p).replace(/\\/g, '/');
 const CHECK = process.argv.includes('--check');
 
-const BANNER =
-  '<!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->';
-
 const data = JSON.parse(readFileSync(dataPath, 'utf8'));
-const reqs = data.requirements;
 
-// ---------------------------------------------------------------- validation
-const ID_RE = /^(SR-\d{3}|SYS-[A-Z]+-\d{2})$/;
-const priorityIds = new Set(data.enums.priority.map((e) => e.id));
-const sourceIds = new Set(data.enums.source.map((e) => e.id));
-const statusIds = new Set(data.enums.status.map((e) => e.id));
-const linkTypeIds = new Set(data.enums.linkType.map((e) => e.id));
-const testTypeIds = new Set((data.enums.testType ?? []).map((e) => e.id));
-const methodIds = new Set((data.enums.method ?? []).map((e) => e.id));
-const ids = new Map(); // id -> requirement
-const testIds = new Set();
-const tests = data.tests ?? [];
+// ───────────────────────────── 1. strip the removed brain-gain.md spec ─────────────────────────────
+delete data.meta.specDoc;
+for (const r of data.requirements) {
+  delete r.specRefs; // every specRef pointed at the now-deleted brain-gain.md
+  // SYS-AC-06's only implementedBy was the doc's permission matrix — repoint to the real enforcement.
+  if ((r.implementedBy ?? []).some((c) => c.path === 'brain-gain.md')) {
+    r.implementedBy = [
+      { path: 'backend/src/middleware/auth.ts', symbol: 'requireAdmin/requireTrainerOrAdmin/requireAdminOrOwner' },
+      { path: 'backend/src/routes/', symbol: 'per-endpoint guards (users/roles/settings/trainings)' },
+    ];
+  }
+}
 
+// ───────────────────────────── 2. scan test suites → testedBy / coverage ─────────────────────────────
+const ID_RE = /\b(SYS-[A-Z]+-\d{2}|SR-\d{3}|VT-(?:[A-Z]\d{2}|\d{3}))\b/g;
+function refsFrom(dir, pred, kind) {
+  const out = []; // [{ id, kind, file }]
+  if (!existsSync(dir)) return out;
+  for (const f of readdirSync(dir).filter(pred)) {
+    const seen = new Set();
+    for (const m of readFileSync(join(dir, f), 'utf8').matchAll(ID_RE)) seen.add(m[1]);
+    for (const id of seen) out.push({ id, kind, file: `${rel(dir)}/${f}` });
+  }
+  return out;
+}
+const allRefs = [
+  ...refsFrom(join(repoRoot, 'backend', 'tests'), (f) => f.endsWith('.test.mjs'), 'backend'),
+  ...refsFrom(join(repoRoot, 'frontend', 'e2e'), (f) => f.endsWith('.spec.ts'), 'e2e'),
+  ...refsFrom(join(reqDir, 'manual-tests'), (f) => f.endsWith('.md'), 'manual'),
+];
+const refsById = new Map();
+for (const r of allRefs) (refsById.get(r.id) ?? refsById.set(r.id, []).get(r.id)).push({ kind: r.kind, file: r.file });
+const testedBy = (id) => (refsById.get(id) ?? []).sort((a, b) => a.kind.localeCompare(b.kind) || a.file.localeCompare(b.file));
+
+// A VT whose method/type is inherently manual is "covered" by its own spec in this dataset.
+const selfManual = (t) => ['usability', 'accessibility'].includes(t.testType) || ['manual', 'inspection'].includes(t.method);
+
+// No timestamp here — the file must be deterministic so `--check` works as a CI drift gate.
+const cov = { total: 0, covered: 0, backend: 0, e2e: 0, manual: 0, gaps: [] };
+const note = (id, by, extraManual) => {
+  cov.total++;
+  const kinds = new Set(by.map((b) => b.kind));
+  if (extraManual) kinds.add('manual');
+  if (kinds.has('backend')) cov.backend++;
+  if (kinds.has('e2e')) cov.e2e++;
+  if (kinds.has('manual')) cov.manual++;
+  if (kinds.size) cov.covered++;
+  else cov.gaps.push(id);
+  return kinds;
+};
+
+for (const r of data.requirements) {
+  const by = testedBy(r.id);
+  if (by.length) r.testedBy = by;
+  else delete r.testedBy;
+  note(r.id, by, false);
+}
+for (const t of data.tests) {
+  const by = testedBy(t.id);
+  const auto = by.some((b) => b.kind === 'backend' || b.kind === 'e2e');
+  t.automated = auto;
+  if (by.length) t.testedBy = by;
+  else delete t.testedBy;
+  note(t.id, by, selfManual(t)); // manual VTs count as self-documented
+}
+data.meta.coverage = cov;
+
+// ───────────────────────────── 3. validate ─────────────────────────────
 const errors = [];
 const err = (m) => errors.push(m);
+const ID = /^(SR-\d{3}|SYS-[A-Z]+-\d{2})$/;
+const TEST_ID = /^VT-([A-Z]\d{2}|\d{3})$/;
+const ids = new Map();
+const enumIds = (k) => new Set((data.enums[k] ?? []).map((e) => e.id));
+const [pri, src, st, lt] = [enumIds('priority'), enumIds('source'), enumIds('status'), enumIds('linkType')];
+const [tt, mt] = [enumIds('testType'), enumIds('method')];
 
-for (const r of reqs) {
-  if (!ID_RE.test(r.id)) err(`bad id pattern: ${r.id}`);
+for (const r of data.requirements) {
+  if (!ID.test(r.id)) err(`bad id: ${r.id}`);
   if (ids.has(r.id)) err(`duplicate id: ${r.id}`);
   ids.set(r.id, r);
-  if (!statusIds.has(r.status)) err(`${r.id}: unknown status "${r.status}"`);
-  for (const l of r.links ?? []) {
-    if (!linkTypeIds.has(l.type)) err(`${r.id}: unknown link type "${l.type}"`);
-  }
+  if (!st.has(r.status)) err(`${r.id}: bad status ${r.status}`);
+  for (const l of r.links ?? []) if (!lt.has(l.type)) err(`${r.id}: bad link type ${l.type}`);
   if (r.type === 'stakeholder') {
-    if (!priorityIds.has(r.priority)) err(`${r.id}: unknown priority "${r.priority}"`);
-    if (!sourceIds.has(r.source)) err(`${r.id}: unknown source "${r.source}"`);
+    if (!pri.has(r.priority)) err(`${r.id}: bad priority`);
+    if (!src.has(r.source)) err(`${r.id}: bad source ${r.source}`);
   }
   if (r.type === 'system') {
-    const hasDerive = (r.links ?? []).some((l) => l.type === 'derivedFrom');
-    if (!hasDerive) err(`${r.id}: system requirement has no derivedFrom link`);
-    if (!(r.implementedBy ?? []).length) err(`${r.id}: system requirement has no implementedBy`);
+    if (!(r.links ?? []).some((l) => l.type === 'derivedFrom')) err(`${r.id}: no derivedFrom`);
+    if (!(r.implementedBy ?? []).length) err(`${r.id}: no implementedBy`);
   }
 }
-// link targets resolve
-for (const r of reqs) {
-  for (const l of r.links ?? []) {
-    if (!ids.has(l.target)) err(`${r.id}: link target not found: ${l.target}`);
-  }
-}
-// every stakeholder requirement is covered by ≥1 system requirement
+for (const r of data.requirements) for (const l of r.links ?? []) if (!ids.has(l.target)) err(`${r.id}: dangling link ${l.target}`);
 const covered = new Set();
-for (const r of reqs) {
-  if (r.type === 'system') for (const l of r.links ?? []) if (l.type === 'derivedFrom') covered.add(l.target);
-}
-for (const r of reqs) {
-  if (r.type === 'stakeholder' && !covered.has(r.id)) err(`coverage gap: ${r.id} has no system requirement`);
-}
-
-// --- validation tests (VT-…) ---
-const TEST_ID_RE = /^VT-([A-Z]\d{2}|\d{3})$/;
-const validated = new Set(); // SR ids that have ≥1 validation test
-for (const t of tests) {
-  if (!TEST_ID_RE.test(t.id)) err(`bad test id pattern: ${t.id}`);
-  if (ids.has(t.id)) err(`test id collides with a requirement id: ${t.id}`);
-  if (testIds.has(t.id)) err(`duplicate test id: ${t.id}`);
+for (const r of data.requirements) if (r.type === 'system') for (const l of r.links ?? []) if (l.type === 'derivedFrom') covered.add(l.target);
+for (const r of data.requirements) if (r.type === 'stakeholder' && !covered.has(r.id)) err(`coverage gap: ${r.id} unsatisfied`);
+const validated = new Set();
+const testIds = new Set();
+for (const t of data.tests) {
+  if (!TEST_ID.test(t.id)) err(`bad test id: ${t.id}`);
+  if (testIds.has(t.id) || ids.has(t.id)) err(`duplicate test id: ${t.id}`);
   testIds.add(t.id);
-  if (!testTypeIds.has(t.testType)) err(`${t.id}: unknown testType "${t.testType}"`);
-  if (!methodIds.has(t.method)) err(`${t.id}: unknown method "${t.method}"`);
-  if (!(t.links ?? []).some((l) => l.type === 'validates')) err(`${t.id}: test has no "validates" link`);
+  if (!tt.has(t.testType)) err(`${t.id}: bad testType`);
+  if (!mt.has(t.method)) err(`${t.id}: bad method`);
+  if (!(t.links ?? []).some((l) => l.type === 'validates')) err(`${t.id}: no validates link`);
   for (const l of t.links ?? []) {
-    const target = ids.get(l.target);
-    if (!target) err(`${t.id}: link target not found: ${l.target}`);
-    else if (l.type === 'validates' && target.type !== 'stakeholder')
-      err(`${t.id}: validates a non-stakeholder requirement (${l.target})`);
-    if (l.type === 'validates' && target) validated.add(l.target);
+    const tgt = ids.get(l.target);
+    if (!tgt) err(`${t.id}: dangling link ${l.target}`);
+    else if (l.type === 'validates' && tgt.type !== 'stakeholder') err(`${t.id}: validates non-stakeholder ${l.target}`);
+    if (l.type === 'validates' && tgt) validated.add(l.target);
   }
   if (!(t.steps ?? []).length) err(`${t.id}: no steps`);
-  if (!t.expected) err(`${t.id}: no expected result`);
+  if (!t.expected) err(`${t.id}: no expected`);
 }
-// every stakeholder requirement must be validated by ≥1 test
-for (const r of reqs) {
-  if (r.type === 'stakeholder' && !validated.has(r.id)) err(`validation gap: ${r.id} has no validation test`);
-}
+for (const r of data.requirements) if (r.type === 'stakeholder' && !validated.has(r.id)) err(`validation gap: ${r.id} has no VT`);
 
 if (errors.length) {
   console.error(`✗ requirements.json failed validation (${errors.length}):`);
@@ -103,182 +147,47 @@ if (errors.length) {
   process.exit(1);
 }
 
-const sr = reqs.filter((r) => r.type === 'stakeholder');
-const sys = reqs.filter((r) => r.type === 'system');
-console.log(
-  `✓ valid: ${sr.length} stakeholder + ${sys.length} system requirements + ${tests.length} validation tests, ${ids.size + testIds.size} ids, 0 errors`,
-);
+// ───────────────────────────── 4. serialize (one object per line, CRLF — keeps the file greppable) ─────────────────────────────
+const NL = '\r\n';
+const arr = (key, list, indent) =>
+  !list || !list.length
+    ? `${indent}"${key}": []`
+    : `${indent}"${key}": [${NL}${list.map((o) => `${indent}  ${JSON.stringify(o)}`).join(',' + NL)}${NL}${indent}]`;
+const block = (key, obj, indent) => `${indent}"${key}": ${JSON.stringify(obj, null, 2).split('\n').join(NL + indent)}`;
 
-// ---------------------------------------------------------------- helpers
-const label = (list, id) => (list.find((e) => e.id === id)?.label ?? id);
-const cell = (s) => String(s).replace(/\|/g, '\\|').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const code = (s) => '`' + String(s).replace(/\|/g, '\\|') + '`';
-const derivedFrom = (r) => (r.links ?? []).filter((l) => l.type === 'derivedFrom').map((l) => l.target);
-const orderedCategories = (list) => {
-  const seen = [];
-  for (const r of list) if (!seen.includes(r.category)) seen.push(r.category);
-  return seen;
-};
-const implRefs = (r) =>
-  (r.implementedBy ?? [])
-    .map((c) => (c.symbol ? `${code(c.path)} · ${cell(c.symbol)}` : code(c.path)))
-    .join('; ');
-
-// ---------------------------------------------------------------- generators
-function stakeholderDoc() {
-  const out = [];
-  out.push('# BrainGain — Stakeholder Requirements', '', BANNER, '');
-  out.push(`> Generated from \`requirements.json\` · ${sr.length} requirements · updated ${data.meta.updated}.`, '');
-  out.push('Priority: **M** = Must · **S** = Should · **C** = Could.', '');
-
-  out.push('## Actors', '');
-  out.push('| ID | Actor | Description |', '|---|---|---|');
-  for (const a of data.actors) out.push(`| \`${a.id}\` | ${cell(a.name)} | ${cell(a.description)} |`);
-  out.push('');
-
-  out.push('## Requirements', '');
-  for (const catName of orderedCategories(sr)) {
-    out.push(`### ${catName}`, '');
-    out.push('| ID | Requirement | Priority | Source | Status |', '|---|---|---|---|---|');
-    for (const r of sr.filter((x) => x.category === catName)) {
-      const src = label(data.enums.source, r.source) + (r.sourceNote ? ` (${r.sourceNote})` : '');
-      out.push(`| ${r.id} | **${cell(r.title)}** — ${cell(r.text)} | ${r.priority} | ${cell(src)} | ${label(data.enums.status, r.status)} |`);
-    }
-    out.push('');
-  }
-
-  if (data.outOfScope?.length) {
-    out.push('## Out of Scope', '');
-    for (const o of data.outOfScope) out.push(`- ${cell(o.text)}`);
-    out.push('');
-  }
-  return out.join('\n');
+function serialize(d) {
+  const parts = [];
+  parts.push(`  "$schema": ${JSON.stringify(d.$schema)}`);
+  parts.push(block('meta', d.meta, '  '));
+  const enumParts = Object.entries(d.enums).map(([k, v]) => arr(k, v, '    '));
+  parts.push(`  "enums": {${NL}${enumParts.join(',' + NL)}${NL}  }`);
+  parts.push(arr('actors', d.actors, '  '));
+  if (d.outOfScope) parts.push(arr('outOfScope', d.outOfScope, '  '));
+  parts.push(arr('requirements', d.requirements, '  '));
+  parts.push(arr('tests', d.tests, '  '));
+  return `{${NL}${parts.join(',' + NL)}${NL}}${NL}`;
 }
 
-function systemDoc() {
-  const out = [];
-  out.push('# BrainGain — System Requirements', '', BANNER, '');
-  out.push(`> Generated from \`requirements.json\` · ${sys.length} requirements · updated ${data.meta.updated}.`, '');
-  out.push('Each system requirement is **derived from** one or more stakeholder requirements (`SR-…`).', '');
+const reqOut = serialize(data);
+const genOut = JSON.stringify(data, null, 2) + '\n';
 
-  for (const catName of orderedCategories(sys)) {
-    out.push(`### ${catName}`, '');
-    out.push('| ID | Requirement | Derived from | Status |', '|---|---|---|---|');
-    for (const r of sys.filter((x) => x.category === catName)) {
-      out.push(`| ${r.id} | **${cell(r.title)}** — ${cell(r.text)} | ${derivedFrom(r).join(', ')} | ${label(data.enums.status, r.status)} |`);
-    }
-    out.push('');
+if (CHECK) {
+  let drift = 0;
+  for (const [p, body] of [[dataPath, reqOut], [generatedPath, genOut]]) {
+    let cur = '';
+    try { cur = readFileSync(p, 'utf8'); } catch { /* missing = drift */ }
+    if (cur !== body) { drift++; console.error(`✗ out of date: ${rel(p)} (run build.mjs)`); }
   }
-
-  // coverage by stakeholder category
-  out.push('## Coverage (stakeholder area → system requirements)', '');
-  out.push('| Stakeholder area | Stakeholder reqs | Covering system reqs |', '|---|---|---|');
-  for (const catName of orderedCategories(sr)) {
-    const srIds = sr.filter((x) => x.category === catName).map((x) => x.id);
-    const sysIds = sys
-      .filter((x) => derivedFrom(x).some((d) => srIds.includes(d)))
-      .map((x) => x.id);
-    out.push(`| ${cell(catName)} | ${srIds.join(', ')} | ${sysIds.join(', ')} |`);
-  }
-  out.push('');
-  return out.join('\n');
+  if (drift) process.exit(1);
+  console.log(`✓ up to date — coverage ${cov.covered}/${cov.total} (backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}), gaps ${cov.gaps.length}`);
+} else {
+  writeFileSync(dataPath, reqOut, 'utf8');
+  mkdirSync(dirname(generatedPath), { recursive: true });
+  writeFileSync(generatedPath, genOut, 'utf8');
+  const sr = data.requirements.filter((r) => r.type === 'stakeholder').length;
+  const sys = data.requirements.length - sr;
+  console.log(`✓ ${sr} stakeholder + ${sys} system + ${data.tests.length} tests`);
+  console.log(`  coverage ${cov.covered}/${cov.total} ids — backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}, gaps ${cov.gaps.length}`);
+  console.log(`  wrote ${rel(dataPath)} + ${rel(generatedPath)}`);
+  if (cov.gaps.length) console.log(`  GAPS: ${cov.gaps.join(', ')}`);
 }
-
-function traceDoc() {
-  const out = [];
-  out.push('# BrainGain — Requirements Traceability Matrix', '', BANNER, '');
-  out.push(`> Generated from \`requirements.json\` · updated ${data.meta.updated}. Maps every system requirement to`, '> the code that implements it, and back to the stakeholder requirement(s) it satisfies.', '');
-
-  for (const catName of orderedCategories(sys)) {
-    out.push(`### ${catName}`, '');
-    out.push('| SYS | Implemented by | Derived from | Verified |', '|---|---|---|---|');
-    for (const r of sys.filter((x) => x.category === catName)) {
-      const verified = (r.verifiedBy ?? []).map((v) => v.method).join(', ') || '—';
-      out.push(`| ${r.id} | ${implRefs(r)} | ${derivedFrom(r).join(', ')} | ${cell(verified)} |`);
-    }
-    out.push('');
-  }
-
-  out.push('## Reverse index — stakeholder requirement → system requirements → code', '');
-  out.push('| SR | Title | Satisfied by | Code areas |', '|---|---|---|---|');
-  for (const s of sr) {
-    const covering = sys.filter((x) => derivedFrom(x).includes(s.id));
-    const sysIds = covering.map((x) => x.id).join(', ') || '—';
-    const paths = [...new Set(covering.flatMap((x) => (x.implementedBy ?? []).map((c) => c.path)))];
-    out.push(`| ${s.id} | ${cell(s.title)} | ${sysIds} | ${paths.map(code).join(', ') || '—'} |`);
-  }
-  out.push('');
-  return out.join('\n');
-}
-
-const validates = (t) => (t.links ?? []).filter((l) => l.type === 'validates').map((l) => l.target);
-
-function validationDoc() {
-  const out = [];
-  out.push('# BrainGain — Validation Plan', '', BANNER, '');
-  out.push(
-    `> Generated from \`requirements.json\` · ${tests.length} validation tests · updated ${data.meta.updated}.`,
-    '> Validation answers *"are we building the right thing?"* — each test exercises one or more **stakeholder**',
-    '> requirements (`SR-…`), including usability and accessibility.',
-    '',
-  );
-  for (const tt of data.enums.testType) {
-    const group = tests.filter((t) => t.testType === tt.id);
-    if (!group.length) continue;
-    out.push(`## ${tt.label} tests (${group.length})`, '');
-    for (const t of group) {
-      out.push(`#### ${t.id} — ${t.title}`, '');
-      out.push(
-        `- **Method:** ${label(data.enums.method, t.method)} · **Validates:** ${validates(t).join(', ')}`,
-      );
-      if (t.preconditions) out.push(`- **Preconditions:** ${t.preconditions}`);
-      out.push('- **Steps:**');
-      t.steps.forEach((s, i) => out.push(`  ${i + 1}. ${s}`));
-      out.push(`- **Expected:** ${t.expected}`);
-      if (t.metric) out.push(`- **Acceptance metric:** ${t.metric}`);
-      out.push('');
-    }
-  }
-  out.push('## Coverage (stakeholder requirement → validation tests)', '');
-  out.push('| SR | Title | Priority | Validated by |', '|---|---|---|---|');
-  for (const s of sr) {
-    const ts = tests.filter((t) => validates(t).includes(s.id)).map((t) => t.id);
-    out.push(`| ${s.id} | ${cell(s.title)} | ${s.priority} | ${ts.join(', ')} |`);
-  }
-  out.push('');
-  return out.join('\n');
-}
-
-// ---------------------------------------------------------------- write / check
-const nl = (s) => (s.endsWith('\n') ? s : s + '\n');
-const outputs = [
-  [join(reqDir, 'stakeholder-requirements.md'), nl(stakeholderDoc())],
-  [join(reqDir, 'system-requirements.md'), nl(systemDoc())],
-  [join(reqDir, 'traceability-matrix.md'), nl(traceDoc())],
-  [join(reqDir, 'validation-plan.md'), nl(validationDoc())],
-  // Generated copy the Vue app imports directly (kept in sync by this script).
-  [join(repoRoot, 'frontend', 'src', 'data', 'requirements.generated.json'), JSON.stringify(data, null, 2) + '\n'],
-];
-
-let drift = 0;
-for (const [path, body] of outputs) {
-  if (CHECK) {
-    let current = '';
-    try {
-      current = readFileSync(path, 'utf8');
-    } catch {
-      /* missing file counts as drift */
-    }
-    if (current !== body) {
-      drift++;
-      console.error(`✗ out of date: ${rel(path)} (run build.mjs to regenerate)`);
-    }
-  } else {
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, body, 'utf8');
-    console.log(`  wrote ${rel(path)}`);
-  }
-}
-
-if (CHECK && drift) process.exit(1);
-if (CHECK) console.log('✓ Generated views are up to date');

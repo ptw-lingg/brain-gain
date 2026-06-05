@@ -127,7 +127,9 @@
         },
         "steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
         "expected": { "type": "string" },
-        "metric": { "type": "string" }
+        "metric": { "type": "string" },
+        "automated": { "type": "boolean" },
+        "testedBy": { "type": "array", "items": { "$ref": "#/$defs/testRef" } }
       }
     },
     "codeRef": {
@@ -157,6 +159,16 @@
         "section": { "type": "string" }
       }
     },
+    "testRef": {
+      "type": "object",
+      "required": ["kind", "file"],
+      "additionalProperties": false,
+      "description": "An automated/manual test artifact that exercises this requirement or VT (computed by build.mjs).",
+      "properties": {
+        "kind": { "enum": ["backend", "e2e", "manual"] },
+        "file": { "type": "string" }
+      }
+    },
     "requirement": {
       "type": "object",
       "required": ["id", "type", "category", "title", "text", "status"],
@@ -175,6 +187,7 @@
         "links": { "type": "array", "items": { "$ref": "#/$defs/link" } },
         "implementedBy": { "type": "array", "items": { "$ref": "#/$defs/codeRef" } },
         "verifiedBy": { "type": "array", "items": { "$ref": "#/$defs/verify" } },
+        "testedBy": { "type": "array", "items": { "$ref": "#/$defs/testRef" } },
         "specRefs": { "type": "array", "items": { "$ref": "#/$defs/specRef" } }
       },
       "allOf": [

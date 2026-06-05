@@ -33,6 +33,19 @@ export interface SpecRef {
   doc: string;
   section: string;
 }
+export type TestKind = 'backend' | 'e2e' | 'manual';
+export interface TestRef {
+  kind: TestKind;
+  file: string;
+}
+export interface Coverage {
+  total: number;
+  covered: number;
+  backend: number;
+  e2e: number;
+  manual: number;
+  gaps: string[];
+}
 
 export interface Requirement {
   id: string;
@@ -48,6 +61,7 @@ export interface Requirement {
   links?: RequirementLink[];
   implementedBy?: CodeRef[];
   verifiedBy?: VerifyRef[];
+  testedBy?: TestRef[];
   specRefs?: SpecRef[];
 }
 
@@ -61,10 +75,19 @@ export interface TestCase {
   steps: string[];
   expected: string;
   metric?: string;
+  automated?: boolean;
+  testedBy?: TestRef[];
 }
 
 export interface RequirementsDoc {
-  meta: { project: string; version: string; updated: string; specDoc?: string; description?: string };
+  meta: {
+    project: string;
+    version: string;
+    updated: string;
+    specDoc?: string;
+    description?: string;
+    coverage?: Coverage;
+  };
   enums: {
     priority: EnumItem[];
     source: EnumItem[];

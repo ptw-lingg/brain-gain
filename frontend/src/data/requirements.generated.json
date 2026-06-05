@@ -4,8 +4,15 @@
     "project": "BrainGain",
     "version": "1.0.0",
     "updated": "2026-06-05",
-    "specDoc": "../brain-gain.md",
-    "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs."
+    "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
+    "coverage": {
+      "total": 201,
+      "covered": 201,
+      "backend": 120,
+      "e2e": 92,
+      "manual": 186,
+      "gaps": []
+    }
   },
   "enums": {
     "priority": [
@@ -50,6 +57,10 @@
       {
         "id": "impersonation-feature",
         "label": "Admin impersonation feature"
+      },
+      {
+        "id": "compliance-feature",
+        "label": "Regulatory documentation feature"
       }
     ],
     "status": [
@@ -178,7 +189,17 @@
       "text": "Users shall authenticate with an email address and password; there is no public self-registration.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/auth.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "SR-002",
@@ -188,7 +209,17 @@
       "text": "After signing in, a user shall land on a view listing the trainings relevant to them.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/auth.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "SR-003",
@@ -198,7 +229,49 @@
       "text": "Trainings, Job Roles, and Users shall be editable only by an administrator. Access control must be enforced reliably, not merely hidden in the UI.",
       "priority": "M",
       "source": "refinement",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/auth.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-004",
@@ -209,7 +282,25 @@
       "priority": "M",
       "source": "spec",
       "sourceNote": "roles",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/auth.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "SR-005",
@@ -220,7 +311,25 @@
       "priority": "S",
       "source": "spec",
       "sourceNote": "JWT 7-day",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tokens.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/auth.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "SR-006",
@@ -230,7 +339,21 @@
       "text": "Users shall be able to sign in with their Microsoft Entra ID (Azure AD) work account as an alternative to email/password.",
       "priority": "S",
       "source": "sso-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "SR-007",
@@ -240,7 +363,21 @@
       "text": "Microsoft SSO shall be optional and configurable by an administrator; when it is not configured/enabled, the application behaves exactly as a password-only app.",
       "priority": "M",
       "source": "sso-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "SR-008",
@@ -251,7 +388,33 @@
       "priority": "M",
       "source": "sso-feature",
       "sourceNote": "stakeholder decision",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "SR-009",
@@ -262,7 +425,17 @@
       "priority": "M",
       "source": "sso-feature",
       "sourceNote": "domain-restricted provisioning",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "SR-010",
@@ -273,7 +446,25 @@
       "priority": "M",
       "source": "sso-feature",
       "sourceNote": "stakeholder decision: keep both",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "SR-011",
@@ -283,7 +474,13 @@
       "text": "An administrator shall be able to impersonate another user — seeing the application exactly as that user does (their dashboard, due trainings, and role-appropriate navigation) — to support and troubleshoot, then return to their own session.",
       "priority": "S",
       "source": "impersonation-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        }
+      ]
     },
     {
       "id": "SR-020",
@@ -293,7 +490,25 @@
       "text": "An administrator shall create, edit, and delete users (name, email, password, access level).",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-021",
@@ -303,7 +518,25 @@
       "text": "A user shall be assignable to several job roles.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-022",
@@ -313,7 +546,25 @@
       "text": "An administrator shall be able to mark a user as a Trainer or Administrator.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-030",
@@ -323,7 +574,25 @@
       "text": "An administrator shall maintain a simple, editable list of job roles (name, description).",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-031",
@@ -333,7 +602,25 @@
       "text": "Each job role shall require several trainings; the administrator chooses which trainings a role demands.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-032",
@@ -343,7 +630,25 @@
       "text": "The trainings a user must complete shall be derived from the union of their roles' required trainings (with duplicates removed).",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-040",
@@ -353,7 +658,25 @@
       "text": "The system shall maintain an editable list of trainings (name, description, category, duration).",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-041",
@@ -363,7 +686,13 @@
       "text": "Each training shall reference learning material (links to documents, e.g. OneDrive) that learners open to study.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-042",
@@ -373,7 +702,17 @@
       "text": "Each training shall include a multiple-choice quiz with a defined correct answer per question.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-043",
@@ -383,7 +722,17 @@
       "text": "Each training shall define a recurrence cycle (how often, in years, it must be repeated).",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-044",
@@ -393,7 +742,17 @@
       "text": "Each training shall define a due window — how early before the due date it becomes available and how long after it remains in grace before counting as overdue.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-045",
@@ -403,7 +762,25 @@
       "text": "A trainer shall own and manage only their own trainings; an administrator manages all trainings and may assign a training's owner.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-046",
@@ -413,7 +790,29 @@
       "text": "An administrator shall be able to reorder trainings via drag-and-drop, defining an explicit display order.",
       "priority": "S",
       "source": "ordering-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-047",
@@ -423,7 +822,45 @@
       "text": "The administrator-defined training order shall be respected consistently in every view that lists trainings (admin list, learner dashboard, trainee oversight, role editor).",
       "priority": "S",
       "source": "ordering-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-050",
@@ -433,7 +870,25 @@
       "text": "A learner shall complete a training as a flow: review material → take the quiz → see the result.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-051",
@@ -444,7 +899,33 @@
       "priority": "M",
       "source": "spec",
       "sourceNote": "server-side grading",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-052",
@@ -454,7 +935,21 @@
       "text": "A learner shall be able to retry the quiz as often as needed; only a passing attempt is recorded. Failed attempts leave the training in its current due state.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "SR-053",
@@ -464,7 +959,21 @@
       "text": "The system shall compute each training's due status per user (never taken, up-to-date, due now, overdue) from the last passing attempt and the training's cycle/window.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "SR-060",
@@ -475,7 +984,33 @@
       "priority": "M",
       "source": "original-brief",
       "sourceNote": "/ Spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "SR-061",
@@ -485,7 +1020,21 @@
       "text": "The dashboard shall present a friendly empty state when no trainings are assigned.",
       "priority": "C",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "SR-070",
@@ -495,7 +1044,21 @@
       "text": "A trainer/administrator shall see, grouped by training, who is required to take it and each person's due status.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "SR-071",
@@ -505,7 +1068,17 @@
       "text": "They shall be able to filter to only those who are due/overdue and copy the relevant email addresses to the clipboard for reminders.",
       "priority": "S",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "SR-080",
@@ -515,7 +1088,33 @@
       "text": "An administrator shall set a single global pass threshold that applies to all trainings at once.",
       "priority": "M",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        }
+      ]
     },
     {
       "id": "SR-081",
@@ -531,6 +1130,20 @@
           "type": "relatedTo",
           "target": "SR-008"
         }
+      ],
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        }
       ]
     },
     {
@@ -542,7 +1155,33 @@
       "priority": "M",
       "source": "original-brief",
       "sourceNote": "fantastic user interface; very good icon",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-091",
@@ -553,7 +1192,17 @@
       "priority": "M",
       "source": "original-brief",
       "sourceNote": "+ refinement",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "SR-092",
@@ -564,7 +1213,17 @@
       "priority": "S",
       "source": "refinement",
       "sourceNote": "fonts more technical",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "SR-093",
@@ -575,7 +1234,37 @@
       "priority": "M",
       "source": "spec",
       "sourceNote": "/ NFR",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-094",
@@ -586,7 +1275,33 @@
       "priority": "S",
       "source": "spec",
       "sourceNote": "/ NFR",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "SR-100",
@@ -596,7 +1311,13 @@
       "text": "The application shall be written in TypeScript for both frontend and backend.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "SR-101",
@@ -606,7 +1327,17 @@
       "text": "Data shall be persisted to local JSON files (no external database).",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "SR-102",
@@ -617,7 +1348,13 @@
       "priority": "M",
       "source": "refinement",
       "sourceNote": "Use Vue instead of React",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "SR-103",
@@ -627,7 +1364,21 @@
       "text": "All managed entities (users, roles, trainings, settings) shall be editable through the user interface.",
       "priority": "M",
       "source": "original-brief",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "SR-104",
@@ -638,7 +1389,37 @@
       "priority": "M",
       "source": "spec",
       "sourceNote": "/ SSO feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-105",
@@ -649,7 +1430,37 @@
       "priority": "M",
       "source": "sso-feature",
       "sourceNote": "design constraint",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/tls.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "SR-106",
@@ -659,7 +1470,17 @@
       "text": "The system shall be easy to run for evaluation, seeding demo data (an admin, a trainer, a member) on first start.",
       "priority": "S",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "SR-110",
@@ -669,7 +1490,17 @@
       "text": "The application shall be delivered only over HTTPS (TLS). Plain HTTP shall not serve the app or API; HTTP requests are redirected to HTTPS.",
       "priority": "M",
       "source": "tls-feature",
-      "status": "approved"
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "SR-111",
@@ -684,6 +1515,20 @@
         {
           "type": "relatedTo",
           "target": "SR-105"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/tls.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -712,10 +1557,14 @@
           "path": "frontend/"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Tech Stack"
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -746,10 +1595,10 @@
           "symbol": "crypto.randomUUID()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Setup & Running"
+          "kind": "manual",
+          "file": "requirements/manual-tests/architecture.md"
         }
       ]
     },
@@ -779,10 +1628,10 @@
           "symbol": "server.proxy['/api']"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Tech Stack"
+          "kind": "manual",
+          "file": "requirements/manual-tests/architecture.md"
         }
       ]
     },
@@ -819,10 +1668,10 @@
           "path": "frontend/src/style.css"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Design System — Pastel Blue Theme"
+          "kind": "manual",
+          "file": "requirements/manual-tests/architecture.md"
         }
       ]
     },
@@ -847,10 +1696,14 @@
           "path": "backend/src/data/*.json"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "fileStore.ts — Generic JSON Store"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -876,10 +1729,14 @@
           "path": "backend/src/index.ts"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Seed Data"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -905,10 +1762,10 @@
           "symbol": "strict"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Quality Requirements"
+          "kind": "manual",
+          "file": "requirements/manual-tests/architecture.md"
         }
       ]
     },
@@ -935,10 +1792,18 @@
           "symbol": "readStore/writeStore/readSettings/writeSettings"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "fileStore.ts — Generic JSON Store"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -976,10 +1841,18 @@
           "path": "frontend/src/types/index.ts"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -1006,10 +1879,14 @@
           "symbol": "JobRole"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
         }
       ]
     },
@@ -1056,10 +1933,22 @@
           "symbol": "Training"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -1090,10 +1979,22 @@
           "symbol": "toPublic()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -1130,10 +2031,22 @@
           "note": "entra defaults backfilled; passThreshold preserved"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -1164,10 +2077,22 @@
           "symbol": "toSafeUser()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -1198,10 +2123,10 @@
           "symbol": "persist-if-passed"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Data Models (TypeScript)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
         }
       ]
     },
@@ -1234,10 +2159,18 @@
           "note": "admin login returns token + user"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1268,10 +2201,10 @@
           "symbol": "bcrypt.hash(...,10)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "manual",
+          "file": "requirements/manual-tests/architecture.md"
         }
       ]
     },
@@ -1294,10 +2227,10 @@
           "symbol": "signToken(), JWT_SECRET"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "backend",
+          "file": "backend/tests/tokens.test.mjs"
         }
       ]
     },
@@ -1324,10 +2257,14 @@
           "symbol": "fetchMe()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1353,10 +2290,10 @@
           "path": "frontend/src/stores/auth.ts"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "State Management (Pinia)"
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
         }
       ]
     },
@@ -1379,10 +2316,10 @@
           "symbol": "(no register route)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1415,10 +2352,18 @@
           "note": "bad/no-password credentials → 401"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Routes (/api/auth)"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1441,10 +2386,10 @@
           "symbol": "signInWithEntra() (loginPopup, scopes)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1481,10 +2426,18 @@
           "note": "returns enabled flag + clientId/authority"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1513,10 +2466,14 @@
           "note": "503 when disabled; 400 without idToken"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1549,10 +2506,14 @@
           "note": "self-signed-key checks: RS256/aud/iss/tid/exp/alg enforced"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1581,10 +2542,10 @@
           "note": "missing oid/email rejected; preferred_username fallback"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1613,10 +2574,10 @@
           "note": "link/provision/409/403 branches reviewed"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1647,10 +2608,10 @@
           "symbol": "loginWithEntra()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1687,10 +2648,14 @@
           "note": "no-config path leaves app password-only"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1717,10 +2682,10 @@
           "symbol": "redirect URI hint"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Microsoft Entra ID (Azure AD) SSO"
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -1751,10 +2716,14 @@
           "symbol": "authenticate/requireAdmin/requireTrainerOrAdmin/requireAdminOrOwner"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Auth Middleware"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1784,10 +2753,22 @@
           "symbol": "PUT"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Admin Guard — Three Layers of Enforcement"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -1814,10 +2795,14 @@
           "symbol": "requireTrainerOrAdmin/requireAdminOrOwner/requireAdmin"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1844,10 +2829,14 @@
           "symbol": "beforeEach + meta"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Admin Guard — Three Layers of Enforcement"
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1874,10 +2863,14 @@
           "symbol": "role-gated nav v-if"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Admin Guard — Three Layers of Enforcement"
+          "kind": "e2e",
+          "file": "frontend/e2e/access-control.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1900,14 +2893,18 @@
       ],
       "implementedBy": [
         {
-          "path": "brain-gain.md",
-          "symbol": "API permission matrix"
+          "path": "backend/src/middleware/auth.ts",
+          "symbol": "requireAdmin/requireTrainerOrAdmin/requireAdminOrOwner"
+        },
+        {
+          "path": "backend/src/routes/",
+          "symbol": "per-endpoint guards (users/roles/settings/trainings)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Admin Guard — Three Layers of Enforcement"
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1938,6 +2935,16 @@
         {
           "method": "endpoint-probe",
           "note": "impersonation token decodes to the target identity plus impersonatorId/email of the admin"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
         }
       ]
     },
@@ -1973,6 +2980,12 @@
           "method": "endpoint-probe",
           "note": "self → 400, nesting → 409, non-admin → 403, unknown → 404, no token → 401"
         }
+      ],
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        }
       ]
     },
     {
@@ -2007,6 +3020,12 @@
           "method": "e2e",
           "note": "View as → banner + member-only nav; Stop restores the admin session (Edge via Playwright)"
         }
+      ],
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        }
       ]
     },
     {
@@ -2032,10 +3051,14 @@
           "symbol": "CRUD"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Users Routes (/api/users)"
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -2065,10 +3088,14 @@
           "path": "frontend/src/pages/UsersPage.vue"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "UsersPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -2091,10 +3118,14 @@
           "symbol": "CRUD (mutations requireAdmin)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Roles Routes (/api/roles)"
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -2119,10 +3150,14 @@
           "path": "frontend/src/pages/RolesPage.vue"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "RolesPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -2145,10 +3180,14 @@
           "symbol": "GET /trainings (server-ordered)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "RolesPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
         }
       ]
     },
@@ -2185,10 +3224,14 @@
           "note": "order respected; answer key stripped"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2211,10 +3254,14 @@
           "symbol": "GET /:id"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2241,10 +3288,18 @@
           "symbol": "POST / (order = max+1, owner rules)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2267,10 +3322,18 @@
           "symbol": "PUT /:id (order preserved; admin-only ownerId)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2293,10 +3356,14 @@
           "symbol": "DELETE /:id"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2325,10 +3392,18 @@
           "note": "reorder persists; admin-only (trainer 403)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2361,10 +3436,14 @@
           "note": "order respected across /, /mine, /trainees"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2387,10 +3466,14 @@
           "symbol": "onDragStart/Over/End, persistOrder; grip v-if isAdmin"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "TrainingsPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2428,10 +3511,14 @@
           "path": "frontend/src/components/TrainingForm.vue"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "TrainingsPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
         }
       ]
     },
@@ -2454,10 +3541,14 @@
           "symbol": "computeDue(), sessionsFor()"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2488,10 +3579,18 @@
           "symbol": "GET /mine (requiredTrainingIds + computeDue)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2517,10 +3616,14 @@
           "symbol": "session/:trainingId route"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "SessionPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2547,10 +3650,14 @@
           "symbol": "POST /grade"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Sessions Routes (/api/sessions)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2577,10 +3684,18 @@
           "symbol": "retry"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Sessions Routes (/api/sessions)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2603,10 +3718,14 @@
           "symbol": "GET /mine"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Sessions Routes (/api/sessions)"
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
         }
       ]
     },
@@ -2635,10 +3754,18 @@
           "note": "returns passThreshold + entra"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Settings Routes (/api/settings)"
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
         }
       ]
     },
@@ -2671,10 +3798,22 @@
           "note": "merge independence; domain sanitization"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Settings Routes (/api/settings)"
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
         }
       ]
     },
@@ -2711,10 +3850,18 @@
           "note": "settings round-trip persists"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "SettingsPage.vue"
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
         }
       ]
     },
@@ -2747,10 +3894,18 @@
           "symbol": "dueLabel/dueClasses"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "DashboardPage.vue"
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
         }
       ]
     },
@@ -2777,10 +3932,14 @@
           "symbol": "GET /trainees (requireTrainerOrAdmin, grouped, ordered)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Trainings Routes (/api/trainings)"
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
         }
       ]
     },
@@ -2807,10 +3966,14 @@
           "symbol": "groups, only-due filter, copy-emails"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "TraineesPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
         }
       ]
     },
@@ -2835,10 +3998,10 @@
           "path": "frontend/tailwind.config.js"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Design System — Pastel Blue Theme"
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -2865,10 +4028,10 @@
           "symbol": "fontFamily"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Design System — Pastel Blue Theme"
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -2890,10 +4053,10 @@
           "path": "frontend/src/components/BrainGainLogo.vue"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "App Icon / Logo (BrainGainLogo.vue)"
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -2918,10 +4081,14 @@
           "path": "frontend/src/components/AppSidebar.vue"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Layout"
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -2946,10 +4113,10 @@
           "path": "frontend/src/pages/*"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Quality Requirements"
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -2975,10 +4142,14 @@
           "symbol": "toast host"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Quality Requirements"
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
         }
       ]
     },
@@ -3008,10 +4179,14 @@
           "symbol": "token validation"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Quality Requirements"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -3046,10 +4221,14 @@
           "symbol": "no client secret"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "Quality Requirements"
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
         }
       ]
     },
@@ -3078,10 +4257,14 @@
           "note": "curl -k https://localhost:3001/api/health → ok; / returns SPA"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3110,10 +4293,10 @@
           "note": "curl -I http://localhost:3000/x → 308 Location https://…"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3142,10 +4325,10 @@
           "note": "fresh data dir → data/tls/{cert,key}.pem generated; HTTPS up"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3186,10 +4369,18 @@
           "note": "no key/PEM in /settings or /settings/certificate responses"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/tls.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3222,10 +4413,14 @@
           "note": "valid cert → 200 + hot-swap; mismatched key/cert → 400"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3258,10 +4453,14 @@
           "note": "non-admin → 403; GET returns metadata only"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3284,10 +4483,14 @@
           "symbol": "HTTPS/TLS card (onFile, saveCertificate, regenerateSelfSigned)"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "SettingsPage.vue"
+          "kind": "e2e",
+          "file": "frontend/e2e/tls.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3310,10 +4513,10 @@
           "symbol": "basicSsl() + proxy https target"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
         }
       ]
     },
@@ -3336,10 +4539,163 @@
           "symbol": "HSTS middleware"
         }
       ],
-      "specRefs": [
+      "testedBy": [
         {
-          "doc": "brain-gain.md",
-          "section": "HTTPS / TLS delivery"
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
+    },
+    {
+      "id": "SR-120",
+      "type": "stakeholder",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Generate controlled review documents for the DMS",
+      "text": "An administrator/quality manager shall be able to generate the officially required review documents — Software Requirements Specification, Requirements Traceability Matrix, Software Verification & Validation Report, and Design & Requirements Review Record — as controlled PDFs citing ISO 13485, EU MDR, MDSAP and IEC 62304, preview each in the application, and download it for transfer to the document management system (DMS).",
+      "priority": "S",
+      "source": "compliance-feature",
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SR-121",
+      "type": "stakeholder",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Requirement test & coverage traceability",
+      "text": "The requirements dataset shall record, for every requirement and validation test, the automated and manual tests that exercise it plus an overall coverage summary; this traceability shall be visible on the in-app Requirements view.",
+      "priority": "S",
+      "source": "compliance-feature",
+      "status": "approved",
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DOC-01",
+      "type": "system",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Test & coverage data in the dataset",
+      "text": "build.mjs shall scan the backend, e2e and manual test artifacts and write each requirement’s and VT’s testedBy plus a meta.coverage summary into requirements.json and the app copy requirements.generated.json.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-121"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "requirements/tools/build.mjs",
+          "symbol": "coverage injection"
+        },
+        {
+          "path": "frontend/src/data/requirements.generated.json"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "build-check",
+          "note": "build.mjs --check fails on coverage/data drift"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DOC-02",
+      "type": "system",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Coverage & traceability shown in-app",
+      "text": "The Requirements page shall display the overall coverage summary and, per requirement and per validation test, the tests (backend/e2e/manual) that exercise it.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-121"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/RequirementsPage.vue",
+          "symbol": "coverage banner + Tested by"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DOC-03",
+      "type": "system",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Controlled document generators",
+      "text": "The application shall build four controlled PDF documents (SRS, RTM, SVVR, DRR) from the dataset, each with a controlled-document header (document id, revision, date, prepared/reviewed/approved signature lines) and citing ISO 13485 / EU MDR / MDSAP / IEC 62304.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-120"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/utils/dmsDocuments.ts",
+          "symbol": "buildDocument()"
+        },
+        {
+          "path": "frontend/src/utils/pdf.ts",
+          "symbol": "pdfmake + vfs"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DOC-04",
+      "type": "system",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Preview-gated download",
+      "text": "Generating a document shall render a PDF preview inside the application; the document may be downloaded only from the open preview, so the user must view it before it is transferred to the DMS.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-120"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/pages/RequirementsPage.vue",
+          "symbol": "openDocument/downloadDocument preview modal"
+        }
+      ],
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
         }
       ]
     }
@@ -3366,7 +4722,18 @@
         "Enter correct admin email + password and submit.",
         "Enter wrong password and submit."
       ],
-      "expected": "Correct credentials sign in and land on the dashboard listing the user's relevant trainings; wrong credentials show an error and do not sign in."
+      "expected": "Correct credentials sign in and land on the dashboard listing the user's relevant trainings; wrong credentials show an error and do not sign in.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-002",
@@ -3382,7 +4749,14 @@
       "steps": [
         "Inspect the UI and API for any public registration route/form."
       ],
-      "expected": "No registration endpoint or sign-up form exists; only an admin can create users."
+      "expected": "No registration endpoint or sign-up form exists; only an admin can create users.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-003",
@@ -3405,7 +4779,26 @@
         "As a member/trainer, call the mutating API endpoints directly (POST/PUT/DELETE) with a valid token.",
         "As an admin, perform the same edits."
       ],
-      "expected": "Non-admins do not see the admin nav, are redirected from admin routes, and receive 403 from the API; only the admin can edit."
+      "expected": "Non-admins do not see the admin nav, are redirected from admin routes, and receive 403 from the API; only the admin can edit.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "VT-004",
@@ -3421,7 +4814,18 @@
       "steps": [
         "Sign in as member, trainer, then admin and inspect the visible navigation and pages."
       ],
-      "expected": "Member sees only My Trainings; trainer additionally sees Trainings/Trainees (own); admin sees all pages."
+      "expected": "Member sees only My Trainings; trainer additionally sees Trainings/Trainees (own); admin sees all pages.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-005",
@@ -3439,7 +4843,14 @@
         "Reload the page.",
         "Clear the token / wait for expiry and reload."
       ],
-      "expected": "Reload keeps the user signed in (token rehydrated); a missing/expired token redirects to /login."
+      "expected": "Reload keeps the user signed in (token rehydrated); a missing/expired token redirects to /login.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-006",
@@ -3461,7 +4872,22 @@
         "Click 'Sign in with Microsoft' and complete the popup.",
         "Separately, sign in with a demo password account."
       ],
-      "expected": "Both SSO and password login succeed and land on the dashboard with an app session."
+      "expected": "Both SSO and password login succeed and land on the dashboard with an app session.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "VT-007",
@@ -3480,7 +4906,30 @@
         "GET /api/auth/sso/config.",
         "POST /api/auth/sso/entra."
       ],
-      "expected": "No Microsoft button shown; config returns { enabled:false }; the entra endpoint returns 503; password login works as normal."
+      "expected": "No Microsoft button shown; config returns { enabled:false }; the entra endpoint returns 503; password login works as normal.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "VT-008",
@@ -3503,7 +4952,26 @@
         "Reload Settings.",
         "Confirm the global pass threshold is unchanged."
       ],
-      "expected": "Values persist; the login page now shows the Microsoft button; saving SSO does not alter the pass threshold."
+      "expected": "Values persist; the login page now shows the Microsoft button; saving SSO does not alter the pass threshold.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "VT-009",
@@ -3522,7 +4990,22 @@
         "Sign in via SSO with an email matching an existing local user.",
         "Sign in via SSO with a new allowed-domain email."
       ],
-      "expected": "Unlisted-domain/no-match is refused (403); a matching email links the Entra account without changing the user's roles; a new allowed-domain user is auto-created as a member."
+      "expected": "Unlisted-domain/no-match is refused (403); a matching email links the Entra account without changing the user's roles; a new allowed-domain user is auto-created as a member.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sso.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sso.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sso.md"
+        }
+      ]
     },
     {
       "id": "VT-011",
@@ -3541,7 +5024,18 @@
         "Observe the dashboard and sidebar while the banner is shown.",
         "Click Stop in the banner."
       ],
-      "expected": "The dashboard shows the member's required trainings and the sidebar collapses to the member's capabilities; a banner identifies the impersonated member by name. Stop restores the admin session — admin navigation and identity return."
+      "expected": "The dashboard shows the member's required trainings and the sidebar collapses to the member's capabilities; a banner identifies the impersonated member by name. Stop restores the admin session — admin navigation and identity return.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-012",
@@ -3560,7 +5054,18 @@
         "POST the same endpoint with a non-admin token.",
         "From an active impersonation token, POST the endpoint again."
       ],
-      "expected": "A valid target returns a token whose claims are the target plus impersonatorId and impersonatorEmail of the admin; self returns 400; unknown id returns 404; non-admin returns 403; nesting returns 409."
+      "expected": "A valid target returns a token whose claims are the target plus impersonatorId and impersonatorEmail of the admin; self returns 400; unknown id returns 404; non-admin returns 403; nesting returns 409.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/impersonation.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        }
+      ]
     },
     {
       "id": "VT-020",
@@ -3583,7 +5088,18 @@
         "Edit the user (incl. changing the password).",
         "Delete the user."
       ],
-      "expected": "User is created, updated (blank password keeps the old one), and deleted; admin/trainer flags take effect."
+      "expected": "User is created, updated (blank password keeps the old one), and deleted; admin/trainer flags take effect.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        }
+      ]
     },
     {
       "id": "VT-021",
@@ -3600,7 +5116,22 @@
         "Assign two or more job roles to a user and save.",
         "Reopen the user."
       ],
-      "expected": "All assigned roles persist on the user."
+      "expected": "All assigned roles persist on the user.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "VT-030",
@@ -3616,7 +5147,18 @@
       "steps": [
         "Create, edit, and delete a job role (name, description)."
       ],
-      "expected": "Roles are created, updated, and removed."
+      "expected": "Roles are created, updated, and removed.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        }
+      ]
     },
     {
       "id": "VT-031",
@@ -3633,7 +5175,18 @@
         "In a role, select several required trainings and save.",
         "Reopen the role."
       ],
-      "expected": "The selected trainingIds persist on the role."
+      "expected": "The selected trainingIds persist on the role.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/users-roles.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        }
+      ]
     },
     {
       "id": "VT-032",
@@ -3650,7 +5203,22 @@
       "steps": [
         "Open that user's dashboard."
       ],
-      "expected": "The shared training appears exactly once; the dashboard shows the union of all roles' trainings."
+      "expected": "The shared training appears exactly once; the dashboard shows the union of all roles' trainings.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "VT-040",
@@ -3666,7 +5234,22 @@
       "steps": [
         "Create and edit a training's name, description, category, and duration."
       ],
-      "expected": "Changes persist and appear in the trainings list."
+      "expected": "Changes persist and appear in the trainings list.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-041",
@@ -3683,7 +5266,18 @@
         "Add a material link to a training.",
         "Open a session and click the material."
       ],
-      "expected": "The linked document opens in a new tab."
+      "expected": "The linked document opens in a new tab.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-042",
@@ -3699,7 +5293,14 @@
       "steps": [
         "Add questions with options and mark the correct option; save."
       ],
-      "expected": "Questions persist with a defined correct answer per question."
+      "expected": "Questions persist with a defined correct answer per question.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-043",
@@ -3716,7 +5317,14 @@
         "Set cycleYears on a training.",
         "Pass it, then inspect the computed due date."
       ],
-      "expected": "Due date = last passed + cycleYears."
+      "expected": "Due date = last passed + cycleYears.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-044",
@@ -3733,7 +5341,14 @@
         "Set windowBefore/After months.",
         "Evaluate status around the due date boundaries."
       ],
-      "expected": "Status moves up-to-date → due (window opens) → overdue (after grace) per the configured window."
+      "expected": "Status moves up-to-date → due (window opens) → overdue (after grace) per the configured window.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-045",
@@ -3750,7 +5365,30 @@
         "As a trainer, attempt to edit a training owned by someone else (UI + direct API).",
         "As an admin, reassign a training's owner."
       ],
-      "expected": "A trainer can mutate only their own trainings (others → 403); only an admin can change ownerId."
+      "expected": "A trainer can mutate only their own trainings (others → 403); only an admin can change ownerId.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-046",
@@ -3768,7 +5406,22 @@
         "Drag a training to a new position via the grip handle.",
         "Reload the page."
       ],
-      "expected": "The new order is saved and survives reload; trainers do not see the handle."
+      "expected": "The new order is saved and survives reload; trainers do not see the handle.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-047",
@@ -3785,7 +5438,30 @@
         "Reorder trainings as admin.",
         "Inspect the learner dashboard, the trainees view, and the role editor's training list."
       ],
-      "expected": "All views present trainings in the admin-defined order."
+      "expected": "All views present trainings in the admin-defined order.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/trainings.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/users-roles.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/users-roles.md"
+        }
+      ]
     },
     {
       "id": "VT-050",
@@ -3801,7 +5477,22 @@
       "steps": [
         "Start a session, review material, advance to the quiz, submit, view the result."
       ],
-      "expected": "The three-step flow works and shows a pass/fail result."
+      "expected": "The three-step flow works and shows a pass/fail result.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "VT-051",
@@ -3819,7 +5510,26 @@
         "Submit answers to /api/sessions/grade.",
         "Attempt to submit a fabricated score."
       ],
-      "expected": "correctIndex is absent from the learner payload; the server computes the score and compares to the threshold; a client-supplied score is ignored."
+      "expected": "correctIndex is absent from the learner payload; the server computes the score and compares to the threshold; a client-supplied score is ignored.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-052",
@@ -3836,7 +5546,22 @@
         "Fail the quiz, retry, then pass.",
         "Inspect recorded sessions."
       ],
-      "expected": "Failed attempts are not recorded and leave the training due; only the passing attempt is persisted."
+      "expected": "Failed attempts are not recorded and leave the training due; only the passing attempt is persisted.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "VT-053",
@@ -3852,7 +5577,18 @@
       "steps": [
         "Create users/sessions to produce never / up-to-date / due / overdue states."
       ],
-      "expected": "Each training shows the correct due status from the last passing attempt and the cycle/window."
+      "expected": "Each training shows the correct due status from the last passing attempt and the cycle/window.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "VT-060",
@@ -3868,7 +5604,34 @@
       "steps": [
         "Open the dashboard as a member with assigned roles."
       ],
-      "expected": "All required trainings are listed with a due-status pill and a clear Start action."
+      "expected": "All required trainings are listed with a due-status pill and a clear Start action.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/sessions-due.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/sessions-due.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/sessions-due.md"
+        }
+      ]
     },
     {
       "id": "VT-061",
@@ -3885,7 +5648,22 @@
       "steps": [
         "Open the dashboard."
       ],
-      "expected": "A friendly empty state is shown (no errors/blank screen)."
+      "expected": "A friendly empty state is shown (no errors/blank screen).",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "VT-070",
@@ -3901,7 +5679,22 @@
       "steps": [
         "Open Trainees as a trainer/admin."
       ],
-      "expected": "Trainees are grouped per training, each with their due status."
+      "expected": "Trainees are grouped per training, each with their due status.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/dashboard-oversight.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "VT-071",
@@ -3918,7 +5711,18 @@
         "Toggle 'only due/overdue'.",
         "Click copy-emails for a group and 'copy all'."
       ],
-      "expected": "The list filters to actionable trainees; the clipboard receives a ';'-separated recipient list with a confirming toast."
+      "expected": "The list filters to actionable trainees; the clipboard receives a ';'-separated recipient list with a confirming toast.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/dashboard-oversight.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/dashboard-oversight.md"
+        }
+      ]
     },
     {
       "id": "VT-080",
@@ -3935,7 +5739,22 @@
         "Set the pass threshold on Settings.",
         "Take a quiz scoring just below and just above it."
       ],
-      "expected": "Pass/fail is decided against the single global threshold for every training."
+      "expected": "Pass/fail is decided against the single global threshold for every training.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/settings.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/settings.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/settings.md"
+        }
+      ]
     },
     {
       "id": "VT-100",
@@ -3951,7 +5770,14 @@
       "steps": [
         "Run typecheck in backend and frontend."
       ],
-      "expected": "Both projects are TypeScript and typecheck with no errors and no 'any' leakage."
+      "expected": "Both projects are TypeScript and typecheck with no errors and no 'any' leakage.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "VT-101",
@@ -3967,7 +5793,18 @@
       "steps": [
         "Inspect backend/src/data/*.json and dependencies."
       ],
-      "expected": "Data is persisted in JSON files; no database engine or driver is present."
+      "expected": "Data is persisted in JSON files; no database engine or driver is present.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "VT-102",
@@ -3983,7 +5820,14 @@
       "steps": [
         "Inspect the frontend stack."
       ],
-      "expected": "The frontend is Vue 3 (not React)."
+      "expected": "The frontend is Vue 3 (not React).",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "VT-103",
@@ -3999,7 +5843,22 @@
       "steps": [
         "Edit a user, a role, a training, and settings entirely through the UI."
       ],
-      "expected": "Every managed entity is fully editable in the interface."
+      "expected": "Every managed entity is fully editable in the interface.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/data-arch-nfr.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "VT-104",
@@ -4015,7 +5874,34 @@
       "steps": [
         "Attempt grading, ownership, and access operations by calling the API directly while bypassing the UI."
       ],
-      "expected": "All checks are enforced by the server regardless of client behaviour (403/validation as appropriate)."
+      "expected": "All checks are enforced by the server regardless of client behaviour (403/validation as appropriate).",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/auth.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-105",
@@ -4032,7 +5918,30 @@
         "Inspect /api/auth/me, /api/users, and training payloads.",
         "Inspect SSO config handling."
       ],
-      "expected": "Responses never contain passwordHash, entraOid, or correctIndex; no client secret is used or exposed by SSO."
+      "expected": "Responses never contain passwordHash, entraOid, or correctIndex; no client secret is used or exposed by SSO.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/auth.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "backend",
+          "file": "backend/tests/trainings.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/trainings.md"
+        }
+      ]
     },
     {
       "id": "VT-106",
@@ -4048,7 +5957,18 @@
       "steps": [
         "Start backend + frontend from a clean state."
       ],
-      "expected": "Demo admin/trainer/member accounts are seeded on first start and the app is immediately usable."
+      "expected": "Demo admin/trainer/member accounts are seeded on first start and the app is immediately usable.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/data-arch-nfr.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/data-arch-nfr.md"
+        }
+      ]
     },
     {
       "id": "VT-U01",
@@ -4075,7 +5995,8 @@
         "Observe, without guidance, whether they understand what they must do next."
       ],
       "expected": "Users correctly identify that they have trainings to complete and where to start.",
-      "metric": "≥ 4/5 users self-orient within 30s; no critical confusion."
+      "metric": "≥ 4/5 users self-orient within 30s; no critical confusion.",
+      "automated": false
     },
     {
       "id": "VT-U02",
@@ -4105,7 +6026,8 @@
         "Time to completion and count wrong turns."
       ],
       "expected": "Users locate a due training and reach the session start unaided.",
-      "metric": "Task success ≥ 90%; median time < 60s; SUS ≥ 80 across 5 users."
+      "metric": "Task success ≥ 90%; median time < 60s; SUS ≥ 80 across 5 users.",
+      "automated": false
     },
     {
       "id": "VT-U03",
@@ -4131,7 +6053,8 @@
         "Have the user deliberately fail once."
       ],
       "expected": "Users move through material → quiz → result and discover how to retry without help; feedback is clear.",
-      "metric": "Task success ≥ 90%; retry discovered unaided by ≥ 4/5."
+      "metric": "Task success ≥ 90%; retry discovered unaided by ≥ 4/5.",
+      "automated": false
     },
     {
       "id": "VT-U04",
@@ -4157,7 +6080,8 @@
         "Task: create a training with one material link and two quiz questions."
       ],
       "expected": "Participants build a complete, valid training unaided.",
-      "metric": "Task success ≥ 80%; no blocking confusion on questions/correct-answer UI."
+      "metric": "Task success ≥ 80%; no blocking confusion on questions/correct-answer UI.",
+      "automated": false
     },
     {
       "id": "VT-U05",
@@ -4179,7 +6103,8 @@
         "Task: 'Move a chosen training to the top of the list.'"
       ],
       "expected": "Participants discover the drag handle and reorder successfully; the change is clearly persisted.",
-      "metric": "Task success ≥ 80%; handle discovered unaided by ≥ 3/5."
+      "metric": "Task success ≥ 80%; handle discovered unaided by ≥ 3/5.",
+      "automated": false
     },
     {
       "id": "VT-U06",
@@ -4198,7 +6123,8 @@
         "Note whether the redirect-URI hint is understood."
       ],
       "expected": "Participants complete SSO configuration using the on-screen guidance.",
-      "metric": "Task success ≥ 80%; redirect-URI hint rated helpful."
+      "metric": "Task success ≥ 80%; redirect-URI hint rated helpful.",
+      "automated": false
     },
     {
       "id": "VT-U07",
@@ -4220,7 +6146,8 @@
         "Task: 'Get the email addresses of everyone overdue for a training.'"
       ],
       "expected": "Participants filter to due/overdue and copy the right recipients.",
-      "metric": "Task success ≥ 90%; median time < 45s."
+      "metric": "Task success ≥ 90%; median time < 45s.",
+      "automated": false
     },
     {
       "id": "VT-U08",
@@ -4245,7 +6172,14 @@
         "Show the app for 5 seconds, then ask for first impressions and descriptive words."
       ],
       "expected": "Users describe the UI as polished/professional and perceive the pastel-blue, technical aesthetic and recognisable logo.",
-      "metric": "≥ 4/5 positive first-impression; palette/fonts described as intended."
+      "metric": "≥ 4/5 positive first-impression; palette/fonts described as intended.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-U09",
@@ -4262,7 +6196,18 @@
         "Perform a save and a deliberately failing action on slow network."
       ],
       "expected": "Loading/skeleton states appear during fetches and success/error toasts clearly confirm or explain outcomes.",
-      "metric": "All observed actions give visible feedback within 1s."
+      "metric": "All observed actions give visible feedback within 1s.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-A01",
@@ -4279,7 +6224,18 @@
         "Operate every primary flow (login, dashboard, session, admin edits) using only the keyboard."
       ],
       "expected": "All interactive elements are reachable and operable by keyboard with a visible focus indicator and logical tab order.",
-      "metric": "WCAG 2.1 AA 2.1.1 / 2.4.7 pass."
+      "metric": "WCAG 2.1 AA 2.1.1 / 2.4.7 pass.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/ui.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-A02",
@@ -4296,7 +6252,14 @@
         "Inspect inputs, buttons, and icons with a screen reader / a11y inspector."
       ],
       "expected": "Form fields have associated labels and icon-only controls have accessible names.",
-      "metric": "No missing-name/label violations (e.g. axe)."
+      "metric": "No missing-name/label violations (e.g. axe).",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-A03",
@@ -4317,7 +6280,14 @@
         "Measure text and UI contrast across cards, pills, nav, and inputs."
       ],
       "expected": "Text and essential UI meet WCAG AA contrast on the pastel-blue theme.",
-      "metric": "Contrast ≥ 4.5:1 (normal text) / 3:1 (large/UI)."
+      "metric": "Contrast ≥ 4.5:1 (normal text) / 3:1 (large/UI).",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-A04",
@@ -4334,7 +6304,14 @@
         "View the app at 375px and 1440px widths."
       ],
       "expected": "Layout is usable at both sizes with no clipping/overlap; the sidebar collapses appropriately on mobile.",
-      "metric": "No horizontal scroll or obscured controls at 375px."
+      "metric": "No horizontal scroll or obscured controls at 375px.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/ui.md"
+        }
+      ]
     },
     {
       "id": "VT-110",
@@ -4351,7 +6328,18 @@
         "Request the API and the SPA over HTTPS.",
         "curl -k https://localhost:3001/api/health and https://localhost:3001/."
       ],
-      "expected": "Both respond over TLS (health → {ok:true}; / serves the SPA index when built)."
+      "expected": "Both respond over TLS (health → {ok:true}; / serves the SPA index when built).",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-111",
@@ -4367,7 +6355,14 @@
       "steps": [
         "curl -I http://localhost:3000/anything."
       ],
-      "expected": "Responds 308 with Location: https://…<HTTPS_PORT>/anything; no app/API content is served over HTTP."
+      "expected": "Responds 308 with Location: https://…<HTTPS_PORT>/anything; no app/API content is served over HTTP.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-112",
@@ -4384,7 +6379,14 @@
       "steps": [
         "Start the backend with no certificate present."
       ],
-      "expected": "data/tls/{cert,key}.pem are generated and the HTTPS server starts successfully without manual setup."
+      "expected": "data/tls/{cert,key}.pem are generated and the HTTPS server starts successfully without manual setup.",
+      "automated": false,
+      "testedBy": [
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-113",
@@ -4402,7 +6404,18 @@
         "POST /api/settings/certificate with cert+key PEM.",
         "Continue making HTTPS requests."
       ],
-      "expected": "Returns 200 + metadata; the server keeps serving and new connections use the uploaded certificate (no restart)."
+      "expected": "Returns 200 + metadata; the server keeps serving and new connections use the uploaded certificate (no restart).",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-114",
@@ -4418,7 +6431,18 @@
       "steps": [
         "POST /api/settings/certificate with a key that does not match the cert (and with malformed PEM)."
       ],
-      "expected": "Returns 400 with a clear error; the active certificate is unchanged."
+      "expected": "Returns 400 with a clear error; the active certificate is unchanged.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-115",
@@ -4435,7 +6459,18 @@
         "Inspect GET /api/settings and GET /api/settings/certificate responses.",
         "Attempt to read the key via any API."
       ],
-      "expected": "Responses contain only certificate metadata (subject/issuer/validity/fingerprint/source) — never the private key or cert PEM."
+      "expected": "Responses contain only certificate metadata (subject/issuer/validity/fingerprint/source) — never the private key or cert PEM.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "backend",
+          "file": "backend/tests/tls.test.mjs"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-U10",
@@ -4454,7 +6489,18 @@
         "Observe use of the file pickers and the current-certificate panel."
       ],
       "expected": "Participants upload the cert/key and confirm the active certificate updated, unaided.",
-      "metric": "Task success ≥ 80%; the 'applies to new connections / reload' note understood."
+      "metric": "Task success ≥ 80%; the 'applies to new connections / reload' note understood.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/tls.spec.ts"
+        },
+        {
+          "kind": "manual",
+          "file": "requirements/manual-tests/tls.md"
+        }
+      ]
     },
     {
       "id": "VT-U11",
@@ -4473,7 +6519,59 @@
         "Observe whether participants notice they are impersonating and how they exit."
       ],
       "expected": "Participants recognize the banner indicating they are viewing as another user and use Stop to return to their own session unaided.",
-      "metric": "Task success ≥ 80%; all participants notice the impersonation banner."
+      "metric": "Task success ≥ 80%; all participants notice the impersonation banner.",
+      "automated": false
+    },
+    {
+      "id": "VT-120",
+      "testType": "acceptance",
+      "title": "Generate, preview and download each controlled document",
+      "method": "e2e",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-120"
+        }
+      ],
+      "preconditions": "Signed in as admin on the Requirements tab.",
+      "steps": [
+        "Click each document button (SRS, RTM, SVVR, DRR).",
+        "Confirm a PDF preview opens inside the app.",
+        "Confirm Download is only available from the open preview and downloads a named .pdf."
+      ],
+      "expected": "Each document renders as a PDF preview; downloading yields the correspondingly-named controlled PDF (e.g. SVVR-BRAINGAIN-001-Rev1.0.0.pdf) for the DMS.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "VT-121",
+      "testType": "acceptance",
+      "title": "Coverage and per-requirement test traceability are shown",
+      "method": "e2e",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-121"
+        }
+      ],
+      "preconditions": "Signed in as admin on the Requirements tab.",
+      "steps": [
+        "Observe the coverage summary on the Requirements tab.",
+        "Select a requirement that has tests."
+      ],
+      "expected": "The coverage summary (covered/total plus backend/e2e/manual) is shown, and the selected requirement lists its Tested by artifacts.",
+      "automated": true,
+      "testedBy": [
+        {
+          "kind": "e2e",
+          "file": "frontend/e2e/documents.spec.ts"
+        }
+      ]
     }
   ]
 }

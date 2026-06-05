@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^5.11.0",
+    "@types/pdfmake": "^0.3.3",
     "axios": "^1.7.2",
     "lucide-vue-next": "^0.400.0",
+    "pdfmake": "^0.3.9",
     "pinia": "^2.1.7",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
