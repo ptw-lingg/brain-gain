@@ -2,7 +2,7 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 80 requirements · updated 2026-06-03.
+> Generated from `requirements.json` · 83 requirements · updated 2026-06-05.
 
 Each system requirement is **derived from** one or more stakeholder requirements (`SR-…`).
 
@@ -67,6 +67,9 @@ Each system requirement is **derived from** one or more stakeholder requirements
 | SYS-AC-04 | **Router guard** — The frontend router shall enforce route meta requiresAuth/requiresAdmin/requiresTrainerOrAdmin, redirecting unauthenticated users to /login and unauthorized users to /dashboard; after a refresh it shall fetchMe() before role checks. | SR-003, SR-004 | Implemented |
 | SYS-AC-05 | **Role-gated sidebar** — The sidebar shall render only the navigation items appropriate to the user's level (defense-in-depth, not the sole control). | SR-003, SR-004 | Implemented |
 | SYS-AC-06 | **Permission matrix** — The system shall conform to the documented API permission matrix for every role/endpoint pair. | SR-003, SR-004 | Implemented |
+| SYS-AC-07 | **Impersonation token issuance** — POST /api/auth/impersonate/:userId (admin only) shall issue a JWT scoped to the target user — carrying the target's id, email, isAdmin and isTrainer so every endpoint and guard renders as that user — and additionally carrying the impersonator's id and email for audit and the nesting guard. | SR-011 | Implemented |
+| SYS-AC-08 | **Impersonation guards** — The impersonation endpoint shall require an administrator (403 otherwise), refuse impersonating oneself (400), refuse nesting when the caller's token already carries an impersonatorId (409), and return 404 for an unknown target user. | SR-011, SR-003 | Implemented |
+| SYS-AC-09 | **Client view-as session** — The frontend shall start impersonation from the Users page (the View-as action), park the admin token and activate the impersonation token so the whole app renders as the target user, show a persistent banner naming the impersonated user with a Stop control, and on Stop restore the parked admin token and reload the admin profile; a fresh sign-in clears any parked token. | SR-011 | Implemented |
 
 ### Users, Roles & their UIs
 
@@ -145,7 +148,7 @@ Each system requirement is **derived from** one or more stakeholder requirements
 
 | Stakeholder area | Stakeholder reqs | Covering system reqs |
 |---|---|---|
-| Authentication & Access Control | SR-001, SR-002, SR-003, SR-004, SR-005, SR-006, SR-007, SR-008, SR-009, SR-010 | SYS-DATA-02, SYS-DATA-06, SYS-DATA-07, SYS-AUTH-01, SYS-AUTH-02, SYS-AUTH-03, SYS-AUTH-04, SYS-AUTH-05, SYS-AUTH-06, SYS-AUTH-07, SYS-SSO-01, SYS-SSO-02, SYS-SSO-03, SYS-SSO-04, SYS-SSO-05, SYS-SSO-06, SYS-SSO-07, SYS-SSO-08, SYS-SSO-09, SYS-AC-01, SYS-AC-02, SYS-AC-04, SYS-AC-05, SYS-AC-06, SYS-SET-02, SYS-SET-03 |
+| Authentication & Access Control | SR-001, SR-002, SR-003, SR-004, SR-005, SR-006, SR-007, SR-008, SR-009, SR-010, SR-011 | SYS-DATA-02, SYS-DATA-06, SYS-DATA-07, SYS-AUTH-01, SYS-AUTH-02, SYS-AUTH-03, SYS-AUTH-04, SYS-AUTH-05, SYS-AUTH-06, SYS-AUTH-07, SYS-SSO-01, SYS-SSO-02, SYS-SSO-03, SYS-SSO-04, SYS-SSO-05, SYS-SSO-06, SYS-SSO-07, SYS-SSO-08, SYS-SSO-09, SYS-AC-01, SYS-AC-02, SYS-AC-04, SYS-AC-05, SYS-AC-06, SYS-AC-07, SYS-AC-08, SYS-AC-09, SYS-SET-02, SYS-SET-03 |
 | User Management | SR-020, SR-021, SR-022 | SYS-DATA-02, SYS-USR-01, SYS-USR-02 |
 | Job Roles | SR-030, SR-031, SR-032 | SYS-DATA-03, SYS-ROL-01, SYS-ROL-02, SYS-DUE-02 |
 | Trainings | SR-040, SR-041, SR-042, SR-043, SR-044, SR-045, SR-046, SR-047 | SYS-DATA-04, SYS-DATA-05, SYS-AC-01, SYS-AC-03, SYS-ROL-03, SYS-TRN-01, SYS-TRN-03, SYS-TRN-04, SYS-TRN-05, SYS-TRN-06, SYS-TRN-07, SYS-TRN-08, SYS-TRN-09, SYS-DUE-02, SYS-OVS-01 |

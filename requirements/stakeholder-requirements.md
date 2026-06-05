@@ -2,7 +2,7 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 48 requirements · updated 2026-06-03.
+> Generated from `requirements.json` · 49 requirements · updated 2026-06-05.
 
 Priority: **M** = Must · **S** = Should · **C** = Could.
 
@@ -31,6 +31,7 @@ Priority: **M** = Must · **S** = Should · **C** = Could.
 | SR-008 | **Configure SSO in-app** — An administrator shall configure SSO (enable/disable, tenant, application, permitted email domains) from within the application (Settings), without code or environment changes. | M | Microsoft Entra ID SSO feature (stakeholder decision) | Approved |
 | SR-009 | **Domain-restricted provisioning & linking** — When a person signs in via SSO and matches an existing user (by email), their account shall be linked without changing their existing roles/permissions. If unmatched and their email domain is allowed, a new member-level account shall be created automatically; otherwise sign-in shall be refused. | M | Microsoft Entra ID SSO feature (domain-restricted provisioning) | Approved |
 | SR-010 | **Keep password login alongside SSO** — Email/password login shall remain available alongside SSO. | M | Microsoft Entra ID SSO feature (stakeholder decision: keep both) | Approved |
+| SR-011 | **Admin can view the app as another user** — An administrator shall be able to impersonate another user — seeing the application exactly as that user does (their dashboard, due trainings, and role-appropriate navigation) — to support and troubleshoot, then return to their own session. | S | Admin impersonation feature | Approved |
 
 ### User Management
 

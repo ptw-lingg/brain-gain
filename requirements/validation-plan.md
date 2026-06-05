@@ -2,11 +2,11 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · 58 validation tests · updated 2026-06-03.
+> Generated from `requirements.json` · 61 validation tests · updated 2026-06-05.
 > Validation answers *"are we building the right thing?"* — each test exercises one or more **stakeholder**
 > requirements (`SR-…`), including usability and accessibility.
 
-## Acceptance tests (44)
+## Acceptance tests (46)
 
 #### VT-001 — Email/password login
 
@@ -89,6 +89,26 @@
   2. Sign in via SSO with an email matching an existing local user.
   3. Sign in via SSO with a new allowed-domain email.
 - **Expected:** Unlisted-domain/no-match is refused (403); a matching email links the Entra account without changing the user's roles; a new allowed-domain user is auto-created as a member.
+
+#### VT-011 — Admin can view the app as another user and return
+
+- **Method:** End-to-end · **Validates:** SR-011
+- **Preconditions:** An admin account and a member who is assigned trainings via a job role.
+- **Steps:**
+  1. Sign in as admin, open Users, select the member, and click View as.
+  2. Observe the dashboard and sidebar while the banner is shown.
+  3. Click Stop in the banner.
+- **Expected:** The dashboard shows the member's required trainings and the sidebar collapses to the member's capabilities; a banner identifies the impersonated member by name. Stop restores the admin session — admin navigation and identity return.
+
+#### VT-012 — Impersonation guards
+
+- **Method:** API check · **Validates:** SR-011
+- **Preconditions:** An admin token and a non-admin (member) token.
+- **Steps:**
+  1. With the admin token, POST /api/auth/impersonate/:id for a valid member, for the admin's own id, and for an unknown id.
+  2. POST the same endpoint with a non-admin token.
+  3. From an active impersonation token, POST the endpoint again.
+- **Expected:** A valid target returns a token whose claims are the target plus impersonatorId and impersonatorEmail of the admin; self returns 400; unknown id returns 404; non-admin returns 403; nesting returns 409.
 
 #### VT-020 — Admin manages users
 
@@ -360,7 +380,7 @@
   2. Attempt to read the key via any API.
 - **Expected:** Responses contain only certificate metadata (subject/issuer/validity/fingerprint/source) — never the private key or cert PEM.
 
-## Usability tests (10)
+## Usability tests (11)
 
 #### VT-U01 — First-login orientation
 
@@ -453,6 +473,16 @@
 - **Expected:** Participants upload the cert/key and confirm the active certificate updated, unaided.
 - **Acceptance metric:** Task success ≥ 80%; the 'applies to new connections / reload' note understood.
 
+#### VT-U11 — Impersonation state is obvious and reversible
+
+- **Method:** Manual · **Validates:** SR-011
+- **Preconditions:** Admin participants; at least one member to view as.
+- **Steps:**
+  1. Task: 'View the app as a specific member, then return to your own account.'
+  2. Observe whether participants notice they are impersonating and how they exit.
+- **Expected:** Participants recognize the banner indicating they are viewing as another user and use Stop to return to their own session unaided.
+- **Acceptance metric:** Task success ≥ 80%; all participants notice the impersonation banner.
+
 ## Accessibility tests (4)
 
 #### VT-A01 — Full keyboard operability
@@ -501,6 +531,7 @@
 | SR-008 | Configure SSO in-app | M | VT-008, VT-U06 |
 | SR-009 | Domain-restricted provisioning & linking | M | VT-009 |
 | SR-010 | Keep password login alongside SSO | M | VT-006 |
+| SR-011 | Admin can view the app as another user | S | VT-011, VT-012, VT-U11 |
 | SR-020 | Admin manages users | M | VT-020 |
 | SR-021 | User belongs to several roles | M | VT-021 |
 | SR-022 | Mark trainer/administrator | M | VT-020 |

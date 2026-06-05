@@ -2,7 +2,7 @@
 
 <!-- GENERATED FROM requirements.json by requirements/tools/build.mjs — DO NOT EDIT BY HAND -->
 
-> Generated from `requirements.json` · updated 2026-06-03. Maps every system requirement to
+> Generated from `requirements.json` · updated 2026-06-05. Maps every system requirement to
 > the code that implements it, and back to the stakeholder requirement(s) it satisfies.
 
 ### Architecture & Technology
@@ -66,6 +66,9 @@
 | SYS-AC-04 | `frontend/src/router/index.ts` · beforeEach + meta | SR-003, SR-004 | — |
 | SYS-AC-05 | `frontend/src/components/AppSidebar.vue` · role-gated nav v-if | SR-003, SR-004 | — |
 | SYS-AC-06 | `brain-gain.md` · API permission matrix | SR-003, SR-004 | — |
+| SYS-AC-07 | `backend/src/routes/auth.ts` · POST /impersonate/:userId; `backend/src/types.ts` · AuthUser.impersonatorId/impersonatorEmail | SR-011 | endpoint-probe |
+| SYS-AC-08 | `backend/src/routes/auth.ts` · POST /impersonate/:userId guards; `backend/src/middleware/auth.ts` · requireAdmin | SR-011, SR-003 | endpoint-probe |
+| SYS-AC-09 | `frontend/src/stores/auth.ts` · startImpersonation/stopImpersonation/isImpersonating; `frontend/src/components/AppLayout.vue` · impersonation banner; `frontend/src/pages/UsersPage.vue` · View as action | SR-011 | e2e |
 
 ### Users, Roles & their UIs
 
@@ -146,7 +149,7 @@
 |---|---|---|---|
 | SR-001 | Email/password authentication | SYS-DATA-02, SYS-AUTH-01, SYS-AUTH-02, SYS-AUTH-06 | `backend/src/types.ts`, `frontend/src/types/index.ts`, `backend/src/routes/auth.ts`, `backend/src/routes/users.ts` |
 | SR-002 | Land on relevant trainings after sign-in | SYS-AUTH-01 | `backend/src/routes/auth.ts` |
-| SR-003 | Admin-only editing, reliably enforced | SYS-DATA-07, SYS-AC-01, SYS-AC-02, SYS-AC-04, SYS-AC-05, SYS-AC-06 | `backend/src/types.ts`, `backend/src/routes/auth.ts`, `backend/src/middleware/auth.ts`, `backend/src/routes/users.ts`, `backend/src/routes/roles.ts`, `backend/src/routes/settings.ts`, `frontend/src/router/index.ts`, `frontend/src/components/AppSidebar.vue`, `brain-gain.md` |
+| SR-003 | Admin-only editing, reliably enforced | SYS-DATA-07, SYS-AC-01, SYS-AC-02, SYS-AC-04, SYS-AC-05, SYS-AC-06, SYS-AC-08 | `backend/src/types.ts`, `backend/src/routes/auth.ts`, `backend/src/middleware/auth.ts`, `backend/src/routes/users.ts`, `backend/src/routes/roles.ts`, `backend/src/routes/settings.ts`, `frontend/src/router/index.ts`, `frontend/src/components/AppSidebar.vue`, `brain-gain.md` |
 | SR-004 | Three access levels | SYS-AC-01, SYS-AC-04, SYS-AC-05, SYS-AC-06 | `backend/src/middleware/auth.ts`, `frontend/src/router/index.ts`, `frontend/src/components/AppSidebar.vue`, `brain-gain.md` |
 | SR-005 | Persistent session | SYS-AUTH-03, SYS-AUTH-04, SYS-AUTH-05 | `backend/src/middleware/auth.ts`, `backend/src/routes/auth.ts`, `frontend/src/stores/auth.ts`, `frontend/src/api/client.ts` |
 | SR-006 | Sign in with Microsoft Entra ID | SYS-SSO-01, SYS-SSO-02, SYS-SSO-04, SYS-SSO-07, SYS-SSO-09 | `frontend/src/auth/msal.ts`, `backend/src/routes/auth.ts`, `frontend/src/pages/LoginPage.vue`, `backend/src/services/entra.ts`, `frontend/src/stores/auth.ts`, `frontend/src/pages/SettingsPage.vue` |
@@ -154,6 +157,7 @@
 | SR-008 | Configure SSO in-app | SYS-DATA-06, SYS-SSO-08, SYS-SET-02, SYS-SET-03 | `backend/src/types.ts`, `backend/src/services/fileStore.ts`, `backend/src/services/entra.ts`, `backend/src/routes/settings.ts`, `frontend/src/pages/SettingsPage.vue` |
 | SR-009 | Domain-restricted provisioning & linking | SYS-DATA-02, SYS-AUTH-07, SYS-SSO-05, SYS-SSO-06 | `backend/src/types.ts`, `frontend/src/types/index.ts`, `backend/src/routes/auth.ts`, `backend/src/services/entra.ts` |
 | SR-010 | Keep password login alongside SSO | SYS-AUTH-07, SYS-SSO-07 | `backend/src/routes/auth.ts`, `frontend/src/stores/auth.ts` |
+| SR-011 | Admin can view the app as another user | SYS-AC-07, SYS-AC-08, SYS-AC-09 | `backend/src/routes/auth.ts`, `backend/src/types.ts`, `backend/src/middleware/auth.ts`, `frontend/src/stores/auth.ts`, `frontend/src/components/AppLayout.vue`, `frontend/src/pages/UsersPage.vue` |
 | SR-020 | Admin manages users | SYS-USR-01, SYS-USR-02 | `backend/src/routes/users.ts`, `frontend/src/pages/UsersPage.vue` |
 | SR-021 | User belongs to several roles | SYS-DATA-02, SYS-USR-02 | `backend/src/types.ts`, `frontend/src/types/index.ts`, `frontend/src/pages/UsersPage.vue` |
 | SR-022 | Mark trainer/administrator | SYS-DATA-02, SYS-USR-01, SYS-USR-02 | `backend/src/types.ts`, `frontend/src/types/index.ts`, `backend/src/routes/users.ts`, `frontend/src/pages/UsersPage.vue` |

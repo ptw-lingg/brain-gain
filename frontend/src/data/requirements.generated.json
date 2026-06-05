@@ -3,7 +3,7 @@
   "meta": {
     "project": "BrainGain",
     "version": "1.0.0",
-    "updated": "2026-06-03",
+    "updated": "2026-06-05",
     "specDoc": "../brain-gain.md",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs."
   },
@@ -46,6 +46,10 @@
       {
         "id": "tls-feature",
         "label": "HTTPS/TLS delivery feature"
+      },
+      {
+        "id": "impersonation-feature",
+        "label": "Admin impersonation feature"
       }
     ],
     "status": [
@@ -269,6 +273,16 @@
       "priority": "M",
       "source": "sso-feature",
       "sourceNote": "stakeholder decision: keep both",
+      "status": "approved"
+    },
+    {
+      "id": "SR-011",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Admin can view the app as another user",
+      "text": "An administrator shall be able to impersonate another user — seeing the application exactly as that user does (their dashboard, due trainings, and role-appropriate navigation) — to support and troubleshoot, then return to their own session.",
+      "priority": "S",
+      "source": "impersonation-feature",
       "status": "approved"
     },
     {
@@ -1898,6 +1912,104 @@
       ]
     },
     {
+      "id": "SYS-AC-07",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Impersonation token issuance",
+      "text": "POST /api/auth/impersonate/:userId (admin only) shall issue a JWT scoped to the target user — carrying the target's id, email, isAdmin and isTrainer so every endpoint and guard renders as that user — and additionally carrying the impersonator's id and email for audit and the nesting guard.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-011"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /impersonate/:userId"
+        },
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "AuthUser.impersonatorId/impersonatorEmail"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "impersonation token decodes to the target identity plus impersonatorId/email of the admin"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-08",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Impersonation guards",
+      "text": "The impersonation endpoint shall require an administrator (403 otherwise), refuse impersonating oneself (400), refuse nesting when the caller's token already carries an impersonatorId (409), and return 404 for an unknown target user.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-011"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-003"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /impersonate/:userId guards"
+        },
+        {
+          "path": "backend/src/middleware/auth.ts",
+          "symbol": "requireAdmin"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "self → 400, nesting → 409, non-admin → 403, unknown → 404, no token → 401"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AC-09",
+      "type": "system",
+      "category": "Authorization & Access Control",
+      "title": "Client view-as session",
+      "text": "The frontend shall start impersonation from the Users page (the View-as action), park the admin token and activate the impersonation token so the whole app renders as the target user, show a persistent banner naming the impersonated user with a Stop control, and on Stop restore the parked admin token and reload the admin profile; a fresh sign-in clears any parked token.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-011"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/stores/auth.ts",
+          "symbol": "startImpersonation/stopImpersonation/isImpersonating"
+        },
+        {
+          "path": "frontend/src/components/AppLayout.vue",
+          "symbol": "impersonation banner"
+        },
+        {
+          "path": "frontend/src/pages/UsersPage.vue",
+          "symbol": "View as action"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "e2e",
+          "note": "View as → banner + member-only nav; Stop restores the admin session (Edge via Playwright)"
+        }
+      ]
+    },
+    {
       "id": "SYS-USR-01",
       "type": "system",
       "category": "Users, Roles & their UIs",
@@ -3413,6 +3525,44 @@
       "expected": "Unlisted-domain/no-match is refused (403); a matching email links the Entra account without changing the user's roles; a new allowed-domain user is auto-created as a member."
     },
     {
+      "id": "VT-011",
+      "testType": "acceptance",
+      "title": "Admin can view the app as another user and return",
+      "method": "e2e",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-011"
+        }
+      ],
+      "preconditions": "An admin account and a member who is assigned trainings via a job role.",
+      "steps": [
+        "Sign in as admin, open Users, select the member, and click View as.",
+        "Observe the dashboard and sidebar while the banner is shown.",
+        "Click Stop in the banner."
+      ],
+      "expected": "The dashboard shows the member's required trainings and the sidebar collapses to the member's capabilities; a banner identifies the impersonated member by name. Stop restores the admin session — admin navigation and identity return."
+    },
+    {
+      "id": "VT-012",
+      "testType": "acceptance",
+      "title": "Impersonation guards",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-011"
+        }
+      ],
+      "preconditions": "An admin token and a non-admin (member) token.",
+      "steps": [
+        "With the admin token, POST /api/auth/impersonate/:id for a valid member, for the admin's own id, and for an unknown id.",
+        "POST the same endpoint with a non-admin token.",
+        "From an active impersonation token, POST the endpoint again."
+      ],
+      "expected": "A valid target returns a token whose claims are the target plus impersonatorId and impersonatorEmail of the admin; self returns 400; unknown id returns 404; non-admin returns 403; nesting returns 409."
+    },
+    {
       "id": "VT-020",
       "testType": "acceptance",
       "title": "Admin manages users",
@@ -4305,6 +4455,25 @@
       ],
       "expected": "Participants upload the cert/key and confirm the active certificate updated, unaided.",
       "metric": "Task success ≥ 80%; the 'applies to new connections / reload' note understood."
+    },
+    {
+      "id": "VT-U11",
+      "testType": "usability",
+      "title": "Impersonation state is obvious and reversible",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-011"
+        }
+      ],
+      "preconditions": "Admin participants; at least one member to view as.",
+      "steps": [
+        "Task: 'View the app as a specific member, then return to your own account.'",
+        "Observe whether participants notice they are impersonating and how they exit."
+      ],
+      "expected": "Participants recognize the banner indicating they are viewing as another user and use Stop to return to their own session unaided.",
+      "metric": "Task success ≥ 80%; all participants notice the impersonation banner."
     }
   ]
 }

@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
+import { useAuthStore } from '@/stores/auth';
 import type { JobRole, SafeUser } from '@/types';
 
 const toast = useToastStore();
+const auth = useAuthStore();
+const router = useRouter();
 
 interface UserDraft extends SafeUser {
   password?: string;
@@ -88,6 +92,18 @@ async function save(): Promise<void> {
     await load();
   } catch {
     toast.error('Could not save user');
+  }
+}
+
+// Start a "view as" session for the user being edited, then jump to their dashboard.
+async function impersonate(): Promise<void> {
+  if (!draft.value?.id) return;
+  try {
+    await auth.startImpersonation(draft.value.id);
+    close();
+    await router.push('/dashboard');
+  } catch {
+    toast.error('Could not view as this user');
   }
 }
 
@@ -211,6 +227,14 @@ onMounted(load);
 
           <div class="mt-auto flex items-center gap-2 pt-4">
             <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> Save</button>
+            <button
+              v-if="!isNew && draft.id !== auth.user?.id"
+              class="btn-ghost"
+              title="See the app exactly as this user does"
+              @click="impersonate"
+            >
+              <Eye class="h-4 w-4" /> View as
+            </button>
             <div class="flex-1" />
             <template v-if="!isNew">
               <template v-if="confirmDelete">

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import type { SafeUser, User } from '../types';
 import { readSettings, readStore, writeStore } from '../services/fileStore';
-import { authenticate, signToken, type AuthRequest } from '../middleware/auth';
+import { authenticate, requireAdmin, signToken, type AuthRequest } from '../middleware/auth';
 import {
   EntraAuthError,
   authority,
@@ -47,6 +47,36 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   const user = users.find((u) => u.id === req.user?.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
   return res.json(toSafeUser(user));
+});
+
+// POST /api/auth/impersonate/:userId  — admin starts a "view as" session.
+// Issues a token carrying the TARGET user's identity & flags (so every endpoint and guard
+// renders exactly what they would see), plus the impersonator's id for audit + nesting guard.
+// Ending the session is purely client-side: the admin's own token is restored, no endpoint needed.
+router.post('/impersonate/:userId', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  // Refuse to impersonate from within an impersonation session — keeps the restore stack flat.
+  if (req.user?.impersonatorId) {
+    return res.status(409).json({ error: 'Already impersonating; stop first' });
+  }
+  if (req.params.userId === req.user?.id) {
+    return res.status(400).json({ error: 'You cannot impersonate yourself' });
+  }
+  const users = await readStore<User>('users');
+  const target = users.find((u) => u.id === req.params.userId);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+
+  console.log(
+    `[impersonate] ${req.user?.email} (${req.user?.id}) → ${target.email} (${target.id})`,
+  );
+  const token = signToken({
+    id: target.id,
+    email: target.email,
+    isAdmin: target.isAdmin,
+    isTrainer: target.isTrainer,
+    impersonatorId: req.user!.id,
+    impersonatorEmail: req.user!.email,
+  });
+  return res.json({ token, user: toSafeUser(target) });
 });
 
 // GET /api/auth/sso/config  — public: the login page needs this before authenticating.

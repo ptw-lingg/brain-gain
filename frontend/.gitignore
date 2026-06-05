@@ -1,3 +1,8 @@
 node_modules/
 dist/
 *.log
+
+# Compiled TS/Vue output must never live in src: Vite resolves .js before .ts, so a stale
+# sibling shadows the real source. .ts/.vue are the single source of truth (tsconfig has noEmit).
+/src/**/*.js
+/vite.config.js

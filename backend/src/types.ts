@@ -114,4 +114,9 @@ export interface AuthUser {
   email: string;
   isAdmin: boolean;
   isTrainer: boolean;
+  // Set only on an impersonation token: the admin who started the session. Lets the backend
+  // refuse nested impersonation and audit who is acting as whom; the frontend uses its presence
+  // to show the "viewing as" banner.
+  impersonatorId?: string;
+  impersonatorEmail?: string;
 }
