@@ -81,7 +81,7 @@ test('SYS-ARCH-06 / VT-106: seed creates the Lab Technician role and its two tra
 
 // ───────── SYS-DATA-01/02 + SYS-ARCH-05 / VT-101/VT-103 — user JSON round-trip ─────────
 
-test('SYS-DATA-02 / VT-101/VT-103: a created user round-trips through the JSON store', async () => {
+test('SYS-ARCH-05 / SYS-DATA-02 / VT-101/VT-103: a created user round-trips through the JSON store', async () => {
   const create = await srv.request('POST', '/api/users', {
     token: adminToken,
     body: {
@@ -205,7 +205,7 @@ test('SYS-DATA-05 / VT-105: correctIndex is stripped from the learner training p
 
 // ───────── SYS-DATA-06 / VT-103 — settings defaults backfilled & round-trip ─────────
 
-test('SYS-DATA-06: GET /settings backfills defaults (passThreshold 0.8, entra defaults, tls null)', async () => {
+test('SYS-DATA-01 / SYS-DATA-06: GET /settings backfills defaults (passThreshold 0.8, entra defaults, tls null)', async () => {
   const res = await srv.request('GET', '/api/settings', { token: adminToken });
   assert.equal(res.status, 200);
   assert.equal(res.body.passThreshold, 0.8, 'default pass threshold backfilled');

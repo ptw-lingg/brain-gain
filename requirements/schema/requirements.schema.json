@@ -17,7 +17,15 @@
         "version": { "type": "string" },
         "updated": { "type": "string" },
         "specDoc": { "type": "string" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "iec62304": {
+          "type": "object",
+          "properties": {
+            "safetyClass": { "enum": ["A", "B", "C"] },
+            "standard": { "type": "string" },
+            "rationale": { "type": "string" }
+          }
+        }
       }
     },
     "enums": {
@@ -77,6 +85,11 @@
     "tests": {
       "type": "array",
       "items": { "$ref": "#/$defs/testCase" }
+    },
+    "testCases": {
+      "type": "array",
+      "description": "Concrete test cases: automated cases parsed from the suites (build.mjs) + authored manual cases.",
+      "items": { "$ref": "#/$defs/testCaseRecord" }
     }
   },
   "$defs": {
@@ -167,6 +180,28 @@
       "properties": {
         "kind": { "enum": ["backend", "e2e", "manual"] },
         "file": { "type": "string" }
+      }
+    },
+    "testCaseRecord": {
+      "type": "object",
+      "required": ["id", "name", "kind", "covers"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^TC-[0-9a-f]{10}$" },
+        "name": { "type": "string" },
+        "kind": { "enum": ["backend", "e2e", "manual"] },
+        "file": { "type": "string" },
+        "covers": { "type": "array", "items": { "type": "string" } },
+        "manual": {
+          "type": "object",
+          "required": ["steps", "expected"],
+          "additionalProperties": false,
+          "properties": {
+            "steps": { "type": "array", "items": { "type": "string" } },
+            "expected": { "type": "string" },
+            "rationale": { "type": "string" }
+          }
+        }
       }
     },
     "requirement": {

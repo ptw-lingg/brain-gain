@@ -47,6 +47,29 @@ export interface Coverage {
   gaps: string[];
 }
 
+// A concrete test case: an automated case parsed from the suites, or an authored manual case.
+export interface TestCaseRecord {
+  id: string;
+  name: string;
+  kind: TestKind;
+  file?: string;
+  covers: string[];
+  manual?: { steps: string[]; expected: string; rationale?: string };
+}
+
+export type TestResult = 'pass' | 'fail' | 'skip';
+export interface TestResultsDoc {
+  ranAt?: string;
+  summary?: { total: number; passed: number; failed: number; skipped: number; backend: number; e2e: number };
+  results: Record<string, TestResult>;
+}
+
+export interface Iec62304Meta {
+  safetyClass: 'A' | 'B' | 'C';
+  standard: string;
+  rationale: string;
+}
+
 export interface Requirement {
   id: string;
   type: RequirementType;
@@ -87,6 +110,7 @@ export interface RequirementsDoc {
     specDoc?: string;
     description?: string;
     coverage?: Coverage;
+    iec62304?: Iec62304Meta;
   };
   enums: {
     priority: EnumItem[];
@@ -100,4 +124,5 @@ export interface RequirementsDoc {
   outOfScope?: { id: string; text: string }[];
   requirements: Requirement[];
   tests: TestCase[];
+  testCases?: TestCaseRecord[];
 }

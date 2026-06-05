@@ -19,6 +19,8 @@ const router = useRouter();
 
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
 const isTrainer = computed(() => auth.user?.isTrainer ?? false);
+// Requirements/DMS tooling is internal-only (dev + internal build), excluded from the public build.
+const internalTools = import.meta.env.DEV || import.meta.env.VITE_INTERNAL === 'true';
 
 const initials = computed(() =>
   (auth.user?.name ?? '?')
@@ -67,7 +69,7 @@ function logout(): void {
         <RouterLink to="/settings" class="nav-item" active-class="nav-active">
           <SlidersHorizontal class="h-4 w-4" /> Settings
         </RouterLink>
-        <RouterLink to="/requirements" class="nav-item" active-class="nav-active">
+        <RouterLink v-if="internalTools" to="/requirements" class="nav-item" active-class="nav-active">
           <ListChecks class="h-4 w-4" /> Requirements
         </RouterLink>
       </template>

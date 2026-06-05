@@ -1,19 +1,21 @@
 #!/usr/bin/env node
-// Validate requirements.json, inject test+coverage data, and sync the app's data copy.
+// Validate requirements.json, build the test-case catalog + coverage, and sync the app's data copy.
 //
-//   node requirements/tools/build.mjs           # validate + inject coverage + write JSON
+//   node requirements/tools/build.mjs           # validate + rebuild testCases/coverage + write JSON
 //   node requirements/tools/build.mjs --check    # validate + fail if JSON is out of date (CI / pre-commit)
 //
 // requirements.json is the single source of truth. This tool:
-//   1. strips dead references to the removed brain-gain.md spec (idempotent),
-//   2. scans the test suites and writes each requirement's `testedBy` + each VT's `automated`/`testedBy`,
-//      plus a `meta.coverage` summary, INTO requirements.json,
+//   1. statically parses the backend + e2e suites into `testCases[]` (kind backend|e2e), preserving any
+//      authored manual test cases (kind manual) for checks automation can't reach,
+//   2. computes `meta.coverage` from `testCases[].covers` (+ self-documented usability/accessibility VTs),
 //   3. writes frontend/src/data/requirements.generated.json (the copy the in-app viewer imports).
-// It no longer emits the Markdown views (the dataset itself is the artifact).
+// Live pass/fail results are NOT here — they live in test-results.generated.json (see sync-tests.mjs),
+// so this file stays deterministic and `--check` works as a CI drift gate. No Markdown views are emitted.
 
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
+import { automatedTestCases } from './testlib.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const reqDir = join(here, '..');
@@ -25,78 +27,63 @@ const CHECK = process.argv.includes('--check');
 
 const data = JSON.parse(readFileSync(dataPath, 'utf8'));
 
-// ───────────────────────────── 1. strip the removed brain-gain.md spec ─────────────────────────────
-delete data.meta.specDoc;
-for (const r of data.requirements) {
-  delete r.specRefs; // every specRef pointed at the now-deleted brain-gain.md
-  // SYS-AC-06's only implementedBy was the doc's permission matrix — repoint to the real enforcement.
-  if ((r.implementedBy ?? []).some((c) => c.path === 'brain-gain.md')) {
-    r.implementedBy = [
-      { path: 'backend/src/middleware/auth.ts', symbol: 'requireAdmin/requireTrainerOrAdmin/requireAdminOrOwner' },
-      { path: 'backend/src/routes/', symbol: 'per-endpoint guards (users/roles/settings/trainings)' },
-    ];
-  }
-}
+// ───────────────────────────── 1. test-case catalog (manual authored + automated parsed) ─────────────────────────────
+const manualCases = (data.testCases ?? []).filter((tc) => tc.kind === 'manual');
+const automated = automatedTestCases(repoRoot);
+data.testCases = [...manualCases, ...automated].sort((a, b) => a.id.localeCompare(b.id));
 
-// ───────────────────────────── 2. scan test suites → testedBy / coverage ─────────────────────────────
-const ID_RE = /\b(SYS-[A-Z]+-\d{2}|SR-\d{3}|VT-(?:[A-Z]\d{2}|\d{3}))\b/g;
-function refsFrom(dir, pred, kind) {
-  const out = []; // [{ id, kind, file }]
-  if (!existsSync(dir)) return out;
-  for (const f of readdirSync(dir).filter(pred)) {
-    const seen = new Set();
-    for (const m of readFileSync(join(dir, f), 'utf8').matchAll(ID_RE)) seen.add(m[1]);
-    for (const id of seen) out.push({ id, kind, file: `${rel(dir)}/${f}` });
-  }
-  return out;
-}
-const allRefs = [
-  ...refsFrom(join(repoRoot, 'backend', 'tests'), (f) => f.endsWith('.test.mjs'), 'backend'),
-  ...refsFrom(join(repoRoot, 'frontend', 'e2e'), (f) => f.endsWith('.spec.ts'), 'e2e'),
-  ...refsFrom(join(reqDir, 'manual-tests'), (f) => f.endsWith('.md'), 'manual'),
-];
-const refsById = new Map();
-for (const r of allRefs) (refsById.get(r.id) ?? refsById.set(r.id, []).get(r.id)).push({ kind: r.kind, file: r.file });
-const testedBy = (id) => (refsById.get(id) ?? []).sort((a, b) => a.kind.localeCompare(b.kind) || a.file.localeCompare(b.file));
+// id → set of test kinds covering it
+const coverKinds = new Map();
+for (const tc of data.testCases)
+  for (const id of tc.covers ?? []) (coverKinds.get(id) ?? coverKinds.set(id, new Set()).get(id)).add(tc.kind);
 
-// A VT whose method/type is inherently manual is "covered" by its own spec in this dataset.
+// A usability/accessibility (or inspection-method) VT is its own self-documented manual test.
 const selfManual = (t) => ['usability', 'accessibility'].includes(t.testType) || ['manual', 'inspection'].includes(t.method);
 
-// No timestamp here — the file must be deterministic so `--check` works as a CI drift gate.
+// VT coverage: kinds of test cases naming the VT, plus 'manual' if the VT is self-documented.
+const vtKinds = new Map();
+for (const t of data.tests) {
+  const kinds = new Set(coverKinds.get(t.id) ?? []);
+  if (selfManual(t)) kinds.add('manual');
+  vtKinds.set(t.id, kinds);
+}
+// Stakeholder requirements are validated by their VTs — an SR inherits the coverage of the VTs that
+// validate it (the VT is the SR's validation test). System requirements must be named by a test case
+// (verification) or an authored manual case; they do not inherit.
+const validatingVts = new Map();
+for (const t of data.tests)
+  for (const l of t.links ?? []) if (l.type === 'validates') (validatingVts.get(l.target) ?? validatingVts.set(l.target, []).get(l.target)).push(t.id);
+
+function kindsFor(r) {
+  const kinds = new Set(coverKinds.get(r.id) ?? []);
+  if (r.type === 'stakeholder') for (const vt of validatingVts.get(r.id) ?? []) for (const k of vtKinds.get(vt) ?? []) kinds.add(k);
+  return kinds;
+}
+
 const cov = { total: 0, covered: 0, backend: 0, e2e: 0, manual: 0, gaps: [] };
-const note = (id, by, extraManual) => {
+const tally = (id, kinds) => {
   cov.total++;
-  const kinds = new Set(by.map((b) => b.kind));
-  if (extraManual) kinds.add('manual');
   if (kinds.has('backend')) cov.backend++;
   if (kinds.has('e2e')) cov.e2e++;
   if (kinds.has('manual')) cov.manual++;
   if (kinds.size) cov.covered++;
   else cov.gaps.push(id);
-  return kinds;
 };
-
-for (const r of data.requirements) {
-  const by = testedBy(r.id);
-  if (by.length) r.testedBy = by;
-  else delete r.testedBy;
-  note(r.id, by, false);
-}
+for (const r of data.requirements) { delete r.testedBy; tally(r.id, kindsFor(r)); }
 for (const t of data.tests) {
-  const by = testedBy(t.id);
-  const auto = by.some((b) => b.kind === 'backend' || b.kind === 'e2e');
-  t.automated = auto;
-  if (by.length) t.testedBy = by;
-  else delete t.testedBy;
-  note(t.id, by, selfManual(t)); // manual VTs count as self-documented
+  delete t.testedBy;
+  const kinds = vtKinds.get(t.id);
+  t.automated = kinds.has('backend') || kinds.has('e2e');
+  tally(t.id, kinds);
 }
 data.meta.coverage = cov;
 
-// ───────────────────────────── 3. validate ─────────────────────────────
+// ───────────────────────────── 2. validate ─────────────────────────────
 const errors = [];
 const err = (m) => errors.push(m);
 const ID = /^(SR-\d{3}|SYS-[A-Z]+-\d{2})$/;
 const TEST_ID = /^VT-([A-Z]\d{2}|\d{3})$/;
+const TC_ID = /^TC-[0-9a-f]{10}$/;
 const ids = new Map();
 const enumIds = (k) => new Set((data.enums[k] ?? []).map((e) => e.id));
 const [pri, src, st, lt] = [enumIds('priority'), enumIds('source'), enumIds('status'), enumIds('linkType')];
@@ -140,6 +127,15 @@ for (const t of data.tests) {
   if (!t.expected) err(`${t.id}: no expected`);
 }
 for (const r of data.requirements) if (r.type === 'stakeholder' && !validated.has(r.id)) err(`validation gap: ${r.id} has no VT`);
+// test cases
+const known = (id) => ids.has(id) || testIds.has(id);
+for (const tc of data.testCases) {
+  if (!TC_ID.test(tc.id)) err(`bad testCase id: ${tc.id} (${tc.name})`);
+  if (!['backend', 'e2e', 'manual'].includes(tc.kind)) err(`${tc.id}: bad kind ${tc.kind}`);
+  if (!(tc.covers ?? []).length) err(`${tc.id}: covers nothing (${tc.name})`);
+  for (const c of tc.covers ?? []) if (!known(c)) err(`${tc.id}: covers unknown id ${c}`);
+  if (tc.kind === 'manual' && !tc.manual?.expected) err(`${tc.id}: manual case needs manual.expected`);
+}
 
 if (errors.length) {
   console.error(`✗ requirements.json failed validation (${errors.length}):`);
@@ -147,7 +143,7 @@ if (errors.length) {
   process.exit(1);
 }
 
-// ───────────────────────────── 4. serialize (one object per line, CRLF — keeps the file greppable) ─────────────────────────────
+// ───────────────────────────── 3. serialize (one object per line, CRLF — keeps the file greppable) ─────────────────────────────
 const NL = '\r\n';
 const arr = (key, list, indent) =>
   !list || !list.length
@@ -165,6 +161,7 @@ function serialize(d) {
   if (d.outOfScope) parts.push(arr('outOfScope', d.outOfScope, '  '));
   parts.push(arr('requirements', d.requirements, '  '));
   parts.push(arr('tests', d.tests, '  '));
+  parts.push(arr('testCases', d.testCases, '  '));
   return `{${NL}${parts.join(',' + NL)}${NL}}${NL}`;
 }
 
@@ -179,14 +176,14 @@ if (CHECK) {
     if (cur !== body) { drift++; console.error(`✗ out of date: ${rel(p)} (run build.mjs)`); }
   }
   if (drift) process.exit(1);
-  console.log(`✓ up to date — coverage ${cov.covered}/${cov.total} (backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}), gaps ${cov.gaps.length}`);
+  console.log(`✓ up to date — ${data.testCases.length} test cases · coverage ${cov.covered}/${cov.total} (backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}), gaps ${cov.gaps.length}`);
 } else {
   writeFileSync(dataPath, reqOut, 'utf8');
   mkdirSync(dirname(generatedPath), { recursive: true });
   writeFileSync(generatedPath, genOut, 'utf8');
   const sr = data.requirements.filter((r) => r.type === 'stakeholder').length;
   const sys = data.requirements.length - sr;
-  console.log(`✓ ${sr} stakeholder + ${sys} system + ${data.tests.length} tests`);
+  console.log(`✓ ${sr} stakeholder + ${sys} system + ${data.tests.length} VT + ${data.testCases.length} test cases`);
   console.log(`  coverage ${cov.covered}/${cov.total} ids — backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}, gaps ${cov.gaps.length}`);
   console.log(`  wrote ${rel(dataPath)} + ${rel(generatedPath)}`);
   if (cov.gaps.length) console.log(`  GAPS: ${cov.gaps.join(', ')}`);

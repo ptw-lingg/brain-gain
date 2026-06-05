@@ -35,7 +35,7 @@ after(async () => { await srv?.stop(); });
 
 // ───────────────────────────── VT-011 / SYS-AC-07 ─────────────────────────────
 
-test('VT-011: impersonating a member yields a target-scoped token carrying the impersonator', async () => {
+test('SYS-AC-07 / VT-011: impersonating a member yields a target-scoped token carrying the impersonator', async () => {
   const res = await srv.request('POST', `/api/auth/impersonate/${member.id}`, { token: adminToken });
   assert.equal(res.status, 200);
   assert.equal(res.body.user.id, member.id, 'returns the target user');
@@ -66,7 +66,7 @@ test('VT-011: the whole app renders as the target — /me and /trainings/mine re
 
 // ───────────────────────────── VT-012 / SYS-AC-08 (guards) ─────────────────────────────
 
-test('VT-012: cannot impersonate yourself → 400', async () => {
+test('SYS-AC-08 / VT-012: cannot impersonate yourself → 400', async () => {
   const res = await srv.request('POST', `/api/auth/impersonate/${adminId}`, { token: adminToken });
   assert.equal(res.status, 400);
 });
