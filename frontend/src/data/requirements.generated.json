@@ -2981,7 +2981,7 @@
       "type": "system",
       "category": "Quality & Regulatory Documentation",
       "title": "Preview-gated download",
-      "text": "Generating a document shall render a PDF preview inside the application; the document may be downloaded only from the open preview, so the user must view it before it is transferred to the DMS.",
+      "text": "Generating a document shall render the PDF INLINE in the app (pdf.js page images) so it can be reviewed without any download; downloading for the DMS is a separate explicit action from the open preview.",
       "status": "implemented",
       "links": [
         {
@@ -3096,7 +3096,7 @@
       "type": "system",
       "category": "Software Lifecycle (IEC 62304)",
       "title": "Test results captured & surfaced",
-      "text": "sync-tests.mjs shall run the suites and write per-test pass/fail/skip to a separate results file; the Requirements view and the V&V report shall merge results by test-case id.",
+      "text": "sync-tests.mjs shall run the suites and write per-test pass/fail/skip plus a run date to a separate results file; the Requirements view shall show the run date + pass/fail summary and per-case badges, and the V&V report shall merge results by test-case id.",
       "status": "implemented",
       "links": [
         {
@@ -5230,6 +5230,22 @@
       ]
     },
     {
+      "id": "TC-544f3f7f22",
+      "name": "SR-120 / SR-122 / SYS-DOC-03 / SYS-DOC-04 / SYS-DOC-05 / SYS-DOC-06 / VT-120 / VT-122: every document renders inline as page images before download",
+      "kind": "e2e",
+      "file": "frontend/e2e/documents.spec.ts",
+      "covers": [
+        "SR-120",
+        "SR-122",
+        "SYS-DOC-03",
+        "SYS-DOC-04",
+        "SYS-DOC-05",
+        "SYS-DOC-06",
+        "VT-120",
+        "VT-122"
+      ]
+    },
+    {
       "id": "TC-54a00eacc6",
       "name": "SYS-USR-01 / VT-020 (SR-020): duplicate email (case-insensitive) → 409",
       "kind": "backend",
@@ -6477,22 +6493,6 @@
       }
     },
     {
-      "id": "TC-cf1123a8de",
-      "name": "SR-120 / SR-122 / SYS-DOC-03 / SYS-DOC-04 / SYS-DOC-05 / SYS-DOC-06 / VT-120 / VT-122: every controlled document previews as a PDF before download",
-      "kind": "e2e",
-      "file": "frontend/e2e/documents.spec.ts",
-      "covers": [
-        "SR-120",
-        "SR-122",
-        "SYS-DOC-03",
-        "SYS-DOC-04",
-        "SYS-DOC-05",
-        "SYS-DOC-06",
-        "VT-120",
-        "VT-122"
-      ]
-    },
-    {
       "id": "TC-cf9913a2dd",
       "name": "SYS-SES-02: /grade for an unknown training → 404",
       "kind": "backend",
@@ -6763,17 +6763,6 @@
       ]
     },
     {
-      "id": "TC-ef96e17e57",
-      "name": "SR-121 / SYS-DOC-02 / VT-121: the Requirements tab shows coverage, the Class B pill and per-item Tested by",
-      "kind": "e2e",
-      "file": "frontend/e2e/documents.spec.ts",
-      "covers": [
-        "SR-121",
-        "SYS-DOC-02",
-        "VT-121"
-      ]
-    },
-    {
       "id": "TC-efda3e69a6",
       "name": "SYS-SES-03 / SR-052 / VT-052: a failing attempt offers a retry and notes failures aren't recorded",
       "kind": "e2e",
@@ -6962,6 +6951,17 @@
         "SYS-AC-01",
         "SYS-AC-03",
         "VT-003"
+      ]
+    },
+    {
+      "id": "TC-ff5e0a0a7c",
+      "name": "SR-121 / SYS-DOC-02 / VT-121: the tab shows coverage, the Class B pill, the test-run date and per-item Tested by",
+      "kind": "e2e",
+      "file": "frontend/e2e/documents.spec.ts",
+      "covers": [
+        "SR-121",
+        "SYS-DOC-02",
+        "VT-121"
       ]
     },
     {

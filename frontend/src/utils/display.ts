@@ -44,3 +44,8 @@ const CATEGORY_TINTS: Record<string, string> = {
 export function categoryTint(category: string): string {
   return CATEGORY_TINTS[category] ?? 'from-pastel-sky/60';
 }
+
+/** Human-friendly recurrence label, e.g. 1 → "Yearly", 2 → "Every 2 years". */
+export function cycleLabel(years: number): string {
+  return years === 1 ? 'Yearly' : `Every ${years} years`;
+}

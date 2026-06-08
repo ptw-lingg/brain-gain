@@ -48,7 +48,13 @@ body {
     @apply rounded-xl border border-line bg-bg-card shadow-soft;
   }
   .pill {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-xs;
+    @apply inline-flex h-6 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5
+      font-mono text-xs leading-none;
+  }
+  /* Equal-width-within-a-column without truncation: short labels pad to this min so
+     a list column lines up; longer labels grow instead of clipping/ellipsizing. */
+  .pill-col {
+    @apply min-w-[6rem];
   }
   .page-title {
     @apply text-2xl font-bold tracking-tight text-ink;

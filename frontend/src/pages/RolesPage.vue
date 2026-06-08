@@ -120,9 +120,9 @@ onMounted(load);
         >
           <div class="min-w-0 flex-1">
             <div class="font-sans text-sm font-semibold text-ink">{{ r.name }}</div>
-            <div class="truncate font-mono text-xs text-ink-light">{{ r.description }}</div>
+            <div class="truncate font-mono text-xs text-ink-light" :title="r.description">{{ r.description }}</div>
           </div>
-          <span class="pill bg-pastel-mint/50 text-emerald-700">
+          <span class="pill min-w-[7rem] bg-pastel-mint/50 text-emerald-700">
             {{ r.trainingIds.length }} training{{ r.trainingIds.length === 1 ? '' : 's' }}
           </span>
           <ChevronDown

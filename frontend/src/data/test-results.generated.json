@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-06-05T12:34:02.460Z",
+  "ranAt": "2026-06-05T18:31:08.745Z",
   "summary": {
     "total": 213,
     "passed": 213,
@@ -189,8 +189,8 @@
     "TC-342f53d722": "pass",
     "TC-842c213bc1": "pass",
     "TC-6122f3925d": "pass",
-    "TC-ef96e17e57": "pass",
-    "TC-cf1123a8de": "pass",
+    "TC-ff5e0a0a7c": "pass",
+    "TC-544f3f7f22": "pass",
     "TC-74264ec8b4": "pass",
     "TC-d45feffb77": "pass",
     "TC-5e9ffc9ca7": "pass",

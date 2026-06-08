@@ -124,12 +124,12 @@ onMounted(load);
             >
               <div class="min-w-0 flex-1">
                 <div class="text-sm font-medium text-ink">{{ t.user.name }}</div>
-                <div class="truncate font-mono text-xs text-ink-light">{{ t.user.email }}</div>
+                <div class="truncate font-mono text-xs text-ink-light" :title="t.user.email">{{ t.user.email }}</div>
               </div>
               <span v-if="t.dueDate" class="hidden font-mono text-[11px] text-ink-light sm:inline">
                 due {{ formatDate(t.dueDate) }}
               </span>
-              <span class="pill" :class="dueClasses(t.status)">
+              <span class="pill pill-col shrink-0" :class="dueClasses(t.status)">
                 {{ dueLabel(t.status, t.dueDate) }}
               </span>
             </div>

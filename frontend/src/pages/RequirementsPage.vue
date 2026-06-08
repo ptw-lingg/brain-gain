@@ -17,36 +17,39 @@ const testCases = data.testCases ?? []; // concrete automated + manual test case
 const coverage = data.meta.coverage;
 const iec = data.meta.iec62304;
 
-// ---- controlled documents (preview, then download for the DMS)
+// ---- controlled documents (preview inline, then download for the DMS)
 const docGroups = DOC_GROUPS;
-const docModal = ref<{ info: DocInfo; url: string } | null>(null);
+const docModal = ref<{ info: DocInfo } | null>(null);
 const docBuilding = ref<DocKind | null>(null);
+const previewPages = ref<string[]>([]); // PNG data URLs, one per rendered page
 let currentPdf: TCreatedPdf | null = null;
-let lastUrl: string | null = null;
 
 async function openDocument(kind: DocKind): Promise<void> {
   docBuilding.value = kind;
   docModal.value = null;
+  previewPages.value = [];
   const { def, info } = buildDocument(kind, data, results);
   const { createPdf } = await import('@/utils/pdf');
   currentPdf = createPdf(def);
-  const blob = await currentPdf.getBlob(); // render to a blob URL → the in-app preview (mandatory "view")
-  if (lastUrl) URL.revokeObjectURL(lastUrl);
-  lastUrl = URL.createObjectURL(blob);
-  docModal.value = { info, url: lastUrl };
+  // Render the PDF to page images IN-APP (pdf.js) so the document is reviewed inline — no browser
+  // download/save is needed just to preview it.
+  const bytes = await (await currentPdf.getBlob()).arrayBuffer();
+  const { renderPdfToImages } = await import('@/utils/pdfPreview');
+  previewPages.value = await renderPdfToImages(bytes);
+  docModal.value = { info };
   docBuilding.value = null;
 }
-// Download is only reachable from the open preview modal — the user must view the document first.
+// Download is a separate, explicit action reachable only from the open preview (view-before-download).
 function downloadDocument(): void {
   if (currentPdf && docModal.value) currentPdf.download(docModal.value.info.fileName);
 }
 function closeDocument(): void {
-  if (lastUrl) URL.revokeObjectURL(lastUrl);
-  lastUrl = null;
   currentPdf = null;
   docModal.value = null;
   docBuilding.value = null;
+  previewPages.value = [];
 }
+const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toISOString().slice(0, 10) : null);
 
 // ---- item model (requirements + validation tests + test cases) all searchable together
 type Item = Requirement | TestCase | TestCaseRecord;
@@ -186,6 +189,13 @@ const testKindClass = (k?: string) =>
           {{ coverage.backend }} backend · {{ coverage.e2e }} e2e · {{ coverage.manual }} manual ·
           <span :class="coverage.gaps.length ? 'text-amber-600' : 'text-emerald-700'">{{ coverage.gaps.length }} gaps</span>
         </span>
+        <span v-if="results.summary" class="pill bg-pastel-sky/60 text-accent" :title="results.ranAt ? 'Last test run' : 'Run sync-tests.mjs to record results'">
+          tests {{ fmtDate(results.ranAt) ?? 'not run' }}
+          <template v-if="results.ranAt">
+            · <span class="text-emerald-700">{{ results.summary.passed }}✓</span>
+            <span :class="results.summary.failed ? 'text-rose-600' : ''"> {{ results.summary.failed }}✗</span>
+          </template>
+        </span>
       </div>
       <div class="flex-1" />
       <div class="flex flex-col gap-1.5">
@@ -245,12 +255,12 @@ const testKindClass = (k?: string) =>
         >
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-mono text-xs font-semibold text-ink">{{ r.id }}</span>
-            <span v-if="r.kind === 'requirement'" class="pill text-[10px]" :class="typeClass(r.rtype)">{{ r.rtype }}</span>
-            <span v-else-if="r.kind === 'test'" class="pill text-[10px]" :class="testTypeClass(r.testType)">{{ testTypeLabel(r.testType) }}</span>
-            <span v-else class="pill text-[10px]" :class="testKindClass(r.caseKind)">{{ r.caseKind }}</span>
-            <span v-if="r.priority" class="pill bg-white text-[10px] text-ink-light">{{ r.priority }}</span>
-            <span v-if="r.status" class="pill text-[10px]" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span>
-            <span v-if="r.kind === 'case'" class="pill text-[10px]" :class="resultClass(r.result)">{{ resultLabel(r.result) }}</span>
+            <span v-if="r.kind === 'requirement'" class="pill pill-col" :class="typeClass(r.rtype)">{{ r.rtype }}</span>
+            <span v-else-if="r.kind === 'test'" class="pill pill-col" :class="testTypeClass(r.testType)">{{ testTypeLabel(r.testType) }}</span>
+            <span v-else class="pill pill-col" :class="testKindClass(r.caseKind)">{{ r.caseKind }}</span>
+            <span v-if="r.priority" class="pill min-w-[3rem] bg-white text-ink-light">{{ r.priority }}</span>
+            <span v-if="r.status" class="pill pill-col" :class="statusClass(r.status)">{{ statusLabel(r.status) }}</span>
+            <span v-if="r.kind === 'case'" class="pill min-w-[5rem]" :class="resultClass(r.result)">{{ resultLabel(r.result) }}</span>
           </div>
           <div class="text-sm font-medium text-ink">{{ r.title }}</div>
         </button>
@@ -261,10 +271,10 @@ const testKindClass = (k?: string) =>
       <div v-if="selectedReq" class="card p-5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="font-mono text-sm font-bold text-ink">{{ selectedReq.id }}</span>
-          <span class="pill text-[10px]" :class="typeClass(selectedReq.type)">{{ selectedReq.type }}</span>
-          <span class="pill text-[10px]" :class="statusClass(selectedReq.status)">{{ statusLabel(selectedReq.status) }}</span>
-          <span v-if="selectedReq.priority" class="pill bg-white text-[10px] text-ink-light">priority {{ selectedReq.priority }} · {{ priorityLabel(selectedReq.priority) }}</span>
-          <span class="pill bg-pastel-slate/50 text-[10px] text-ink-muted">{{ selectedReq.category }}</span>
+          <span class="pill" :class="typeClass(selectedReq.type)">{{ selectedReq.type }}</span>
+          <span class="pill" :class="statusClass(selectedReq.status)">{{ statusLabel(selectedReq.status) }}</span>
+          <span v-if="selectedReq.priority" class="pill bg-white text-ink-light">priority {{ selectedReq.priority }} · {{ priorityLabel(selectedReq.priority) }}</span>
+          <span class="pill bg-pastel-slate/50 text-ink-muted">{{ selectedReq.category }}</span>
         </div>
         <h2 class="mt-3 font-sans text-lg font-bold text-ink">{{ selectedReq.title }}</h2>
         <p class="mt-1 text-sm text-ink-muted">{{ selectedReq.text }}</p>
@@ -302,8 +312,8 @@ const testKindClass = (k?: string) =>
           <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Tested by</p>
           <div class="mt-1 flex flex-col gap-1">
             <button v-for="c in casesFor(selectedReq.id)" :key="c.id" class="flex items-center gap-2 text-left" @click="select(c.id)">
-              <span class="pill text-[9px]" :class="testKindClass(c.kind)">{{ c.kind }}</span>
-              <span class="pill text-[9px]" :class="resultClass(resultOf(c.id))">{{ resultLabel(resultOf(c.id)) }}</span>
+              <span class="pill" :class="testKindClass(c.kind)">{{ c.kind }}</span>
+              <span class="pill" :class="resultClass(resultOf(c.id))">{{ resultLabel(resultOf(c.id)) }}</span>
               <span class="font-mono text-[11px] text-ink-muted hover:text-accent">{{ c.name }}</span>
             </button>
           </div>
@@ -314,9 +324,9 @@ const testKindClass = (k?: string) =>
       <div v-else-if="selectedTest" class="card p-5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="font-mono text-sm font-bold text-ink">{{ selectedTest.id }}</span>
-          <span class="pill text-[10px]" :class="testTypeClass(selectedTest.testType)">{{ testTypeLabel(selectedTest.testType) }}</span>
-          <span class="pill bg-white text-[10px] text-ink-light">{{ methodLabel(selectedTest.method) }}</span>
-          <span class="pill text-[10px]" :class="selectedTest.automated ? 'bg-pastel-mint/60 text-emerald-700' : 'bg-pastel-slate/60 text-ink-muted'">
+          <span class="pill" :class="testTypeClass(selectedTest.testType)">{{ testTypeLabel(selectedTest.testType) }}</span>
+          <span class="pill bg-white text-ink-light">{{ methodLabel(selectedTest.method) }}</span>
+          <span class="pill" :class="selectedTest.automated ? 'bg-pastel-mint/60 text-emerald-700' : 'bg-pastel-slate/60 text-ink-muted'">
             {{ selectedTest.automated ? 'automated' : 'manual' }}
           </span>
         </div>
@@ -340,8 +350,8 @@ const testKindClass = (k?: string) =>
           <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Test cases</p>
           <div class="mt-1 flex flex-col gap-1">
             <button v-for="c in casesFor(selectedTest.id)" :key="c.id" class="flex items-center gap-2 text-left" @click="select(c.id)">
-              <span class="pill text-[9px]" :class="testKindClass(c.kind)">{{ c.kind }}</span>
-              <span class="pill text-[9px]" :class="resultClass(resultOf(c.id))">{{ resultLabel(resultOf(c.id)) }}</span>
+              <span class="pill" :class="testKindClass(c.kind)">{{ c.kind }}</span>
+              <span class="pill" :class="resultClass(resultOf(c.id))">{{ resultLabel(resultOf(c.id)) }}</span>
               <span class="font-mono text-[11px] text-ink-muted hover:text-accent">{{ c.name }}</span>
             </button>
           </div>
@@ -352,8 +362,8 @@ const testKindClass = (k?: string) =>
       <div v-else-if="selectedCase" class="card p-5">
         <div class="flex flex-wrap items-center gap-2">
           <span class="font-mono text-sm font-bold text-ink">{{ selectedCase.id }}</span>
-          <span class="pill text-[10px]" :class="testKindClass(selectedCase.kind)">{{ selectedCase.kind }}</span>
-          <span class="pill text-[10px]" :class="resultClass(resultOf(selectedCase.id))">{{ resultLabel(resultOf(selectedCase.id)) }}</span>
+          <span class="pill" :class="testKindClass(selectedCase.kind)">{{ selectedCase.kind }}</span>
+          <span class="pill" :class="resultClass(resultOf(selectedCase.id))">{{ resultLabel(resultOf(selectedCase.id)) }}</span>
         </div>
         <h2 class="mt-3 font-sans text-base font-bold text-ink">{{ selectedCase.name }}</h2>
         <p v-if="selectedCase.file" class="mt-1 font-mono text-xs text-ink-light">{{ selectedCase.file }}</p>
@@ -383,7 +393,7 @@ const testKindClass = (k?: string) =>
             <div>
               <h2 class="font-sans text-base font-bold text-ink">{{ docModal?.info.title ?? 'Generating document…' }}</h2>
               <p class="font-mono text-[11px] text-ink-light">
-                <span v-if="docModal">{{ docModal.info.docId }} · review the preview, then download for your DMS</span>
+                <span v-if="docModal">{{ docModal.info.docId }} · {{ previewPages.length }} page(s) · review, then download for your DMS</span>
                 <span v-else>Rendering preview…</span>
               </p>
             </div>
@@ -394,9 +404,11 @@ const testKindClass = (k?: string) =>
               <button class="text-ink-light hover:text-ink" title="Close" @click="closeDocument"><X class="h-5 w-5" /></button>
             </div>
           </div>
-          <div class="flex-1 overflow-hidden bg-pastel-slate/20">
-            <iframe v-if="docModal" :src="docModal.url" class="h-full w-full border-0" title="Document preview" />
-            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">Generating preview…</div>
+          <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">
+            <div v-if="docModal && previewPages.length" class="mx-auto flex max-w-3xl flex-col items-center gap-3">
+              <img v-for="(p, i) in previewPages" :key="i" :src="p" data-pdf-page class="w-full rounded shadow-soft" :alt="`page ${i + 1}`" />
+            </div>
+            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">Rendering preview…</div>
           </div>
         </div>
       </div>

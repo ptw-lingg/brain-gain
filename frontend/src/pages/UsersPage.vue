@@ -159,13 +159,13 @@ onMounted(load);
               {{ roleNames(u.roleIds) }}
             </td>
             <td class="px-5 py-3">
-              <span v-if="u.isAdmin" class="pill bg-accent-light/60 text-accent">
+              <span v-if="u.isAdmin" class="pill pill-col bg-accent-light/60 text-accent">
                 <ShieldCheck class="h-3 w-3" /> admin
               </span>
-              <span v-else-if="u.isTrainer" class="pill bg-pastel-mint/50 text-emerald-700">
+              <span v-else-if="u.isTrainer" class="pill pill-col bg-pastel-mint/50 text-emerald-700">
                 <GraduationCap class="h-3 w-3" /> trainer
               </span>
-              <span v-else class="pill bg-pastel-slate/50 text-ink-muted">member</span>
+              <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">member</span>
             </td>
           </tr>
         </tbody>

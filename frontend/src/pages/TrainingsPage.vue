@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import type { MaterialLink, Question, SafeUser, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
+import { cycleLabel } from '@/utils/display';
 
 const auth = useAuthStore();
 const toast = useToastStore();
@@ -241,12 +242,12 @@ onMounted(load);
           </button>
           <div class="min-w-0 flex-1">
             <div class="font-sans text-sm font-semibold text-ink">{{ t.name }}</div>
-            <div class="truncate font-mono text-xs text-ink-light">{{ t.description }}</div>
+            <div class="truncate font-mono text-xs text-ink-light" :title="t.description">{{ t.description }}</div>
           </div>
-          <span class="pill bg-pastel-sky/60 text-ink-muted">{{ t.category }}</span>
-          <span class="pill bg-pastel-slate/60 text-ink-muted">{{ t.durationHours }}h</span>
-          <span class="pill bg-pastel-mint/50 text-emerald-700">every {{ t.cycleYears }}y</span>
-          <span v-if="isAdmin" class="pill bg-white text-ink-light">{{ ownerName(t.ownerId) }}</span>
+          <span class="pill pill-col bg-pastel-sky/60 text-ink-muted">{{ t.category }}</span>
+          <span class="pill min-w-[3.5rem] bg-pastel-slate/60 text-ink-muted">{{ t.durationHours }}h</span>
+          <span class="pill min-w-[5rem] bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t.cycleYears) }}</span>
+          <span v-if="isAdmin" class="pill pill-col bg-white text-ink-light">{{ ownerName(t.ownerId) }}</span>
           <ChevronDown
             class="h-4 w-4 text-ink-light transition"
             :class="expandedId === t.id ? 'rotate-180' : ''"
