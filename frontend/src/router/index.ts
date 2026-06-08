@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 import LoginPage from '@/pages/LoginPage.vue';
+import ActivatePage from '@/pages/ActivatePage.vue';
 import AppLayout from '@/components/AppLayout.vue';
 import DashboardPage from '@/pages/DashboardPage.vue';
 import SessionPage from '@/pages/SessionPage.vue';
@@ -9,6 +10,7 @@ import TrainingsPage from '@/pages/TrainingsPage.vue';
 import TraineesPage from '@/pages/TraineesPage.vue';
 import RolesPage from '@/pages/RolesPage.vue';
 import UsersPage from '@/pages/UsersPage.vue';
+import UsersImportPage from '@/pages/UsersImportPage.vue';
 import SettingsPage from '@/pages/SettingsPage.vue';
 
 // The Requirements / DMS tooling is internal-only: present in dev and in an internal build, but
@@ -21,6 +23,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: LoginPage, meta: { public: true } },
+    { path: '/activate', component: ActivatePage, meta: { public: true } },
     {
       path: '/',
       component: AppLayout,
@@ -33,6 +36,7 @@ const router = createRouter({
         { path: 'trainees', component: TraineesPage, meta: { requiresTrainerOrAdmin: true } },
         { path: 'roles', component: RolesPage, meta: { requiresAdmin: true } },
         { path: 'users', component: UsersPage, meta: { requiresAdmin: true } },
+        { path: 'users-import', component: UsersImportPage, meta: { requiresAdmin: true } },
         { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
         ...(INTERNAL_TOOLS
           ? [{ path: 'requirements', component: () => import('@/pages/RequirementsPage.vue'), meta: { requiresAdmin: true } }]

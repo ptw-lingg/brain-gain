@@ -40,6 +40,7 @@ export interface SafeUser {
   roleIds: string[];
   isAdmin: boolean;
   isTrainer: boolean;
+  isDisabled?: boolean; // true while an imported account is pending activation (cannot sign in)
   createdAt: string;
 }
 

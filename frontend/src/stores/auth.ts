@@ -40,6 +40,19 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token);
   }
 
+  // Activate a pending (imported) account: set the chosen password via the one-time token and sign in.
+  // Stores the session exactly like login, so everything downstream is unchanged.
+  async function activate(activationToken: string, password: string): Promise<void> {
+    const { data } = await client.post<{ token: string; user: SafeUser }>('/auth/activate', {
+      token: activationToken,
+      password,
+    });
+    clearImpersonation();
+    token.value = data.token;
+    user.value = data.user;
+    localStorage.setItem('token', data.token);
+  }
+
   async function fetchMe(): Promise<void> {
     if (!token.value) return;
     const { data } = await client.get<SafeUser>('/auth/me');
@@ -85,6 +98,7 @@ export const useAuthStore = defineStore('auth', () => {
     isImpersonating,
     login,
     loginWithEntra,
+    activate,
     fetchMe,
     startImpersonation,
     stopImpersonation,

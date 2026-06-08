@@ -14,9 +14,10 @@ import {
 const router = Router();
 
 export function toSafeUser(user: User): SafeUser {
-  const { passwordHash, entraOid, ...safe } = user;
+  const { passwordHash, entraOid, activationToken, ...safe } = user;
   void passwordHash;
   void entraOid;
+  void activationToken;
   return safe;
 }
 
@@ -29,7 +30,14 @@ router.post('/login', async (req, res) => {
   const users = await readStore<User>('users');
   const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   // SSO-only users have no passwordHash and therefore cannot sign in with a password.
-  if (!user || !user.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
+  // A disabled account (e.g. imported but not yet activated) cannot sign in at all — the generic
+  // message avoids revealing which condition failed (no user enumeration).
+  if (
+    !user ||
+    user.isDisabled ||
+    !user.passwordHash ||
+    !(await bcrypt.compare(password, user.passwordHash))
+  ) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
   const token = signToken({
@@ -39,6 +47,49 @@ router.post('/login', async (req, res) => {
     isTrainer: user.isTrainer,
   });
   return res.json({ token, user: toSafeUser(user) });
+});
+
+// GET /api/auth/activate/:token  — public: validate a pending-account activation link and return the
+// minimal identity the activation page shows ("Set a password for {email}"). No secret leaves here.
+router.get('/activate/:token', async (req, res) => {
+  const users = await readStore<User>('users');
+  const user = users.find((u) => !!u.activationToken && u.activationToken === req.params.token);
+  // Only a still-pending account (disabled, no password) has a live link.
+  if (!user || !user.isDisabled || user.passwordHash) {
+    return res.status(404).json({ error: 'This activation link is invalid or has already been used' });
+  }
+  return res.json({ email: user.email, name: user.name });
+});
+
+// POST /api/auth/activate  { token, password }  — public: a pending user sets their own password,
+// which enables the account and consumes the one-time token. Returns a session so they're signed in.
+router.post('/activate', async (req, res) => {
+  const { token, password } = req.body ?? {};
+  if (typeof token !== 'string' || typeof password !== 'string' || password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: 'A token and a password of at least 8 characters are required' });
+  }
+  const users = await readStore<User>('users');
+  const idx = users.findIndex((u) => !!u.activationToken && u.activationToken === token);
+  const user = idx === -1 ? undefined : users[idx];
+  // A spent or bogus token (or an already-active account) fails with the same generic message.
+  if (!user || !user.isDisabled || user.passwordHash) {
+    return res.status(400).json({ error: 'This activation link is invalid or has already been used' });
+  }
+  user.passwordHash = await bcrypt.hash(password, 10);
+  user.isDisabled = false;
+  delete user.activationToken;
+  users[idx] = user;
+  await writeStore('users', users);
+
+  const jwt = signToken({
+    id: user.id,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    isTrainer: user.isTrainer,
+  });
+  return res.json({ token: jwt, user: toSafeUser(user) });
 });
 
 // GET /api/auth/me
@@ -148,6 +199,11 @@ router.post('/sso/entra', async (req, res) => {
       users.push(user);
       await writeStore('users', users);
     }
+  }
+
+  // A disabled account (e.g. imported but not yet activated) cannot sign in via SSO either.
+  if (user.isDisabled) {
+    return res.status(403).json({ error: 'Your account is not active yet' });
   }
 
   const token = signToken({

@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Briefcase,
   Users,
+  UserPlus,
   SlidersHorizontal,
   ListChecks,
   LogOut,
@@ -65,6 +66,9 @@ function logout(): void {
         </RouterLink>
         <RouterLink to="/users" class="nav-item" active-class="nav-active">
           <Users class="h-4 w-4" /> Users
+        </RouterLink>
+        <RouterLink to="/users-import" class="nav-item" active-class="nav-active">
+          <UserPlus class="h-4 w-4" /> Import Users
         </RouterLink>
         <RouterLink to="/settings" class="nav-item" active-class="nav-active">
           <SlidersHorizontal class="h-4 w-4" /> Settings

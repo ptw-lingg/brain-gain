@@ -44,6 +44,11 @@ export interface User {
   isAdmin: boolean;
   isTrainer: boolean;
   entraOid?: string; // Microsoft Entra ID object id, set when an account is linked via SSO
+  // Imported users start disabled (cannot sign in via password or SSO) until they activate.
+  isDisabled?: boolean;
+  // One-time secret for the activation link; present only while the account is pending, removed
+  // on activation. Like passwordHash, it is a secret and never leaves the server in a SafeUser.
+  activationToken?: string;
   createdAt: string;
 }
 
@@ -83,7 +88,7 @@ export interface Settings {
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
 }
 
-export type SafeUser = Omit<User, 'passwordHash' | 'entraOid'>;
+export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken'>;
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
 

@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { randomUUID } from 'crypto';
-import type { User } from '../types';
+import { randomBytes, randomUUID } from 'crypto';
+import type { JobRole, User } from '../types';
 import { readStore, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { toSafeUser } from './auth';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const router = Router();
 
@@ -22,6 +24,18 @@ router.get('/:id', async (req, res) => {
   const user = users.find((u) => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found' });
   return res.json(toSafeUser(user));
+});
+
+// GET /api/users/:id/activation — admin re-fetches the one-time activation token for a still-pending
+// user (disabled, no password yet), so a lost link can be re-handed-out without recreating the account.
+router.get('/:id/activation', async (req, res) => {
+  const users = await readStore<User>('users');
+  const user = users.find((u) => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  if (!user.isDisabled || user.passwordHash || !user.activationToken) {
+    return res.status(409).json({ error: 'This account is not pending activation' });
+  }
+  return res.json({ activationToken: user.activationToken });
 });
 
 // POST /api/users  — admin creates a user
@@ -47,6 +61,139 @@ router.post('/', async (req, res) => {
   users.push(user);
   await writeStore('users', users);
   return res.status(201).json(toSafeUser(user));
+});
+
+// POST /api/users/import — admin bulk-imports users pasted from a spreadsheet.
+//
+// Body: { rows: { name, email, roles }[], commit?: boolean }. `roles` is a list of job-role NAMES
+// (a single comma/semicolon-separated string is also accepted). The server is authoritative for all
+// matching, validation and diffing (SR-104): the client only tokenizes the paste for display.
+//
+// With commit=false (the default) this is a dry run — it writes nothing and returns the plan so the
+// admin can preview exactly what will change. With commit=true the non-error rows are applied:
+//   • create → a new Member (isAdmin/isTrainer false), disabled and password-less, carrying a
+//     one-time activationToken. The token is returned for THIS row only (the admin hands out the link).
+//   • update → an existing user (matched by email) has its name set and its roleIds fully replaced
+//     with the row's matched roles. Access flags, password and disabled state are left untouched.
+// A row is an error (never applied) when the name/email is missing or invalid, the email is duplicated
+// earlier in the paste, or any role name matches no existing role — so a typo can't mis-assign roles.
+router.post('/import', async (req, res) => {
+  const rawRows = (req.body ?? {}).rows;
+  const commit = (req.body ?? {}).commit === true;
+  if (!Array.isArray(rawRows)) {
+    return res.status(400).json({ error: 'rows must be an array' });
+  }
+
+  const users = await readStore<User>('users');
+  const roles = await readStore<JobRole>('roles');
+  const roleByName = new Map(roles.map((r) => [r.name.trim().toLowerCase(), r] as const));
+  const roleName = (id: string): string => roles.find((r) => r.id === id)?.name ?? id;
+  const userByEmail = new Map(users.map((u) => [u.email.toLowerCase(), u] as const));
+
+  const seenEmails = new Set<string>(); // emails seen earlier in THIS paste (duplicate guard)
+
+  type PlanRow = {
+    index: number;
+    name: string;
+    email: string;
+    action: 'create' | 'update' | 'unchanged' | 'error';
+    errors: string[];
+    matchedRoleIds: string[];
+    unknownRoles: string[];
+    changes: {
+      name?: { from: string; to: string };
+      roles?: { added: string[]; removed: string[] };
+    };
+    activationToken?: string; // set only on a committed create
+  };
+
+  const plan: PlanRow[] = rawRows.map((raw, index) => {
+    const name = String(raw?.name ?? '').trim();
+    const email = String(raw?.email ?? '').trim();
+    // Accept roles as an array, a single comma/semicolon-separated string, or an array whose
+    // entries themselves contain separators — all flatten to a clean list of individual names.
+    const rawRoles = Array.isArray(raw?.roles)
+      ? raw.roles
+      : typeof raw?.roles === 'string'
+        ? [raw.roles]
+        : [];
+    const roleNames = rawRoles
+      .flatMap((r: unknown) => String(r).split(/[,;]/))
+      .map((r: string) => r.trim())
+      .filter(Boolean);
+
+    const errors: string[] = [];
+    const unknownRoles: string[] = [];
+    const matchedRoleIds: string[] = [];
+    for (const rn of roleNames) {
+      const match = roleByName.get(rn.toLowerCase());
+      if (!match) unknownRoles.push(rn);
+      else if (!matchedRoleIds.includes(match.id)) matchedRoleIds.push(match.id);
+    }
+
+    if (!name) errors.push('Name is required');
+    if (!email) errors.push('Email is required');
+    else if (!EMAIL_RE.test(email)) errors.push('Email is not valid');
+    else if (seenEmails.has(email.toLowerCase())) errors.push('Duplicate email in the pasted data');
+    if (unknownRoles.length) errors.push(`Unknown role(s): ${unknownRoles.join(', ')}`);
+    if (email) seenEmails.add(email.toLowerCase());
+
+    if (errors.length) {
+      return { index, name, email, action: 'error', errors, matchedRoleIds, unknownRoles, changes: {} };
+    }
+
+    const existing = userByEmail.get(email.toLowerCase());
+    if (!existing) {
+      return { index, name, email, action: 'create', errors, matchedRoleIds, unknownRoles, changes: {} };
+    }
+
+    const changes: PlanRow['changes'] = {};
+    if (existing.name !== name) changes.name = { from: existing.name, to: name };
+    const added = matchedRoleIds.filter((id) => !existing.roleIds.includes(id)).map(roleName);
+    const removed = existing.roleIds.filter((id) => !matchedRoleIds.includes(id)).map(roleName);
+    if (added.length || removed.length) changes.roles = { added, removed };
+    const action = changes.name || changes.roles ? 'update' : 'unchanged';
+    return { index, name, email, action, errors, matchedRoleIds, unknownRoles, changes };
+  });
+
+  if (commit) {
+    const now = new Date().toISOString();
+    let dirty = false;
+    for (const row of plan) {
+      if (row.action === 'create') {
+        const token = randomBytes(32).toString('base64url');
+        users.push({
+          id: randomUUID(),
+          email: row.email,
+          name: row.name,
+          roleIds: row.matchedRoleIds,
+          isAdmin: false,
+          isTrainer: false,
+          isDisabled: true,
+          activationToken: token,
+          createdAt: now,
+        });
+        row.activationToken = token; // returned once, to the admin who imported
+        dirty = true;
+      } else if (row.action === 'update') {
+        const u = users.find((x) => x.email.toLowerCase() === row.email.toLowerCase());
+        if (u) {
+          u.name = row.name;
+          u.roleIds = row.matchedRoleIds;
+          dirty = true;
+        }
+      }
+    }
+    if (dirty) await writeStore('users', users);
+  }
+
+  const summary = {
+    create: plan.filter((r) => r.action === 'create').length,
+    update: plan.filter((r) => r.action === 'update').length,
+    unchanged: plan.filter((r) => r.action === 'unchanged').length,
+    error: plan.filter((r) => r.action === 'error').length,
+  };
+  return res.json({ committed: commit, summary, rows: plan });
 });
 
 // PUT /api/users/:id

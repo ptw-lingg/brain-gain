@@ -3,12 +3,12 @@
   "meta": {
     "project": "BrainGain",
     "version": "1.0.0",
-    "updated": "2026-06-05",
+    "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 211,
-      "covered": 211,
-      "backend": 110,
+      "total": 225,
+      "covered": 225,
+      "backend": 124,
       "e2e": 88,
       "manual": 122,
       "gaps": []
@@ -66,6 +66,10 @@
       {
         "id": "compliance-feature",
         "label": "Regulatory documentation feature"
+      },
+      {
+        "id": "user-import-feature",
+        "label": "Clipboard user import feature"
       }
     ],
     "status": [
@@ -330,6 +334,86 @@
       "priority": "M",
       "source": "spec",
       "status": "approved"
+    },
+    {
+      "id": "SR-023",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "Bulk-import users from the clipboard",
+      "text": "An administrator shall import users by pasting tabular data copied from Excel or another spreadsheet (columns Name, Email, Roles). Each row's job roles shall be matched to existing roles by name, and a row whose email matches an existing user shall update that user rather than create a duplicate.",
+      "priority": "S",
+      "source": "user-import-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-020"
+        }
+      ]
+    },
+    {
+      "id": "SR-024",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "Preview import changes before applying",
+      "text": "Before any data is written, the administrator shall see a preview of exactly what the import will do: which users will be created, the field-level changes to existing users (name and added/removed roles), and which rows cannot be imported and why.",
+      "priority": "M",
+      "source": "user-import-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-023"
+        }
+      ]
+    },
+    {
+      "id": "SR-025",
+      "type": "stakeholder",
+      "category": "User Management",
+      "title": "Imported users default to Member, pending activation",
+      "text": "A newly imported user shall default to Member access (neither Trainer nor Administrator) with no password, and the account shall remain disabled until the user activates it.",
+      "priority": "M",
+      "source": "user-import-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-004"
+        }
+      ]
+    },
+    {
+      "id": "SR-026",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Disabled accounts cannot sign in",
+      "text": "A disabled account shall be unable to sign in by any method — email/password or Microsoft SSO — until it has been activated.",
+      "priority": "M",
+      "source": "user-import-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-001"
+        }
+      ]
+    },
+    {
+      "id": "SR-027",
+      "type": "stakeholder",
+      "category": "Authentication & Access Control",
+      "title": "Self-set password via a one-time activation link",
+      "text": "A newly imported user shall activate their account through a one-time link supplied by the administrator, choosing their own password; on success the account becomes enabled and the user is signed in. A spent or invalid link shall be refused.",
+      "priority": "M",
+      "source": "user-import-feature",
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-025"
+        }
+      ]
     },
     {
       "id": "SR-030",
@@ -1132,6 +1216,48 @@
       ]
     },
     {
+      "id": "SYS-DATA-09",
+      "type": "system",
+      "category": "Data Model & Persistence",
+      "title": "User activation fields",
+      "text": "User shall gain optional isDisabled and activationToken. isDisabled gates sign-in; activationToken is the one-time activation secret. Like passwordHash, activationToken is a secret: SafeUser = Omit<User,'passwordHash'|'entraOid'|'activationToken'> and toSafeUser() strips it before any user is returned.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-025"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-026"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-027"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/types.ts",
+          "symbol": "User.isDisabled/activationToken, SafeUser"
+        },
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "toSafeUser()"
+        },
+        {
+          "path": "frontend/src/types/index.ts",
+          "symbol": "SafeUser.isDisabled"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "GET /api/users never leaks activationToken"
+        }
+      ]
+    },
+    {
       "id": "SYS-AUTH-01",
       "type": "system",
       "category": "Authentication — Email/Password",
@@ -1303,6 +1429,65 @@
         {
           "method": "endpoint-probe",
           "note": "bad/no-password credentials → 401"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-08",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "Disabled accounts refused at sign-in",
+      "text": "A user with isDisabled = true shall be refused by both POST /api/auth/login (generic 401, no user enumeration) and POST /api/auth/sso/entra (403), so an imported-but-not-activated account cannot sign in by any method.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-026"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "POST /login + POST /sso/entra isDisabled guards"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "disabled account → 401 on password login"
+        }
+      ]
+    },
+    {
+      "id": "SYS-AUTH-09",
+      "type": "system",
+      "category": "Authentication — Email/Password",
+      "title": "Account activation endpoints",
+      "text": "GET /api/auth/activate/:token (public) shall return { email, name } for a still-pending account or 404. POST /api/auth/activate { token, password } (public) shall require a password of at least 8 chars, set the passwordHash, clear isDisabled, consume the one-time activationToken, and return { token, user: SafeUser } (auto sign-in). A spent/invalid token shall return 400.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-027"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/auth.ts",
+          "symbol": "GET/POST /activate"
+        },
+        {
+          "path": "frontend/src/pages/ActivatePage.vue"
+        },
+        {
+          "path": "frontend/src/stores/auth.ts",
+          "symbol": "activate()"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "activate sets password + enables; spent token → 400"
         }
       ]
     },
@@ -1855,6 +2040,51 @@
       "implementedBy": [
         {
           "path": "frontend/src/pages/UsersPage.vue"
+        }
+      ]
+    },
+    {
+      "id": "SYS-USR-03",
+      "type": "system",
+      "category": "Users, Roles & their UIs",
+      "title": "POST /api/users/import",
+      "text": "POST /api/users/import (admin-only) { rows:[{name,email,roles}], commit } shall compute a per-row plan — create | update | unchanged | error — matching emails to existing users and role names to roles (both case-insensitive), with field diffs (name; roles added/removed) for updates. A row is an error (never applied) when name/email is missing or invalid, the email duplicates an earlier row, or any role name is unknown. With commit=false it writes nothing (preview); with commit=true it creates each new user as a disabled Member with no password and a one-time activationToken (returned for that row), and fully replaces name + roleIds on matched existing users. GET /api/users/:id/activation re-fetches a pending user's token. The Import Users page tokenizes the paste, renders the plan (badges, diffs, errors), and lists the activation links after commit.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-023"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-024"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-025"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "POST /import + GET /:id/activation"
+        },
+        {
+          "path": "frontend/src/pages/UsersImportPage.vue"
+        },
+        {
+          "path": "frontend/src/router/index.ts",
+          "symbol": "/users-import route"
+        },
+        {
+          "path": "frontend/src/components/AppSidebar.vue",
+          "symbol": "Import Users nav"
+        }
+      ],
+      "verifiedBy": [
+        {
+          "method": "endpoint-probe",
+          "note": "dry-run plan + commit create/update; unknown role & duplicate → error"
         }
       ]
     },
@@ -3422,6 +3652,102 @@
       "automated": true
     },
     {
+      "id": "VT-023",
+      "testType": "acceptance",
+      "title": "Bulk-import users from pasted table data",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-023"
+        }
+      ],
+      "preconditions": "Signed in as admin; at least one job role exists; one row's email matches an existing user.",
+      "steps": [
+        "POST /api/users/import { commit:true } with rows naming an existing role and mixing a new email and an existing user's email.",
+        "Re-read the affected users."
+      ],
+      "expected": "A new user is created and the existing user is updated (not duplicated); roles named in each row are resolved to the matching role ids.",
+      "automated": true
+    },
+    {
+      "id": "VT-024",
+      "testType": "acceptance",
+      "title": "Preview import changes before applying",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-024"
+        }
+      ],
+      "preconditions": "Signed in as admin.",
+      "steps": [
+        "POST /api/users/import { commit:false } with new, existing, unchanged, unknown-role and duplicate-email rows.",
+        "Inspect the returned plan and confirm no users were written."
+      ],
+      "expected": "The plan classifies each row create/update/unchanged/error with name and role added/removed diffs and per-row error reasons; the data store is unchanged by the dry run.",
+      "automated": true
+    },
+    {
+      "id": "VT-025",
+      "testType": "acceptance",
+      "title": "Imported users default to Member, pending activation",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-025"
+        }
+      ],
+      "preconditions": "Signed in as admin.",
+      "steps": [
+        "Import a brand-new user.",
+        "Read the user back and check the access flags and pending state."
+      ],
+      "expected": "The created user has isAdmin=false, isTrainer=false, no password, and isDisabled=true; the import response carries a one-time activation token for that row.",
+      "automated": true
+    },
+    {
+      "id": "VT-026",
+      "testType": "acceptance",
+      "title": "Disabled accounts cannot sign in",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-026"
+        }
+      ],
+      "preconditions": "A freshly imported (disabled, password-less) user exists.",
+      "steps": [
+        "POST /api/auth/login with the imported user's email and any password."
+      ],
+      "expected": "Login is refused with 401 while the account is disabled; the same generic message is used as for bad credentials.",
+      "automated": true
+    },
+    {
+      "id": "VT-027",
+      "testType": "acceptance",
+      "title": "Activate via one-time link and set a password",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-027"
+        }
+      ],
+      "preconditions": "A freshly imported user with an activation token.",
+      "steps": [
+        "GET /api/auth/activate/:token.",
+        "POST /api/auth/activate { token, password }.",
+        "Log in with the new password.",
+        "Reuse the same token."
+      ],
+      "expected": "The GET returns the pending email/name; the POST sets the password, enables the account and returns a session; login then succeeds; reusing the spent token is refused with 400.",
+      "automated": true
+    },
+    {
       "id": "VT-030",
       "testType": "acceptance",
       "title": "Admin manages job roles",
@@ -4609,6 +4935,26 @@
       ]
     },
     {
+      "id": "TC-0d49b7f0aa",
+      "name": "SYS-DATA-09: GET /api/users never leaks activationToken (nor passwordHash/entraOid)",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-DATA-09"
+      ]
+    },
+    {
+      "id": "TC-0d83187f33",
+      "name": "SYS-USR-03 / VT-024 (SR-024): commit:false previews every row action and writes nothing",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-USR-03",
+        "VT-024",
+        "SR-024"
+      ]
+    },
+    {
       "id": "TC-0dd808da62",
       "name": "SYS-TLS-06: POST /api/settings/certificate/self-signed requires admin — member → 403",
       "kind": "backend",
@@ -4876,6 +5222,17 @@
       ]
     },
     {
+      "id": "TC-25f4065fe8",
+      "name": "SYS-AUTH-08 / VT-026 (SR-026): a disabled (imported, not-yet-activated) user cannot log in",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-AUTH-08",
+        "VT-026",
+        "SR-026"
+      ]
+    },
+    {
       "id": "TC-2694884d02",
       "name": "SYS-UI-04 / SR-004: a member sees only the member navigation",
       "kind": "e2e",
@@ -4932,6 +5289,17 @@
       "file": "backend/tests/dashboard-oversight.test.mjs",
       "covers": [
         "SYS-OVS-01"
+      ]
+    },
+    {
+      "id": "TC-2a1a626121",
+      "name": "SYS-AUTH-09 / VT-027 (SR-027): activation sets a password, enables sign-in, and spends the token",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-AUTH-09",
+        "VT-027",
+        "SR-027"
       ]
     },
     {
@@ -5611,6 +5979,17 @@
       ]
     },
     {
+      "id": "TC-7394b62310",
+      "name": "SYS-DATA-09 / VT-025 (SR-025): an imported user is a disabled Member with no password + an activation token",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-DATA-09",
+        "VT-025",
+        "SR-025"
+      ]
+    },
+    {
       "id": "TC-73ab1b51ce",
       "name": "SYS-DATA-03 / VT-103: a created job role round-trips through the JSON store",
       "kind": "backend",
@@ -5777,6 +6156,17 @@
       "covers": [
         "SYS-SET-01",
         "SR-104"
+      ]
+    },
+    {
+      "id": "TC-8732e126de",
+      "name": "SYS-USR-03 / VT-023 (SR-023): import creates new users and updates an existing one (roles matched by name)",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-USR-03",
+        "VT-023",
+        "SR-023"
       ]
     },
     {
@@ -6095,6 +6485,28 @@
       "file": "backend/tests/trainings.test.mjs",
       "covers": [
         "SYS-DATA-04"
+      ]
+    },
+    {
+      "id": "TC-a4f286f603",
+      "name": "SYS-USR-03 / VT-024 (SR-024): invalid email and duplicate-in-paste rows are errors",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-USR-03",
+        "VT-024",
+        "SR-024"
+      ]
+    },
+    {
+      "id": "TC-a4f715c802",
+      "name": "SYS-AC-02 / SYS-USR-03 (SR-003): import requires admin (member → 403, no token → 401)",
+      "kind": "backend",
+      "file": "backend/tests/users-import.test.mjs",
+      "covers": [
+        "SYS-AC-02",
+        "SYS-USR-03",
+        "SR-003"
       ]
     },
     {
