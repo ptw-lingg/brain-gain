@@ -2074,11 +2074,11 @@
         },
         {
           "path": "frontend/src/router/index.ts",
-          "symbol": "/users-import route"
+          "symbol": "/users/import route"
         },
         {
-          "path": "frontend/src/components/AppSidebar.vue",
-          "symbol": "Import Users nav"
+          "path": "frontend/src/pages/UsersPage.vue",
+          "symbol": "Import entry (subpage of Users)"
         }
       ],
       "verifiedBy": [

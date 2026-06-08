@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { ClipboardPaste, Eye, Upload, Copy, AlertTriangle, Check } from 'lucide-vue-next';
+import { ClipboardPaste, Eye, Upload, Copy, AlertTriangle, Check, ArrowLeft } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { JobRole } from '@/types';
@@ -201,7 +201,13 @@ onMounted(loadRoles);
 <template>
   <div>
     <header>
-      <h1 class="page-title">Import Users</h1>
+      <RouterLink
+        to="/users"
+        class="inline-flex items-center gap-1 font-mono text-xs text-ink-light transition hover:text-accent"
+      >
+        <ArrowLeft class="h-3.5 w-3.5" /> Users
+      </RouterLink>
+      <h1 class="page-title mt-1">Import Users</h1>
       <p class="mt-1 font-mono text-xs text-ink-light">
         // paste rows from Excel or any table — preview, then import
       </p>

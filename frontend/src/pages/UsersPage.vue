@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye } from 'lucide-vue-next';
+import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, UserPlus } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
@@ -129,7 +129,10 @@ onMounted(load);
         <h1 class="page-title">Users</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">// {{ users.length }} users</p>
       </div>
-      <button class="btn-primary" @click="openNew"><Plus class="h-4 w-4" /> Add User</button>
+      <div class="flex items-center gap-2">
+        <RouterLink to="/users/import" class="btn-ghost"><UserPlus class="h-4 w-4" /> Import</RouterLink>
+        <button class="btn-primary" @click="openNew"><Plus class="h-4 w-4" /> Add User</button>
+      </div>
     </header>
 
     <div v-if="loading" class="mt-6 flex flex-col gap-3">

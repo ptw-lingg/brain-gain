@@ -36,7 +36,7 @@ const router = createRouter({
         { path: 'trainees', component: TraineesPage, meta: { requiresTrainerOrAdmin: true } },
         { path: 'roles', component: RolesPage, meta: { requiresAdmin: true } },
         { path: 'users', component: UsersPage, meta: { requiresAdmin: true } },
-        { path: 'users-import', component: UsersImportPage, meta: { requiresAdmin: true } },
+        { path: 'users/import', component: UsersImportPage, meta: { requiresAdmin: true } },
         { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
         ...(INTERNAL_TOOLS
           ? [{ path: 'requirements', component: () => import('@/pages/RequirementsPage.vue'), meta: { requiresAdmin: true } }]
