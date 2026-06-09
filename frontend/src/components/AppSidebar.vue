@@ -83,21 +83,20 @@ function logout(): void {
       </template>
     </nav>
 
-    <!-- Language switcher -->
-    <label class="mb-3 flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-wider text-ink-light">
+    <!-- Language switcher — subtle, borderless -->
+    <div class="mb-2 flex items-center justify-end gap-1 px-1 text-ink-light">
       <Languages class="h-3.5 w-3.5" />
-      <span class="sr-only">{{ t('language.label') }}</span>
       <select
         :value="locale"
-        class="flex-1 rounded-md border border-line bg-white/70 px-2 py-1 text-xs font-medium normal-case tracking-normal text-ink-muted"
+        class="cursor-pointer border-0 bg-transparent p-0 pr-1 text-[11px] text-ink-light outline-none transition hover:text-ink focus:text-ink"
         :aria-label="t('language.label')"
         @change="onLocaleChange"
       >
         <option v-for="l in SUPPORTED_LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
       </select>
-    </label>
+    </div>
 
-    <div class="mt-4 flex items-center gap-3 rounded-lg border border-line bg-white/70 px-3 py-2.5">
+    <div class="flex items-center gap-3 rounded-lg border border-line bg-white/70 px-3 py-2.5">
       <div
         class="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-sans text-xs font-bold text-white"
       >
