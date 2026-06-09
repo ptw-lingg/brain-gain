@@ -1,5 +1,6 @@
 {
   "passThreshold": 0.8,
+  "companyName": "PTW-Freiburg GmbH",
   "entra": {
     "enabled": false,
     "tenantId": "",

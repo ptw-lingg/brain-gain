@@ -35,12 +35,24 @@ export interface JobRole {
   trainingIds: string[]; // which trainings this role requires
 }
 
+// Organizational unit. Units form a tree via `parentId` (null = the root/company unit). Each unit
+// has at most one head (a User id) who is responsible for everyone in that unit and all sub-units.
+export interface OrgUnit {
+  id: string;
+  name: string;
+  parentId: string | null; // null = root unit; its name mirrors Settings.companyName
+  headUserId: string; // responsible head (User id); '' when not yet assigned
+}
+
 export interface User {
   id: string;
   email: string;
   passwordHash?: string; // bcrypt hash (never sent to frontend); absent for SSO-only users
   name: string;
   roleIds: string[];
+  // The org unit this user belongs to. Required going forward (enforced on create/import); existing
+  // accounts are backfilled to the root unit by migrateOrgUnits(), so it is optional on the stored type.
+  orgUnitId?: string;
   isAdmin: boolean;
   isTrainer: boolean;
   entraOid?: string; // Microsoft Entra ID object id, set when an account is linked via SSO
@@ -84,6 +96,7 @@ export interface TlsSettings {
 
 export interface Settings {
   passThreshold: number; // 0–1, default 0.8
+  companyName: string; // names the root org unit; admin-editable in Settings
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
 }

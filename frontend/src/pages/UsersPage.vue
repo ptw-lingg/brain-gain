@@ -6,7 +6,7 @@ import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, UserPlus } from
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
-import type { JobRole, SafeUser } from '@/types';
+import type { JobRole, OrgUnit, SafeUser } from '@/types';
 
 const toast = useToastStore();
 const auth = useAuthStore();
@@ -19,6 +19,7 @@ interface UserDraft extends SafeUser {
 
 const users = ref<SafeUser[]>([]);
 const roles = ref<JobRole[]>([]);
+const orgUnits = ref<OrgUnit[]>([]);
 const loading = ref(true);
 const draft = ref<UserDraft | null>(null);
 const isNew = ref(false);
@@ -27,12 +28,14 @@ const confirmDelete = ref(false);
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const [u, r] = await Promise.all([
+    const [u, r, o] = await Promise.all([
       client.get<SafeUser[]>('/users'),
       client.get<JobRole[]>('/roles'),
+      client.get<OrgUnit[]>('/org-units'),
     ]);
     users.value = u.data;
     roles.value = r.data;
+    orgUnits.value = o.data;
   } finally {
     loading.value = false;
   }
@@ -42,12 +45,18 @@ function roleNames(ids: string[]): string {
   return ids.map((id) => roles.value.find((r) => r.id === id)?.name).filter(Boolean).join(', ') || t('common.none');
 }
 
+function orgUnitName(id: string | undefined): string {
+  return orgUnits.value.find((o) => o.id === id)?.name ?? t('common.none');
+}
+
 function openNew(): void {
+  const root = orgUnits.value.find((o) => o.parentId === null) ?? orgUnits.value[0];
   draft.value = {
     id: '',
     name: '',
     email: '',
     roleIds: [],
+    orgUnitId: root?.id ?? '',
     isAdmin: false,
     isTrainer: false,
     createdAt: '',
@@ -76,6 +85,10 @@ async function save(): Promise<void> {
   const d = draft.value;
   if (!d.name.trim() || !d.email.trim()) {
     toast.error(t('users.toasts.nameEmailRequired'));
+    return;
+  }
+  if (!d.orgUnitId) {
+    toast.error(t('users.toasts.orgUnitRequired'));
     return;
   }
   if (isNew.value && !d.password) {
@@ -147,6 +160,7 @@ onMounted(load);
           <tr class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
             <th class="px-5 py-3">{{ t('users.thName') }}</th>
             <th class="px-5 py-3">{{ t('users.thEmail') }}</th>
+            <th class="hidden px-5 py-3 lg:table-cell">{{ t('users.thOrgUnit') }}</th>
             <th class="hidden px-5 py-3 md:table-cell">{{ t('users.thRoles') }}</th>
             <th class="px-5 py-3">{{ t('users.thAccess') }}</th>
           </tr>
@@ -160,6 +174,9 @@ onMounted(load);
           >
             <td class="px-5 py-3 text-sm font-semibold text-ink">{{ u.name }}</td>
             <td class="px-5 py-3 font-mono text-xs text-ink-muted">{{ u.email }}</td>
+            <td class="hidden px-5 py-3 font-mono text-xs text-ink-light lg:table-cell">
+              {{ orgUnitName(u.orgUnitId) }}
+            </td>
             <td class="hidden px-5 py-3 font-mono text-xs text-ink-light md:table-cell">
               {{ roleNames(u.roleIds) }}
             </td>
@@ -198,6 +215,13 @@ onMounted(load);
           <label class="flex flex-col gap-1">
             <span class="form-label">{{ isNew ? t('users.passwordNew') : t('users.passwordEdit') }}</span>
             <input v-model="draft.password" type="password" class="bg-input" autocomplete="new-password" />
+          </label>
+
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('users.orgUnit') }}</span>
+            <select v-model="draft.orgUnitId" class="bg-input">
+              <option v-for="o in orgUnits" :key="o.id" :value="o.id">{{ o.name }}</option>
+            </select>
           </label>
 
           <div class="flex gap-4">

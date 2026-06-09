@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { KeyRound, Lock, Save, SlidersHorizontal } from 'lucide-vue-next';
+import { Building2, KeyRound, Lock, Save, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { Settings, TlsSettings } from '@/types';
@@ -12,6 +12,10 @@ const { t } = useI18n();
 const pct = ref(80);
 const loading = ref(true);
 const saving = ref(false);
+
+// Company name — names the root org unit (admin-editable).
+const companyName = ref('');
+const savingCompany = ref(false);
 
 const pctLabel = computed(() => `${pct.value}%`);
 
@@ -68,6 +72,7 @@ async function load(): Promise<void> {
   try {
     const { data } = await client.get<Settings>('/settings');
     pct.value = Math.round(data.passThreshold * 100);
+    companyName.value = data.companyName ?? '';
     const e = data.entra;
     if (e) {
       ssoEnabled.value = e.enabled;
@@ -133,6 +138,22 @@ async function save(): Promise<void> {
   }
 }
 
+async function saveCompany(): Promise<void> {
+  if (!companyName.value.trim()) {
+    toast.error(t('settings.toasts.companyNameRequired'));
+    return;
+  }
+  savingCompany.value = true;
+  try {
+    await client.put('/settings', { companyName: companyName.value.trim() });
+    toast.success(t('settings.toasts.companySaved'));
+  } catch {
+    toast.error(t('settings.toasts.settingsError'));
+  } finally {
+    savingCompany.value = false;
+  }
+}
+
 async function saveSso(): Promise<void> {
   savingSso.value = true;
   try {
@@ -168,6 +189,25 @@ onMounted(load);
     <div v-if="loading" class="mt-6 card h-40 animate-pulse bg-pastel-slate/30" />
 
     <div v-else class="mt-6 flex flex-col gap-6">
+      <!-- Company name (names the root org unit) -->
+      <div class="card p-6">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+            <Building2 class="h-5 w-5 text-accent" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.companyTitle') }}</h2>
+            <p class="font-mono text-xs text-ink-light">{{ t('settings.companyDesc') }}</p>
+          </div>
+        </div>
+        <div class="mt-6 flex flex-wrap items-end gap-3">
+          <input v-model="companyName" class="bg-input flex-1" :placeholder="t('settings.companyTitle')" />
+          <button class="btn-primary" :disabled="savingCompany" @click="saveCompany">
+            <Save class="h-4 w-4" /> {{ savingCompany ? t('common.saving') : t('settings.saveCompany') }}
+          </button>
+        </div>
+      </div>
+
       <!-- Global pass threshold -->
       <div class="card p-6">
         <div class="flex items-center gap-3">

@@ -50,7 +50,7 @@ test.describe('Controlled documents & test traceability (Requirements tab)', () 
   test('SR-123 / SYS-DOC-07 / SYS-DOC-08 / VT-123: test cases are searchable objects with a result badge', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/requirements');
-    await page.locator('select').first().selectOption('case'); // filter type → Test cases
+    await page.locator('main select').first().selectOption('case'); // filter type → Test cases (scope to the page, not the sidebar language switcher)
     await page.getByPlaceholder(/Search/).fill('impersonat');
     const row = page.getByRole('button', { name: /TC-/ }).first();
     await expect(row).toBeVisible();

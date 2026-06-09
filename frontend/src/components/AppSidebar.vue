@@ -6,7 +6,9 @@ import {
   GraduationCap,
   ClipboardList,
   Briefcase,
+  Building2,
   Users,
+  UsersRound,
   SlidersHorizontal,
   ListChecks,
   LogOut,
@@ -27,6 +29,7 @@ function onLocaleChange(e: Event): void {
 
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
 const isTrainer = computed(() => auth.user?.isTrainer ?? false);
+const isHead = computed(() => auth.user?.isHead ?? false);
 // Requirements/DMS tooling is internal-only (dev + internal build), excluded from the public build.
 const internalTools = import.meta.env.DEV || import.meta.env.VITE_INTERNAL === 'true';
 
@@ -58,6 +61,10 @@ function logout(): void {
         <BookOpen class="h-4 w-4" /> {{ t('nav.myTrainings') }}
       </RouterLink>
 
+      <RouterLink v-if="isHead || isAdmin" to="/my-team" class="nav-item" active-class="nav-active">
+        <UsersRound class="h-4 w-4" /> {{ t('nav.myTeam') }}
+      </RouterLink>
+
       <template v-if="isAdmin || isTrainer">
         <RouterLink to="/trainings" class="nav-item" active-class="nav-active">
           <GraduationCap class="h-4 w-4" /> {{ t('nav.trainings') }}
@@ -70,6 +77,9 @@ function logout(): void {
       <template v-if="isAdmin">
         <RouterLink to="/roles" class="nav-item" active-class="nav-active">
           <Briefcase class="h-4 w-4" /> {{ t('nav.jobRoles') }}
+        </RouterLink>
+        <RouterLink to="/org-units" class="nav-item" active-class="nav-active">
+          <Building2 class="h-4 w-4" /> {{ t('nav.orgUnits') }}
         </RouterLink>
         <RouterLink to="/users" class="nav-item" active-class="nav-active">
           <Users class="h-4 w-4" /> {{ t('nav.users') }}

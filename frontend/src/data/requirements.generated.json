@@ -6,9 +6,9 @@
     "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 225,
-      "covered": 225,
-      "backend": 124,
+      "total": 241,
+      "covered": 241,
+      "backend": 140,
       "e2e": 88,
       "manual": 122,
       "gaps": []
@@ -70,6 +70,10 @@
       {
         "id": "user-import-feature",
         "label": "Clipboard user import feature"
+      },
+      {
+        "id": "org-unit-feature",
+        "label": "Organizational units"
       }
     ],
     "status": [
@@ -3378,6 +3382,188 @@
           "symbol": "build vs build:internal"
         }
       ]
+    },
+    {
+      "id": "SR-124",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "Single org-unit membership & hierarchy",
+      "text": "Every user belongs to exactly one organizational unit. Units form a hierarchy (each unit has an optional parent unit).",
+      "priority": "M",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SR-125",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "One responsible head per unit",
+      "text": "Each organizational unit has exactly one head, who is responsible for everyone in that unit and all of its sub-units.",
+      "priority": "M",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SR-126",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "Head oversight of training status",
+      "text": "A unit head can review the training due/overdue status of everyone in their unit and its sub-units.",
+      "priority": "M",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SR-127",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "Org unit in user import",
+      "text": "Bulk user import supports an Org Unit column, matched to an existing unit by name.",
+      "priority": "S",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SR-128",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "Editable company name",
+      "text": "An admin can edit the company name in Settings; it names the top-level (root) organizational unit.",
+      "priority": "S",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SYS-ORG-01",
+      "type": "system",
+      "category": "Organization",
+      "title": "/api/org-units CRUD",
+      "text": "/api/org-units provides admin-only create/update/delete and authenticated read of organizational units (id, name, parentId, headUserId).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-124"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/orgUnits.ts",
+          "symbol": "CRUD"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ORG-02",
+      "type": "system",
+      "category": "Organization",
+      "title": "Hierarchy integrity",
+      "text": "Re-parenting that would create a cycle is rejected (400); a unit with sub-units or member users cannot be deleted (409).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-124"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/orgUnits.ts",
+          "symbol": "wouldCreateCycle"
+        },
+        {
+          "path": "backend/src/routes/orgUnits.ts",
+          "symbol": "PUT/DELETE"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ORG-03",
+      "type": "system",
+      "category": "Organization",
+      "title": "Membership & migration",
+      "text": "Users carry orgUnitId. A startup migration seeds a single root unit named from Settings.companyName and backfills every user; user create/import default a missing unit to the root.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-124"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/services/orgUnits.ts",
+          "symbol": "migrateOrgUnits"
+        },
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "orgUnitId"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ORG-04",
+      "type": "system",
+      "category": "Organization",
+      "title": "Import Org Unit column",
+      "text": "POST /api/users/import resolves an Org Unit value to a unit by name (case-insensitive); an unknown name flags the row as an error; a blank value defaults a new user to the root unit.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-127"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/users.ts",
+          "symbol": "POST /import"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ORG-05",
+      "type": "system",
+      "category": "Organization",
+      "title": "Head oversight endpoint",
+      "text": "GET /api/org-units/my-team returns every member in the caller-headed units and their sub-units, each with their required trainings and due status; empty when the caller heads no unit.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-125"
+        },
+        {
+          "type": "derivedFrom",
+          "target": "SR-126"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/orgUnits.ts",
+          "symbol": "GET /my-team"
+        }
+      ]
+    },
+    {
+      "id": "SYS-ORG-06",
+      "type": "system",
+      "category": "Organization",
+      "title": "Editable company name",
+      "text": "PUT /api/settings accepts companyName (admin-only) and renames the root org unit to match.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-128"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/settings.ts",
+          "symbol": "companyName"
+        }
+      ]
     }
   ],
   "tests": [
@@ -4765,6 +4951,102 @@
       ],
       "expected": "The public bundle contains no Requirements page, pdfmake, or requirements/results data; the internal build does.",
       "automated": false
+    },
+    {
+      "id": "VT-125",
+      "testType": "acceptance",
+      "title": "Org-unit CRUD, hierarchy integrity & membership",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-124"
+        }
+      ],
+      "preconditions": "Seeded backend.",
+      "steps": [
+        "Create units under the root and re-parent them.",
+        "Attempt a cycle and a delete of a non-empty unit.",
+        "Create users with and without an explicit org unit."
+      ],
+      "expected": "CRUD is admin-only; cycles → 400; non-empty delete → 409; users always end up in exactly one unit (root by default).",
+      "automated": true
+    },
+    {
+      "id": "VT-126",
+      "testType": "acceptance",
+      "title": "One responsible head per unit",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-125"
+        }
+      ],
+      "preconditions": "Seeded backend.",
+      "steps": [
+        "Assign a head to a unit.",
+        "Read the unit and the head identity."
+      ],
+      "expected": "Each unit stores a single headUserId; the head is reported as such.",
+      "automated": true
+    },
+    {
+      "id": "VT-127",
+      "testType": "acceptance",
+      "title": "Head oversight (my-team)",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-126"
+        }
+      ],
+      "preconditions": "A head over a unit with members in a sub-unit.",
+      "steps": [
+        "Call GET /api/org-units/my-team as the head.",
+        "Call it as a non-head."
+      ],
+      "expected": "The head sees every member in their subtree with due status; a non-head sees an empty team.",
+      "automated": true
+    },
+    {
+      "id": "VT-128",
+      "testType": "acceptance",
+      "title": "Import Org Unit column",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-127"
+        }
+      ],
+      "preconditions": "An existing org unit.",
+      "steps": [
+        "Preview an import with known, unknown and blank Org Unit values.",
+        "Commit a valid row."
+      ],
+      "expected": "Known unit resolves; unknown → row error; blank create → root; committed user lands in the resolved unit.",
+      "automated": true
+    },
+    {
+      "id": "VT-129",
+      "testType": "acceptance",
+      "title": "Editable company name renames root",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-128"
+        }
+      ],
+      "preconditions": "Seeded backend.",
+      "steps": [
+        "PUT /api/settings { companyName } as admin.",
+        "Attempt the same as a non-admin."
+      ],
+      "expected": "The setting updates and the root unit is renamed; non-admin → 403.",
+      "automated": true
     }
   ],
   "testCases": [
@@ -5165,6 +5447,15 @@
       ]
     },
     {
+      "id": "TC-2384e0923e",
+      "name": "SYS-ORG-01: /api/org-units requires authentication → 401 without a token",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-01"
+      ]
+    },
+    {
       "id": "TC-23ef3b9eeb",
       "name": "SYS-AC-03 / VT-045: DELETE /api/trainings/:id is admin-or-owner — non-owner trainer → 403",
       "kind": "backend",
@@ -5272,6 +5563,17 @@
       ]
     },
     {
+      "id": "TC-283af8f4bb",
+      "name": "SYS-ORG-02 / VT-125 (SR-124): re-parenting that would create a cycle is rejected → 400",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-02",
+        "VT-125",
+        "SR-124"
+      ]
+    },
+    {
       "id": "TC-28d97d81b7",
       "name": "SYS-OVS-01: trainee user objects are SafeUsers — no passwordHash / entraOid leak (SR-105/SR-003)",
       "kind": "backend",
@@ -5300,6 +5602,19 @@
         "SYS-AUTH-09",
         "VT-027",
         "SR-027"
+      ]
+    },
+    {
+      "id": "TC-2a92bd374c",
+      "name": "SYS-ORG-05 / VT-126 / VT-127 (SR-125, SR-126): a head sees everyone in their unit + sub-units with due status; non-heads get nothing",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-05",
+        "VT-126",
+        "VT-127",
+        "SR-125",
+        "SR-126"
       ]
     },
     {
@@ -5463,6 +5778,17 @@
       ]
     },
     {
+      "id": "TC-3fd63a395f",
+      "name": "SYS-ORG-02 / VT-125 (SR-124): deleting a unit with sub-units or members is blocked → 409",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-02",
+        "VT-125",
+        "SR-124"
+      ]
+    },
+    {
       "id": "TC-4086d3183e",
       "name": "SYS-TLS-06: GET /api/settings/certificate requires admin — member → 403",
       "kind": "backend",
@@ -5500,6 +5826,17 @@
         "SYS-USR-01",
         "VT-020",
         "SR-020"
+      ]
+    },
+    {
+      "id": "TC-46280b4a62",
+      "name": "SYS-ORG-03 / VT-126 (SR-125): the migration makes the first admin the head of the root unit",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-03",
+        "VT-126",
+        "SR-125"
       ]
     },
     {
@@ -5595,6 +5932,17 @@
         "SYS-USR-02",
         "VT-020",
         "SR-020"
+      ]
+    },
+    {
+      "id": "TC-53fed49a10",
+      "name": "SYS-ORG-06 / VT-129 (SR-128): admin edits companyName → renames the root unit; non-admin → 403",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-06",
+        "VT-129",
+        "SR-128"
       ]
     },
     {
@@ -6010,6 +6358,17 @@
       ]
     },
     {
+      "id": "TC-753fb4316d",
+      "name": "SYS-ORG-01 / VT-125 (SR-124): admin creates, updates and deletes an org unit; member may read only",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-01",
+        "VT-125",
+        "SR-124"
+      ]
+    },
+    {
       "id": "TC-76504caf6b",
       "name": "SYS-TLS-04 / VT-115: GET /api/settings exposes TLS metadata only — never the key or cert PEM",
       "kind": "backend",
@@ -6325,6 +6684,17 @@
       "covers": [
         "SYS-SET-02",
         "SR-080"
+      ]
+    },
+    {
+      "id": "TC-97d8bda3df",
+      "name": "SYS-ORG-04 / VT-128 (SR-127): import matches Org Unit by name; unknown → error; missing on create → root",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-04",
+        "VT-128",
+        "SR-127"
       ]
     },
     {
@@ -6664,6 +7034,17 @@
       "covers": [
         "SYS-TRN-01",
         "VT-104"
+      ]
+    },
+    {
+      "id": "TC-b3d0c263cf",
+      "name": "SYS-ORG-03 / VT-125 (SR-124): POST /users validates orgUnitId (invalid → 400; omitted → defaults to root)",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-03",
+        "VT-125",
+        "SR-124"
       ]
     },
     {
@@ -7342,6 +7723,17 @@
       "file": "backend/tests/auth.test.mjs",
       "covers": [
         "SYS-AUTH-04"
+      ]
+    },
+    {
+      "id": "TC-fdeb30f4ef",
+      "name": "SYS-ORG-03 / VT-125 (SR-124): migration seeds a single root unit named from companyName and backfills users",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-03",
+        "VT-125",
+        "SR-124"
       ]
     },
     {

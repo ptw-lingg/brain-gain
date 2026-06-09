@@ -6,7 +6,7 @@ import type { Settings } from '../types';
 // run against an isolated, throwaway data directory).
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data');
 
-type ArrayFile = 'users' | 'roles' | 'trainings' | 'sessions';
+type ArrayFile = 'users' | 'roles' | 'trainings' | 'sessions' | 'orgUnits';
 
 function filePath(name: string): string {
   return path.join(DATA_DIR, `${name}.json`);
@@ -37,6 +37,7 @@ export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
 
 const DEFAULT_SETTINGS: Settings = {
   passThreshold: 0.8,
+  companyName: 'PTW Dosimetry',
   entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
   tls: null,
 };

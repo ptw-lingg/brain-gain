@@ -1,0 +1,38 @@
+[
+  {
+    "id": "08a49aa1-4cbb-48d4-9a72-bf8ca3b173e4",
+    "name": "PTW-Freiburg GmbH",
+    "parentId": null,
+    "headUserId": "999ef61e-287e-4e48-a00b-555278c19592"
+  },
+  {
+    "id": "87bb6563-a393-4258-8bcf-e592a38e4310",
+    "name": "70 - Research & Development",
+    "parentId": "08a49aa1-4cbb-48d4-9a72-bf8ca3b173e4",
+    "headUserId": "3352c8fd-c0fa-41e2-b466-0880c0b23570"
+  },
+  {
+    "id": "32c9ccd0-de4e-4ed1-8734-012948d600aa",
+    "name": "72 - Software & Device Systems",
+    "parentId": "87bb6563-a393-4258-8bcf-e592a38e4310",
+    "headUserId": ""
+  },
+  {
+    "id": "ac788c22-8746-4557-ace6-a59104835a75",
+    "name": "73 - Engineering",
+    "parentId": "87bb6563-a393-4258-8bcf-e592a38e4310",
+    "headUserId": "04f99f92-1208-423d-88d9-ab537ed4cd08"
+  },
+  {
+    "id": "caaf0406-374d-4fa3-bd7e-09e57deb8f06",
+    "name": "74 - System Specification & Validation",
+    "parentId": "87bb6563-a393-4258-8bcf-e592a38e4310",
+    "headUserId": "04f99f92-1208-423d-88d9-ab537ed4cd08"
+  },
+  {
+    "id": "f75710fd-f116-4a31-ab04-4b00dcbd1a9c",
+    "name": "82 - Quality Management & Regulatory Affairs",
+    "parentId": "08a49aa1-4cbb-48d4-9a72-bf8ca3b173e4",
+    "headUserId": "de416ba2-b6f7-4030-9b5c-78daea16749b"
+  }
+]

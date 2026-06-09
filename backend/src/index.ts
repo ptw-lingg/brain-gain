@@ -7,10 +7,12 @@ import { existsSync } from 'fs';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import roleRoutes from './routes/roles';
+import orgUnitRoutes from './routes/orgUnits';
 import trainingRoutes from './routes/trainings';
 import sessionRoutes from './routes/sessions';
 import settingsRoutes from './routes/settings';
 import { seed } from './seed';
+import { migrateOrgUnits } from './services/orgUnits';
 import { ensureCredentials, registerHttpsServer } from './services/tls';
 
 const app = express();
@@ -32,6 +34,7 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/org-units', orgUnitRoutes);
 app.use('/api/trainings', trainingRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/settings', settingsRoutes);
@@ -82,6 +85,7 @@ function listenWithRetry(
 }
 
 seed()
+  .then(() => migrateOrgUnits())
   .then(async () => {
     const creds = await ensureCredentials();
     const httpsServer = https.createServer({ key: creds.key, cert: creds.cert, ca: creds.ca }, app);

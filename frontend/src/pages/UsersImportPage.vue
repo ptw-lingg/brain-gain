@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { ClipboardPaste, Eye, Upload, Copy, AlertTriangle, Check, ArrowLeft } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
-import type { JobRole } from '@/types';
+import type { JobRole, OrgUnit } from '@/types';
 
 const toast = useToastStore();
 const { t } = useI18n();
@@ -14,6 +14,7 @@ interface ParsedRow {
   name: string;
   email: string;
   roles: string[];
+  orgUnit: string;
 }
 
 // Mirrors the plan the backend returns for each row (POST /users/import).
@@ -25,9 +26,12 @@ interface PlanRow {
   errors: string[];
   matchedRoleIds: string[];
   unknownRoles: string[];
+  matchedOrgUnitId?: string;
+  unknownOrgUnit?: string;
   changes: {
     name?: { from: string; to: string };
     roles?: { added: string[]; removed: string[] };
+    orgUnit?: { from: string; to: string };
   };
   activationToken?: string;
 }
@@ -40,6 +44,7 @@ interface ImportSummary {
 }
 
 const roles = ref<JobRole[]>([]);
+const orgUnits = ref<OrgUnit[]>([]);
 const pasteText = ref('');
 const plan = ref<PlanRow[] | null>(null);
 const summary = ref<ImportSummary | null>(null);
@@ -52,8 +57,12 @@ const createdLinks = ref<{ email: string; name: string; url: string }[]>([]);
 
 async function loadRoles(): Promise<void> {
   try {
-    const { data } = await client.get<JobRole[]>('/roles');
-    roles.value = data;
+    const [r, o] = await Promise.all([
+      client.get<JobRole[]>('/roles'),
+      client.get<OrgUnit[]>('/org-units'),
+    ]);
+    roles.value = r.data;
+    orgUnits.value = o.data;
   } catch {
     toast.error(t('usersImport.toasts.loadRolesError'));
   }
@@ -61,6 +70,24 @@ async function loadRoles(): Promise<void> {
 
 function roleName(id: string): string {
   return roles.value.find((r) => r.id === id)?.name ?? id;
+}
+
+function orgUnitName(id: string | undefined): string {
+  return orgUnits.value.find((o) => o.id === id)?.name ?? '';
+}
+
+/** The org-unit hint shown for a previewed row: its assignment (create) or change (update). */
+function orgUnitNote(row: PlanRow): string {
+  if (row.changes.orgUnit) {
+    return t('usersImport.changeOrgUnitMove', {
+      from: row.changes.orgUnit.from || t('common.none'),
+      to: row.changes.orgUnit.to,
+    });
+  }
+  if (row.action === 'create' && row.matchedOrgUnitId) {
+    return t('usersImport.changeOrgUnit', { unit: orgUnitName(row.matchedOrgUnitId) });
+  }
+  return '';
 }
 
 // Tokenize the clipboard text into rows. Excel paste = tab-separated with an optional header row.
@@ -74,20 +101,25 @@ function parseClipboard(text: string): ParsedRow[] {
 
   const cells = lines.map((l) => l.split('\t').map((c) => c.trim()));
   const header = cells[0].map((c) => c.toLowerCase());
-  const hasHeader = header.some((c) => ['name', 'email', 'e-mail', 'roles', 'role'].includes(c));
+  const hasHeader = header.some((c) =>
+    ['name', 'email', 'e-mail', 'roles', 'role', 'org unit', 'orgunit', 'org-unit', 'unit'].includes(c),
+  );
 
   let nameIdx = 0;
   let emailIdx = 1;
   let rolesIdx = 2;
+  let orgUnitIdx = 3;
   let dataRows = cells;
   if (hasHeader) {
     const find = (...names: string[]) => header.findIndex((c) => names.includes(c));
     const n = find('name');
     const e = find('email', 'e-mail');
     const r = find('roles', 'role');
+    const o = find('org unit', 'orgunit', 'org-unit', 'unit');
     if (n !== -1) nameIdx = n;
     if (e !== -1) emailIdx = e;
     if (r !== -1) rolesIdx = r;
+    if (o !== -1) orgUnitIdx = o;
     dataRows = cells.slice(1);
   }
 
@@ -98,6 +130,7 @@ function parseClipboard(text: string): ParsedRow[] {
       .split(/[,;]/)
       .map((s) => s.trim())
       .filter(Boolean),
+    orgUnit: row[orgUnitIdx] ?? '',
   }));
 }
 
@@ -228,7 +261,7 @@ onMounted(loadRoles);
         rows="6"
         spellcheck="false"
         class="bg-input mt-2 resize-y"
-        placeholder="Name&#9;Email&#9;Roles&#10;Alice Smith&#9;alice@acme.com&#9;Lab Technician&#10;Bob Jones&#9;bob@acme.com&#9;Lab Technician; QA Inspector"
+        placeholder="Name&#9;Email&#9;Roles&#9;Org Unit&#10;Alice Smith&#9;alice@acme.com&#9;Lab Technician&#9;R&amp;D&#10;Bob Jones&#9;bob@acme.com&#9;Lab Technician; QA Inspector&#9;Quality"
         @input="resetResult"
       />
 
@@ -308,6 +341,7 @@ onMounted(loadRoles);
                     {{ t('usersImport.changeRoles', { roles: row.matchedRoleIds.map(roleName).join(', ') }) }}
                   </template>
                   <template v-else>{{ t('usersImport.changeNoRoles') }}</template>
+                  <span class="text-ink-muted"> {{ orgUnitNote(row) }}</span>
                 </span>
                 <!-- update -->
                 <span v-else-if="row.action === 'update'" class="flex flex-col gap-0.5">
@@ -323,6 +357,7 @@ onMounted(loadRoles);
                       − {{ row.changes.roles.removed.join(', ') }}
                     </span>
                   </span>
+                  <span v-if="row.changes.orgUnit" class="text-ink-muted">{{ orgUnitNote(row) }}</span>
                 </span>
                 <!-- unchanged -->
                 <span v-else class="text-ink-light">{{ t('usersImport.changeNoChanges') }}</span>

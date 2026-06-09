@@ -20,6 +20,7 @@ import {
   type AuthRequest,
 } from '../middleware/auth';
 import { computeDue, sessionsFor } from '../services/due';
+import { requiredTrainingIds } from '../services/training';
 import { toSafeUser } from './auth';
 
 const router = Router();
@@ -85,21 +86,6 @@ async function readOrderedTrainings(): Promise<Training[]> {
   });
   if (changed) await writeStore('trainings', trainings);
   return [...trainings].sort((a, b) => a.order - b.order);
-}
-
-/** Trainings the given user is required to complete (via job roles), deduped. */
-async function requiredTrainingIds(userId: string): Promise<Set<string>> {
-  const [users, roles] = await Promise.all([
-    readStore<User>('users'),
-    readStore<JobRole>('roles'),
-  ]);
-  const user = users.find((u) => u.id === userId);
-  const ids = new Set<string>();
-  if (!user) return ids;
-  for (const role of roles) {
-    if (user.roleIds.includes(role.id)) role.trainingIds.forEach((id) => ids.add(id));
-  }
-  return ids;
 }
 
 // GET /api/trainings  (admin: all; trainer with ?mine=1: only owned)

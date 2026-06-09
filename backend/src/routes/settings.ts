@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import type { Settings } from '../types';
-import { readSettings, writeSettings } from '../services/fileStore';
+import type { OrgUnit, Settings } from '../types';
+import { readSettings, readStore, writeSettings, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import {
   TlsError,
@@ -40,6 +40,20 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'passThreshold (0–1) is required' });
     }
     next.passThreshold = Math.min(1, Math.max(0.5, raw));
+  }
+
+  // The company name is the root org unit's name — keep the two in sync.
+  if (body.companyName !== undefined) {
+    if (typeof body.companyName !== 'string' || !body.companyName.trim()) {
+      return res.status(400).json({ error: 'companyName must be a non-empty string' });
+    }
+    next.companyName = body.companyName.trim();
+    const orgUnits = await readStore<OrgUnit>('orgUnits');
+    const root = orgUnits.find((o) => o.parentId === null) ?? orgUnits[0];
+    if (root && root.name !== next.companyName) {
+      root.name = next.companyName;
+      await writeStore('orgUnits', orgUnits);
+    }
   }
 
   if (body.entra !== undefined) {

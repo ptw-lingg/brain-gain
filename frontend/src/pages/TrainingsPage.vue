@@ -234,7 +234,7 @@ onMounted(load);
           <button
             v-if="isAdmin"
             type="button"
-            :title="t('trainings.dragToReorder')"
+            :title="t('trainings.dragHandleTitle')"
             class="-ml-1 shrink-0 cursor-grab touch-none text-ink-light transition hover:text-ink active:cursor-grabbing"
             @click.stop
             @mousedown="dragEnabled = true"

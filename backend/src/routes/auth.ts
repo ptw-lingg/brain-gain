@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
-import type { SafeUser, User } from '../types';
+import type { OrgUnit, SafeUser, User } from '../types';
 import { readSettings, readStore, writeStore } from '../services/fileStore';
+import { rootOrgUnitId } from '../services/orgUnits';
 import { authenticate, requireAdmin, signToken, type AuthRequest } from '../middleware/auth';
 import {
   EntraAuthError,
@@ -19,6 +20,13 @@ export function toSafeUser(user: User): SafeUser {
   void entraOid;
   void activationToken;
   return safe;
+}
+
+// The identity payload the frontend signs in with — SafeUser plus the derived `isHead` flag (true
+// when this user heads at least one org unit), which drives the "My Team" nav entry and route guard.
+async function identityUser(user: User): Promise<SafeUser & { isHead: boolean }> {
+  const orgUnits = await readStore<OrgUnit>('orgUnits');
+  return { ...toSafeUser(user), isHead: orgUnits.some((o) => o.headUserId === user.id) };
 }
 
 // POST /api/auth/login
@@ -46,7 +54,7 @@ router.post('/login', async (req, res) => {
     isAdmin: user.isAdmin,
     isTrainer: user.isTrainer,
   });
-  return res.json({ token, user: toSafeUser(user) });
+  return res.json({ token, user: await identityUser(user) });
 });
 
 // GET /api/auth/activate/:token  — public: validate a pending-account activation link and return the
@@ -89,7 +97,7 @@ router.post('/activate', async (req, res) => {
     isAdmin: user.isAdmin,
     isTrainer: user.isTrainer,
   });
-  return res.json({ token: jwt, user: toSafeUser(user) });
+  return res.json({ token: jwt, user: await identityUser(user) });
 });
 
 // GET /api/auth/me
@@ -97,7 +105,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   const users = await readStore<User>('users');
   const user = users.find((u) => u.id === req.user?.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  return res.json(toSafeUser(user));
+  return res.json(await identityUser(user));
 });
 
 // POST /api/auth/impersonate/:userId  — admin starts a "view as" session.
@@ -127,7 +135,7 @@ router.post('/impersonate/:userId', authenticate, requireAdmin, async (req: Auth
     impersonatorId: req.user!.id,
     impersonatorEmail: req.user!.email,
   });
-  return res.json({ token, user: toSafeUser(target) });
+  return res.json({ token, user: await identityUser(target) });
 });
 
 // GET /api/auth/sso/config  — public: the login page needs this before authenticating.
@@ -191,6 +199,7 @@ router.post('/sso/entra', async (req, res) => {
         email: claims.email,
         name: claims.name,
         roleIds: [],
+        orgUnitId: await rootOrgUnitId(),
         isAdmin: false,
         isTrainer: false,
         entraOid: claims.oid,
@@ -212,7 +221,7 @@ router.post('/sso/entra', async (req, res) => {
     isAdmin: user.isAdmin,
     isTrainer: user.isTrainer,
   });
-  return res.json({ token, user: toSafeUser(user) });
+  return res.json({ token, user: await identityUser(user) });
 });
 
 export default router;

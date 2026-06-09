@@ -1,11 +1,11 @@
 {
-  "ranAt": "2026-06-08T08:07:16.530Z",
+  "ranAt": "2026-06-09T09:03:44.517Z",
   "summary": {
-    "total": 221,
-    "passed": 221,
+    "total": 231,
+    "passed": 231,
     "failed": 0,
     "skipped": 0,
-    "backend": 160,
+    "backend": 170,
     "e2e": 61
   },
   "results": {
@@ -67,6 +67,16 @@
     "TC-a6f0cef5b2": "pass",
     "TC-c65c4c897f": "pass",
     "TC-01a0c4b160": "pass",
+    "TC-fdeb30f4ef": "pass",
+    "TC-46280b4a62": "pass",
+    "TC-753fb4316d": "pass",
+    "TC-2384e0923e": "pass",
+    "TC-283af8f4bb": "pass",
+    "TC-3fd63a395f": "pass",
+    "TC-b3d0c263cf": "pass",
+    "TC-97d8bda3df": "pass",
+    "TC-2a92bd374c": "pass",
+    "TC-53fed49a10": "pass",
     "TC-c5bc20ab6a": "pass",
     "TC-076e05f4ce": "pass",
     "TC-b5cca8ba7d": "pass",
