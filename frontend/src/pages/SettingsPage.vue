@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { KeyRound, Lock, Save, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { Settings, TlsSettings } from '@/types';
 
 const toast = useToastStore();
+const { t } = useI18n();
 
 const pct = ref(80);
 const loading = ref(true);
@@ -33,8 +35,8 @@ const regenerating = ref(false);
 
 const tlsWarn = computed(() => {
   if (!tls.value) return '';
-  if (tls.value.source === 'self-signed') return 'Self-signed certificate — browsers will warn. Upload a CA-issued certificate for production.';
-  if (new Date(tls.value.validTo).getTime() < Date.now()) return 'This certificate has expired.';
+  if (tls.value.source === 'self-signed') return t('settings.warnSelfSigned');
+  if (new Date(tls.value.validTo).getTime() < Date.now()) return t('settings.warnExpired');
   return '';
 });
 
@@ -81,7 +83,7 @@ async function load(): Promise<void> {
 
 async function saveCertificate(): Promise<void> {
   if (!certPem.value.trim() || !keyPem.value.trim()) {
-    toast.error('Choose both a certificate and a private key file');
+    toast.error(t('settings.toasts.certBothRequired'));
     return;
   }
   savingCert.value = true;
@@ -94,13 +96,13 @@ async function saveCertificate(): Promise<void> {
     tls.value = data;
     certPem.value = keyPem.value = chainPem.value = '';
     certName.value = keyName.value = '';
-    toast.success('Certificate installed — applies to new connections (reload to use it)');
+    toast.success(t('settings.toasts.certInstalled'));
   } catch (err: unknown) {
     const msg =
       typeof err === 'object' && err && 'response' in err
         ? ((err as { response?: { data?: { error?: string } } }).response?.data?.error ?? '')
         : '';
-    toast.error(msg || 'Could not install certificate');
+    toast.error(msg || t('settings.toasts.certInstallError'));
   } finally {
     savingCert.value = false;
   }
@@ -111,9 +113,9 @@ async function regenerateSelfSigned(): Promise<void> {
   try {
     const { data } = await client.post<TlsSettings>('/settings/certificate/self-signed', {});
     tls.value = data;
-    toast.success('Reverted to a self-signed certificate');
+    toast.success(t('settings.toasts.certReverted'));
   } catch {
-    toast.error('Could not regenerate certificate');
+    toast.error(t('settings.toasts.certRegenError'));
   } finally {
     regenerating.value = false;
   }
@@ -123,9 +125,9 @@ async function save(): Promise<void> {
   saving.value = true;
   try {
     await client.put('/settings', { passThreshold: pct.value / 100 });
-    toast.success('Pass threshold updated for all trainings');
+    toast.success(t('settings.toasts.thresholdSaved'));
   } catch {
-    toast.error('Could not save settings');
+    toast.error(t('settings.toasts.settingsError'));
   } finally {
     saving.value = false;
   }
@@ -145,9 +147,9 @@ async function saveSso(): Promise<void> {
           .filter(Boolean),
       },
     });
-    toast.success('Microsoft SSO settings saved');
+    toast.success(t('settings.toasts.ssoSaved'));
   } catch {
-    toast.error('Could not save SSO settings');
+    toast.error(t('settings.toasts.ssoError'));
   } finally {
     savingSso.value = false;
   }
@@ -159,8 +161,8 @@ onMounted(load);
 <template>
   <div class="mx-auto max-w-xl">
     <header>
-      <h1 class="page-title">Settings</h1>
-      <p class="mt-1 font-mono text-xs text-ink-light">// applies to every training at once</p>
+      <h1 class="page-title">{{ t('settings.title') }}</h1>
+      <p class="mt-1 font-mono text-xs text-ink-light">{{ t('settings.subtitle') }}</p>
     </header>
 
     <div v-if="loading" class="mt-6 card h-40 animate-pulse bg-pastel-slate/30" />
@@ -173,9 +175,9 @@ onMounted(load);
             <SlidersHorizontal class="h-5 w-5 text-accent" />
           </div>
           <div>
-            <h2 class="font-sans text-sm font-bold text-ink">Global pass threshold</h2>
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.thresholdTitle') }}</h2>
             <p class="font-mono text-xs text-ink-light">
-              Minimum score a user must reach to pass any training's test.
+              {{ t('settings.thresholdDesc') }}
             </p>
           </div>
         </div>
@@ -194,7 +196,7 @@ onMounted(load);
 
         <div class="mt-6">
           <button class="btn-primary" :disabled="saving" @click="save">
-            <Save class="h-4 w-4" /> {{ saving ? 'Saving…' : 'Save changes' }}
+            <Save class="h-4 w-4" /> {{ saving ? t('common.saving') : t('settings.saveChanges') }}
           </button>
         </div>
       </div>
@@ -206,20 +208,20 @@ onMounted(load);
             <KeyRound class="h-5 w-5 text-accent" />
           </div>
           <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">Microsoft Entra ID (SSO)</h2>
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.ssoTitle') }}</h2>
             <p class="font-mono text-xs text-ink-light">
-              Let users sign in with their Microsoft work account.
+              {{ t('settings.ssoDesc') }}
             </p>
           </div>
           <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
             <input v-model="ssoEnabled" type="checkbox" class="accent-accent" />
-            Enabled
+            {{ t('settings.enabled') }}
           </label>
         </div>
 
         <div class="mt-6 flex flex-col gap-4">
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Directory (tenant) ID</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.tenantId') }}</span>
             <input
               v-model="tenantId"
               class="bg-input"
@@ -227,7 +229,7 @@ onMounted(load);
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Application (client) ID</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.clientId') }}</span>
             <input
               v-model="clientId"
               class="bg-input"
@@ -235,25 +237,24 @@ onMounted(load);
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Allowed email domains</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.allowedDomains') }}</span>
             <input v-model="domains" class="bg-input" placeholder="ptwdosimetry.com, example.com" />
             <span class="font-mono text-[11px] text-ink-light">
-              New users from these domains are auto-created as members. Others must already exist.
+              {{ t('settings.domainsHint') }}
             </span>
           </label>
         </div>
 
         <div class="mt-4 rounded-md border border-line bg-pastel-sky/10 px-3 py-2">
           <p class="font-mono text-[11px] text-ink-light">
-            In your Azure app registration, register a
-            <span class="font-semibold">Single-page application</span> redirect URI:
+            {{ t('settings.redirectHint') }}
             <span class="text-ink">{{ redirectUri }}</span>
           </p>
         </div>
 
         <div class="mt-6">
           <button class="btn-primary" :disabled="savingSso" @click="saveSso">
-            <Save class="h-4 w-4" /> {{ savingSso ? 'Saving…' : 'Save SSO settings' }}
+            <Save class="h-4 w-4" /> {{ savingSso ? t('settings.savingSso') : t('settings.saveSso') }}
           </button>
         </div>
       </div>
@@ -265,56 +266,55 @@ onMounted(load);
             <Lock class="h-5 w-5 text-accent" />
           </div>
           <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">HTTPS / TLS certificate</h2>
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.tlsTitle') }}</h2>
             <p class="font-mono text-xs text-ink-light">
-              The site is served over HTTPS only. Upload the certificate that secures it.
+              {{ t('settings.tlsDesc') }}
             </p>
           </div>
         </div>
 
         <!-- Current certificate -->
         <div class="mt-6 rounded-md border border-line bg-pastel-sky/10 px-3 py-3">
-          <p class="font-sans text-xs font-semibold text-ink-muted">Active certificate</p>
+          <p class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.activeCert') }}</p>
           <div v-if="tls" class="mt-1 grid grid-cols-1 gap-0.5 font-mono text-[11px] text-ink-light sm:grid-cols-2">
-            <span>source: <span class="text-ink">{{ tls.source }}</span></span>
-            <span>fingerprint: <span class="text-ink">{{ tls.fingerprint.slice(0, 24) }}…</span></span>
-            <span>subject: <span class="text-ink">{{ tls.subject.replace(/\n/g, ', ') }}</span></span>
-            <span>issuer: <span class="text-ink">{{ tls.issuer.replace(/\n/g, ', ') }}</span></span>
-            <span>valid from: <span class="text-ink">{{ fmtDate(tls.validFrom) }}</span></span>
-            <span>valid to: <span class="text-ink">{{ fmtDate(tls.validTo) }}</span></span>
+            <span>{{ t('settings.certSource') }} <span class="text-ink">{{ tls.source }}</span></span>
+            <span>{{ t('settings.certFingerprint') }} <span class="text-ink">{{ tls.fingerprint.slice(0, 24) }}…</span></span>
+            <span>{{ t('settings.certSubject') }} <span class="text-ink">{{ tls.subject.replace(/\n/g, ', ') }}</span></span>
+            <span>{{ t('settings.certIssuer') }} <span class="text-ink">{{ tls.issuer.replace(/\n/g, ', ') }}</span></span>
+            <span>{{ t('settings.certValidFrom') }} <span class="text-ink">{{ fmtDate(tls.validFrom) }}</span></span>
+            <span>{{ t('settings.certValidTo') }} <span class="text-ink">{{ fmtDate(tls.validTo) }}</span></span>
           </div>
-          <p v-else class="mt-1 font-mono text-[11px] text-ink-light">No certificate metadata available.</p>
+          <p v-else class="mt-1 font-mono text-[11px] text-ink-light">{{ t('settings.noCertMeta') }}</p>
           <p v-if="tlsWarn" class="mt-2 font-mono text-[11px] text-amber-600">⚠ {{ tlsWarn }}</p>
         </div>
 
         <!-- Upload -->
         <div class="mt-4 flex flex-col gap-4">
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Certificate (PEM)</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.certPem') }}</span>
             <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'cert')" />
             <span v-if="certName" class="font-mono text-[11px] text-ink-light">{{ certName }}</span>
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Private key (PEM)</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.keyPem') }}</span>
             <input type="file" accept=".pem,.key" class="text-xs" @change="onFile($event, 'key')" />
             <span v-if="keyName" class="font-mono text-[11px] text-ink-light">{{ keyName }}</span>
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">Chain / intermediates (PEM, optional)</span>
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.chainPem') }}</span>
             <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'chain')" />
           </label>
           <p class="font-mono text-[11px] text-ink-light">
-            The private key is stored on the server and is never sent back to the browser. A new certificate
-            applies to new connections; reload to use it.
+            {{ t('settings.keyNote') }}
           </p>
         </div>
 
         <div class="mt-6 flex flex-wrap gap-2">
           <button class="btn-primary" :disabled="savingCert" @click="saveCertificate">
-            <Save class="h-4 w-4" /> {{ savingCert ? 'Installing…' : 'Install certificate' }}
+            <Save class="h-4 w-4" /> {{ savingCert ? t('settings.installing') : t('settings.installCert') }}
           </button>
           <button class="btn-ghost" :disabled="regenerating" @click="regenerateSelfSigned">
-            {{ regenerating ? 'Regenerating…' : 'Regenerate self-signed' }}
+            {{ regenerating ? t('settings.regenerating') : t('settings.regenSelfSigned') }}
           </button>
         </div>
       </div>

@@ -1,15 +1,19 @@
 import type { DueStatus } from '@/types';
+import { i18n } from '@/i18n';
 
-export function dueLabel(status: DueStatus, dueDate: string | null): string {
+/** A translate function compatible with both `useI18n().t` and the standalone `t`. */
+type TFn = (key: string, named?: Record<string, unknown>) => string;
+
+export function dueLabel(t: TFn, status: DueStatus, dueDate: string | null): string {
   switch (status) {
     case 'never':
-      return 'Due now';
+      return t('due.now');
     case 'up-to-date':
-      return dueDate ? `Up to date · due ${formatDate(dueDate)}` : 'Up to date';
+      return dueDate ? t('due.upToDateUntil', { date: formatDate(dueDate) }) : t('due.upToDate');
     case 'due':
-      return dueDate ? `Due now · by ${formatDate(dueDate)}` : 'Due now';
+      return dueDate ? t('due.dueBy', { date: formatDate(dueDate) }) : t('due.now');
     case 'overdue':
-      return 'Overdue';
+      return t('due.overdue');
   }
 }
 
@@ -31,7 +35,7 @@ export function isActionable(status: DueStatus): boolean {
 
 export function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(i18n.global.locale.value, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 const CATEGORY_TINTS: Record<string, string> = {
@@ -46,6 +50,6 @@ export function categoryTint(category: string): string {
 }
 
 /** Human-friendly recurrence label, e.g. 1 → "Yearly", 2 → "Every 2 years". */
-export function cycleLabel(years: number): string {
-  return years === 1 ? 'Yearly' : `Every ${years} years`;
+export function cycleLabel(t: TFn, years: number): string {
+  return years === 1 ? t('due.cycleYearly') : t('due.cycleEvery', { years });
 }

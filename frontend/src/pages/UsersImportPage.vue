@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ClipboardPaste, Eye, Upload, Copy, AlertTriangle, Check, ArrowLeft } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { JobRole } from '@/types';
 
 const toast = useToastStore();
+const { t } = useI18n();
 
 // One parsed line of the pasted spreadsheet — display-only; the server is authoritative for matching.
 interface ParsedRow {
@@ -53,7 +55,7 @@ async function loadRoles(): Promise<void> {
     const { data } = await client.get<JobRole[]>('/roles');
     roles.value = data;
   } catch {
-    toast.error('Could not load job roles');
+    toast.error(t('usersImport.toasts.loadRolesError'));
   }
 }
 
@@ -115,20 +117,20 @@ async function pasteFromClipboard(): Promise<void> {
   try {
     const text = await navigator.clipboard.readText();
     if (!text.trim()) {
-      toast.error('Clipboard is empty');
+      toast.error(t('usersImport.toasts.clipboardEmpty'));
       return;
     }
     pasteText.value = text;
     await preview();
   } catch {
-    toast.error('Could not read the clipboard — paste into the box manually');
+    toast.error(t('usersImport.toasts.clipboardReadError'));
   }
 }
 
 async function send(commit: boolean): Promise<void> {
   const rows = parsedRows.value;
   if (rows.length === 0) {
-    toast.error('Nothing to import — paste some rows first');
+    toast.error(t('usersImport.toasts.nothingToImport'));
     return;
   }
   const { data } = await client.post<{
@@ -155,7 +157,7 @@ async function preview(): Promise<void> {
   try {
     await send(false);
   } catch {
-    toast.error('Could not preview the import');
+    toast.error(t('usersImport.toasts.previewError'));
   } finally {
     previewing.value = false;
   }
@@ -166,26 +168,26 @@ async function runImport(): Promise<void> {
   try {
     await send(true);
     const s = summary.value;
-    toast.success(`Imported — ${s?.create ?? 0} created, ${s?.update ?? 0} updated`);
+    toast.success(t('usersImport.toasts.importedSummary', { created: s?.create ?? 0, updated: s?.update ?? 0 }));
   } catch {
-    toast.error('Could not import users');
+    toast.error(t('usersImport.toasts.importError'));
   } finally {
     importing.value = false;
   }
 }
 
-async function copy(text: string, label = 'Link'): Promise<void> {
+async function copy(text: string, label = t('usersImport.labelLink')): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success(`${label} copied`);
+    toast.success(t('usersImport.toasts.copied', { label }));
   } catch {
-    toast.error('Could not copy to clipboard');
+    toast.error(t('usersImport.toasts.copyError'));
   }
 }
 
 function copyAllLinks(): void {
   const text = createdLinks.value.map((l) => `${l.email}\t${l.url}`).join('\n');
-  copy(text, 'All links');
+  copy(text, t('usersImport.labelAllLinks'));
 }
 
 const badgeClass: Record<PlanRow['action'], string> = {
@@ -205,22 +207,20 @@ onMounted(loadRoles);
         to="/users"
         class="inline-flex items-center gap-1 font-mono text-xs text-ink-light transition hover:text-accent"
       >
-        <ArrowLeft class="h-3.5 w-3.5" /> Users
+        <ArrowLeft class="h-3.5 w-3.5" /> {{ t('usersImport.back') }}
       </RouterLink>
-      <h1 class="page-title mt-1">Import Users</h1>
+      <h1 class="page-title mt-1">{{ t('usersImport.title') }}</h1>
       <p class="mt-1 font-mono text-xs text-ink-light">
-        // paste rows from Excel or any table — preview, then import
+        {{ t('usersImport.subtitle') }}
       </p>
     </header>
 
     <!-- Paste area -->
     <div class="mt-6 card p-5">
       <div class="flex flex-col gap-1">
-        <span class="form-label">Pasted data</span>
+        <span class="form-label">{{ t('usersImport.pastedData') }}</span>
         <p class="font-mono text-xs text-ink-light">
-          Tab-separated columns <strong>Name</strong>, <strong>Email</strong>,
-          <strong>Roles</strong> (a header row is detected automatically). Roles is a comma- or
-          semicolon-separated list of job-role names, matched case-insensitively.
+          {{ t('usersImport.instructions') }}
         </p>
       </div>
       <textarea
@@ -234,21 +234,21 @@ onMounted(loadRoles);
 
       <div class="mt-2 flex flex-wrap items-center gap-2">
         <button class="btn-ghost" :disabled="previewing" @click="pasteFromClipboard">
-          <ClipboardPaste class="h-4 w-4" /> Paste from clipboard
+          <ClipboardPaste class="h-4 w-4" /> {{ t('usersImport.pasteFromClipboard') }}
         </button>
         <button
           class="btn-primary"
           :disabled="previewing || parsedRows.length === 0"
           @click="preview"
         >
-          <Eye class="h-4 w-4" /> {{ previewing ? 'Previewing…' : 'Preview changes' }}
+          <Eye class="h-4 w-4" /> {{ previewing ? t('usersImport.previewing') : t('usersImport.preview') }}
         </button>
         <span class="font-mono text-xs text-ink-light">
-          {{ parsedRows.length }} row{{ parsedRows.length === 1 ? '' : 's' }} parsed
+          {{ t('usersImport.rowsParsed', { count: parsedRows.length }, parsedRows.length) }}
         </span>
         <div class="flex-1" />
         <span v-if="roles.length" class="font-mono text-[11px] text-ink-light">
-          Roles: {{ roles.map((r) => r.name).join(', ') }}
+          {{ t('usersImport.rolesList', { roles: roles.map((r) => r.name).join(', ') }) }}
         </span>
       </div>
     </div>
@@ -256,11 +256,11 @@ onMounted(loadRoles);
     <!-- Preview / result -->
     <template v-if="plan && summary">
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <span class="pill bg-pastel-mint/60 text-emerald-700">{{ summary.create }} new</span>
-        <span class="pill bg-amber-100 text-amber-700">{{ summary.update }} updated</span>
-        <span class="pill bg-pastel-slate/50 text-ink-muted">{{ summary.unchanged }} unchanged</span>
+        <span class="pill bg-pastel-mint/60 text-emerald-700">{{ t('usersImport.summaryNew', { count: summary.create }) }}</span>
+        <span class="pill bg-amber-100 text-amber-700">{{ t('usersImport.summaryUpdated', { count: summary.update }) }}</span>
+        <span class="pill bg-pastel-slate/50 text-ink-muted">{{ t('usersImport.summaryUnchanged', { count: summary.unchanged }) }}</span>
         <span v-if="summary.error" class="pill bg-rose-100 text-rose-600">
-          <AlertTriangle class="h-3 w-3" /> {{ summary.error }} skipped
+          <AlertTriangle class="h-3 w-3" /> {{ t('usersImport.summarySkipped', { count: summary.error }) }}
         </span>
         <div class="flex-1" />
         <button
@@ -270,32 +270,32 @@ onMounted(loadRoles);
           @click="runImport"
         >
           <Upload class="h-4 w-4" />
-          {{ importing ? 'Importing…' : `Import ${committableCount} user${committableCount === 1 ? '' : 's'}` }}
+          {{ importing ? t('usersImport.importing') : t('usersImport.importButton', { count: committableCount }, committableCount) }}
         </button>
-        <span v-else class="pill bg-pastel-mint/60 text-emerald-700"><Check class="h-3 w-3" /> Imported</span>
+        <span v-else class="pill bg-pastel-mint/60 text-emerald-700"><Check class="h-3 w-3" /> {{ t('usersImport.imported') }}</span>
       </div>
 
       <p v-if="!committed && summary.error" class="mt-2 font-mono text-xs text-rose-600">
-        {{ summary.error }} row(s) have problems and will be skipped — fix them and preview again to include them.
+        {{ t('usersImport.skippedNote', { count: summary.error }) }}
       </p>
 
       <div class="mt-3 card overflow-hidden">
         <table class="w-full text-left">
           <thead class="border-b border-line bg-pastel-sky/20">
             <tr class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
-              <th class="px-5 py-3">Status</th>
-              <th class="px-5 py-3">Name</th>
-              <th class="px-5 py-3">Email</th>
-              <th class="px-5 py-3">Changes</th>
+              <th class="px-5 py-3">{{ t('usersImport.thStatus') }}</th>
+              <th class="px-5 py-3">{{ t('usersImport.thName') }}</th>
+              <th class="px-5 py-3">{{ t('usersImport.thEmail') }}</th>
+              <th class="px-5 py-3">{{ t('usersImport.thChanges') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="row in plan" :key="row.index" class="border-b border-line/60 last:border-0">
               <td class="px-5 py-3">
-                <span class="pill pill-col" :class="badgeClass[row.action]">{{ row.action }}</span>
+                <span class="pill pill-col" :class="badgeClass[row.action]">{{ t(`usersImport.action${row.action.charAt(0).toUpperCase()}${row.action.slice(1)}`) }}</span>
               </td>
-              <td class="px-5 py-3 text-sm font-semibold text-ink">{{ row.name || '—' }}</td>
-              <td class="px-5 py-3 font-mono text-xs text-ink-muted">{{ row.email || '—' }}</td>
+              <td class="px-5 py-3 text-sm font-semibold text-ink">{{ row.name || t('common.none') }}</td>
+              <td class="px-5 py-3 font-mono text-xs text-ink-muted">{{ row.email || t('common.none') }}</td>
               <td class="px-5 py-3 font-mono text-xs">
                 <!-- error -->
                 <span v-if="row.action === 'error'" class="text-rose-600">
@@ -303,16 +303,16 @@ onMounted(loadRoles);
                 </span>
                 <!-- create -->
                 <span v-else-if="row.action === 'create'" class="text-ink-light">
-                  New member, disabled until activated.
+                  {{ t('usersImport.changeCreateNew') }}
                   <template v-if="row.matchedRoleIds.length">
-                    Roles: {{ row.matchedRoleIds.map(roleName).join(', ') }}
+                    {{ t('usersImport.changeRoles', { roles: row.matchedRoleIds.map(roleName).join(', ') }) }}
                   </template>
-                  <template v-else>No roles.</template>
+                  <template v-else>{{ t('usersImport.changeNoRoles') }}</template>
                 </span>
                 <!-- update -->
                 <span v-else-if="row.action === 'update'" class="flex flex-col gap-0.5">
                   <span v-if="row.changes.name" class="text-ink-muted">
-                    Name: <span class="text-ink-light line-through">{{ row.changes.name.from }}</span>
+                    {{ t('usersImport.changeName') }} <span class="text-ink-light line-through">{{ row.changes.name.from }}</span>
                     → <span class="text-ink">{{ row.changes.name.to }}</span>
                   </span>
                   <span v-if="row.changes.roles">
@@ -325,7 +325,7 @@ onMounted(loadRoles);
                   </span>
                 </span>
                 <!-- unchanged -->
-                <span v-else class="text-ink-light">No changes</span>
+                <span v-else class="text-ink-light">{{ t('usersImport.changeNoChanges') }}</span>
               </td>
             </tr>
           </tbody>
@@ -336,12 +336,12 @@ onMounted(loadRoles);
       <div v-if="committed && createdLinks.length" class="mt-6 card p-5">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="font-sans text-base font-bold text-ink">Activation links</h2>
+            <h2 class="font-sans text-base font-bold text-ink">{{ t('usersImport.activationTitle') }}</h2>
             <p class="mt-0.5 font-mono text-xs text-ink-light">
-              Send each new user their link — they set a password and the account is then enabled.
+              {{ t('usersImport.activationSubtitle') }}
             </p>
           </div>
-          <button class="btn-ghost" @click="copyAllLinks"><Copy class="h-4 w-4" /> Copy all</button>
+          <button class="btn-ghost" @click="copyAllLinks"><Copy class="h-4 w-4" /> {{ t('usersImport.copyAllLinks') }}</button>
         </div>
         <ul class="mt-3 flex flex-col gap-2">
           <li
@@ -354,7 +354,7 @@ onMounted(loadRoles);
               <div class="truncate font-mono text-[11px] text-ink-light">{{ l.url }}</div>
             </div>
             <button class="btn-ghost !px-3 !py-1.5" @click="copy(l.url)">
-              <Copy class="h-4 w-4" /> Copy
+              <Copy class="h-4 w-4" /> {{ t('usersImport.copy') }}
             </button>
           </li>
         </ul>

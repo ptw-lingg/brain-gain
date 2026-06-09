@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, Link2, FileCode2, CheckCircle2, ClipboardCheck, ListOrdered, FlaskConical, FileText, Download, X } from 'lucide-vue-next';
 import rawData from '@/data/requirements.generated.json';
 import rawResults from '@/data/test-results.generated.json';
@@ -8,6 +9,8 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import { buildDocument, DOC_CATALOG, DOC_GROUPS, type DocInfo, type DocKind } from '@/utils/dmsDocuments';
 // pdfmake is heavy (~800 kB gzip) and only needed when a document is generated, so it is imported
 // lazily — keeping it out of the initial app bundle (which is itself internal-only; see the router).
+
+const { t } = useI18n();
 
 const data = rawData as unknown as RequirementsDoc;
 const results = rawResults as unknown as TestResultsDoc;
@@ -90,7 +93,7 @@ const counts = computed(() => ({
 const resultOf = (id: string) => results.results?.[id];
 const resultClass = (r?: string) =>
   r === 'pass' ? 'bg-pastel-mint/60 text-emerald-700' : r === 'fail' ? 'bg-rose-100 text-rose-600' : r === 'skip' ? 'bg-amber-100 text-amber-700' : 'bg-pastel-slate/50 text-ink-light';
-const resultLabel = (r?: string) => r ?? 'not run';
+const resultLabel = (r?: string) => r ?? t('requirements.notRun');
 
 // ---- filters
 const q = ref('');
@@ -170,10 +173,9 @@ const testKindClass = (k?: string) =>
   <div>
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="page-title">Requirements</h1>
+        <h1 class="page-title">{{ t('requirements.title') }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // {{ counts.stakeholder }} stakeholder · {{ counts.system }} system · {{ counts.tests }} VT ·
-          {{ counts.cases }} test cases · linked &amp; traceable
+          {{ t('requirements.subtitle', { stakeholder: counts.stakeholder, system: counts.system, tests: counts.tests, cases: counts.cases }) }}
         </p>
       </div>
     </header>
@@ -181,16 +183,16 @@ const testKindClass = (k?: string) =>
     <!-- Coverage + safety class + controlled-document generation -->
     <div class="mt-4 card flex flex-wrap items-center gap-x-4 gap-y-3 p-4">
       <div class="flex flex-wrap items-center gap-2">
-        <span v-if="iec" class="pill bg-accent-light/60 text-accent">IEC 62304 · Class {{ iec.safetyClass }}</span>
+        <span v-if="iec" class="pill bg-accent-light/60 text-accent">{{ t('requirements.safetyClass', { class: iec.safetyClass }) }}</span>
         <span v-if="coverage" class="pill bg-pastel-mint/60 text-emerald-700">
-          <CheckCircle2 class="h-3.5 w-3.5" /> {{ coverage.covered }}/{{ coverage.total }} covered
+          <CheckCircle2 class="h-3.5 w-3.5" /> {{ t('requirements.covered', { covered: coverage.covered, total: coverage.total }) }}
         </span>
         <span v-if="coverage" class="font-mono text-[11px] text-ink-light">
-          {{ coverage.backend }} backend · {{ coverage.e2e }} e2e · {{ coverage.manual }} manual ·
-          <span :class="coverage.gaps.length ? 'text-amber-600' : 'text-emerald-700'">{{ coverage.gaps.length }} gaps</span>
+          {{ t('requirements.coverageBreakdown', { backend: coverage.backend, e2e: coverage.e2e, manual: coverage.manual }) }}
+          <span :class="coverage.gaps.length ? 'text-amber-600' : 'text-emerald-700'">{{ t('requirements.gaps', { count: coverage.gaps.length }) }}</span>
         </span>
-        <span v-if="results.summary" class="pill bg-pastel-sky/60 text-accent" :title="results.ranAt ? 'Last test run' : 'Run sync-tests.mjs to record results'">
-          tests {{ fmtDate(results.ranAt) ?? 'not run' }}
+        <span v-if="results.summary" class="pill bg-pastel-sky/60 text-accent" :title="results.ranAt ? t('requirements.testsRunLabel') : t('requirements.testsRunHint')">
+          {{ t('requirements.testsDate', { date: fmtDate(results.ranAt) ?? t('requirements.notRun') }) }}
           <template v-if="results.ranAt">
             · <span class="text-emerald-700">{{ results.summary.passed }}✓</span>
             <span :class="results.summary.failed ? 'text-rose-600' : ''"> {{ results.summary.failed }}✗</span>
@@ -219,25 +221,25 @@ const testKindClass = (k?: string) =>
     <div class="mt-6 flex flex-wrap items-center gap-2">
       <div class="relative min-w-[200px] flex-1">
         <Search class="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-ink-light" />
-        <input v-model="q" class="bg-input w-full !pl-9" placeholder="Search id, title, text…" />
+        <input v-model="q" class="bg-input w-full !pl-9" :placeholder="t('requirements.searchPlaceholder')" />
       </div>
       <select v-model="fType" class="bg-input" @change="fCategory = 'all'">
-        <option value="all">All types</option>
-        <option value="stakeholder">Stakeholder</option>
-        <option value="system">System</option>
-        <option value="test">Validation tests</option>
-        <option value="case">Test cases</option>
+        <option value="all">{{ t('requirements.allTypes') }}</option>
+        <option value="stakeholder">{{ t('requirements.stakeholder') }}</option>
+        <option value="system">{{ t('requirements.system') }}</option>
+        <option value="test">{{ t('requirements.validationTests') }}</option>
+        <option value="case">{{ t('requirements.testCases') }}</option>
       </select>
       <select v-model="fCategory" class="bg-input">
-        <option value="all">All categories</option>
+        <option value="all">{{ t('requirements.allCategories') }}</option>
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
       <select v-model="fStatus" class="bg-input">
-        <option value="all">Any status</option>
+        <option value="all">{{ t('requirements.anyStatus') }}</option>
         <option v-for="s in data.enums.status" :key="s.id" :value="s.id">{{ s.label }}</option>
       </select>
       <select v-model="fPriority" class="bg-input">
-        <option value="all">Any priority</option>
+        <option value="all">{{ t('requirements.anyPriority') }}</option>
         <option v-for="p in data.enums.priority" :key="p.id" :value="p.id">{{ p.label }}</option>
       </select>
     </div>
@@ -245,7 +247,7 @@ const testKindClass = (k?: string) =>
     <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <!-- List -->
       <div class="card max-h-[70vh] overflow-y-auto p-2">
-        <p class="px-2 py-1 font-mono text-[11px] text-ink-light">{{ rows.length }} shown</p>
+        <p class="px-2 py-1 font-mono text-[11px] text-ink-light">{{ t('requirements.shown', { count: rows.length }) }}</p>
         <button
           v-for="r in rows"
           :key="r.id"
@@ -264,7 +266,7 @@ const testKindClass = (k?: string) =>
           </div>
           <div class="text-sm font-medium text-ink">{{ r.title }}</div>
         </button>
-        <p v-if="rows.length === 0" class="px-3 py-6 text-center font-mono text-xs text-ink-light">No items match.</p>
+        <p v-if="rows.length === 0" class="px-3 py-6 text-center font-mono text-xs text-ink-light">{{ t('requirements.noItems') }}</p>
       </div>
 
       <!-- Detail: requirement -->
@@ -273,35 +275,35 @@ const testKindClass = (k?: string) =>
           <span class="font-mono text-sm font-bold text-ink">{{ selectedReq.id }}</span>
           <span class="pill" :class="typeClass(selectedReq.type)">{{ selectedReq.type }}</span>
           <span class="pill" :class="statusClass(selectedReq.status)">{{ statusLabel(selectedReq.status) }}</span>
-          <span v-if="selectedReq.priority" class="pill bg-white text-ink-light">priority {{ selectedReq.priority }} · {{ priorityLabel(selectedReq.priority) }}</span>
+          <span v-if="selectedReq.priority" class="pill bg-white text-ink-light">{{ t('requirements.priority', { p: selectedReq.priority, label: priorityLabel(selectedReq.priority) }) }}</span>
           <span class="pill bg-pastel-slate/50 text-ink-muted">{{ selectedReq.category }}</span>
         </div>
         <h2 class="mt-3 font-sans text-lg font-bold text-ink">{{ selectedReq.title }}</h2>
         <p class="mt-1 text-sm text-ink-muted">{{ selectedReq.text }}</p>
         <p v-if="selectedReq.source" class="mt-3 font-mono text-xs text-ink-light">
-          source: {{ sourceLabel(selectedReq.source) }}<span v-if="selectedReq.sourceNote"> ({{ selectedReq.sourceNote }})</span>
+          {{ t('requirements.source', { source: sourceLabel(selectedReq.source) }) }}<span v-if="selectedReq.sourceNote"> ({{ selectedReq.sourceNote }})</span>
         </p>
 
         <div v-if="derivedFrom(selectedReq).length" class="mt-4">
-          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> Derived from</p>
+          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> {{ t('requirements.derivedFrom') }}</p>
           <div class="mt-1 flex flex-wrap gap-1.5">
             <button v-for="id in derivedFrom(selectedReq)" :key="id" class="trace-chip" @click="select(id)">{{ id }} · {{ titleOf(id) }}</button>
           </div>
         </div>
         <div v-if="(satisfiedBy.get(selectedReq.id) ?? []).length" class="mt-4">
-          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> Satisfied by</p>
+          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> {{ t('requirements.satisfiedBy') }}</p>
           <div class="mt-1 flex flex-wrap gap-1.5">
             <button v-for="id in satisfiedBy.get(selectedReq.id)" :key="id" class="trace-chip" @click="select(id)">{{ id }} · {{ titleOf(id) }}</button>
           </div>
         </div>
         <div v-if="(validatedBy.get(selectedReq.id) ?? []).length" class="mt-4">
-          <p class="trace-h"><ClipboardCheck class="h-3.5 w-3.5" /> Validated by</p>
+          <p class="trace-h"><ClipboardCheck class="h-3.5 w-3.5" /> {{ t('requirements.validatedBy') }}</p>
           <div class="mt-1 flex flex-wrap gap-1.5">
             <button v-for="id in validatedBy.get(selectedReq.id)" :key="id" class="trace-chip" @click="select(id)">{{ id }} · {{ titleOf(id) }}</button>
           </div>
         </div>
         <div v-if="(selectedReq.implementedBy ?? []).length" class="mt-4">
-          <p class="trace-h"><FileCode2 class="h-3.5 w-3.5" /> Implemented by</p>
+          <p class="trace-h"><FileCode2 class="h-3.5 w-3.5" /> {{ t('requirements.implementedBy') }}</p>
           <ul class="mt-1 flex flex-col gap-1">
             <li v-for="(c, i) in selectedReq.implementedBy" :key="i" class="font-mono text-xs text-ink-muted">
               <span class="text-ink">{{ c.path }}</span><span v-if="c.symbol"> · {{ c.symbol }}</span>
@@ -309,7 +311,7 @@ const testKindClass = (k?: string) =>
           </ul>
         </div>
         <div v-if="casesFor(selectedReq.id).length" class="mt-4">
-          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Tested by</p>
+          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> {{ t('requirements.testedBy') }}</p>
           <div class="mt-1 flex flex-col gap-1">
             <button v-for="c in casesFor(selectedReq.id)" :key="c.id" class="flex items-center gap-2 text-left" @click="select(c.id)">
               <span class="pill" :class="testKindClass(c.kind)">{{ c.kind }}</span>
@@ -327,27 +329,27 @@ const testKindClass = (k?: string) =>
           <span class="pill" :class="testTypeClass(selectedTest.testType)">{{ testTypeLabel(selectedTest.testType) }}</span>
           <span class="pill bg-white text-ink-light">{{ methodLabel(selectedTest.method) }}</span>
           <span class="pill" :class="selectedTest.automated ? 'bg-pastel-mint/60 text-emerald-700' : 'bg-pastel-slate/60 text-ink-muted'">
-            {{ selectedTest.automated ? 'automated' : 'manual' }}
+            {{ selectedTest.automated ? t('requirements.automated') : t('requirements.manual') }}
           </span>
         </div>
         <h2 class="mt-3 font-sans text-lg font-bold text-ink">{{ selectedTest.title }}</h2>
         <div class="mt-4">
-          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> Validates</p>
+          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> {{ t('requirements.validates') }}</p>
           <div class="mt-1 flex flex-wrap gap-1.5">
             <button v-for="id in validatesOf(selectedTest)" :key="id" class="trace-chip" @click="select(id)">{{ id }} · {{ titleOf(id) }}</button>
           </div>
         </div>
         <p v-if="selectedTest.preconditions" class="mt-4 text-sm text-ink-muted">
-          <span class="font-sans text-xs font-semibold text-ink-muted">Preconditions: </span>{{ selectedTest.preconditions }}
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('requirements.preconditions') }} </span>{{ selectedTest.preconditions }}
         </p>
         <div class="mt-4">
-          <p class="trace-h"><ListOrdered class="h-3.5 w-3.5" /> Steps</p>
+          <p class="trace-h"><ListOrdered class="h-3.5 w-3.5" /> {{ t('requirements.steps') }}</p>
           <ol class="mt-1 list-decimal pl-5 text-sm text-ink-muted"><li v-for="(s, i) in selectedTest.steps" :key="i">{{ s }}</li></ol>
         </div>
-        <p class="mt-4 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">Expected: </span><span class="text-ink-muted">{{ selectedTest.expected }}</span></p>
-        <p v-if="selectedTest.metric" class="mt-2 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">Acceptance metric: </span><span class="text-ink-muted">{{ selectedTest.metric }}</span></p>
+        <p class="mt-4 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">{{ t('requirements.expected') }} </span><span class="text-ink-muted">{{ selectedTest.expected }}</span></p>
+        <p v-if="selectedTest.metric" class="mt-2 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">{{ t('requirements.acceptanceMetric') }} </span><span class="text-ink-muted">{{ selectedTest.metric }}</span></p>
         <div v-if="casesFor(selectedTest.id).length" class="mt-4">
-          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> Test cases</p>
+          <p class="trace-h"><FlaskConical class="h-3.5 w-3.5" /> {{ t('requirements.testCasesSection') }}</p>
           <div class="mt-1 flex flex-col gap-1">
             <button v-for="c in casesFor(selectedTest.id)" :key="c.id" class="flex items-center gap-2 text-left" @click="select(c.id)">
               <span class="pill" :class="testKindClass(c.kind)">{{ c.kind }}</span>
@@ -368,18 +370,18 @@ const testKindClass = (k?: string) =>
         <h2 class="mt-3 font-sans text-base font-bold text-ink">{{ selectedCase.name }}</h2>
         <p v-if="selectedCase.file" class="mt-1 font-mono text-xs text-ink-light">{{ selectedCase.file }}</p>
         <div v-if="(selectedCase.covers ?? []).length" class="mt-4">
-          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> Covers</p>
+          <p class="trace-h"><Link2 class="h-3.5 w-3.5" /> {{ t('requirements.covers') }}</p>
           <div class="mt-1 flex flex-wrap gap-1.5">
             <button v-for="id in selectedCase.covers" :key="id" class="trace-chip" @click="select(id)">{{ id }} · {{ titleOf(id) }}</button>
           </div>
         </div>
         <template v-if="selectedCase.manual">
           <div class="mt-4">
-            <p class="trace-h"><ListOrdered class="h-3.5 w-3.5" /> Manual procedure</p>
+            <p class="trace-h"><ListOrdered class="h-3.5 w-3.5" /> {{ t('requirements.manualProcedure') }}</p>
             <ol class="mt-1 list-decimal pl-5 text-sm text-ink-muted"><li v-for="(s, i) in selectedCase.manual.steps" :key="i">{{ s }}</li></ol>
           </div>
-          <p class="mt-3 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">Expected: </span><span class="text-ink-muted">{{ selectedCase.manual.expected }}</span></p>
-          <p v-if="selectedCase.manual.rationale" class="mt-2 font-mono text-[11px] text-ink-light">why manual: {{ selectedCase.manual.rationale }}</p>
+          <p class="mt-3 text-sm"><span class="font-sans text-xs font-semibold text-ink-muted">{{ t('requirements.expected') }} </span><span class="text-ink-muted">{{ selectedCase.manual.expected }}</span></p>
+          <p v-if="selectedCase.manual.rationale" class="mt-2 font-mono text-[11px] text-ink-light">{{ t('requirements.whyManual', { reason: selectedCase.manual.rationale }) }}</p>
         </template>
       </div>
     </div>
@@ -391,24 +393,24 @@ const testKindClass = (k?: string) =>
         <div class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift">
           <div class="flex items-center justify-between border-b border-line px-5 py-3">
             <div>
-              <h2 class="font-sans text-base font-bold text-ink">{{ docModal?.info.title ?? 'Generating document…' }}</h2>
+              <h2 class="font-sans text-base font-bold text-ink">{{ docModal?.info.title ?? t('requirements.docGenerating') }}</h2>
               <p class="font-mono text-[11px] text-ink-light">
-                <span v-if="docModal">{{ docModal.info.docId }} · {{ previewPages.length }} page(s) · review, then download for your DMS</span>
-                <span v-else>Rendering preview…</span>
+                <span v-if="docModal">{{ t('requirements.docPagesInfo', { docId: docModal.info.docId, pages: previewPages.length }) }}</span>
+                <span v-else>{{ t('requirements.renderingPreview') }}</span>
               </p>
             </div>
             <div class="flex items-center gap-2">
               <button class="btn-primary !px-3 !py-1.5 !text-xs" :disabled="!docModal" @click="downloadDocument">
-                <Download class="h-4 w-4" /> Download PDF
+                <Download class="h-4 w-4" /> {{ t('requirements.downloadPdf') }}
               </button>
-              <button class="text-ink-light hover:text-ink" title="Close" @click="closeDocument"><X class="h-5 w-5" /></button>
+              <button class="text-ink-light hover:text-ink" :title="t('common.close')" @click="closeDocument"><X class="h-5 w-5" /></button>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">
             <div v-if="docModal && previewPages.length" class="mx-auto flex max-w-3xl flex-col items-center gap-3">
-              <img v-for="(p, i) in previewPages" :key="i" :src="p" data-pdf-page class="w-full rounded shadow-soft" :alt="`page ${i + 1}`" />
+              <img v-for="(p, i) in previewPages" :key="i" :src="p" data-pdf-page class="w-full rounded shadow-soft" :alt="t('requirements.pageAlt', { n: i + 1 })" />
             </div>
-            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">Rendering preview…</div>
+            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">{{ t('requirements.renderingPreview') }}</div>
           </div>
         </div>
       </div>

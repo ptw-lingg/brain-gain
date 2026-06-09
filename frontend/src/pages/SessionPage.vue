@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import {
   ArrowLeft,
   ExternalLink,
@@ -15,6 +16,7 @@ import type { GradeResult, Training } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const trainingId = route.params.trainingId as string;
 
 const training = ref<Training | null>(null);
@@ -77,7 +79,7 @@ onMounted(load);
 <template>
   <div class="mx-auto max-w-2xl">
     <button class="btn-ghost mb-4 !px-3 !py-1.5 !text-xs" @click="router.push('/dashboard')">
-      <ArrowLeft class="h-3.5 w-3.5" /> My Trainings
+      <ArrowLeft class="h-3.5 w-3.5" /> {{ t('session.back') }}
     </button>
 
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
@@ -85,7 +87,7 @@ onMounted(load);
     <template v-else-if="training">
       <h1 class="page-title">{{ training.name }}</h1>
       <p class="mt-1 font-mono text-xs text-ink-light">
-        // step {{ step === 'material' ? 1 : step === 'quiz' ? 2 : 3 }} of 3
+        {{ t('session.stepOf', { step: step === 'material' ? 1 : step === 'quiz' ? 2 : 3 }) }}
       </p>
 
       <!-- Step 1: Material -->
@@ -107,10 +109,10 @@ onMounted(load);
             <ExternalLink class="h-4 w-4 text-ink-light" />
           </a>
           <p v-if="training.materialLinks.length === 0" class="font-mono text-xs text-ink-light">
-            No material attached for this training.
+            {{ t('session.noMaterial') }}
           </p>
         </div>
-        <button class="btn-primary self-start" @click="startTest">Start test →</button>
+        <button class="btn-primary self-start" @click="startTest">{{ t('session.startTest') }}</button>
       </section>
 
       <!-- Step 2: Quiz -->
@@ -142,7 +144,7 @@ onMounted(load);
 
         <button class="btn-primary self-start" :disabled="!allAnswered || submitting" @click="submit">
           <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
-          {{ submitting ? 'Grading…' : 'Submit test' }}
+          {{ submitting ? t('session.grading') : t('session.submitTest') }}
         </button>
       </section>
 
@@ -155,22 +157,26 @@ onMounted(load);
           <PartyPopper v-if="result.passed" class="h-12 w-12 text-emerald-500" />
           <XCircle v-else class="h-12 w-12 text-rose-500" />
           <h2 class="font-sans text-xl font-bold text-ink">
-            {{ result.passed ? 'Passed 🎉' : 'Not passed' }}
+            {{ result.passed ? t('session.passed') : t('session.notPassed') }}
           </h2>
           <p class="font-mono text-sm text-ink-muted">
-            You scored {{ Math.round(result.scorePct * 100) }}%
-            ({{ result.correct }}/{{ result.total }}) — you need {{ thresholdPct }}% to pass.
+            {{ t('session.score', {
+              pct: Math.round(result.scorePct * 100),
+              correct: result.correct,
+              total: result.total,
+              threshold: thresholdPct,
+            }) }}
           </p>
           <div class="mt-2 flex gap-2">
             <button v-if="!result.passed" class="btn-primary" @click="retry">
-              <RefreshCw class="h-4 w-4" /> Retry test
+              <RefreshCw class="h-4 w-4" /> {{ t('session.retry') }}
             </button>
             <button class="btn-ghost" @click="router.push('/dashboard')">
-              Back to My Trainings
+              {{ t('session.backToTrainings') }}
             </button>
           </div>
           <p v-if="!result.passed" class="mt-1 font-mono text-[11px] text-ink-light">
-            Failed attempts aren't recorded — this training stays due until you pass.
+            {{ t('session.failNote') }}
           </p>
         </div>
       </section>

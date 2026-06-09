@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ChevronDown, Copy, Users } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
@@ -7,6 +8,7 @@ import type { DueStatus, TraineeGroup } from '@/types';
 import { dueLabel, dueClasses, formatDate } from '@/utils/display';
 
 const toast = useToastStore();
+const { t } = useI18n();
 
 const groups = ref<TraineeGroup[]>([]);
 const loading = ref(true);
@@ -42,14 +44,14 @@ async function load(): Promise<void> {
 
 async function copy(emails: string[], label: string): Promise<void> {
   if (emails.length === 0) {
-    toast.error('No matching recipients');
+    toast.error(t('trainees.toasts.noRecipients'));
     return;
   }
   try {
     await navigator.clipboard.writeText(emails.join('; '));
-    toast.success(`Copied ${emails.length} email${emails.length === 1 ? '' : 's'} — ${label}`);
+    toast.success(t('trainees.toasts.copied', { count: emails.length, label }, emails.length));
   } catch {
-    toast.error('Clipboard not available');
+    toast.error(t('trainees.toasts.clipboardUnavailable'));
   }
 }
 
@@ -60,18 +62,18 @@ onMounted(load);
   <div>
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="page-title">Trainees</h1>
+        <h1 class="page-title">{{ t('trainees.title') }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // who must complete your trainings
+          {{ t('trainees.subtitle') }}
         </p>
       </div>
       <div class="flex items-center gap-3">
         <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
           <input v-model="onlyDue" type="checkbox" class="accent-accent" />
-          Only show due / overdue
+          {{ t('trainees.onlyDue') }}
         </label>
-        <button class="btn-primary" @click="copy(grandTotalEmails, 'all groups')">
-          <Copy class="h-4 w-4" /> Copy all emails
+        <button class="btn-primary" @click="copy(grandTotalEmails, t('trainees.allGroups'))">
+          <Copy class="h-4 w-4" /> {{ t('trainees.copyAll') }}
         </button>
       </div>
     </header>
@@ -84,7 +86,7 @@ onMounted(load);
       <div class="flex h-16 w-16 items-center justify-center rounded-full bg-pastel-sky/50">
         <Users class="h-8 w-8 text-accent" />
       </div>
-      <p class="font-mono text-sm text-ink-muted">No one is currently assigned to your trainings.</p>
+      <p class="font-mono text-sm text-ink-muted">{{ t('trainees.empty') }}</p>
     </div>
 
     <div v-else class="mt-6 flex flex-col gap-3">
@@ -102,15 +104,15 @@ onMounted(load);
             <div class="min-w-0">
               <div class="font-sans text-sm font-semibold text-ink">{{ g.training.name }}</div>
               <div class="font-mono text-xs text-ink-light">
-                {{ g.trainees.length }} assigned · {{ dueTotal(g) }} due
+                {{ t('trainees.assignedDue', { assigned: g.trainees.length, due: dueTotal(g) }) }}
               </div>
             </div>
           </button>
           <button
             class="btn-ghost !px-3 !py-1.5 !text-xs"
-            @click="copy(visibleTrainees(g).map((t) => t.user.email), g.training.name)"
+            @click="copy(visibleTrainees(g).map((tr) => tr.user.email), g.training.name)"
           >
-            <Copy class="h-3.5 w-3.5" /> Copy emails
+            <Copy class="h-3.5 w-3.5" /> {{ t('trainees.copyEmails') }}
           </button>
         </div>
 
@@ -118,26 +120,26 @@ onMounted(load);
         <Transition name="list">
           <div v-if="open[g.training.id]" class="border-t border-line">
             <div
-              v-for="t in visibleTrainees(g)"
-              :key="t.user.id"
+              v-for="tr in visibleTrainees(g)"
+              :key="tr.user.id"
               class="flex items-center gap-3 px-5 py-2.5 even:bg-pastel-sky/10"
             >
               <div class="min-w-0 flex-1">
-                <div class="text-sm font-medium text-ink">{{ t.user.name }}</div>
-                <div class="truncate font-mono text-xs text-ink-light" :title="t.user.email">{{ t.user.email }}</div>
+                <div class="text-sm font-medium text-ink">{{ tr.user.name }}</div>
+                <div class="truncate font-mono text-xs text-ink-light" :title="tr.user.email">{{ tr.user.email }}</div>
               </div>
-              <span v-if="t.dueDate" class="hidden font-mono text-[11px] text-ink-light sm:inline">
-                due {{ formatDate(t.dueDate) }}
+              <span v-if="tr.dueDate" class="hidden font-mono text-[11px] text-ink-light sm:inline">
+                {{ t('trainees.dueOn', { date: formatDate(tr.dueDate) }) }}
               </span>
-              <span class="pill pill-col shrink-0" :class="dueClasses(t.status)">
-                {{ dueLabel(t.status, t.dueDate) }}
+              <span class="pill pill-col shrink-0" :class="dueClasses(tr.status)">
+                {{ dueLabel(t, tr.status, tr.dueDate) }}
               </span>
             </div>
             <p
               v-if="visibleTrainees(g).length === 0"
               class="px-5 py-3 font-mono text-xs text-ink-light"
             >
-              {{ onlyDue ? 'Nobody is currently due for this training.' : 'No one assigned.' }}
+              {{ onlyDue ? t('trainees.nobodyDue') : t('trainees.noneAssigned') }}
             </p>
           </div>
         </Transition>

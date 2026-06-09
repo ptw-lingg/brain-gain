@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { Loader2 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
@@ -10,6 +11,7 @@ import BrainGainLogo from '@/components/BrainGainLogo.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const email = ref('admin@braingain.app');
 const password = ref('admin123');
@@ -54,9 +56,9 @@ async function loginWithMicrosoft(): Promise<void> {
     router.push('/dashboard');
   } catch (e: unknown) {
     if (axios.isAxiosError(e)) {
-      error.value = e.response?.data?.error ?? 'Microsoft sign-in failed';
+      error.value = e.response?.data?.error ?? t('login.errorMicrosoft');
     } else if (!isUserCancellation(e)) {
-      error.value = 'Microsoft sign-in failed';
+      error.value = t('login.errorMicrosoft');
     }
   } finally {
     ssoLoading.value = false;
@@ -82,8 +84,8 @@ async function submit(): Promise<void> {
     router.push('/dashboard');
   } catch (e: unknown) {
     error.value = axios.isAxiosError(e)
-      ? (e.response?.data?.error ?? 'Login failed')
-      : 'Login failed';
+      ? (e.response?.data?.error ?? t('login.errorLogin'))
+      : t('login.errorLogin');
   } finally {
     loading.value = false;
   }
@@ -100,16 +102,16 @@ async function submit(): Promise<void> {
         >
           BrainGain
         </h1>
-        <p class="font-mono text-xs text-ink-light">Grow what you know.</p>
+        <p class="font-mono text-xs text-ink-light">{{ t('common.tagline') }}</p>
       </div>
 
       <form class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">Email</span>
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.email') }}</span>
           <input v-model="email" type="email" autocomplete="username" class="bg-input" required />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">Password</span>
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.password') }}</span>
           <input
             v-model="password"
             type="password"
@@ -123,14 +125,14 @@ async function submit(): Promise<void> {
 
         <button type="submit" class="btn-primary mt-2 w-full" :disabled="loading">
           <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
-          {{ loading ? 'Signing in…' : 'Sign in' }}
+          {{ loading ? t('login.signingIn') : t('login.signIn') }}
         </button>
       </form>
 
       <template v-if="ssoEnabled">
         <div class="my-5 flex items-center gap-3">
           <div class="h-px flex-1 bg-line" />
-          <span class="font-mono text-[10px] uppercase tracking-wider text-ink-light">or</span>
+          <span class="font-mono text-[10px] uppercase tracking-wider text-ink-light">{{ t('login.or') }}</span>
           <div class="h-px flex-1 bg-line" />
         </div>
         <button
@@ -146,13 +148,13 @@ async function submit(): Promise<void> {
             <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
             <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
           </svg>
-          {{ ssoLoading ? 'Signing in…' : 'Sign in with Microsoft' }}
+          {{ ssoLoading ? t('login.signingIn') : t('login.signInWithMicrosoft') }}
         </button>
       </template>
 
       <div class="mt-6 border-t border-line pt-4">
         <p class="text-center font-mono text-[10px] uppercase tracking-wider text-ink-light">
-          Demo accounts
+          {{ t('login.demoAccounts') }}
         </p>
         <div class="mt-2 flex justify-center gap-2">
           <button
@@ -161,7 +163,7 @@ async function submit(): Promise<void> {
             class="btn-ghost !px-3 !py-1 !text-xs"
             @click="fill(d)"
           >
-            {{ d.label }}
+            {{ t(`login.demo${d.label}`) }}
           </button>
         </div>
       </div>

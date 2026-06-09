@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, UserPlus } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
@@ -10,6 +11,7 @@ import type { JobRole, SafeUser } from '@/types';
 const toast = useToastStore();
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 
 interface UserDraft extends SafeUser {
   password?: string;
@@ -37,7 +39,7 @@ async function load(): Promise<void> {
 }
 
 function roleNames(ids: string[]): string {
-  return ids.map((id) => roles.value.find((r) => r.id === id)?.name).filter(Boolean).join(', ') || '—';
+  return ids.map((id) => roles.value.find((r) => r.id === id)?.name).filter(Boolean).join(', ') || t('common.none');
 }
 
 function openNew(): void {
@@ -73,25 +75,25 @@ async function save(): Promise<void> {
   if (!draft.value) return;
   const d = draft.value;
   if (!d.name.trim() || !d.email.trim()) {
-    toast.error('Name and email are required');
+    toast.error(t('users.toasts.nameEmailRequired'));
     return;
   }
   if (isNew.value && !d.password) {
-    toast.error('Password is required for new users');
+    toast.error(t('users.toasts.passwordRequired'));
     return;
   }
   try {
     if (isNew.value) {
       await client.post('/users', d);
-      toast.success('User created');
+      toast.success(t('users.toasts.created'));
     } else {
       await client.put(`/users/${d.id}`, d);
-      toast.success('User updated');
+      toast.success(t('users.toasts.updated'));
     }
     close();
     await load();
   } catch {
-    toast.error('Could not save user');
+    toast.error(t('users.toasts.saveError'));
   }
 }
 
@@ -103,7 +105,7 @@ async function impersonate(): Promise<void> {
     close();
     await router.push('/dashboard');
   } catch {
-    toast.error('Could not view as this user');
+    toast.error(t('users.toasts.impersonateError'));
   }
 }
 
@@ -111,11 +113,11 @@ async function remove(): Promise<void> {
   if (!draft.value?.id) return;
   try {
     await client.delete(`/users/${draft.value.id}`);
-    toast.success('User deleted');
+    toast.success(t('users.toasts.deleted'));
     close();
     await load();
   } catch {
-    toast.error('Could not delete user');
+    toast.error(t('users.toasts.deleteError'));
   }
 }
 
@@ -126,12 +128,12 @@ onMounted(load);
   <div>
     <header class="flex items-center justify-between">
       <div>
-        <h1 class="page-title">Users</h1>
-        <p class="mt-1 font-mono text-xs text-ink-light">// {{ users.length }} users</p>
+        <h1 class="page-title">{{ t('users.title') }}</h1>
+        <p class="mt-1 font-mono text-xs text-ink-light">{{ t('users.subtitle', { count: users.length }) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <RouterLink to="/users/import" class="btn-ghost"><UserPlus class="h-4 w-4" /> Import</RouterLink>
-        <button class="btn-primary" @click="openNew"><Plus class="h-4 w-4" /> Add User</button>
+        <RouterLink to="/users/import" class="btn-ghost"><UserPlus class="h-4 w-4" /> {{ t('users.import') }}</RouterLink>
+        <button class="btn-primary" @click="openNew"><Plus class="h-4 w-4" /> {{ t('users.add') }}</button>
       </div>
     </header>
 
@@ -143,10 +145,10 @@ onMounted(load);
       <table class="w-full text-left">
         <thead class="border-b border-line bg-pastel-sky/20">
           <tr class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
-            <th class="px-5 py-3">Name</th>
-            <th class="px-5 py-3">Email</th>
-            <th class="hidden px-5 py-3 md:table-cell">Roles</th>
-            <th class="px-5 py-3">Access</th>
+            <th class="px-5 py-3">{{ t('users.thName') }}</th>
+            <th class="px-5 py-3">{{ t('users.thEmail') }}</th>
+            <th class="hidden px-5 py-3 md:table-cell">{{ t('users.thRoles') }}</th>
+            <th class="px-5 py-3">{{ t('users.thAccess') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -163,12 +165,12 @@ onMounted(load);
             </td>
             <td class="px-5 py-3">
               <span v-if="u.isAdmin" class="pill pill-col bg-accent-light/60 text-accent">
-                <ShieldCheck class="h-3 w-3" /> admin
+                <ShieldCheck class="h-3 w-3" /> {{ t('users.accessAdmin') }}
               </span>
               <span v-else-if="u.isTrainer" class="pill pill-col bg-pastel-mint/50 text-emerald-700">
-                <GraduationCap class="h-3 w-3" /> trainer
+                <GraduationCap class="h-3 w-3" /> {{ t('users.accessTrainer') }}
               </span>
-              <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">member</span>
+              <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">{{ t('users.accessMember') }}</span>
             </td>
           </tr>
         </tbody>
@@ -181,34 +183,34 @@ onMounted(load);
         <div class="absolute inset-0 bg-ink/20" @click="close" />
         <div class="relative z-10 flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto bg-white p-6 shadow-lift">
           <div class="flex items-center justify-between">
-            <h2 class="font-sans text-lg font-bold text-ink">{{ isNew ? 'New user' : 'Edit user' }}</h2>
+            <h2 class="font-sans text-lg font-bold text-ink">{{ isNew ? t('users.new') : t('users.edit') }}</h2>
             <button class="text-ink-light hover:text-ink" @click="close"><X class="h-5 w-5" /></button>
           </div>
 
           <label class="flex flex-col gap-1">
-            <span class="form-label">Name</span>
+            <span class="form-label">{{ t('common.name') }}</span>
             <input v-model="draft.name" class="bg-input" />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="form-label">Email</span>
+            <span class="form-label">{{ t('common.email') }}</span>
             <input v-model="draft.email" type="email" class="bg-input" />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="form-label">{{ isNew ? 'Password' : 'New password (leave blank to keep)' }}</span>
+            <span class="form-label">{{ isNew ? t('users.passwordNew') : t('users.passwordEdit') }}</span>
             <input v-model="draft.password" type="password" class="bg-input" autocomplete="new-password" />
           </label>
 
           <div class="flex gap-4">
             <label class="flex items-center gap-2 font-mono text-sm text-ink-muted">
-              <input v-model="draft.isAdmin" type="checkbox" class="accent-accent" /> Admin
+              <input v-model="draft.isAdmin" type="checkbox" class="accent-accent" /> {{ t('users.admin') }}
             </label>
             <label class="flex items-center gap-2 font-mono text-sm text-ink-muted">
-              <input v-model="draft.isTrainer" type="checkbox" class="accent-accent" /> Trainer
+              <input v-model="draft.isTrainer" type="checkbox" class="accent-accent" /> {{ t('users.trainer') }}
             </label>
           </div>
 
           <div>
-            <span class="form-label">Job roles</span>
+            <span class="form-label">{{ t('users.jobRoles') }}</span>
             <div class="mt-2 flex flex-col gap-2">
               <label
                 v-for="r in roles"
@@ -224,29 +226,29 @@ onMounted(load);
                 />
                 {{ r.name }}
               </label>
-              <p v-if="roles.length === 0" class="font-mono text-xs text-ink-light">No roles yet.</p>
+              <p v-if="roles.length === 0" class="font-mono text-xs text-ink-light">{{ t('users.noRoles') }}</p>
             </div>
           </div>
 
           <div class="mt-auto flex items-center gap-2 pt-4">
-            <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> Save</button>
+            <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('users.save') }}</button>
             <button
               v-if="!isNew && draft.id !== auth.user?.id"
               class="btn-ghost"
-              title="See the app exactly as this user does"
+              :title="t('users.viewAsTitle')"
               @click="impersonate"
             >
-              <Eye class="h-4 w-4" /> View as
+              <Eye class="h-4 w-4" /> {{ t('users.viewAs') }}
             </button>
             <div class="flex-1" />
             <template v-if="!isNew">
               <template v-if="confirmDelete">
-                <span class="font-mono text-xs text-rose-600">Delete?</span>
-                <button class="btn-danger !px-3 !py-1.5" @click="remove">Yes</button>
-                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDelete = false">No</button>
+                <span class="font-mono text-xs text-rose-600">{{ t('users.deleteConfirm') }}</span>
+                <button class="btn-danger !px-3 !py-1.5" @click="remove">{{ t('users.deleteYes') }}</button>
+                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDelete = false">{{ t('users.deleteNo') }}</button>
               </template>
               <button v-else class="btn-danger !px-3 !py-1.5" @click="confirmDelete = true">
-                <Trash2 class="h-4 w-4" /> Delete
+                <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
               </button>
             </template>
           </div>

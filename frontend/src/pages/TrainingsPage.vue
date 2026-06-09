@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ChevronDown, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
@@ -10,6 +11,7 @@ import { cycleLabel } from '@/utils/display';
 
 const auth = useAuthStore();
 const toast = useToastStore();
+const { t } = useI18n();
 
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
@@ -56,7 +58,7 @@ async function load(): Promise<void> {
 }
 
 function ownerName(id: string): string {
-  return owners.value.find((o) => o.id === id)?.name ?? (id === auth.user?.id ? 'You' : '—');
+  return owners.value.find((o) => o.id === id)?.name ?? (id === auth.user?.id ? t('trainings.ownerYou') : t('common.none'));
 }
 
 function startCreate(): void {
@@ -104,33 +106,33 @@ async function save(): Promise<void> {
   if (!draft.value) return;
   const body = draft.value;
   if (!body.name.trim()) {
-    toast.error('Name is required');
+    toast.error(t('trainings.toasts.nameRequired'));
     return;
   }
   try {
     if (body.id) {
       await client.put(`/trainings/${body.id}`, body);
-      toast.success('Training updated');
+      toast.success(t('trainings.toasts.updated'));
     } else {
       await client.post('/trainings', body);
-      toast.success('Training created');
+      toast.success(t('trainings.toasts.created'));
     }
     cancel();
     await load();
   } catch {
-    toast.error('Could not save training');
+    toast.error(t('trainings.toasts.saveError'));
   }
 }
 
 async function remove(id: string): Promise<void> {
   try {
     await client.delete(`/trainings/${id}`);
-    toast.success('Training deleted');
+    toast.success(t('trainings.toasts.deleted'));
     confirmDeleteId.value = null;
     if (expandedId.value === id) cancel();
     await load();
   } catch {
-    toast.error('Could not delete training');
+    toast.error(t('trainings.toasts.deleteError'));
   }
 }
 
@@ -163,10 +165,10 @@ async function persistOrder(): Promise<void> {
   onDragEnd();
   if (!moved) return;
   try {
-    await client.put('/trainings/reorder', { ids: trainings.value.map((t) => t.id) });
-    toast.success('Order saved');
+    await client.put('/trainings/reorder', { ids: trainings.value.map((tr) => tr.id) });
+    toast.success(t('trainings.toasts.orderSaved'));
   } catch {
-    toast.error('Could not save order');
+    toast.error(t('trainings.toasts.orderError'));
     await load(); // restore the server's order on failure
   }
 }
@@ -178,18 +180,18 @@ onMounted(load);
   <div>
     <header class="flex items-center justify-between">
       <div>
-        <h1 class="page-title">Trainings</h1>
+        <h1 class="page-title">{{ t('trainings.title') }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // {{ isAdmin ? 'all trainings' : 'trainings you own' }} · {{ trainings.length }}<span v-if="isAdmin"> · drag to reorder</span>
+          // {{ isAdmin ? t('trainings.subtitleAll') : t('trainings.subtitleOwn') }} · {{ trainings.length }}<span v-if="isAdmin"> · {{ t('trainings.dragToReorder') }}</span>
         </p>
       </div>
-      <button class="btn-primary" @click="startCreate"><Plus class="h-4 w-4" /> Add Training</button>
+      <button class="btn-primary" @click="startCreate"><Plus class="h-4 w-4" /> {{ t('trainings.add') }}</button>
     </header>
 
     <!-- New draft editor -->
     <div v-if="expandedId === '__new__' && draft" class="mt-6">
       <div class="card border-accent/40 p-5">
-        <h3 class="mb-3 font-sans text-sm font-bold text-accent">New training</h3>
+        <h3 class="mb-3 font-sans text-sm font-bold text-accent">{{ t('trainings.new') }}</h3>
         <TrainingForm
           :draft="draft"
           :is-admin="isAdmin"
@@ -202,8 +204,8 @@ onMounted(load);
           @remove-option="removeOption"
         />
         <div class="mt-4 flex gap-2">
-          <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> Create</button>
-          <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> Cancel</button>
+          <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('trainings.create') }}</button>
+          <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
         </div>
       </div>
     </div>
@@ -214,8 +216,8 @@ onMounted(load);
 
     <div v-else class="mt-6 flex flex-col gap-3">
       <div
-        v-for="(t, i) in trainings"
-        :key="t.id"
+        v-for="(tr, i) in trainings"
+        :key="tr.id"
         class="card overflow-hidden transition"
         :class="dragIndex === i ? 'opacity-50 ring-2 ring-accent/50' : ''"
         :draggable="isAdmin && dragEnabled"
@@ -227,12 +229,12 @@ onMounted(load);
         <!-- Row -->
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
-          @click="expandedId === t.id ? cancel() : startEdit(t)"
+          @click="expandedId === tr.id ? cancel() : startEdit(tr)"
         >
           <button
             v-if="isAdmin"
             type="button"
-            title="Drag to reorder"
+            :title="t('trainings.dragToReorder')"
             class="-ml-1 shrink-0 cursor-grab touch-none text-ink-light transition hover:text-ink active:cursor-grabbing"
             @click.stop
             @mousedown="dragEnabled = true"
@@ -241,22 +243,22 @@ onMounted(load);
             <GripVertical class="h-4 w-4" />
           </button>
           <div class="min-w-0 flex-1">
-            <div class="font-sans text-sm font-semibold text-ink">{{ t.name }}</div>
-            <div class="truncate font-mono text-xs text-ink-light" :title="t.description">{{ t.description }}</div>
+            <div class="font-sans text-sm font-semibold text-ink">{{ tr.name }}</div>
+            <div class="truncate font-mono text-xs text-ink-light" :title="tr.description">{{ tr.description }}</div>
           </div>
-          <span class="pill pill-col bg-pastel-sky/60 text-ink-muted">{{ t.category }}</span>
-          <span class="pill min-w-[3.5rem] bg-pastel-slate/60 text-ink-muted">{{ t.durationHours }}h</span>
-          <span class="pill min-w-[5rem] bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t.cycleYears) }}</span>
-          <span v-if="isAdmin" class="pill pill-col bg-white text-ink-light">{{ ownerName(t.ownerId) }}</span>
+          <span class="pill pill-col bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
+          <span class="pill min-w-[3.5rem] bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
+          <span class="pill min-w-[5rem] bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
+          <span v-if="isAdmin" class="pill pill-col bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
           <ChevronDown
             class="h-4 w-4 text-ink-light transition"
-            :class="expandedId === t.id ? 'rotate-180' : ''"
+            :class="expandedId === tr.id ? 'rotate-180' : ''"
           />
         </div>
 
         <!-- Expanded editor -->
         <Transition name="list">
-          <div v-if="expandedId === t.id && draft" class="border-t border-line bg-pastel-sky/10 p-5">
+          <div v-if="expandedId === tr.id && draft" class="border-t border-line bg-pastel-sky/10 p-5">
             <TrainingForm
               :draft="draft"
               :is-admin="isAdmin"
@@ -269,20 +271,20 @@ onMounted(load);
               @remove-option="removeOption"
             />
             <div class="mt-4 flex items-center gap-2">
-              <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> Save</button>
-              <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> Cancel</button>
+              <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('trainings.save') }}</button>
+              <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
               <div class="flex-1" />
-              <template v-if="confirmDeleteId === t.id">
-                <span class="font-mono text-xs text-rose-600">Delete this training?</span>
-                <button class="btn-danger !px-3 !py-1.5" @click="remove(t.id)">Yes, delete</button>
-                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDeleteId = null">No</button>
+              <template v-if="confirmDeleteId === tr.id">
+                <span class="font-mono text-xs text-rose-600">{{ t('trainings.deleteConfirm') }}</span>
+                <button class="btn-danger !px-3 !py-1.5" @click="remove(tr.id)">{{ t('trainings.deleteYes') }}</button>
+                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDeleteId = null">{{ t('trainings.deleteNo') }}</button>
               </template>
               <button
                 v-else
                 class="btn-danger !px-3 !py-1.5"
-                @click="confirmDeleteId = t.id"
+                @click="confirmDeleteId = tr.id"
               >
-                <Trash2 class="h-4 w-4" /> Delete
+                <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
               </button>
             </div>
           </div>
@@ -290,7 +292,7 @@ onMounted(load);
       </div>
 
       <p v-if="trainings.length === 0" class="font-mono text-sm text-ink-light">
-        No trainings yet. Click “Add Training” to create one.
+        {{ t('trainings.empty') }}
       </p>
     </div>
   </div>

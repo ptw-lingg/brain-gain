@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
 withDefaults(defineProps<{ size?: number; showWordmark?: boolean }>(), {
   size: 48,
   showWordmark: false,
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -58,7 +62,7 @@ withDefaults(defineProps<{ size?: number; showWordmark?: boolean }>(), {
       <div class="bg-gradient-to-r from-accent to-sky-400 bg-clip-text text-xl font-bold text-transparent">
         BrainGain
       </div>
-      <div class="font-mono text-[10px] text-ink-light">Grow what you know.</div>
+      <div class="font-mono text-[10px] text-ink-light">{{ t('common.tagline') }}</div>
     </div>
   </div>
 </template>

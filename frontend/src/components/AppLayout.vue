@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Eye, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import AppSidebar from './AppSidebar.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 
 // Leave the "view as" session: restore the admin's own token, then return to the Users page.
 async function stopImpersonating(): Promise<void> {
@@ -23,14 +25,14 @@ async function stopImpersonating(): Promise<void> {
     >
       <Eye class="h-4 w-4" />
       <span>
-        Viewing as <strong>{{ auth.user?.name }}</strong>
+        {{ t('impersonation.viewingAs') }} <strong>{{ auth.user?.name }}</strong>
         <span class="font-mono text-xs text-ink-muted">({{ auth.user?.email }})</span>
       </span>
       <button
         class="ml-2 inline-flex items-center gap-1 rounded-md bg-ink px-3 py-1 text-xs font-semibold text-white transition hover:bg-ink/80"
         @click="stopImpersonating"
       >
-        <X class="h-3.5 w-3.5" /> Stop
+        <X class="h-3.5 w-3.5" /> {{ t('impersonation.stop') }}
       </button>
     </div>
 

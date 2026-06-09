@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { Loader2 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
@@ -10,6 +11,7 @@ import BrainGainLogo from '@/components/BrainGainLogo.vue';
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const token = String(route.query.token ?? '');
 
@@ -43,11 +45,11 @@ onMounted(async () => {
 async function submit(): Promise<void> {
   error.value = '';
   if (password.value.length < 8) {
-    error.value = 'Password must be at least 8 characters';
+    error.value = t('activate.errorShort');
     return;
   }
   if (password.value !== confirm.value) {
-    error.value = 'Passwords do not match';
+    error.value = t('activate.errorMismatch');
     return;
   }
   submitting.value = true;
@@ -56,8 +58,8 @@ async function submit(): Promise<void> {
     router.push('/dashboard');
   } catch (e: unknown) {
     error.value = axios.isAxiosError(e)
-      ? (e.response?.data?.error ?? 'Could not activate your account')
-      : 'Could not activate your account';
+      ? (e.response?.data?.error ?? t('activate.errorActivate'))
+      : t('activate.errorActivate');
   } finally {
     submitting.value = false;
   }
@@ -72,9 +74,9 @@ async function submit(): Promise<void> {
         <h1
           class="mt-4 bg-gradient-to-r from-accent to-sky-400 bg-clip-text text-2xl font-bold text-transparent"
         >
-          Activate your account
+          {{ t('activate.title') }}
         </h1>
-        <p class="font-mono text-xs text-ink-light">Choose a password to finish signing up.</p>
+        <p class="font-mono text-xs text-ink-light">{{ t('activate.subtitle') }}</p>
       </div>
 
       <div v-if="checking" class="mt-8 flex justify-center text-ink-light">
@@ -83,18 +85,18 @@ async function submit(): Promise<void> {
 
       <div v-else-if="!linkValid" class="mt-8 text-center">
         <p class="font-mono text-sm text-rose-600">
-          This activation link is invalid or has already been used.
+          {{ t('activate.invalidLink') }}
         </p>
-        <RouterLink to="/login" class="btn-ghost mt-4 inline-flex">Back to sign in</RouterLink>
+        <RouterLink to="/login" class="btn-ghost mt-4 inline-flex">{{ t('activate.backToSignIn') }}</RouterLink>
       </div>
 
       <form v-else class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">Email</span>
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.email') }}</span>
           <input :value="accountEmail" type="email" class="bg-input" disabled />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">New password</span>
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('activate.newPassword') }}</span>
           <input
             v-model="password"
             type="password"
@@ -104,7 +106,7 @@ async function submit(): Promise<void> {
           />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">Confirm password</span>
+          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('activate.confirmPassword') }}</span>
           <input
             v-model="confirm"
             type="password"
@@ -118,7 +120,7 @@ async function submit(): Promise<void> {
 
         <button type="submit" class="btn-primary mt-2 w-full" :disabled="submitting">
           <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
-          {{ submitting ? 'Activating…' : 'Set password & sign in' }}
+          {{ submitting ? t('activate.submitting') : t('activate.submit') }}
         </button>
       </form>
     </div>

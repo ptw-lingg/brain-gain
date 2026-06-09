@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Sprout } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
@@ -9,14 +10,15 @@ import TrainingCard from '@/components/TrainingCard.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const items = ref<DueTraining[]>([]);
 const loading = ref(true);
 
 const greeting = computed(() => {
   const h = new Date().getHours();
-  const part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
-  return `Good ${part}, ${auth.user?.name ?? ''} 🌱`;
+  const key = h < 12 ? 'greetingMorning' : h < 18 ? 'greetingAfternoon' : 'greetingEvening';
+  return t(`dashboard.${key}`, { name: auth.user?.name ?? '' });
 });
 
 const dueCount = computed(
@@ -46,7 +48,7 @@ onMounted(load);
       <div>
         <h1 class="page-title">{{ greeting }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // {{ items.length }} assigned · {{ dueCount }} due now
+          {{ t('dashboard.subtitle', { assigned: items.length, due: dueCount }) }}
         </p>
       </div>
     </header>
@@ -65,7 +67,7 @@ onMounted(load);
         <Sprout class="h-8 w-8 text-emerald-500" />
       </div>
       <p class="font-mono text-sm text-ink-muted">
-        No trainings yet. Ask your admin to assign you a role.
+        {{ t('dashboard.empty') }}
       </p>
     </div>
 
