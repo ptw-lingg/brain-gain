@@ -351,6 +351,12 @@
     "headLabel": "Head: {head}",
     "noHead": "no head",
     "memberCount": "{count} member | {count} members",
+    "addMembers": "Add members",
+    "addMembersHint": "Pick people to move into this unit.",
+    "memberSearch": "Search people…",
+    "currentlyIn": "in {unit}",
+    "noCandidates": "No other users to add.",
+    "addSelected": "Add {count} member | Add {count} members",
     "deleteConfirm": "Delete this unit?",
     "deleteYes": "Yes, delete",
     "deleteNo": "No",
@@ -361,7 +367,9 @@
       "created": "Org unit created",
       "saveError": "Could not save org unit",
       "deleted": "Org unit deleted",
-      "deleteError": "Could not delete org unit"
+      "deleteError": "Could not delete org unit",
+      "membersAdded": "{count} member moved here | {count} members moved here",
+      "membersError": "Could not add members"
     }
   },
   "orgUnitForm": {

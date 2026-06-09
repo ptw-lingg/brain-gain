@@ -351,6 +351,12 @@
     "headLabel": "Leitung: {head}",
     "noHead": "keine Leitung",
     "memberCount": "{count} Mitglied | {count} Mitglieder",
+    "addMembers": "Mitglieder hinzufügen",
+    "addMembersHint": "Wählen Sie Personen aus, die in diese Einheit verschoben werden sollen.",
+    "memberSearch": "Personen suchen…",
+    "currentlyIn": "in {unit}",
+    "noCandidates": "Keine weiteren Benutzer zum Hinzufügen.",
+    "addSelected": "{count} Mitglied hinzufügen | {count} Mitglieder hinzufügen",
     "deleteConfirm": "Diese Einheit löschen?",
     "deleteYes": "Ja, löschen",
     "deleteNo": "Nein",
@@ -361,7 +367,9 @@
       "created": "Organisationseinheit erstellt",
       "saveError": "Organisationseinheit konnte nicht gespeichert werden",
       "deleted": "Organisationseinheit gelöscht",
-      "deleteError": "Organisationseinheit konnte nicht gelöscht werden"
+      "deleteError": "Organisationseinheit konnte nicht gelöscht werden",
+      "membersAdded": "{count} Mitglied hierher verschoben | {count} Mitglieder hierher verschoben",
+      "membersError": "Mitglieder konnten nicht hinzugefügt werden"
     }
   },
   "orgUnitForm": {

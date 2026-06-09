@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { ChevronDown, Plus, Save, Trash2, UserPlus, X } from 'lucide-vue-next';
 import axios from 'axios';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
@@ -16,6 +16,51 @@ const loading = ref(true);
 const expandedId = ref<string | null>(null);
 const draft = ref<OrgUnit | null>(null);
 const confirmDeleteId = ref<string | null>(null);
+
+// Bulk "add members" picker (scoped to the currently-open unit).
+const addMembersOpen = ref(false);
+const memberQuery = ref('');
+const selectedMemberIds = ref<string[]>([]);
+
+function resetMemberPicker(): void {
+  addMembersOpen.value = false;
+  memberQuery.value = '';
+  selectedMemberIds.value = [];
+}
+
+/** Users not already in the open unit, filtered by the search box. */
+const memberCandidates = computed<SafeUser[]>(() => {
+  if (!draft.value?.id) return [];
+  const unitId = draft.value.id;
+  const q = memberQuery.value.trim().toLowerCase();
+  return users.value.filter(
+    (us) =>
+      us.orgUnitId !== unitId &&
+      (!q || us.name.toLowerCase().includes(q) || us.email.toLowerCase().includes(q)),
+  );
+});
+
+function toggleMember(id: string): void {
+  const i = selectedMemberIds.value.indexOf(id);
+  if (i === -1) selectedMemberIds.value.push(id);
+  else selectedMemberIds.value.splice(i, 1);
+}
+
+async function addMembers(): Promise<void> {
+  if (!draft.value?.id || selectedMemberIds.value.length === 0) return;
+  try {
+    const { data } = await client.post<{ moved: number }>(
+      `/org-units/${draft.value.id}/members`,
+      { userIds: selectedMemberIds.value },
+    );
+    toast.success(t('orgUnits.toasts.membersAdded', { count: data.moved }, data.moved));
+    resetMemberPicker();
+    await load();
+  } catch (e: unknown) {
+    const msg = axios.isAxiosError(e) ? e.response?.data?.error : '';
+    toast.error(msg || t('orgUnits.toasts.membersError'));
+  }
+}
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -103,10 +148,12 @@ function startEdit(u: OrgUnit): void {
   draft.value = JSON.parse(JSON.stringify(u));
   expandedId.value = u.id;
   confirmDeleteId.value = null;
+  resetMemberPicker();
 }
 function cancel(): void {
   draft.value = null;
   expandedId.value = null;
+  resetMemberPicker();
 }
 
 async function save(): Promise<void> {
@@ -240,6 +287,56 @@ onMounted(load);
                 </select>
               </label>
             </div>
+
+            <!-- Bulk add members -->
+            <div class="mt-4 border-t border-line pt-4">
+              <button class="btn-ghost !px-3 !py-1.5 !text-xs" @click="addMembersOpen = !addMembersOpen">
+                <UserPlus class="h-3.5 w-3.5" /> {{ t('orgUnits.addMembers') }}
+              </button>
+              <div v-if="addMembersOpen" class="mt-3">
+                <p class="mb-2 font-mono text-[11px] text-ink-light">{{ t('orgUnits.addMembersHint') }}</p>
+                <input
+                  v-model="memberQuery"
+                  class="bg-input mb-2 w-full"
+                  :placeholder="t('orgUnits.memberSearch')"
+                />
+                <div class="max-h-64 overflow-y-auto rounded-md border border-line bg-white">
+                  <label
+                    v-for="us in memberCandidates"
+                    :key="us.id"
+                    class="flex cursor-pointer items-center gap-2 border-b border-line/60 px-3 py-2 text-sm transition last:border-0 hover:bg-pastel-sky/20"
+                  >
+                    <input
+                      type="checkbox"
+                      class="accent-accent"
+                      :checked="selectedMemberIds.includes(us.id)"
+                      @change="toggleMember(us.id)"
+                    />
+                    <span class="min-w-0 flex-1">
+                      <span class="font-medium text-ink">{{ us.name }}</span>
+                      <span class="font-mono text-[11px] text-ink-light"> · {{ us.email }}</span>
+                    </span>
+                    <span class="shrink-0 font-mono text-[10px] text-ink-light">
+                      {{ t('orgUnits.currentlyIn', { unit: unitName(us.orgUnitId ?? null) }) }}
+                    </span>
+                  </label>
+                  <p v-if="memberCandidates.length === 0" class="px-3 py-4 text-center font-mono text-xs text-ink-light">
+                    {{ t('orgUnits.noCandidates') }}
+                  </p>
+                </div>
+                <div class="mt-2">
+                  <button
+                    class="btn-primary !px-3 !py-1.5 !text-xs"
+                    :disabled="selectedMemberIds.length === 0"
+                    @click="addMembers"
+                  >
+                    <UserPlus class="h-3.5 w-3.5" />
+                    {{ t('orgUnits.addSelected', { count: selectedMemberIds.length }, selectedMemberIds.length) }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="mt-4 flex items-center gap-2">
               <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('orgUnits.save') }}</button>
               <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>

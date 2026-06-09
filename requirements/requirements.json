@@ -6,9 +6,9 @@
     "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 241,
-      "covered": 241,
-      "backend": 140,
+      "total": 243,
+      "covered": 243,
+      "backend": 142,
       "e2e": 88,
       "manual": 122,
       "gaps": []
@@ -239,7 +239,8 @@
     {"id":"SYS-ORG-03","type":"system","category":"Organization","title":"Membership & migration","text":"Users carry orgUnitId. A startup migration seeds a single root unit named from Settings.companyName and backfills every user; user create/import default a missing unit to the root.","status":"verified","links":[{"type":"derivedFrom","target":"SR-124"}],"implementedBy":[{"path":"backend/src/services/orgUnits.ts","symbol":"migrateOrgUnits"},{"path":"backend/src/routes/users.ts","symbol":"orgUnitId"}]},
     {"id":"SYS-ORG-04","type":"system","category":"Organization","title":"Import Org Unit column","text":"POST /api/users/import resolves an Org Unit value to a unit by name (case-insensitive); an unknown name flags the row as an error; a blank value defaults a new user to the root unit.","status":"verified","links":[{"type":"derivedFrom","target":"SR-127"}],"implementedBy":[{"path":"backend/src/routes/users.ts","symbol":"POST /import"}]},
     {"id":"SYS-ORG-05","type":"system","category":"Organization","title":"Head oversight endpoint","text":"GET /api/org-units/my-team returns every member in the caller-headed units and their sub-units, each with their required trainings and due status; empty when the caller heads no unit.","status":"verified","links":[{"type":"derivedFrom","target":"SR-125"},{"type":"derivedFrom","target":"SR-126"}],"implementedBy":[{"path":"backend/src/routes/orgUnits.ts","symbol":"GET /my-team"}]},
-    {"id":"SYS-ORG-06","type":"system","category":"Organization","title":"Editable company name","text":"PUT /api/settings accepts companyName (admin-only) and renames the root org unit to match.","status":"verified","links":[{"type":"derivedFrom","target":"SR-128"}],"implementedBy":[{"path":"backend/src/routes/settings.ts","symbol":"companyName"}]}
+    {"id":"SYS-ORG-06","type":"system","category":"Organization","title":"Editable company name","text":"PUT /api/settings accepts companyName (admin-only) and renames the root org unit to match.","status":"verified","links":[{"type":"derivedFrom","target":"SR-128"}],"implementedBy":[{"path":"backend/src/routes/settings.ts","symbol":"companyName"}]},
+    {"id":"SYS-ORG-07","type":"system","category":"Organization","title":"Bulk add members to a unit","text":"POST /api/org-units/:id/members (admin-only) moves several users into a unit at once; unknown user ids are ignored and the count of users actually moved is returned.","status":"verified","links":[{"type":"derivedFrom","target":"SR-124"}],"implementedBy":[{"path":"backend/src/routes/orgUnits.ts","symbol":"POST /:id/members"}]}
   ],
   "tests": [
     {"id":"VT-001","testType":"acceptance","title":"Email/password login","method":"manual","links":[{"type":"validates","target":"SR-001"},{"type":"validates","target":"SR-002"}],"preconditions":"Seeded admin account exists.","steps":["Open /login.","Enter correct admin email + password and submit.","Enter wrong password and submit."],"expected":"Correct credentials sign in and land on the dashboard listing the user's relevant trainings; wrong credentials show an error and do not sign in.","automated":true},
@@ -317,7 +318,8 @@
     {"id":"VT-126","testType":"acceptance","title":"One responsible head per unit","method":"api","links":[{"type":"validates","target":"SR-125"}],"preconditions":"Seeded backend.","steps":["Assign a head to a unit.","Read the unit and the head identity."],"expected":"Each unit stores a single headUserId; the head is reported as such.","automated":true},
     {"id":"VT-127","testType":"acceptance","title":"Head oversight (my-team)","method":"api","links":[{"type":"validates","target":"SR-126"}],"preconditions":"A head over a unit with members in a sub-unit.","steps":["Call GET /api/org-units/my-team as the head.","Call it as a non-head."],"expected":"The head sees every member in their subtree with due status; a non-head sees an empty team.","automated":true},
     {"id":"VT-128","testType":"acceptance","title":"Import Org Unit column","method":"api","links":[{"type":"validates","target":"SR-127"}],"preconditions":"An existing org unit.","steps":["Preview an import with known, unknown and blank Org Unit values.","Commit a valid row."],"expected":"Known unit resolves; unknown → row error; blank create → root; committed user lands in the resolved unit.","automated":true},
-    {"id":"VT-129","testType":"acceptance","title":"Editable company name renames root","method":"api","links":[{"type":"validates","target":"SR-128"}],"preconditions":"Seeded backend.","steps":["PUT /api/settings { companyName } as admin.","Attempt the same as a non-admin."],"expected":"The setting updates and the root unit is renamed; non-admin → 403.","automated":true}
+    {"id":"VT-129","testType":"acceptance","title":"Editable company name renames root","method":"api","links":[{"type":"validates","target":"SR-128"}],"preconditions":"Seeded backend.","steps":["PUT /api/settings { companyName } as admin.","Attempt the same as a non-admin."],"expected":"The setting updates and the root unit is renamed; non-admin → 403.","automated":true},
+    {"id":"VT-130","testType":"acceptance","title":"Bulk-assign users to an org unit","method":"api","links":[{"type":"validates","target":"SR-124"}],"preconditions":"A destination unit and a few users exist.","steps":["Select several users and POST them to a unit.","Re-post the same users; post to an unknown unit; post as a non-admin."],"expected":"All selected users move to the unit (unknown ids ignored); re-posting moves nobody; unknown unit → 404; non-admin → 403.","automated":true}
   ],
   "testCases": [
     {"id":"TC-0071e923b0","name":"SYS-SES-01 / SR-050 / VT-050: a member completes the material → quiz → result flow","kind":"e2e","file":"frontend/e2e/sessions-due.spec.ts","covers":["SYS-SES-01","SR-050","VT-050"]},
@@ -501,6 +503,7 @@
     {"id":"TC-ab1fd4dd27","name":"SR-003: a member is redirected away from an admin-only route","kind":"e2e","file":"frontend/e2e/auth.spec.ts","covers":["SR-003"]},
     {"id":"TC-ab2340867f","name":"SYS-AUTH-06 — No public registration endpoint (inspection)","kind":"manual","covers":["SYS-AUTH-06"],"manual":{"steps":["Review backend/src/routes/auth.ts: only /login, /me, /impersonate/:id, /sso/config, /sso/entra exist.","Confirm no /register route anywhere."],"expected":"No public registration endpoint exists; accounts are created only by an admin.","rationale":"Proving the absence of a route is a code-inspection assertion."}},
     {"id":"TC-ab364033d0","name":"SYS-USR-01 / VT-020 (SR-020, SR-022): admin creates a user with roleIds + isAdmin/isTrainer flags","kind":"backend","file":"backend/tests/users-roles.test.mjs","covers":["SYS-USR-01","VT-020","SR-020","SR-022"]},
+    {"id":"TC-adc253afca","name":"SYS-ORG-07 / VT-130 (SR-124): admin moves several users into a unit at once","kind":"backend","file":"backend/tests/org-units.test.mjs","covers":["SYS-ORG-07","VT-130","SR-124"]},
     {"id":"TC-addd4f8aad","name":"SYS-OVS-01 / VT-070: a plain member cannot access /trainees → 403 (requireTrainerOrAdmin)","kind":"backend","file":"backend/tests/dashboard-oversight.test.mjs","covers":["SYS-OVS-01","VT-070"]},
     {"id":"TC-aed9f4a57d","name":"SYS-OVS-02 / VT-070: an admin sees the same grouped oversight for all trainings","kind":"e2e","file":"frontend/e2e/dashboard-oversight.spec.ts","covers":["SYS-OVS-02","VT-070"]},
     {"id":"TC-b09002555b","name":"SYS-DATA-06 / VT-103: settings round-trip — threshold and SSO save independently","kind":"backend","file":"backend/tests/data-arch-nfr.test.mjs","covers":["SYS-DATA-06","VT-103"]},

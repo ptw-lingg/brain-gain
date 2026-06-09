@@ -110,6 +110,29 @@ router.put('/:id', requireAdmin, async (req, res) => {
   return res.json(orgUnits[idx]);
 });
 
+// POST /api/org-units/:id/members — admin: move several users into this unit at once.
+// Body: { userIds: string[] }. Unknown ids are ignored; returns how many users actually moved.
+router.post('/:id/members', requireAdmin, async (req, res) => {
+  const orgUnits = await readStore<OrgUnit>('orgUnits');
+  const unit = orgUnits.find((o) => o.id === req.params.id);
+  if (!unit) return res.status(404).json({ error: 'Not found' });
+  const raw = (req.body ?? {}).userIds;
+  const userIds = Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : null;
+  if (!userIds) return res.status(400).json({ error: 'userIds must be an array' });
+
+  const wanted = new Set(userIds);
+  const users = await readStore<User>('users');
+  let moved = 0;
+  for (const u of users) {
+    if (wanted.has(u.id) && u.orgUnitId !== unit.id) {
+      u.orgUnitId = unit.id;
+      moved++;
+    }
+  }
+  if (moved) await writeStore('users', users);
+  return res.json({ moved });
+});
+
 // DELETE /api/org-units/:id — admin only. Blocked while the unit has sub-units or member users.
 router.delete('/:id', requireAdmin, async (req, res) => {
   const orgUnits = await readStore<OrgUnit>('orgUnits');

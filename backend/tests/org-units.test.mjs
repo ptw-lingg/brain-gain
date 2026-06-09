@@ -188,6 +188,58 @@ test('SYS-ORG-03 / VT-125 (SR-124): POST /users validates orgUnitId (invalid →
   assert.equal(omitted.body.orgUnitId, rootId, 'omitted orgUnitId defaults to the root unit');
 });
 
+// ───────────────────────── SYS-ORG-07 — bulk add members ─────────────────────────
+
+test('SYS-ORG-07 / VT-130 (SR-124): admin moves several users into a unit at once', async () => {
+  const dest = await srv.request('POST', '/api/org-units', {
+    token: adminToken,
+    body: { name: 'Bulk Dest', parentId: rootId },
+  });
+  assert.equal(dest.status, 201);
+
+  // Two fresh users (land in root by default).
+  const mk = (n) => srv.request('POST', '/api/users', {
+    token: adminToken,
+    body: { name: `Bulk ${n}`, email: `bulk.${n}@test.local`, password: 'secret123' },
+  });
+  const a = await mk('a');
+  const b = await mk('b');
+  assert.equal(a.body.orgUnitId, rootId);
+
+  // Bulk-move both into the destination unit; an unknown id is ignored.
+  const moved = await srv.request('POST', `/api/org-units/${dest.body.id}/members`, {
+    token: adminToken,
+    body: { userIds: [a.body.id, b.body.id, 'ghost-id'] },
+  });
+  assert.equal(moved.status, 200);
+  assert.equal(moved.body.moved, 2, 'two real users moved, unknown id ignored');
+
+  const usersRes = await srv.request('GET', '/api/users', { token: adminToken });
+  const inDest = usersRes.body.filter((u) => u.orgUnitId === dest.body.id).map((u) => u.email);
+  assert.ok(inDest.includes('bulk.a@test.local') && inDest.includes('bulk.b@test.local'), 'both users now in the unit');
+
+  // Idempotent: re-adding the same users moves nobody.
+  const again = await srv.request('POST', `/api/org-units/${dest.body.id}/members`, {
+    token: adminToken,
+    body: { userIds: [a.body.id, b.body.id] },
+  });
+  assert.equal(again.body.moved, 0, 'already-members are not moved again');
+
+  // Unknown unit → 404; bad body → 400; non-admin → 403.
+  assert.equal(
+    (await srv.request('POST', '/api/org-units/nope/members', { token: adminToken, body: { userIds: [a.body.id] } })).status,
+    404,
+  );
+  assert.equal(
+    (await srv.request('POST', `/api/org-units/${dest.body.id}/members`, { token: adminToken, body: { userIds: 'x' } })).status,
+    400,
+  );
+  assert.equal(
+    (await srv.request('POST', `/api/org-units/${dest.body.id}/members`, { token: memberToken, body: { userIds: [a.body.id] } })).status,
+    403,
+  );
+});
+
 // ───────────────────────── SYS-ORG-04 — import with an Org Unit column ─────────────────────────
 
 test('SYS-ORG-04 / VT-128 (SR-127): import matches Org Unit by name; unknown → error; missing on create → root', async () => {

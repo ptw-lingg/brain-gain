@@ -6,9 +6,9 @@
     "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 241,
-      "covered": 241,
-      "backend": 140,
+      "total": 243,
+      "covered": 243,
+      "backend": 142,
       "e2e": 88,
       "manual": 122,
       "gaps": []
@@ -3564,6 +3564,26 @@
           "symbol": "companyName"
         }
       ]
+    },
+    {
+      "id": "SYS-ORG-07",
+      "type": "system",
+      "category": "Organization",
+      "title": "Bulk add members to a unit",
+      "text": "POST /api/org-units/:id/members (admin-only) moves several users into a unit at once; unknown user ids are ignored and the count of users actually moved is returned.",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-124"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "backend/src/routes/orgUnits.ts",
+          "symbol": "POST /:id/members"
+        }
+      ]
     }
   ],
   "tests": [
@@ -5046,6 +5066,25 @@
         "Attempt the same as a non-admin."
       ],
       "expected": "The setting updates and the root unit is renamed; non-admin → 403.",
+      "automated": true
+    },
+    {
+      "id": "VT-130",
+      "testType": "acceptance",
+      "title": "Bulk-assign users to an org unit",
+      "method": "api",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-124"
+        }
+      ],
+      "preconditions": "A destination unit and a few users exist.",
+      "steps": [
+        "Select several users and POST them to a unit.",
+        "Re-post the same users; post to an unknown unit; post as a non-admin."
+      ],
+      "expected": "All selected users move to the unit (unknown ids ignored); re-posting moves nobody; unknown unit → 404; non-admin → 403.",
       "automated": true
     }
   ],
@@ -6984,6 +7023,17 @@
         "VT-020",
         "SR-020",
         "SR-022"
+      ]
+    },
+    {
+      "id": "TC-adc253afca",
+      "name": "SYS-ORG-07 / VT-130 (SR-124): admin moves several users into a unit at once",
+      "kind": "backend",
+      "file": "backend/tests/org-units.test.mjs",
+      "covers": [
+        "SYS-ORG-07",
+        "VT-130",
+        "SR-124"
       ]
     },
     {
