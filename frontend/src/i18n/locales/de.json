@@ -47,10 +47,6 @@
     "signingIn": "Anmeldung läuft…",
     "or": "oder",
     "signInWithMicrosoft": "Mit Microsoft anmelden",
-    "demoAccounts": "Demo-Konten",
-    "demoAdmin": "Admin",
-    "demoTrainer": "Trainer",
-    "demoMember": "Mitglied",
     "errorMicrosoft": "Microsoft-Anmeldung fehlgeschlagen",
     "errorLogin": "Anmeldung fehlgeschlagen"
   },

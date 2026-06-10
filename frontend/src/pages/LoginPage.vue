@@ -65,17 +65,6 @@ async function loginWithMicrosoft(): Promise<void> {
   }
 }
 
-const demos = [
-  { label: 'Admin', email: 'admin@braingain.app', password: 'admin123' },
-  { label: 'Trainer', email: 'trainer@braingain.app', password: 'trainer123' },
-  { label: 'Member', email: 'user@braingain.app', password: 'user123' },
-];
-
-function fill(d: { email: string; password: string }): void {
-  email.value = d.email;
-  password.value = d.password;
-}
-
 async function submit(): Promise<void> {
   error.value = '';
   loading.value = true;
@@ -151,22 +140,6 @@ async function submit(): Promise<void> {
           {{ ssoLoading ? t('login.signingIn') : t('login.signInWithMicrosoft') }}
         </button>
       </template>
-
-      <div class="mt-6 border-t border-line pt-4">
-        <p class="text-center font-mono text-[10px] uppercase tracking-wider text-ink-light">
-          {{ t('login.demoAccounts') }}
-        </p>
-        <div class="mt-2 flex justify-center gap-2">
-          <button
-            v-for="d in demos"
-            :key="d.label"
-            class="btn-ghost !px-3 !py-1 !text-xs"
-            @click="fill(d)"
-          >
-            {{ t(`login.demo${d.label}`) }}
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>

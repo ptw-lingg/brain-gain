@@ -47,10 +47,6 @@
     "signingIn": "Signing in…",
     "or": "or",
     "signInWithMicrosoft": "Sign in with Microsoft",
-    "demoAccounts": "Demo accounts",
-    "demoAdmin": "Admin",
-    "demoTrainer": "Trainer",
-    "demoMember": "Member",
     "errorMicrosoft": "Microsoft sign-in failed",
     "errorLogin": "Login failed"
   },
