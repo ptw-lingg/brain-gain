@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronDown, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { JobRole, Training } from '@/types';
 import RoleForm from '@/components/RoleForm.vue';
+import ListControls from '@/components/ListControls.vue';
+import { matchesQuery } from '@/utils/listFilter';
 
 const toast = useToastStore();
 const { t } = useI18n();
@@ -16,6 +18,13 @@ const loading = ref(true);
 const expandedId = ref<string | null>(null);
 const draft = ref<JobRole | null>(null);
 const confirmDeleteId = ref<string | null>(null);
+const search = ref('');
+
+const filteredRoles = computed(() =>
+  roles.value.filter((r) =>
+    matchesQuery(search.value, r.name, r.description, ...r.trainingIds.map(trainingName)),
+  ),
+);
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -114,8 +123,14 @@ onMounted(load);
       <div v-for="n in 3" :key="n" class="card h-16 animate-pulse bg-pastel-slate/30" />
     </div>
 
-    <div v-else class="mt-6 flex flex-col gap-3">
-      <div v-for="r in roles" :key="r.id" class="card overflow-hidden">
+    <div v-else class="mt-6">
+      <ListControls
+        v-model:query="search"
+        :count="filteredRoles.length"
+        :total="roles.length"
+      />
+      <div class="flex flex-col gap-3">
+      <div v-for="r in filteredRoles" :key="r.id" class="card overflow-hidden">
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
           @click="expandedId === r.id ? cancel() : startEdit(r)"
@@ -153,6 +168,8 @@ onMounted(load);
         </Transition>
       </div>
       <p v-if="roles.length === 0" class="font-mono text-sm text-ink-light">{{ t('roles.empty') }}</p>
+      <p v-else-if="filteredRoles.length === 0" class="font-mono text-sm text-ink-light">{{ t('common.noMatches') }}</p>
+      </div>
     </div>
   </div>
 </template>

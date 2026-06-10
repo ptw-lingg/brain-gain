@@ -14,7 +14,11 @@
     "email": "E-Mail",
     "password": "Passwort",
     "description": "Beschreibung",
-    "none": "—"
+    "none": "—",
+    "search": "Suchen…",
+    "expandAll": "Alle ausklappen",
+    "collapseAll": "Alle einklappen",
+    "noMatches": "Keine Treffer."
   },
   "language": {
     "label": "Sprache"
@@ -388,7 +392,34 @@
     "empty": "Sie sind noch für keine Organisationseinheit verantwortlich.",
     "dueCount": "{count} fällig | {count} fällig",
     "nothingDue": "Nichts fällig.",
-    "noTrainings": "Keine erforderlichen Schulungen."
+    "noTrainings": "Keine erforderlichen Schulungen.",
+    "report": "Schulungsstatus-Bericht",
+    "reportTitle": "Schulungsstatus-Bericht",
+    "reportPages": "{pages} Seite(n) · prüfen, dann zum Unterschreiben & Ablegen herunterladen",
+    "reportRendering": "Vorschau wird gerendert…",
+    "downloadPdf": "PDF herunterladen",
+    "pageAlt": "Seite {n}",
+    "reportError": "Bericht konnte nicht erstellt werden"
+  },
+  "teamReport": {
+    "title": "Schulungsstatus-Bericht",
+    "head": "Leitung",
+    "generatedOn": "Erstellt",
+    "responsibleFor": "Verantwortlich für",
+    "reviewedBy": "Geprüft von (Leitung)",
+    "signatureDate": "Unterschrift / Datum",
+    "summary": "{members} Mitglied(er) · {due} fällig oder überfällig",
+    "colMember": "Mitglied",
+    "colUnit": "Organisationseinheit",
+    "colTraining": "Schulung",
+    "colStatus": "Status",
+    "colDue": "Fällig",
+    "statusOverdue": "Überfällig",
+    "statusDue": "Fällig",
+    "statusNever": "Nicht absolviert",
+    "statusUpToDate": "Aktuell",
+    "noData": "Keine Mitglieder für den Bericht.",
+    "footer": "Schulungsstatus-Bericht — vor der Ablage prüfen."
   },
   "requirements": {
     "title": "Anforderungen",

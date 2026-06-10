@@ -7,6 +7,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import type { MaterialLink, Question, SafeUser, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
+import ListControls from '@/components/ListControls.vue';
+import { matchesQuery } from '@/utils/listFilter';
 import { cycleLabel } from '@/utils/display';
 
 const auth = useAuthStore();
@@ -19,8 +21,15 @@ const loading = ref(true);
 const expandedId = ref<string | null>(null);
 const draft = ref<Training | null>(null); // editing buffer (also used for new)
 const confirmDeleteId = ref<string | null>(null);
+const search = ref('');
 
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
+
+const filteredTrainings = computed(() =>
+  trainings.value.filter((tr) =>
+    matchesQuery(search.value, tr.name, tr.description, tr.category, ownerName(tr.ownerId), cycleLabel(t, tr.cycleYears)),
+  ),
+);
 
 function blankTraining(): Training {
   return {
@@ -140,28 +149,32 @@ async function remove(id: string): Promise<void> {
 // `dragEnabled` is flipped on by the grip handle's mousedown so the row only
 // becomes draggable when grabbed by the handle (not when clicked to expand).
 const dragEnabled = ref(false);
-const dragIndex = ref<number | null>(null);
+// Reorder is tracked by id (not list index) so it stays correct even though the rendered list is a
+// filtered view; reordering is only offered when the search box is empty (see :draggable below).
+const dragId = ref<string | null>(null);
 
-function onDragStart(i: number): void {
-  dragIndex.value = i;
-  cancel(); // collapse any open editor so indexes stay stable while dragging
+function onDragStart(tr: Training): void {
+  dragId.value = tr.id;
+  cancel(); // collapse any open editor so the list stays stable while dragging
 }
 
-function onDragOver(i: number): void {
-  if (dragIndex.value === null || dragIndex.value === i) return;
+function onDragOver(tr: Training): void {
+  if (dragId.value === null || dragId.value === tr.id) return;
   const list = trainings.value;
-  const [moved] = list.splice(dragIndex.value, 1);
-  list.splice(i, 0, moved);
-  dragIndex.value = i; // follow the item to its new slot
+  const from = list.findIndex((x) => x.id === dragId.value);
+  const to = list.findIndex((x) => x.id === tr.id);
+  if (from === -1 || to === -1) return;
+  const [moved] = list.splice(from, 1);
+  list.splice(to, 0, moved); // follow the item to its new slot
 }
 
 function onDragEnd(): void {
   dragEnabled.value = false;
-  dragIndex.value = null;
+  dragId.value = null;
 }
 
 async function persistOrder(): Promise<void> {
-  const moved = dragIndex.value !== null;
+  const moved = dragId.value !== null;
   onDragEnd();
   if (!moved) return;
   try {
@@ -214,15 +227,21 @@ onMounted(load);
       <div v-for="n in 3" :key="n" class="card h-16 animate-pulse bg-pastel-slate/30" />
     </div>
 
-    <div v-else class="mt-6 flex flex-col gap-3">
+    <div v-else class="mt-6">
+      <ListControls
+        v-model:query="search"
+        :count="filteredTrainings.length"
+        :total="trainings.length"
+      />
+      <div class="flex flex-col gap-3">
       <div
-        v-for="(tr, i) in trainings"
+        v-for="tr in filteredTrainings"
         :key="tr.id"
         class="card overflow-hidden transition"
-        :class="dragIndex === i ? 'opacity-50 ring-2 ring-accent/50' : ''"
-        :draggable="isAdmin && dragEnabled"
-        @dragstart="onDragStart(i)"
-        @dragover.prevent="onDragOver(i)"
+        :class="dragId === tr.id ? 'opacity-50 ring-2 ring-accent/50' : ''"
+        :draggable="isAdmin && dragEnabled && !search.trim()"
+        @dragstart="onDragStart(tr)"
+        @dragover.prevent="onDragOver(tr)"
         @drop="persistOrder"
         @dragend="onDragEnd"
       >
@@ -294,6 +313,10 @@ onMounted(load);
       <p v-if="trainings.length === 0" class="font-mono text-sm text-ink-light">
         {{ t('trainings.empty') }}
       </p>
+      <p v-else-if="filteredTrainings.length === 0" class="font-mono text-sm text-ink-light">
+        {{ t('common.noMatches') }}
+      </p>
+      </div>
     </div>
   </div>
 </template>

@@ -6,11 +6,11 @@
     "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 243,
-      "covered": 243,
+      "total": 249,
+      "covered": 249,
       "backend": 142,
-      "e2e": 88,
-      "manual": 122,
+      "e2e": 94,
+      "manual": 124,
       "gaps": []
     },
     "iec62304": {
@@ -74,6 +74,10 @@
       {
         "id": "org-unit-feature",
         "label": "Organizational units"
+      },
+      {
+        "id": "list-controls-feature",
+        "label": "List search & collapse feature"
       }
     ],
     "status": [
@@ -691,6 +695,16 @@
       "source": "spec",
       "sourceNote": "/ NFR",
       "status": "approved"
+    },
+    {
+      "id": "SR-095",
+      "type": "stakeholder",
+      "category": "User Experience & Design",
+      "title": "Searchable, collapsible lists",
+      "text": "Every list in the application shall offer a text search field that filters entries by their visible content. Lists whose entries are individually expandable shall additionally offer a control to expand or collapse all entries at once.",
+      "priority": "S",
+      "source": "list-controls-feature",
+      "status": "implemented"
     },
     {
       "id": "SR-100",
@@ -2823,6 +2837,50 @@
       ]
     },
     {
+      "id": "SYS-UI-07",
+      "type": "system",
+      "category": "UX, Design & Cross-cutting Quality",
+      "title": "List search & collapse",
+      "text": "Each list page shall render a shared ListControls toolbar with a search box that filters entries by a case-insensitive substring match over their visible text (showing a shown/total count and a 'no matches' state). Pages whose entries are individually expandable (My Team, Trainees) additionally render an expand-all/collapse-all button that toggles every entry's open state at once; pages without expandable entries render only the search box.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-095"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/components/ListControls.vue"
+        },
+        {
+          "path": "frontend/src/utils/listFilter.ts",
+          "symbol": "matchesQuery"
+        },
+        {
+          "path": "frontend/src/pages/UsersPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/RolesPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/TrainingsPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/OrgUnitsPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/TraineesPage.vue"
+        },
+        {
+          "path": "frontend/src/pages/MyTeamPage.vue"
+        }
+      ]
+    },
+    {
       "id": "SYS-NFR-01",
       "type": "system",
       "category": "UX, Design & Cross-cutting Quality",
@@ -3582,6 +3640,40 @@
         {
           "path": "backend/src/routes/orgUnits.ts",
           "symbol": "POST /:id/members"
+        }
+      ]
+    },
+    {
+      "id": "SR-129",
+      "type": "stakeholder",
+      "category": "Organization",
+      "title": "Head training-status report (signable, DMS)",
+      "text": "For the units a head is responsible for, the head can generate a training-status report as a PDF — previewed in-app before download — to sign and store in a DMS.",
+      "priority": "S",
+      "source": "org-unit-feature",
+      "status": "implemented"
+    },
+    {
+      "id": "SYS-ORG-08",
+      "type": "system",
+      "category": "Organization",
+      "title": "Training status report PDF",
+      "text": "The My Team page builds a Training Status Report PDF from the head's subtree (member × required training with due status) carrying a header, summary and a head signature line; it is rendered to page images for inline review and downloaded only from the open preview (view-before-download).",
+      "status": "verified",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-129"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/utils/teamReport.ts",
+          "symbol": "buildTeamReport"
+        },
+        {
+          "path": "frontend/src/pages/MyTeamPage.vue",
+          "symbol": "openReport"
         }
       ]
     }
@@ -4652,6 +4744,26 @@
       "automated": true
     },
     {
+      "id": "VT-U12",
+      "testType": "usability",
+      "title": "List search & collapse",
+      "method": "manual",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-095"
+        }
+      ],
+      "steps": [
+        "Open a list page (e.g. Users or Trainings) and type part of an entry's text into the search box.",
+        "Open a list with expandable entries (Trainees or My Team) and click the expand-all/collapse-all button.",
+        "Confirm a list without expandable entries (e.g. Users) shows no expand/collapse button."
+      ],
+      "expected": "Typing narrows the list to matching entries (with a 'no matches' state when none match); the expand-all/collapse-all button opens or closes every entry at once and is present only on lists whose entries are expandable.",
+      "metric": "Filtering and expand/collapse-all respond within 1s on every list page.",
+      "automated": true
+    },
+    {
       "id": "VT-A01",
       "testType": "accessibility",
       "title": "Full keyboard operability",
@@ -5086,6 +5198,26 @@
       ],
       "expected": "All selected users move to the unit (unknown ids ignored); re-posting moves nobody; unknown unit → 404; non-admin → 403.",
       "automated": true
+    },
+    {
+      "id": "VT-131",
+      "testType": "acceptance",
+      "title": "Head previews & downloads the training status report",
+      "method": "e2e",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-129"
+        }
+      ],
+      "preconditions": "A head with members (the seeded admin heads the root unit).",
+      "steps": [
+        "Open My Team and click \"Training status report\".",
+        "Observe the inline page-image preview.",
+        "Use the Download button in the preview."
+      ],
+      "expected": "The report renders inline as page images first; the PDF download is reachable only from the open preview.",
+      "automated": true
     }
   ],
   "testCases": [
@@ -5243,6 +5375,17 @@
       "covers": [
         "SYS-DSH-01",
         "VT-060"
+      ]
+    },
+    {
+      "id": "TC-0c70060fce",
+      "name": "SYS-UI-07 / VT-U12 / SR-095: the list search box filters entries by visible text",
+      "kind": "e2e",
+      "file": "frontend/e2e/list-controls.spec.ts",
+      "covers": [
+        "SYS-UI-07",
+        "VT-U12",
+        "SR-095"
       ]
     },
     {
@@ -5633,6 +5776,17 @@
       ]
     },
     {
+      "id": "TC-29c07b8124",
+      "name": "SYS-ORG-08 / VT-131 (SR-129): a head previews the report inline before the gated download",
+      "kind": "e2e",
+      "file": "frontend/e2e/team-report.spec.ts",
+      "covers": [
+        "SYS-ORG-08",
+        "VT-131",
+        "SR-129"
+      ]
+    },
+    {
       "id": "TC-2a1a626121",
       "name": "SYS-AUTH-09 / VT-027 (SR-027): activation sets a password, enables sign-in, and spends the token",
       "kind": "backend",
@@ -5734,6 +5888,16 @@
       "covers": [
         "SYS-DATA-04",
         "VT-103"
+      ]
+    },
+    {
+      "id": "TC-343f46898b",
+      "name": "SYS-ORG-08 (SR-004): a plain member does not see My Team",
+      "kind": "e2e",
+      "file": "frontend/e2e/team-report.spec.ts",
+      "covers": [
+        "SYS-ORG-08",
+        "SR-004"
       ]
     },
     {
@@ -6575,6 +6739,17 @@
       "covers": [
         "SYS-DUE-01",
         "VT-053"
+      ]
+    },
+    {
+      "id": "TC-88e24d9ee4",
+      "name": "SYS-UI-07 / VT-U12 / SR-095: expand/collapse-all toggles every entry on an expandable list",
+      "kind": "e2e",
+      "file": "frontend/e2e/list-controls.spec.ts",
+      "covers": [
+        "SYS-UI-07",
+        "VT-U12",
+        "SR-095"
       ]
     },
     {

@@ -7,6 +7,8 @@ import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import type { DueTraining } from '@/types';
 import TrainingCard from '@/components/TrainingCard.vue';
+import ListControls from '@/components/ListControls.vue';
+import { matchesQuery } from '@/utils/listFilter';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -14,6 +16,13 @@ const { t } = useI18n();
 
 const items = ref<DueTraining[]>([]);
 const loading = ref(true);
+const search = ref('');
+
+const filteredItems = computed(() =>
+  items.value.filter((i) =>
+    matchesQuery(search.value, i.training.name, i.training.description, i.training.category),
+  ),
+);
 
 const greeting = computed(() => {
   const h = new Date().getHours();
@@ -72,13 +81,20 @@ onMounted(load);
     </div>
 
     <!-- Grid -->
-    <TransitionGroup
-      v-else
-      name="list"
-      tag="div"
-      class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <TrainingCard v-for="i in items" :key="i.training.id" :item="i" @start="start" />
-    </TransitionGroup>
+    <div v-else class="mt-8">
+      <ListControls
+        v-model:query="search"
+        :count="filteredItems.length"
+        :total="items.length"
+      />
+      <TransitionGroup
+        name="list"
+        tag="div"
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <TrainingCard v-for="i in filteredItems" :key="i.training.id" :item="i" @start="start" />
+      </TransitionGroup>
+      <p v-if="filteredItems.length === 0" class="font-mono text-sm text-ink-light">{{ t('common.noMatches') }}</p>
+    </div>
   </div>
 </template>

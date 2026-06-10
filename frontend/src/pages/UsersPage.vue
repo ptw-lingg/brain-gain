@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, UserPlus } from 'lucide-vue-next';
@@ -7,6 +7,8 @@ import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
 import type { JobRole, OrgUnit, SafeUser } from '@/types';
+import ListControls from '@/components/ListControls.vue';
+import { matchesQuery } from '@/utils/listFilter';
 
 const toast = useToastStore();
 const auth = useAuthStore();
@@ -24,6 +26,24 @@ const loading = ref(true);
 const draft = ref<UserDraft | null>(null);
 const isNew = ref(false);
 const confirmDelete = ref(false);
+const search = ref('');
+
+function accessLabel(u: SafeUser): string {
+  return u.isAdmin ? t('users.accessAdmin') : u.isTrainer ? t('users.accessTrainer') : t('users.accessMember');
+}
+
+const filteredUsers = computed(() =>
+  users.value.filter((u) =>
+    matchesQuery(
+      search.value,
+      u.name,
+      u.email,
+      orgUnitName(u.orgUnitId),
+      roleNames(u.roleIds),
+      accessLabel(u),
+    ),
+  ),
+);
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -154,7 +174,13 @@ onMounted(load);
       <div v-for="n in 4" :key="n" class="card h-14 animate-pulse bg-pastel-slate/30" />
     </div>
 
-    <div v-else class="mt-6 card overflow-hidden">
+    <div v-else class="mt-6">
+      <ListControls
+        v-model:query="search"
+        :count="filteredUsers.length"
+        :total="users.length"
+      />
+      <div class="card overflow-hidden">
       <table class="w-full text-left">
         <thead class="border-b border-line bg-pastel-sky/20">
           <tr class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
@@ -167,7 +193,7 @@ onMounted(load);
         </thead>
         <tbody>
           <tr
-            v-for="u in users"
+            v-for="u in filteredUsers"
             :key="u.id"
             class="cursor-pointer border-b border-line/60 transition last:border-0 hover:bg-pastel-sky/20"
             @click="openEdit(u)"
@@ -190,8 +216,12 @@ onMounted(load);
               <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">{{ t('users.accessMember') }}</span>
             </td>
           </tr>
+          <tr v-if="filteredUsers.length === 0">
+            <td colspan="5" class="px-5 py-6 text-center font-mono text-xs text-ink-light">{{ t('common.noMatches') }}</td>
+          </tr>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Drawer -->

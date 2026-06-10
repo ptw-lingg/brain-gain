@@ -6,6 +6,8 @@ import axios from 'axios';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { OrgUnit, SafeUser } from '@/types';
+import ListControls from '@/components/ListControls.vue';
+import { matchesQuery } from '@/utils/listFilter';
 
 const toast = useToastStore();
 const { t } = useI18n();
@@ -16,6 +18,7 @@ const loading = ref(true);
 const expandedId = ref<string | null>(null);
 const draft = ref<OrgUnit | null>(null);
 const confirmDeleteId = ref<string | null>(null);
+const search = ref('');
 
 // Bulk "add members" picker (scoped to the currently-open unit).
 const addMembersOpen = ref(false);
@@ -117,6 +120,11 @@ const unitName = (id: string | null): string =>
   id ? (units.value.find((u) => u.id === id)?.name ?? t('common.none')) : t('common.none');
 const headName = (id: string): string =>
   users.value.find((u) => u.id === id)?.name ?? t('common.none');
+
+/** Units (in tree order) matching the search box; depth is still computed from the full tree. */
+const filteredUnits = computed<OrgUnit[]>(() =>
+  ordered.value.filter((u) => matchesQuery(search.value, u.name, u.headUserId ? headName(u.headUserId) : '')),
+);
 
 /** Descendants of a unit (ids) — excluded from the parent picker to prevent cycles. */
 const descendantIds = (unitId: string): Set<string> => {
@@ -242,8 +250,14 @@ onMounted(load);
       <div v-for="n in 3" :key="n" class="card h-16 animate-pulse bg-pastel-slate/30" />
     </div>
 
-    <div v-else class="mt-6 flex flex-col gap-3">
-      <div v-for="u in ordered" :key="u.id" class="card overflow-hidden">
+    <div v-else class="mt-6">
+      <ListControls
+        v-model:query="search"
+        :count="filteredUnits.length"
+        :total="units.length"
+      />
+      <div class="flex flex-col gap-3">
+      <div v-for="u in filteredUnits" :key="u.id" class="card overflow-hidden">
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
           :style="{ paddingLeft: `${1.25 + depthOf(u) * 1.25}rem` }"
@@ -356,6 +370,8 @@ onMounted(load);
         </Transition>
       </div>
       <p v-if="units.length === 0" class="font-mono text-sm text-ink-light">{{ t('orgUnits.empty') }}</p>
+      <p v-else-if="filteredUnits.length === 0" class="font-mono text-sm text-ink-light">{{ t('common.noMatches') }}</p>
+      </div>
     </div>
   </div>
 </template>

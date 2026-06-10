@@ -14,7 +14,11 @@
     "email": "Email",
     "password": "Password",
     "description": "Description",
-    "none": "—"
+    "none": "—",
+    "search": "Search…",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "noMatches": "No matches."
   },
   "language": {
     "label": "Language"
@@ -388,7 +392,34 @@
     "empty": "You are not responsible for any org unit yet.",
     "dueCount": "{count} due | {count} due",
     "nothingDue": "Nothing due.",
-    "noTrainings": "No required trainings."
+    "noTrainings": "No required trainings.",
+    "report": "Training status report",
+    "reportTitle": "Training status report",
+    "reportPages": "{pages} page(s) · review, then download to sign & file",
+    "reportRendering": "Rendering preview…",
+    "downloadPdf": "Download PDF",
+    "pageAlt": "page {n}",
+    "reportError": "Could not build the report"
+  },
+  "teamReport": {
+    "title": "Training Status Report",
+    "head": "Head",
+    "generatedOn": "Generated",
+    "responsibleFor": "Responsible for",
+    "reviewedBy": "Reviewed by (Head)",
+    "signatureDate": "Signature / Date",
+    "summary": "{members} member(s) · {due} due or overdue",
+    "colMember": "Member",
+    "colUnit": "Org Unit",
+    "colTraining": "Training",
+    "colStatus": "Status",
+    "colDue": "Due",
+    "statusOverdue": "Overdue",
+    "statusDue": "Due",
+    "statusNever": "Not taken",
+    "statusUpToDate": "Up to date",
+    "noData": "No members to report.",
+    "footer": "Training status report — verify before filing."
   },
   "requirements": {
     "title": "Requirements",
