@@ -17,30 +17,30 @@ const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate))
 
 <template>
   <div
-    class="card flex h-full flex-col gap-3 bg-gradient-to-br to-white p-5 transition-transform hover:-translate-y-0.5 hover:shadow-lift"
+    class="card flex h-full flex-col gap-2 bg-gradient-to-br to-white p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lift"
     :class="tint"
   >
-    <div class="flex items-start justify-between gap-2">
-      <h3 class="font-sans text-base font-bold leading-snug text-ink">{{ training.name }}</h3>
-      <span class="pill shrink-0" :class="dueClasses(item.status)">{{ label }}</span>
-    </div>
+    <h3 class="font-sans text-sm font-bold leading-snug text-ink">{{ training.name }}</h3>
 
-    <p class="line-clamp-3 font-mono text-[13px] leading-relaxed text-ink-muted">
+    <p class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
       {{ training.description }}
     </p>
 
-    <div class="mt-auto flex flex-col items-start gap-2 pt-2">
-      <span class="pill bg-white/80 text-ink-muted"><Clock class="h-3 w-3" /> {{ t('trainingCard.hours', { hours: training.durationHours }) }}</span>
-      <span class="pill bg-white/80 text-ink-muted">{{ training.category }}</span>
-      <span class="pill bg-white/80 text-ink-light">{{ cycleLabel(t, training.cycleYears) }}</span>
-      <button
-        class="btn-primary self-end shrink-0 !px-3 !py-1.5"
-        :class="{ '!bg-ink-light/60': !actionable }"
-        :title="actionable ? t('trainingCard.startSession') : t('trainingCard.notDueYet')"
-        @click="emit('start', training.id)"
-      >
-        <Play class="h-3.5 w-3.5" /> {{ t('trainingCard.start') }}
-      </button>
+    <div class="mt-auto flex flex-col items-start gap-1.5 pt-1">
+      <span class="pill" :class="dueClasses(item.status)">{{ label }}</span>
+      <div class="flex w-full flex-wrap items-center gap-1.5">
+        <span class="pill bg-white/80 text-ink-muted"><Clock class="h-3 w-3" /> {{ t('trainingCard.hours', { hours: training.durationHours }) }}</span>
+        <span class="pill bg-white/80 text-ink-muted">{{ training.category }}</span>
+        <span class="pill bg-white/80 text-ink-light">{{ cycleLabel(t, training.cycleYears) }}</span>
+        <button
+          class="btn-primary ml-auto shrink-0 !px-3 !py-1"
+          :class="{ '!bg-ink-light/60': !actionable }"
+          :title="actionable ? t('trainingCard.startSession') : t('trainingCard.notDueYet')"
+          @click="emit('start', training.id)"
+        >
+          <Play class="h-3.5 w-3.5" /> {{ t('trainingCard.start') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

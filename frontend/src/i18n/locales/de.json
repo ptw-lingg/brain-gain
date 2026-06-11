@@ -79,7 +79,7 @@
   "due": {
     "now": "Jetzt fällig",
     "upToDate": "Aktuell",
-    "upToDateUntil": "Aktuell · fällig am {date}",
+    "upToDateUntil": "Fällig am {date}",
     "dueBy": "Jetzt fällig · bis {date}",
     "overdue": "Überfällig",
     "cycleYearly": "Jährlich",

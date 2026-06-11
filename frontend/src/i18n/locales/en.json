@@ -79,7 +79,7 @@
   "due": {
     "now": "Due now",
     "upToDate": "Up to date",
-    "upToDateUntil": "Up to date · due {date}",
+    "upToDateUntil": "Next due {date}",
     "dueBy": "Due now · by {date}",
     "overdue": "Overdue",
     "cycleYearly": "Yearly",

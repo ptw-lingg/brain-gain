@@ -63,8 +63,8 @@ onMounted(load);
     </header>
 
     <!-- Loading skeletons -->
-    <div v-if="loading" class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div v-for="n in 3" :key="n" class="card h-44 animate-pulse bg-pastel-slate/30" />
+    <div v-if="loading" class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div v-for="n in 3" :key="n" class="card h-32 animate-pulse bg-pastel-slate/30" />
     </div>
 
     <!-- Empty state -->
@@ -90,7 +90,7 @@ onMounted(load);
       <TransitionGroup
         name="list"
         tag="div"
-        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
         <TrainingCard v-for="i in filteredItems" :key="i.training.id" :item="i" @start="start" />
       </TransitionGroup>
