@@ -4,8 +4,8 @@ import { login } from './fixtures';
 // E2e specs for the Dashboard & Trainee Oversight requirement area.
 //   SYS-DSH-01 (derivedFrom SR-060 dashboard of required trainings + status, SR-061 empty state)
 //             — VT-060 "dashboard shows required trainings + status", VT-061 "friendly empty state".
-//   SYS-OVS-02 (derivedFrom SR-070 grouped oversight, SR-071 filter due + copy emails)
-//             — VT-070 "trainee oversight grouped by training", VT-071 "filter due & copy emails".
+//   SYS-OVS-02 (derivedFrom SR-070 grouped oversight, SR-071 filter due + email reminders)
+//             — VT-070 "trainee oversight grouped by training", VT-071 "filter due & email reminders".
 //
 // Backed by DashboardPage.vue / TrainingCard.vue and TraineesPage.vue. The seeded member
 // (user@braingain.app) holds the "Lab Technician" role requiring 2 trainings; the trainer owns both.
@@ -83,30 +83,16 @@ test.describe('Trainee oversight (SYS-OVS-02)', () => {
     await expect(page.getByText('Uma User').first()).toBeVisible();
   });
 
-  test('SYS-OVS-02 / VT-071: "Copy all emails" copies recipients and confirms with a toast', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  test('SYS-OVS-02 / VT-071: per-group "Email trainees" reaches the mail service (Settings hint while SMTP is unset)', async ({ page }) => {
+    // Copy-to-clipboard was superseded by sending email directly (SR-097). On seeded data SMTP is
+    // not configured, so the action must surface a clear pointer to Settings instead of failing silently.
     await login(page, 'trainer');
     await page.goto('/trainees');
 
-    await page.getByRole('button', { name: /Copy all emails/ }).click();
-
-    // A confirming success toast appears (TraineesPage copies a "; "-separated recipient list).
-    await expect(page.getByText(/Copied \d+ email/)).toBeVisible();
-
-    // The clipboard received the member's email as part of the recipient list.
-    const clip = await page.evaluate(() => navigator.clipboard.readText());
-    expect(clip).toContain('user@braingain.app');
-  });
-
-  test('SYS-OVS-02 / VT-071: per-group "Copy emails" copies that training\'s trainees', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await login(page, 'trainer');
-    await page.goto('/trainees');
-
-    await page.getByRole('button', { name: /Copy emails/ }).first().click();
-    await expect(page.getByText(/Copied \d+ email/)).toBeVisible();
-    const clip = await page.evaluate(() => navigator.clipboard.readText());
-    expect(clip).toContain('user@braingain.app');
+    await page.getByRole('button', { name: 'Email trainees' }).first().click();
+    await expect(
+      page.getByText("Email isn't set up yet. Configure the SMTP server in Settings."),
+    ).toBeVisible();
   });
 
   test('SYS-OVS-02 / VT-070: a plain member has no Trainees navigation and is kept off /trainees', async ({ page }) => {

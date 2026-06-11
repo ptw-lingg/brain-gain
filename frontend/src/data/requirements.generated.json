@@ -202,7 +202,7 @@
     },
     {
       "id": "OOS-4",
-      "text": "Reporting/export beyond the trainee email-copy convenience."
+      "text": "Reporting/export beyond the trainee email-reminder convenience."
     }
   ],
   "requirements": [
@@ -617,11 +617,17 @@
       "id": "SR-071",
       "type": "stakeholder",
       "category": "Trainee Oversight",
-      "title": "Filter due & copy emails",
-      "text": "They shall be able to filter to only those who are due/overdue and copy the relevant email addresses to the clipboard for reminders.",
+      "title": "Filter due & email reminders",
+      "text": "They shall be able to filter to only those who are due/overdue and email the relevant trainees a reminder. (Originally copy-to-clipboard; superseded by direct sending per SR-097.)",
       "priority": "S",
       "source": "spec",
-      "status": "approved"
+      "status": "approved",
+      "links": [
+        {
+          "type": "relatedTo",
+          "target": "SR-097"
+        }
+      ]
     },
     {
       "id": "SR-080",
@@ -2703,7 +2709,7 @@
       "type": "system",
       "category": "Dashboard & Trainee Oversight",
       "title": "Trainees page",
-      "text": "The Trainees page shall show collapsible per-training groups, a 'only due/overdue' filter, and per-group + global copy-emails actions that write a '; '-separated recipient list to the clipboard with a confirming toast.",
+      "text": "The Trainees page shall show collapsible per-training groups, a 'only due/overdue' filter, and per-group + global email actions that send a reminder to the shown trainees via POST /api/mail/send (recipients bcc'd), with a confirming toast — or a pointer to the SMTP settings while email is unconfigured.",
       "status": "implemented",
       "links": [
         {
@@ -2718,7 +2724,7 @@
       "implementedBy": [
         {
           "path": "frontend/src/pages/TraineesPage.vue",
-          "symbol": "groups, only-due filter, copy-emails"
+          "symbol": "groups, only-due filter, emailGroup()/emailAll()"
         }
       ]
     },
@@ -4533,7 +4539,7 @@
     {
       "id": "VT-071",
       "testType": "acceptance",
-      "title": "Filter due & copy emails",
+      "title": "Filter due & email reminders",
       "method": "manual",
       "links": [
         {
@@ -4543,9 +4549,9 @@
       ],
       "steps": [
         "Toggle 'only due/overdue'.",
-        "Click copy-emails for a group and 'copy all'."
+        "Click 'Email trainees' for a group and 'Email everyone'."
       ],
-      "expected": "The list filters to actionable trainees; the clipboard receives a ';'-separated recipient list with a confirming toast.",
+      "expected": "The list filters to actionable trainees; a reminder email is sent to them (or a toast points to the SMTP settings while email is unconfigured).",
       "automated": true
     },
     {
@@ -4859,9 +4865,9 @@
       ],
       "preconditions": "Trainer/admin participants.",
       "steps": [
-        "Task: 'Get the email addresses of everyone overdue for a training.'"
+        "Task: 'Send a reminder to everyone overdue for a training.'"
       ],
-      "expected": "Participants filter to due/overdue and copy the right recipients.",
+      "expected": "Participants filter to due/overdue and email the right recipients.",
       "metric": "Task success ≥ 90%; median time < 45s.",
       "automated": false
     },
@@ -6496,6 +6502,16 @@
       ]
     },
     {
+      "id": "TC-5cb6f1f509",
+      "name": "SYS-OVS-02 / VT-071: per-group \"Email trainees\" reaches the mail service (Settings hint while SMTP is unset)",
+      "kind": "e2e",
+      "file": "frontend/e2e/dashboard-oversight.spec.ts",
+      "covers": [
+        "SYS-OVS-02",
+        "VT-071"
+      ]
+    },
+    {
       "id": "TC-5d3ee38a45",
       "name": "SYS-TRN-06 / VT-046: a trainer cannot reorder → 403 (admin-only)",
       "kind": "backend",
@@ -6867,16 +6883,6 @@
       ]
     },
     {
-      "id": "TC-79f2171fa1",
-      "name": "SYS-OVS-02 / VT-071: \"Copy all emails\" copies recipients and confirms with a toast",
-      "kind": "e2e",
-      "file": "frontend/e2e/dashboard-oversight.spec.ts",
-      "covers": [
-        "SYS-OVS-02",
-        "VT-071"
-      ]
-    },
-    {
       "id": "TC-7ab79b3a70",
       "name": "SYS-TRN-09 / VT-045: the admin training editor exposes the Owner selector (trainers do not)",
       "kind": "e2e",
@@ -7096,16 +7102,6 @@
       "covers": [
         "SYS-SET-03",
         "SR-081"
-      ]
-    },
-    {
-      "id": "TC-8feb06116f",
-      "name": "SYS-OVS-02 / VT-071: per-group \"Copy emails\" copies that training's trainees",
-      "kind": "e2e",
-      "file": "frontend/e2e/dashboard-oversight.spec.ts",
-      "covers": [
-        "SYS-OVS-02",
-        "VT-071"
       ]
     },
     {
