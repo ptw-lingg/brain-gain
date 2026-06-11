@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { ChevronDown, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { MaterialLink, Question, SafeUser, Training } from '@/types';
+import type { JobRole, MaterialLink, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
@@ -24,12 +25,86 @@ const confirmDeleteId = ref<string | null>(null);
 const search = ref('');
 
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
+// The training plan covers the members the user is responsible for, so it is offered to admins (whole
+// org) and unit heads (their subtree).
+const canPlan = computed(() => (auth.user?.isAdmin ?? false) || (auth.user?.isHead ?? false));
 
 const filteredTrainings = computed(() =>
   trainings.value.filter((tr) =>
     matchesQuery(search.value, tr.name, tr.description, tr.category, ownerName(tr.ownerId), cycleLabel(t, tr.cycleYears)),
   ),
 );
+
+// Training Plan controlled document (admin): the trainings, roles→trainings and members→roles, built
+// → previewed inline → downloaded for transfer to the DMS (view-before-download, like the team report).
+const planBuilding = ref(false);
+const planOpen = ref(false);
+const planPages = ref<string[]>([]);
+const planTitle = ref('');
+const planDocId = ref('');
+let currentPlanPdf: TCreatedPdf | null = null;
+let planFileName = '';
+
+async function openTrainingPlan(): Promise<void> {
+  planBuilding.value = true;
+  planOpen.value = true;
+  planPages.value = [];
+  try {
+    // The full training catalog + all roles, plus the members the user is responsible for: an admin
+    // oversees the whole organization; a head oversees the members in the units they head (subtree).
+    const [allTrainingsRes, rolesRes, settingsRes] = await Promise.all([
+      client.get<Training[]>('/trainings'),
+      client.get<JobRole[]>('/roles'),
+      client.get<Settings>('/settings'),
+    ]);
+    let members: SafeUser[];
+    let responsibleFor: string;
+    if (auth.user?.isAdmin) {
+      members = (await client.get<SafeUser[]>('/users')).data;
+      responsibleFor = t('trainingPlan.scopeAll');
+    } else {
+      const { data } = await client.get<MyTeam>('/org-units/my-team');
+      members = data.members.map((m) => m.user);
+      responsibleFor = data.units.map((u) => u.name).join(', ');
+    }
+    const { buildTrainingPlan } = await import('@/utils/trainingPlan');
+    const { createPdf } = await import('@/utils/pdf');
+    const { renderPdfToImages } = await import('@/utils/pdfPreview');
+    const { def, fileName, docId, title } = buildTrainingPlan(
+      { trainings: allTrainingsRes.data, roles: rolesRes.data, members },
+      {
+        company: settingsRes.data.companyName ?? '',
+        preparedBy: auth.user?.name ?? '',
+        generatedOn: new Date().toISOString().slice(0, 10),
+        responsibleFor,
+      },
+      t,
+    );
+    planFileName = fileName;
+    planTitle.value = title;
+    planDocId.value = docId;
+    currentPlanPdf = createPdf(def);
+    const bytes = await (await currentPlanPdf.getBlob()).arrayBuffer();
+    planPages.value = await renderPdfToImages(bytes);
+  } catch {
+    toast.error(t('trainingPlan.error'));
+    closeTrainingPlan();
+  } finally {
+    planBuilding.value = false;
+  }
+}
+
+// Download is reachable only from the open preview (view-before-download).
+function downloadTrainingPlan(): void {
+  if (currentPlanPdf) currentPlanPdf.download(planFileName);
+}
+
+function closeTrainingPlan(): void {
+  planOpen.value = false;
+  planBuilding.value = false;
+  planPages.value = [];
+  currentPlanPdf = null;
+}
 
 function blankTraining(): Training {
   return {
@@ -59,8 +134,10 @@ async function load(): Promise<void> {
         ? client.get<SafeUser[]>('/users')
         : Promise.resolve({ data: [] as SafeUser[] }),
     ]);
-    trainings.value = t.data;
-    owners.value = u.data.filter((x) => x.isTrainer || x.isAdmin);
+    trainings.value = t.data; // kept in the deliberate display order (admin drag-to-reorder)
+    owners.value = u.data
+      .filter((x) => x.isTrainer || x.isAdmin)
+      .sort((a, b) => a.name.localeCompare(b.name)); // alphabetical owner dropdown
   } finally {
     loading.value = false;
   }
@@ -198,7 +275,12 @@ onMounted(load);
           // {{ isAdmin ? t('trainings.subtitleAll') : t('trainings.subtitleOwn') }} · {{ trainings.length }}<span v-if="isAdmin"> · {{ t('trainings.dragToReorder') }}</span>
         </p>
       </div>
-      <button class="btn-primary" @click="startCreate"><Plus class="h-4 w-4" /> {{ t('trainings.add') }}</button>
+      <div class="flex items-center gap-2">
+        <button v-if="canPlan" class="btn-ghost" :disabled="planBuilding" @click="openTrainingPlan">
+          <FileText class="h-4 w-4" /> {{ t('trainingPlan.generate') }}
+        </button>
+        <button class="btn-primary" @click="startCreate"><Plus class="h-4 w-4" /> {{ t('trainings.add') }}</button>
+      </div>
     </header>
 
     <!-- New draft editor -->
@@ -318,5 +400,35 @@ onMounted(load);
       </p>
       </div>
     </div>
+
+    <!-- Training Plan preview → gated download (transfer to DMS) -->
+    <Transition name="fade-slide">
+      <div v-if="planOpen" class="fixed inset-0 z-40 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-ink/40" @click="closeTrainingPlan" />
+        <div class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift">
+          <div class="flex items-center justify-between border-b border-line px-5 py-3">
+            <div>
+              <h2 class="font-sans text-base font-bold text-ink">{{ planTitle || t('trainingPlan.modalTitle') }}</h2>
+              <p class="font-mono text-[11px] text-ink-light">
+                <span v-if="!planBuilding">{{ planDocId }} · {{ t('trainingPlan.pages', { pages: planPages.length }) }}</span>
+                <span v-else>{{ t('trainingPlan.rendering') }}</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn-primary !px-3 !py-1.5 !text-xs" :disabled="planBuilding || planPages.length === 0" @click="downloadTrainingPlan">
+                <Download class="h-4 w-4" /> {{ t('trainingPlan.download') }}
+              </button>
+              <button class="text-ink-light hover:text-ink" :title="t('common.close')" @click="closeTrainingPlan"><X class="h-5 w-5" /></button>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">
+            <div v-if="planPages.length" class="mx-auto flex max-w-3xl flex-col items-center gap-3">
+              <img v-for="(p, i) in planPages" :key="i" :src="p" data-pdf-page class="w-full rounded shadow-soft" :alt="t('trainingPlan.pageAlt', { n: i + 1 })" />
+            </div>
+            <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">{{ t('trainingPlan.rendering') }}</div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>

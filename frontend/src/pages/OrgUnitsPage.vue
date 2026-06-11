@@ -72,8 +72,10 @@ async function load(): Promise<void> {
       client.get<OrgUnit[]>('/org-units'),
       client.get<SafeUser[]>('/users'),
     ]);
-    units.value = o.data;
-    users.value = u.data;
+    // Sort by name so the parent/head dropdowns and member picker are alphabetical (the unit list
+    // itself is re-ordered into a tree by `ordered`).
+    units.value = o.data.sort((a, b) => a.name.localeCompare(b.name));
+    users.value = u.data.sort((a, b) => a.name.localeCompare(b.name));
   } finally {
     loading.value = false;
   }

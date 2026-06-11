@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Building2, KeyRound, Lock, Save, SlidersHorizontal } from 'lucide-vue-next';
+import { Building2, KeyRound, Lock, Mail, Save, Send, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { Settings, TlsSettings } from '@/types';
@@ -36,6 +36,19 @@ const certName = ref('');
 const keyName = ref('');
 const savingCert = ref(false);
 const regenerating = ref(false);
+
+// Outbound email (SMTP). The password is write-only — blank means "keep the stored one".
+const smtpEnabled = ref(false);
+const smtpHost = ref('');
+const smtpPort = ref(587);
+const smtpSecure = ref(false);
+const smtpUser = ref('');
+const smtpPassword = ref('');
+const smtpPasswordSet = ref(false);
+const smtpFromName = ref('');
+const smtpFromAddress = ref('');
+const savingSmtp = ref(false);
+const testingSmtp = ref(false);
 
 const tlsWarn = computed(() => {
   if (!tls.value) return '';
@@ -81,6 +94,18 @@ async function load(): Promise<void> {
       domains.value = (e.allowedDomains ?? []).join(', ');
     }
     tls.value = data.tls ?? null;
+    const m = data.smtp;
+    if (m) {
+      smtpEnabled.value = m.enabled;
+      smtpHost.value = m.host;
+      smtpPort.value = m.port;
+      smtpSecure.value = m.secure;
+      smtpUser.value = m.username;
+      smtpFromName.value = m.fromName;
+      smtpFromAddress.value = m.fromAddress;
+      smtpPasswordSet.value = Boolean(m.passwordSet);
+      smtpPassword.value = '';
+    }
   } finally {
     loading.value = false;
   }
@@ -173,6 +198,48 @@ async function saveSso(): Promise<void> {
     toast.error(t('settings.toasts.ssoError'));
   } finally {
     savingSso.value = false;
+  }
+}
+
+async function saveSmtp(): Promise<void> {
+  savingSmtp.value = true;
+  try {
+    await client.put('/settings', {
+      smtp: {
+        enabled: smtpEnabled.value,
+        host: smtpHost.value.trim(),
+        port: smtpPort.value,
+        secure: smtpSecure.value,
+        username: smtpUser.value.trim(),
+        fromName: smtpFromName.value.trim(),
+        fromAddress: smtpFromAddress.value.trim(),
+        // Only send a password when the user typed a new one; blank keeps the stored secret.
+        ...(smtpPassword.value ? { password: smtpPassword.value } : {}),
+      },
+    });
+    if (smtpPassword.value) smtpPasswordSet.value = true;
+    smtpPassword.value = '';
+    toast.success(t('settings.toasts.smtpSaved'));
+  } catch {
+    toast.error(t('settings.toasts.settingsError'));
+  } finally {
+    savingSmtp.value = false;
+  }
+}
+
+async function sendTestEmail(): Promise<void> {
+  testingSmtp.value = true;
+  try {
+    const { data } = await client.post<{ to: string }>('/mail/test', {});
+    toast.success(t('settings.toasts.testSent', { email: data.to }));
+  } catch (err: unknown) {
+    const msg =
+      typeof err === 'object' && err && 'response' in err
+        ? ((err as { response?: { data?: { error?: string } } }).response?.data?.error ?? '')
+        : '';
+    toast.error(msg || t('settings.toasts.testError'));
+  } finally {
+    testingSmtp.value = false;
   }
 }
 
@@ -295,6 +362,69 @@ onMounted(load);
         <div class="mt-6">
           <button class="btn-primary" :disabled="savingSso" @click="saveSso">
             <Save class="h-4 w-4" /> {{ savingSso ? t('settings.savingSso') : t('settings.saveSso') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Outbound email (SMTP) -->
+      <div class="card p-6">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+            <Mail class="h-5 w-5 text-accent" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.smtpTitle') }}</h2>
+            <p class="font-mono text-xs text-ink-light">{{ t('settings.smtpDesc') }}</p>
+          </div>
+          <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
+            <input v-model="smtpEnabled" type="checkbox" class="accent-accent" />
+            {{ t('settings.enabled') }}
+          </label>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="flex flex-col gap-1 sm:col-span-2">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpHost') }}</span>
+            <input v-model="smtpHost" class="bg-input" placeholder="smtp.example.com" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpPort') }}</span>
+            <input v-model.number="smtpPort" type="number" min="1" max="65535" class="bg-input" placeholder="587" />
+          </label>
+          <label class="flex items-center gap-2 self-end pb-2 font-mono text-sm text-ink-muted">
+            <input v-model="smtpSecure" type="checkbox" class="accent-accent" />
+            {{ t('settings.smtpSecure') }}
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpUser') }}</span>
+            <input v-model="smtpUser" class="bg-input" autocomplete="off" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpPassword') }}</span>
+            <input
+              v-model="smtpPassword"
+              type="password"
+              class="bg-input"
+              autocomplete="new-password"
+              :placeholder="smtpPasswordSet ? t('settings.smtpPasswordStored') : ''"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpFromName') }}</span>
+            <input v-model="smtpFromName" class="bg-input" :placeholder="t('common.appName')" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpFromAddress') }}</span>
+            <input v-model="smtpFromAddress" type="email" class="bg-input" placeholder="no-reply@example.com" />
+          </label>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-2">
+          <button class="btn-primary" :disabled="savingSmtp" @click="saveSmtp">
+            <Save class="h-4 w-4" /> {{ savingSmtp ? t('common.saving') : t('settings.saveSmtp') }}
+          </button>
+          <button class="btn-ghost" :disabled="testingSmtp" @click="sendTestEmail">
+            <Send class="h-4 w-4" /> {{ testingSmtp ? t('settings.sendingTest') : t('settings.sendTest') }}
           </button>
         </div>
       </div>

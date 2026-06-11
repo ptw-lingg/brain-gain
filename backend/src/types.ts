@@ -94,11 +94,25 @@ export interface TlsSettings {
   updatedAt: string;
 }
 
+// Outbound email (SMTP) configuration — admin-editable via Settings. `password` is a secret and is
+// NEVER returned by the API (GET /settings redacts it to '' and exposes only `passwordSet`).
+export interface SmtpSettings {
+  enabled: boolean;
+  host: string;
+  port: number; // typically 587 (STARTTLS) or 465 (implicit TLS)
+  secure: boolean; // true = implicit TLS (port 465); false = STARTTLS/plain
+  username: string; // SMTP auth user ('' = no auth)
+  password: string; // SMTP auth password — secret, never sent to the client
+  fromName: string; // display name on the From header
+  fromAddress: string; // From address; required to send
+}
+
 export interface Settings {
   passThreshold: number; // 0–1, default 0.8
   companyName: string; // names the root org unit; admin-editable in Settings
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
+  smtp: SmtpSettings; // outbound email configuration
 }
 
 export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken'>;

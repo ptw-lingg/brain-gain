@@ -53,16 +53,23 @@ async function load(): Promise<void> {
       client.get<JobRole[]>('/roles'),
       client.get<OrgUnit[]>('/org-units'),
     ]);
-    users.value = u.data;
-    roles.value = r.data;
-    orgUnits.value = o.data;
+    // Sort by name so every list and dropdown built from these is alphabetical (fast to scan).
+    users.value = u.data.sort((a, b) => a.name.localeCompare(b.name));
+    roles.value = r.data.sort((a, b) => a.name.localeCompare(b.name));
+    orgUnits.value = o.data.sort((a, b) => a.name.localeCompare(b.name));
   } finally {
     loading.value = false;
   }
 }
 
 function roleNames(ids: string[]): string {
-  return ids.map((id) => roles.value.find((r) => r.id === id)?.name).filter(Boolean).join(', ') || t('common.none');
+  return (
+    ids
+      .map((id) => roles.value.find((r) => r.id === id)?.name)
+      .filter((n): n is string => Boolean(n))
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ') || t('common.none')
+  );
 }
 
 function orgUnitName(id: string | undefined): string {

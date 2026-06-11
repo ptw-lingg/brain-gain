@@ -29,7 +29,7 @@ test.describe('Controlled documents & test traceability (Requirements tab)', () 
       await expect
         .poll(async () => firstPage.evaluate((el: HTMLImageElement) => el.naturalWidth), { timeout: 10000 })
         .toBeGreaterThan(0); // a real raster page, not a blank/failed embed
-      await expect(page.getByRole('button', { name: /Download PDF/i })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Download', exact: true })).toBeEnabled();
       await page.getByTitle('Close').click();
       await expect(page.locator('img[data-pdf-page]')).toHaveCount(0);
     }
@@ -42,7 +42,7 @@ test.describe('Controlled documents & test traceability (Requirements tab)', () 
     await expect(page.locator('img[data-pdf-page]').first()).toBeVisible({ timeout: 30000 });
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.getByRole('button', { name: /Download PDF/i }).click(),
+      page.getByRole('button', { name: 'Download', exact: true }).click(),
     ]);
     expect(download.suggestedFilename()).toMatch(/^SRMF-BRAINGAIN-001-Rev.*\.pdf$/);
   });

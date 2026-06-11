@@ -90,11 +90,26 @@ export interface TlsSettings {
   updatedAt: string;
 }
 
+// Outbound email (SMTP). The password is write-only: the API never returns it, exposing only
+// `passwordSet` so the UI can show whether one is stored.
+export interface SmtpSettings {
+  enabled: boolean;
+  host: string;
+  port: number;
+  secure: boolean;
+  username: string;
+  password?: string; // sent when changing it; never returned by the API
+  passwordSet?: boolean; // returned by the API: whether a password is stored
+  fromName: string;
+  fromAddress: string;
+}
+
 export interface Settings {
   passThreshold: number;
   companyName: string;
   entra: EntraSsoSettings;
   tls: TlsSettings | null;
+  smtp: SmtpSettings;
 }
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';

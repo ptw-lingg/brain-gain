@@ -33,8 +33,9 @@ async function load(): Promise<void> {
       client.get<JobRole[]>('/roles'),
       client.get<Training[]>('/trainings'),
     ]);
-    roles.value = r.data;
-    trainings.value = t.data;
+    // Alphabetical so the roles list and the training checkboxes are fast to scan.
+    roles.value = r.data.sort((a, b) => a.name.localeCompare(b.name));
+    trainings.value = t.data.sort((a, b) => a.name.localeCompare(b.name));
   } finally {
     loading.value = false;
   }

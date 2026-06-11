@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, Copy, Users } from 'lucide-vue-next';
+import { ChevronDown, Mail, Users } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
-import type { DueStatus, TraineeGroup } from '@/types';
+import type { DueStatus, Settings, TraineeGroup } from '@/types';
 import { dueLabel, dueClasses, formatDate } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
@@ -17,6 +17,8 @@ const loading = ref(true);
 const onlyDue = ref(true);
 const open = ref<Record<string, boolean>>({});
 const search = ref('');
+const company = ref('');
+const sending = ref(false);
 
 const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue'];
 
@@ -56,25 +58,54 @@ const grandTotalEmails = computed(() => {
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const { data } = await client.get<TraineeGroup[]>('/trainings/trainees');
-    groups.value = data;
+    const [trainees, settings] = await Promise.all([
+      client.get<TraineeGroup[]>('/trainings/trainees'),
+      client.get<Settings>('/settings'),
+    ]);
+    const data = trainees.data;
+    // Groups alphabetical by training, trainees alphabetical by name — fast to locate either.
+    data.forEach((g) => g.trainees.sort((a, b) => a.user.name.localeCompare(b.user.name)));
+    groups.value = data.sort((a, b) => a.training.name.localeCompare(b.training.name));
     data.forEach((g) => (open.value[g.training.id] = true));
+    company.value = settings.data.companyName ?? '';
   } finally {
     loading.value = false;
   }
 }
 
-async function copy(emails: string[], label: string): Promise<void> {
+// Send a reminder email through the system's SMTP server (recipients are bcc'd by the backend).
+async function sendMail(emails: string[], subject: string, text: string): Promise<void> {
   if (emails.length === 0) {
     toast.error(t('trainees.toasts.noRecipients'));
     return;
   }
+  sending.value = true;
   try {
-    await navigator.clipboard.writeText(emails.join('; '));
-    toast.success(t('trainees.toasts.copied', { count: emails.length, label }, emails.length));
-  } catch {
-    toast.error(t('trainees.toasts.clipboardUnavailable'));
+    const { data } = await client.post<{ sent: number }>('/mail/send', { to: emails, subject, text });
+    toast.success(t('trainees.toasts.mailSent', { count: data.sent }, data.sent));
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    // 503 = SMTP not configured → point the user to Settings; anything else = a send failure.
+    toast.error(status === 503 ? t('trainees.toasts.smtpNotConfigured') : t('trainees.toasts.mailError'));
+  } finally {
+    sending.value = false;
   }
+}
+
+function emailGroup(g: TraineeGroup): void {
+  void sendMail(
+    shownTrainees(g).map((tr) => tr.user.email),
+    t('trainees.mailSubject', { training: g.training.name }),
+    t('trainees.mailBody', { training: g.training.name, company: company.value || t('common.appName') }),
+  );
+}
+
+function emailAll(): void {
+  void sendMail(
+    grandTotalEmails.value,
+    t('trainees.mailAllSubject'),
+    t('trainees.mailAllBody', { company: company.value || t('common.appName') }),
+  );
 }
 
 onMounted(load);
@@ -94,8 +125,8 @@ onMounted(load);
           <input v-model="onlyDue" type="checkbox" class="accent-accent" />
           {{ t('trainees.onlyDue') }}
         </label>
-        <button class="btn-primary" @click="copy(grandTotalEmails, t('trainees.allGroups'))">
-          <Copy class="h-4 w-4" /> {{ t('trainees.copyAll') }}
+        <button class="btn-primary" :disabled="sending" @click="emailAll">
+          <Mail class="h-4 w-4" /> {{ t('trainees.emailAll') }}
         </button>
       </div>
     </header>
@@ -139,11 +170,8 @@ onMounted(load);
               </div>
             </div>
           </button>
-          <button
-            class="btn-ghost !px-3 !py-1.5 !text-xs"
-            @click="copy(shownTrainees(g).map((tr) => tr.user.email), g.training.name)"
-          >
-            <Copy class="h-3.5 w-3.5" /> {{ t('trainees.copyEmails') }}
+          <button class="btn-ghost !px-3 !py-1.5 !text-xs" :disabled="sending" @click="emailGroup(g)">
+            <Mail class="h-3.5 w-3.5" /> {{ t('trainees.emailTrainees') }}
           </button>
         </div>
 

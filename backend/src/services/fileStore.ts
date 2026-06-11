@@ -40,6 +40,7 @@ const DEFAULT_SETTINGS: Settings = {
   companyName: 'PTW Dosimetry',
   entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
   tls: null,
+  smtp: { enabled: false, host: '', port: 587, secure: false, username: '', password: '', fromName: '', fromAddress: '' },
 };
 
 export async function readSettings(): Promise<Settings> {

@@ -15,7 +15,7 @@ test.describe('My Team — training status report', () => {
     await expect(page.locator('img[data-pdf-page]').first()).toBeVisible({ timeout: 30_000 });
 
     // The download is only reachable from the open preview (view-before-download).
-    await expect(page.getByRole('button', { name: /Download PDF/ })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Download', exact: true })).toBeEnabled();
   });
 
   test('SYS-ORG-08 (SR-004): a plain member does not see My Team', async ({ page }) => {

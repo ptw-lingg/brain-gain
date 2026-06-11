@@ -39,8 +39,11 @@ const groups = computed(() => {
     byUnit.get(m.orgUnitName)!.push(m);
   }
   return [...byUnit.entries()]
-    .map(([name, members]) => ({ name, members }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map(([name, members]) => ({
+      name,
+      members: [...members].sort((a, b) => a.user.name.localeCompare(b.user.name)), // alphabetical members
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name)); // alphabetical units
 });
 
 // Groups with their members narrowed by the search box (matches member name/email, unit name, or any

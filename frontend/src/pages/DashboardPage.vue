@@ -38,7 +38,7 @@ async function load(): Promise<void> {
   loading.value = true;
   try {
     const { data } = await client.get<DueTraining[]>('/trainings/mine');
-    items.value = data;
+    items.value = data.sort((a, b) => a.training.name.localeCompare(b.training.name)); // alphabetical, easy to find
   } finally {
     loading.value = false;
   }

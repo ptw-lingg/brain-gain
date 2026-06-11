@@ -23,9 +23,16 @@ function sanitizeDomains(input: unknown): string[] {
   return parts.map((d) => String(d).trim().toLowerCase()).filter((d) => d.length > 0);
 }
 
-// GET /api/settings  — any authenticated user (client needs the threshold; SSO fields are not secret)
+// Strip the SMTP password before returning settings to any client — it is the one secret in here.
+// `smtp.passwordSet` lets the UI show whether a password is stored without ever exposing it.
+function publicSettings(s: Settings): Settings & { smtp: Settings['smtp'] & { passwordSet: boolean } } {
+  return { ...s, smtp: { ...s.smtp, password: '', passwordSet: Boolean(s.smtp.password) } };
+}
+
+// GET /api/settings  — any authenticated user (client needs the threshold; SSO fields are not secret;
+// the SMTP password is redacted).
 router.get('/', authenticate, async (_req, res) => {
-  res.json(await readSettings());
+  res.json(publicSettings(await readSettings()));
 });
 
 // PUT /api/settings  — admin only. Partial merge so saving SSO config and the pass threshold are
@@ -66,8 +73,25 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
     };
   }
 
+  if (body.smtp !== undefined) {
+    const m = body.smtp ?? {};
+    const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+    const port = Number(m.port);
+    next.smtp = {
+      enabled: Boolean(m.enabled),
+      host: str(m.host),
+      port: Number.isFinite(port) && port > 0 && port <= 65535 ? Math.floor(port) : 587,
+      secure: Boolean(m.secure),
+      username: str(m.username),
+      // A blank/omitted password keeps the stored one (so editing other fields never wipes the secret).
+      password: typeof m.password === 'string' && m.password.length ? m.password : next.smtp.password,
+      fromName: str(m.fromName),
+      fromAddress: str(m.fromAddress),
+    };
+  }
+
   await writeSettings(next);
-  return res.json(next);
+  return res.json(publicSettings(next));
 });
 
 // GET /api/settings/certificate — admin only; current TLS cert metadata (never the private key)

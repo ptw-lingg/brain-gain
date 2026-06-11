@@ -110,18 +110,20 @@ export function buildTeamReport(
     margin: [0, 0, 0, 10],
   };
 
-  const signature: Content = {
-    columns: [
-      {
-        width: '60%',
-        stack: [
-          { text: t('teamReport.reviewedBy'), bold: true, fontSize: 8, color: MUTED },
-          { text: meta.headName, fontSize: 10, color: INK, margin: [0, 2, 0, 20] },
-          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 220, y2: 0, lineWidth: 0.5, lineColor: INK }] },
-          { text: t('teamReport.signatureDate'), fontSize: 7, color: MUTED, margin: [0, 3, 0, 0] },
-        ],
-      },
+  // Prepared / reviewed / approved signature fields — every document filed in the DMS carries all three.
+  const signatureCell = (role: string): Content => ({
+    stack: [
+      { text: role, bold: true, fontSize: 8, color: MUTED, margin: [0, 0, 0, 18] },
+      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.5, lineColor: INK }] },
+      { text: t('teamReport.signatureDate'), fontSize: 7, color: MUTED, margin: [0, 3, 0, 0] },
     ],
+  });
+  const signature: Content = {
+    table: {
+      widths: ['*', '*', '*'],
+      body: [[signatureCell(t('teamReport.preparedBy')), signatureCell(t('teamReport.reviewedBy')), signatureCell(t('teamReport.approvedBy'))]],
+    },
+    layout: 'noBorders',
     margin: [0, 18, 0, 0],
   };
 

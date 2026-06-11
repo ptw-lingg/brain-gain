@@ -13,8 +13,8 @@ const auth = useAuthStore();
 const router = useRouter();
 const { t } = useI18n();
 
-const email = ref('admin@braingain.app');
-const password = ref('admin123');
+const email = ref('');
+const password = ref('');
 const loading = ref(false);
 const error = ref('');
 

@@ -110,7 +110,7 @@ const baseList = computed<Item[]>(() => {
   if (fType.value === 'all') return [...reqs, ...tests, ...testCases];
   return reqs.filter((r) => r.type === fType.value);
 });
-const categories = computed(() => [...new Set(baseList.value.map(catOf))]);
+const categories = computed(() => [...new Set(baseList.value.map(catOf))].sort((a, b) => a.localeCompare(b)));
 
 const filtered = computed<Item[]>(() => {
   const needle = q.value.trim().toLowerCase();
