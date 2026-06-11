@@ -14,10 +14,10 @@ export interface TeamReportMeta {
   generatedOn: string; // yyyy-mm-dd
 }
 
-const ACCENT = '#2B78E4';
-const INK = '#0F1E36';
-const MUTED = '#4A6080';
-const LINE = '#CCE0F8';
+const ACCENT = '#156A6E';
+const INK = '#1A1A1A';
+const MUTED = '#46595A';
+const LINE = '#D8E0E0';
 const GREEN = '#047857';
 const RED = '#B91C1C';
 const AMBER = '#B45309';

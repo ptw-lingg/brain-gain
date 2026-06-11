@@ -272,7 +272,7 @@ onMounted(load);
       <div>
         <h1 class="page-title">{{ t('trainings.title') }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          // {{ isAdmin ? t('trainings.subtitleAll') : t('trainings.subtitleOwn') }} · {{ trainings.length }}<span v-if="isAdmin"> · {{ t('trainings.dragToReorder') }}</span>
+          {{ isAdmin ? t('trainings.subtitleAll') : t('trainings.subtitleOwn') }} · {{ trainings.length }}<span v-if="isAdmin"> · {{ t('trainings.dragToReorder') }}</span>
         </p>
       </div>
       <div class="flex items-center gap-2">

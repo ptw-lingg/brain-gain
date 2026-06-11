@@ -670,22 +670,22 @@
       "id": "SR-091",
       "type": "stakeholder",
       "category": "User Experience & Design",
-      "title": "Pastel-blue palette",
-      "text": "The visual design shall use a pastel colour palette, specifically pastel blue (not purple).",
+      "title": "Petrol/teal corporate palette",
+      "text": "The visual design shall follow the corporate UNICHECK design language: a dark petrol/teal palette with a black app bar and white content cards on a light neutral background (not purple). (Supersedes the original pastel-blue brief.)",
       "priority": "M",
       "source": "original-brief",
-      "sourceNote": "+ refinement",
+      "sourceNote": "restyled to the UNICHECK design language (stakeholder request 2026-06-11)",
       "status": "approved"
     },
     {
       "id": "SR-092",
       "type": "stakeholder",
       "category": "User Experience & Design",
-      "title": "Technical typography",
-      "text": "Typography shall have a technical, engineered feel.",
+      "title": "Clean corporate typography",
+      "text": "Typography shall be clean and professional, using a single corporate sans-serif family in line with the UNICHECK design language. (Supersedes the earlier technical/engineered font pairing.)",
       "priority": "S",
       "source": "refinement",
-      "sourceNote": "fonts more technical",
+      "sourceNote": "restyled to the UNICHECK design language (stakeholder request 2026-06-11)",
       "status": "approved"
     },
     {
@@ -915,7 +915,7 @@
       "type": "system",
       "category": "Architecture & Technology",
       "title": "Tailwind + lucide + fonts",
-      "text": "Styling shall use Tailwind CSS v3, icons lucide-vue-next, and Google Fonts Space Grotesk + DM Mono; no external UI component library.",
+      "text": "Styling shall use Tailwind CSS v3, icons lucide-vue-next, and Google Font Open Sans; no external UI component library.",
       "status": "implemented",
       "links": [
         {
@@ -2732,8 +2732,8 @@
       "id": "SYS-UI-01",
       "type": "system",
       "category": "UX, Design & Cross-cutting Quality",
-      "title": "Pastel-blue palette",
-      "text": "The theme shall use the defined pastel-blue CSS-variable palette (background #F0F6FF, sidebar #E0EDFF, accent #2B78E4, pastel blue/cyan/mint/steel/sky/slate); no purple/rose/peach.",
+      "title": "Petrol palette",
+      "text": "The theme shall use the defined petrol CSS-variable palette (content background #EDF1F1, sidebar #0E4A4D, accent #156A6E, petrol 50–900 scale, light desaturated teal tints, black #1A1A1A app bar) with an orange secondary accent (#FB923C: active-nav marker, page-bar tab underline, due-status); green/red otherwise appear as status colours. Native form controls and the in-page select picker follow the petrol accent.",
       "status": "implemented",
       "links": [
         {
@@ -2754,8 +2754,8 @@
       "id": "SYS-UI-02",
       "type": "system",
       "category": "UX, Design & Cross-cutting Quality",
-      "title": "Typography pairing",
-      "text": "Headings/nav/buttons shall use Space Grotesk; body/inputs/badges/metadata shall use DM Mono (technical aesthetic).",
+      "title": "Typography",
+      "text": "All text shall use the Open Sans family (Segoe UI / system-ui fallback); both the sans and mono Tailwind font stacks resolve to it for a uniform corporate look.",
       "status": "implemented",
       "links": [
         {
@@ -2779,7 +2779,7 @@
       "type": "system",
       "category": "UX, Design & Cross-cutting Quality",
       "title": "Logo component",
-      "text": "A BrainGainLogo SVG component (stylized brain + upward arrow, pastel-blue gradient, size prop) shall render cleanly at 32 px, 48 px, and 256 px.",
+      "text": "The BrainGainLogo component shall render the official PTW corporate logo (red triangle + PTW wordmark + 'The Dosimetry Company', vector SVG; size prop, onDark white-lettering variant for dark surfaces); the favicon is the official PTW icon.",
       "status": "implemented",
       "links": [
         {
@@ -2790,6 +2790,15 @@
       "implementedBy": [
         {
           "path": "frontend/src/components/BrainGainLogo.vue"
+        },
+        {
+          "path": "frontend/public/ptw-logo.svg"
+        },
+        {
+          "path": "frontend/public/ptw-logo-white.svg"
+        },
+        {
+          "path": "frontend/public/favicon-ptw.png"
         }
       ]
     },
@@ -2797,8 +2806,8 @@
       "id": "SYS-UI-04",
       "type": "system",
       "category": "UX, Design & Cross-cutting Quality",
-      "title": "Sidebar + content layout",
-      "text": "The layout shall be a fixed 240 px sidebar + scrollable content, collapsing to a bottom tab bar on mobile.",
+      "title": "App chrome + sidebar layout",
+      "text": "The layout shall be a black app bar (logo, app name, user-initials menu with language switch and logout) over a petrol page bar (section title, date), with a fixed 240 px dark-petrol sidebar + scrollable content below.",
       "status": "implemented",
       "links": [
         {
@@ -4893,7 +4902,7 @@
       "steps": [
         "Show the app for 5 seconds, then ask for first impressions and descriptive words."
       ],
-      "expected": "Users describe the UI as polished/professional and perceive the pastel-blue, technical aesthetic and recognisable logo.",
+      "expected": "Users describe the UI as polished/professional and perceive the petrol/teal corporate aesthetic and recognisable logo.",
       "metric": "≥ 4/5 positive first-impression; palette/fonts described as intended.",
       "automated": false
     },
@@ -4991,7 +5000,7 @@
     {
       "id": "VT-A03",
       "testType": "accessibility",
-      "title": "Colour contrast on pastel palette",
+      "title": "Colour contrast on petrol palette",
       "method": "manual",
       "links": [
         {
@@ -5006,7 +5015,7 @@
       "steps": [
         "Measure text and UI contrast across cards, pills, nav, and inputs."
       ],
-      "expected": "Text and essential UI meet WCAG AA contrast on the pastel-blue theme.",
+      "expected": "Text and essential UI meet WCAG AA contrast on the petrol theme (including white-on-petrol nav and chips).",
       "metric": "Contrast ≥ 4.5:1 (normal text) / 3:1 (large/UI).",
       "automated": false
     },
@@ -5472,7 +5481,7 @@
     },
     {
       "id": "TC-01a3a61e4b",
-      "name": "SYS-ARCH-04 — Styling: Tailwind v3 + lucide + Space Grotesk/DM Mono, no UI lib (inspection)",
+      "name": "SYS-ARCH-04 — Styling: Tailwind v3 + lucide + Open Sans, no UI lib (inspection)",
       "kind": "manual",
       "covers": [
         "SYS-ARCH-04"
@@ -5480,9 +5489,9 @@
       "manual": {
         "steps": [
           "Inspect tailwind.config.js, index.html (Google Fonts), package.json.",
-          "Confirm Tailwind v3, lucide-vue-next, the two fonts, and no external UI component library."
+          "Confirm Tailwind v3, lucide-vue-next, the Open Sans font, and no external UI component library."
         ],
-        "expected": "Styling uses Tailwind v3, lucide icons and the two Google Fonts, with no third-party UI component library.",
+        "expected": "Styling uses Tailwind v3, lucide icons and Google Font Open Sans, with no third-party UI component library.",
         "rationale": "Dependency/tooling selection is verified by inspecting config."
       }
     },
@@ -6466,17 +6475,17 @@
     },
     {
       "id": "TC-5a1e34ce2b",
-      "name": "SYS-UI-03 — BrainGainLogo SVG renders cleanly at 32/48/256 px (visual)",
+      "name": "SYS-UI-03 — PTW logo renders cleanly at 32/48/256 px (visual)",
       "kind": "manual",
       "covers": [
         "SYS-UI-03"
       ],
       "manual": {
         "steps": [
-          "Render the logo at 32, 48 and 256 px.",
-          "Confirm the brain + upward-arrow mark and gradient stay crisp."
+          "Render the logo at 32, 48 and 256 px (light variant) and on the black app bar (white variant).",
+          "Confirm the red triangle and PTW lettering stay crisp and legible."
         ],
-        "expected": "The logo renders cleanly and recognizably at 32, 48 and 256 px.",
+        "expected": "The PTW logo renders cleanly and recognizably at all sizes, on light and dark surfaces.",
         "rationale": "Visual crispness of an SVG across sizes is a design judgement."
       }
     },
@@ -7699,17 +7708,17 @@
     },
     {
       "id": "TC-c3e96101ac",
-      "name": "SYS-UI-02 — Typography: Space Grotesk headings/nav, DM Mono body/metadata (visual)",
+      "name": "SYS-UI-02 — Typography: Open Sans throughout (visual)",
       "kind": "manual",
       "covers": [
         "SYS-UI-02"
       ],
       "manual": {
         "steps": [
-          "Inspect headings/nav/buttons (Space Grotesk) vs body/inputs/badges (DM Mono)."
+          "Inspect headings, nav, buttons, body, inputs and badges — all should render in Open Sans (or the Segoe UI/system fallback)."
         ],
-        "expected": "Headings/nav/buttons render in Space Grotesk and body/inputs/badges in DM Mono.",
-        "rationale": "Typography pairing is a visual property best confirmed by eye."
+        "expected": "All text renders in the single Open Sans family; no leftover Space Grotesk/DM Mono.",
+        "rationale": "Typography is a visual property best confirmed by eye."
       }
     },
     {
@@ -8006,17 +8015,17 @@
     },
     {
       "id": "TC-e8389f00d0",
-      "name": "SYS-UI-01 — Pastel-blue palette, no purple/rose/peach (visual)",
+      "name": "SYS-UI-01 — Petrol palette per the UNICHECK design language (visual)",
       "kind": "manual",
       "covers": [
         "SYS-UI-01"
       ],
       "manual": {
         "steps": [
-          "Open the app and inspect the theme variables (bg #F0F6FF, sidebar #E0EDFF, accent #2B78E4).",
-          "Confirm no purple/rose/peach hues."
+          "Open the app and inspect the theme variables (content bg #EDF1F1, sidebar #0E4A4D, accent #156A6E, black #1A1A1A app bar).",
+          "Confirm green/amber/red appear only as status colours."
         ],
-        "expected": "The UI uses the defined pastel-blue palette with no purple/rose/peach.",
+        "expected": "The UI uses the defined petrol palette; no stray hues outside status colours.",
         "rationale": "Colour-palette correctness is a visual/design judgement."
       }
     },

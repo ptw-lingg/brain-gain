@@ -1,18 +1,87 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Eye, X } from 'lucide-vue-next';
+import { Eye, Languages, LogOut, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
+import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '@/i18n';
 import AppSidebar from './AppSidebar.vue';
+import BrainGainLogo from './BrainGainLogo.vue';
 
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 // Leave the "view as" session: restore the admin's own token, then return to the Users page.
 async function stopImpersonating(): Promise<void> {
   await auth.stopImpersonation();
   await router.push('/users');
+}
+
+// Section title shown in the teal page bar, derived from the active route.
+const PAGE_TITLES: [prefix: string, key: string][] = [
+  ['/dashboard', 'nav.myTrainings'],
+  ['/session', 'nav.myTrainings'],
+  ['/my-team', 'nav.myTeam'],
+  ['/trainings', 'nav.trainings'],
+  ['/trainees', 'nav.trainees'],
+  ['/roles', 'nav.jobRoles'],
+  ['/org-units', 'nav.orgUnits'],
+  ['/users', 'nav.users'],
+  ['/settings', 'nav.settings'],
+  ['/requirements', 'nav.requirements'],
+];
+const pageTitle = computed(() => {
+  const hit = PAGE_TITLES.find(([prefix]) => route.path.startsWith(prefix));
+  return hit ? t(hit[1]) : '';
+});
+
+const today = computed(() =>
+  new Date().toLocaleDateString(locale.value, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }),
+);
+
+const initials = computed(() =>
+  (auth.user?.name ?? '?')
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase(),
+);
+
+const roleLabel = computed(() =>
+  auth.user?.isAdmin
+    ? t('nav.roleAdmin')
+    : auth.user?.isTrainer
+      ? t('nav.roleTrainer')
+      : t('nav.roleMember'),
+);
+
+// User menu (avatar dropdown): language switch + logout.
+const menuOpen = ref(false);
+const menuRoot = ref<HTMLElement | null>(null);
+
+function onDocClick(e: MouseEvent): void {
+  if (menuOpen.value && menuRoot.value && !menuRoot.value.contains(e.target as Node)) {
+    menuOpen.value = false;
+  }
+}
+onMounted(() => document.addEventListener('click', onDocClick));
+onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
+
+function onLocaleChange(e: Event): void {
+  setLocale((e.target as HTMLSelectElement).value as LocaleCode);
+}
+
+function logout(): void {
+  auth.logout();
+  router.push('/login');
 }
 </script>
 
@@ -34,6 +103,76 @@ async function stopImpersonating(): Promise<void> {
       >
         <X class="h-3.5 w-3.5" /> {{ t('impersonation.stop') }}
       </button>
+    </div>
+
+    <!-- Black app bar: logo left, app name centered, user menu right -->
+    <header class="grid h-12 shrink-0 grid-cols-3 items-center bg-[#1a1a1a] px-4">
+      <BrainGainLogo :size="26" on-dark />
+      <div class="text-center text-sm font-bold uppercase tracking-[0.25em] text-white">
+        BrainGain
+      </div>
+      <div ref="menuRoot" class="relative flex items-center justify-end">
+        <button
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-petrol-500 text-xs font-bold text-white transition hover:bg-petrol-400"
+          :title="auth.user?.name"
+          :aria-label="t('nav.userMenu')"
+          aria-haspopup="menu"
+          :aria-expanded="menuOpen"
+          @click="menuOpen = !menuOpen"
+        >
+          {{ initials }}
+        </button>
+
+        <Transition name="fade-slide">
+          <div
+            v-if="menuOpen"
+            class="card absolute right-0 top-10 z-50 w-64 overflow-hidden p-0 text-left"
+            role="menu"
+          >
+            <div class="border-b border-line px-4 py-3">
+              <div class="truncate text-sm font-semibold text-ink">{{ auth.user?.name }}</div>
+              <div class="truncate text-xs text-ink-muted">{{ auth.user?.email }}</div>
+              <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
+                {{ roleLabel }}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
+              <span class="flex items-center gap-2 text-sm text-ink-muted">
+                <Languages class="h-4 w-4" /> {{ t('language.label') }}
+              </span>
+              <select
+                :value="locale"
+                class="cursor-pointer rounded-md border border-line bg-white px-2 py-1 text-xs text-ink outline-none transition focus:border-accent"
+                :aria-label="t('language.label')"
+                @change="onLocaleChange"
+              >
+                <option v-for="l in SUPPORTED_LOCALES" :key="l.code" :value="l.code">
+                  {{ l.label }}
+                </option>
+              </select>
+            </div>
+
+            <button
+              class="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-petrol-50 hover:text-ink"
+              role="menuitem"
+              @click="logout"
+            >
+              <LogOut class="h-4 w-4" /> {{ t('nav.logout') }}
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </header>
+
+    <!-- Teal page bar: section name (orange tab marker) left, date right -->
+    <div class="flex h-9 shrink-0 items-center justify-between bg-petrol-800 px-4">
+      <span
+        class="flex h-full items-center border-b-2 border-orange-400 text-xs font-bold uppercase tracking-widest text-white"
+      >
+        {{ pageTitle }}
+      </span>
+      <span class="text-[11px] font-semibold text-petrol-200">{{ today }}</span>
     </div>
 
     <div class="flex flex-1 overflow-hidden">

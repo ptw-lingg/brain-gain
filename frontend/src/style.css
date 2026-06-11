@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #f0f6ff;
+  --bg-primary: #edf1f1;
   --bg-card: #ffffff;
-  --bg-sidebar: #e0edff;
-  --accent: #2b78e4;
-  --text-primary: #0f1e36;
-  --text-muted: #4a6080;
-  --border: #cce0f8;
+  --bg-sidebar: #0e4a4d;
+  --accent: #156a6e;
+  --text-primary: #1a1a1a;
+  --text-muted: #46595a;
+  --border: #d8e0e0;
 }
 
 html,
@@ -22,8 +22,42 @@ body {
   margin: 0;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Open Sans', 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Native form controls (checkboxes, radios, range) and dropdown highlights in the petrol palette. */
+:root {
+  accent-color: var(--accent);
+}
+::selection {
+  background: rgba(21, 106, 110, 0.25);
+}
+
+/* Customizable <select> (Chromium/Edge): renders the dropdown picker in-page so it can be styled —
+   petrol highlight instead of the OS blue. Browsers without support keep the native picker. */
+select,
+::picker(select) {
+  appearance: base-select;
+}
+::picker(select) {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(10, 54, 56, 0.16);
+  padding: 4px;
+}
+select option {
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+select option:hover,
+select option:focus,
+select option:checked {
+  background: var(--accent);
+  color: #ffffff;
 }
 
 @layer components {
@@ -36,20 +70,20 @@ body {
       transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-accent text-white shadow-soft hover:brightness-110;
+    @apply btn bg-accent text-white shadow-soft hover:bg-petrol-600;
   }
   .btn-ghost {
-    @apply btn border border-line bg-white text-ink-muted hover:bg-pastel-sky/40;
+    @apply btn border border-petrol-200 bg-white text-accent hover:bg-petrol-50;
   }
   .btn-danger {
-    @apply btn border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100;
+    @apply btn border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100;
   }
   .card {
-    @apply rounded-xl border border-line bg-bg-card shadow-soft;
+    @apply rounded-lg border border-line bg-bg-card shadow-soft;
   }
   .pill {
-    @apply inline-flex h-6 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5
-      font-mono text-xs leading-none;
+    @apply inline-flex h-6 items-center justify-center gap-1 whitespace-nowrap rounded-md px-2.5
+      font-mono text-xs font-semibold leading-none;
   }
   /* Equal-width-within-a-column without truncation: short labels pad to this min so
      a list column lines up; longer labels grow instead of clipping/ellipsizing. */
@@ -92,6 +126,6 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c8dAEE;
+  background: #b8c8c9;
   border-radius: 8px;
 }

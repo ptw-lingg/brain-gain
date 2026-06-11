@@ -36,8 +36,8 @@ test.describe('UI / UX — layout, navigation & operation feedback', () => {
     await login(page, 'admin');
     const aside = page.locator('aside');
     await expect(aside).toBeVisible();
-    // Brand/logo lives in the sidebar.
-    await expect(aside.getByLabel('BrainGain logo')).toBeVisible();
+    // Brand/logo lives in the black app bar above the sidebar.
+    await expect(page.getByLabel('BrainGain logo')).toBeVisible();
     // Member entry point is always present.
     await expect(aside).toContainText('My Trainings');
   });

@@ -11,6 +11,10 @@ test.describe('Lists — sorting', () => {
     await login(page, 'admin');
     await page.goto('/users');
 
+    // Wait until the table has loaded — allInnerTexts() below does NOT auto-wait, so reading
+    // immediately after navigation can race the users fetch and see an empty tbody.
+    await expect(page.locator('tbody tr').first()).toBeVisible();
+
     // The first column of the users table is the name; it must be in ascending alphabetical order.
     const names = await page.locator('tbody tr td:first-child').allInnerTexts();
     expect(names.length).toBeGreaterThan(1);

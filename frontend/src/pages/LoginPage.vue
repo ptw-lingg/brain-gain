@@ -82,15 +82,13 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-bg-primary px-4">
-    <div class="card w-full max-w-md p-8" style="border-radius: 24px">
+  <div
+    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-petrol-700 to-petrol-900 px-4"
+  >
+    <div class="card w-full max-w-md p-8">
       <div class="flex flex-col items-center text-center">
         <BrainGainLogo :size="64" />
-        <h1
-          class="mt-4 bg-gradient-to-r from-accent to-sky-400 bg-clip-text text-2xl font-bold text-transparent"
-        >
-          BrainGain
-        </h1>
+        <h1 class="mt-4 text-2xl font-bold tracking-wide text-petrol-800">BrainGain</h1>
         <p class="font-mono text-xs text-ink-light">{{ t('common.tagline') }}</p>
       </div>
 

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, UserPlus } from 'lucide-vue-next';
+import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
@@ -220,7 +220,9 @@ onMounted(load);
               <span v-else-if="u.isTrainer" class="pill pill-col bg-pastel-mint/50 text-emerald-700">
                 <GraduationCap class="h-3 w-3" /> {{ t('users.accessTrainer') }}
               </span>
-              <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">{{ t('users.accessMember') }}</span>
+              <span v-else class="pill pill-col bg-pastel-slate/50 text-ink-muted">
+                <User class="h-3 w-3" /> {{ t('users.accessMember') }}
+              </span>
             </td>
           </tr>
           <tr v-if="filteredUsers.length === 0">

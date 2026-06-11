@@ -22,7 +22,7 @@ export function dueClasses(status: DueStatus): string {
     case 'up-to-date':
       return 'bg-pastel-mint/50 text-emerald-700';
     case 'due':
-      return 'bg-accent-light/60 text-accent';
+      return 'bg-orange-100 text-orange-700';
     case 'never':
     case 'overdue':
       return 'bg-rose-100 text-rose-600';

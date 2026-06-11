@@ -206,7 +206,7 @@ const testKindClass = (k?: string) =>
           <button
             v-for="k in g.kinds"
             :key="k"
-            class="btn-ghost !px-2.5 !py-1 !text-xs"
+            class="btn-ghost !w-[4.5rem] !px-0 !py-1 !text-xs"
             :title="DOC_CATALOG[k].title + (DOC_CATALOG[k].clause ? ' · ' + DOC_CATALOG[k].clause : '')"
             :disabled="docBuilding !== null"
             @click="openDocument(k)"

@@ -34,6 +34,7 @@
     "settings": "Settings",
     "requirements": "Requirements",
     "logout": "Log out",
+    "userMenu": "User menu",
     "roleAdmin": "admin",
     "roleTrainer": "trainer",
     "roleMember": "member"
@@ -64,10 +65,10 @@
     "errorActivate": "Could not activate your account"
   },
   "dashboard": {
-    "greetingMorning": "Good morning, {name} 🌱",
-    "greetingAfternoon": "Good afternoon, {name} 🌱",
-    "greetingEvening": "Good evening, {name} 🌱",
-    "subtitle": "// {assigned} assigned · {due} due now",
+    "greetingMorning": "Good morning, {name}",
+    "greetingAfternoon": "Good afternoon, {name}",
+    "greetingEvening": "Good evening, {name}",
+    "subtitle": "{assigned} assigned · {due} due now",
     "empty": "No trainings yet. Ask your admin to assign you a role."
   },
   "trainingCard": {
@@ -87,7 +88,7 @@
   },
   "session": {
     "back": "My Trainings",
-    "stepOf": "// step {step} of 3",
+    "stepOf": "step {step} of 3",
     "startTest": "Start test →",
     "noMaterial": "No material attached for this training.",
     "submitTest": "Submit test",
@@ -151,7 +152,7 @@
   },
   "trainees": {
     "title": "Trainees",
-    "subtitle": "// who must complete your trainings",
+    "subtitle": "who must complete your trainings",
     "onlyDue": "Only show due / overdue",
     "emailAll": "Email everyone",
     "empty": "No one is currently assigned to your trainings.",
@@ -173,7 +174,7 @@
   },
   "roles": {
     "title": "Job Roles",
-    "subtitle": "// {count} roles",
+    "subtitle": "{count} roles",
     "add": "Add Role",
     "new": "New role",
     "create": "Create",
@@ -201,7 +202,7 @@
   },
   "users": {
     "title": "Users",
-    "subtitle": "// {count} users",
+    "subtitle": "{count} users",
     "import": "Import",
     "add": "Add User",
     "thName": "Name",
@@ -242,7 +243,7 @@
   "usersImport": {
     "back": "Users",
     "title": "Import Users",
-    "subtitle": "// paste rows from Excel or any table — preview, then import",
+    "subtitle": "paste rows from Excel or any table — preview, then import",
     "pastedData": "Pasted data",
     "instructions": "Tab-separated columns Name, Email, Roles, Org Unit (a header row is detected automatically). Roles is a comma- or semicolon-separated list of job-role names; Org Unit is a single unit name. Both are matched case-insensitively, and an unknown name flags the row as an error. If Org Unit is left blank, a new user is placed in the top-level unit.",
     "pasteFromClipboard": "Paste from clipboard",
@@ -293,7 +294,7 @@
   },
   "settings": {
     "title": "Settings",
-    "subtitle": "// applies to every training at once",
+    "subtitle": "applies to every training at once",
     "companyTitle": "Company name",
     "companyDesc": "Names the top-level organizational unit your structure hangs under.",
     "saveCompany": "Save company name",
@@ -362,7 +363,7 @@
   },
   "orgUnits": {
     "title": "Org Units",
-    "subtitle": "// {count} units",
+    "subtitle": "{count} units",
     "add": "Add Unit",
     "new": "New unit",
     "create": "Create",
@@ -403,7 +404,7 @@
   },
   "myTeam": {
     "title": "My Team",
-    "subtitle": "// everyone in your org unit and below",
+    "subtitle": "everyone in your org unit and below",
     "onlyDue": "Only show due / overdue",
     "empty": "You are not responsible for any org unit yet.",
     "dueCount": "{count} due | {count} due",
@@ -477,7 +478,7 @@
   },
   "requirements": {
     "title": "Requirements",
-    "subtitle": "// {stakeholder} stakeholder · {system} system · {tests} VT · {cases} test cases · linked & traceable",
+    "subtitle": "{stakeholder} stakeholder · {system} system · {tests} validation tests · {cases} test cases · linked & traceable",
     "safetyClass": "IEC 62304 · Class {class}",
     "covered": "{covered}/{total} covered",
     "coverageBreakdown": "{backend} backend · {e2e} e2e · {manual} manual ·",

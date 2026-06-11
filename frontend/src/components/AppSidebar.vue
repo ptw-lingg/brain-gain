@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 import {
   BookOpen,
   GraduationCap,
@@ -11,52 +10,23 @@ import {
   UsersRound,
   SlidersHorizontal,
   ListChecks,
-  LogOut,
-  Languages,
 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
-import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '@/i18n';
-import BrainGainLogo from './BrainGainLogo.vue';
 
 const auth = useAuthStore();
-const router = useRouter();
-const { t, locale } = useI18n();
-
-function onLocaleChange(e: Event): void {
-  setLocale((e.target as HTMLSelectElement).value as LocaleCode);
-}
+const { t } = useI18n();
 
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
 const isTrainer = computed(() => auth.user?.isTrainer ?? false);
 const isHead = computed(() => auth.user?.isHead ?? false);
 // Requirements/DMS tooling is internal-only (dev + internal build), excluded from the public build.
 const internalTools = import.meta.env.DEV || import.meta.env.VITE_INTERNAL === 'true';
-
-const initials = computed(() =>
-  (auth.user?.name ?? '?')
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase(),
-);
-
-function logout(): void {
-  auth.logout();
-  router.push('/login');
-}
 </script>
 
 <template>
-  <aside
-    class="flex w-60 shrink-0 flex-col border-r border-line bg-bg-sidebar px-4 py-6"
-  >
-    <div class="px-2">
-      <BrainGainLogo :size="40" show-wordmark />
-    </div>
-
-    <nav class="mt-8 flex flex-1 flex-col gap-1">
+  <aside class="flex w-60 shrink-0 flex-col bg-bg-sidebar px-3 py-5">
+    <nav class="flex flex-1 flex-col gap-1">
       <RouterLink to="/dashboard" class="nav-item" active-class="nav-active">
         <BookOpen class="h-4 w-4" /> {{ t('nav.myTrainings') }}
       </RouterLink>
@@ -92,44 +62,14 @@ function logout(): void {
         </RouterLink>
       </template>
     </nav>
-
-    <!-- Language switcher — subtle, borderless -->
-    <div class="mb-2 flex items-center justify-end gap-1 px-1 text-ink-light">
-      <Languages class="h-3.5 w-3.5" />
-      <select
-        :value="locale"
-        class="cursor-pointer border-0 bg-transparent p-0 pr-1 text-[11px] text-ink-light outline-none transition hover:text-ink focus:text-ink"
-        :aria-label="t('language.label')"
-        @change="onLocaleChange"
-      >
-        <option v-for="l in SUPPORTED_LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
-      </select>
-    </div>
-
-    <div class="flex items-center gap-3 rounded-lg border border-line bg-white/70 px-3 py-2.5">
-      <div
-        class="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-sans text-xs font-bold text-white"
-      >
-        {{ initials }}
-      </div>
-      <div class="min-w-0 flex-1">
-        <div class="truncate text-sm font-semibold text-ink">{{ auth.user?.name }}</div>
-        <div class="truncate font-mono text-[10px] text-ink-light">
-          {{ isAdmin ? t('nav.roleAdmin') : isTrainer ? t('nav.roleTrainer') : t('nav.roleMember') }}
-        </div>
-      </div>
-      <button class="text-ink-light hover:text-accent" :title="t('nav.logout')" @click="logout">
-        <LogOut class="h-4 w-4" />
-      </button>
-    </div>
   </aside>
 </template>
 
 <style scoped>
 .nav-item {
-  @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition hover:bg-white/60;
+  @apply flex items-center gap-3 rounded-md border-l-4 border-transparent px-3 py-2 text-sm font-medium text-petrol-100 transition hover:bg-white/10;
 }
 .nav-active {
-  @apply bg-white font-semibold text-accent shadow-soft;
+  @apply border-orange-400 bg-petrol-600 font-semibold text-white;
 }
 </style>

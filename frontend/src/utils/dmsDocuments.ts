@@ -37,10 +37,10 @@ export const DOC_GROUPS: { label: string; kinds: DocKind[] }[] = [
 ];
 
 const STANDARDS = 'ISO 13485:2016 · EU MDR 2017/745 · MDSAP · IEC 62304:2006+A1:2015';
-const ACCENT = '#2B78E4';
-const INK = '#0F1E36';
-const MUTED = '#4A6080';
-const LINE = '#CCE0F8';
+const ACCENT = '#156A6E';
+const INK = '#1A1A1A';
+const MUTED = '#46595A';
+const LINE = '#D8E0E0';
 const GREEN = '#047857';
 const RED = '#B91C1C';
 const AMBER = '#B45309';

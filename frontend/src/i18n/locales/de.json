@@ -34,6 +34,7 @@
     "settings": "Einstellungen",
     "requirements": "Anforderungen",
     "logout": "Abmelden",
+    "userMenu": "Benutzermenü",
     "roleAdmin": "Admin",
     "roleTrainer": "Trainer",
     "roleMember": "Mitglied"
@@ -64,10 +65,10 @@
     "errorActivate": "Ihr Konto konnte nicht aktiviert werden"
   },
   "dashboard": {
-    "greetingMorning": "Guten Morgen, {name} 🌱",
-    "greetingAfternoon": "Guten Tag, {name} 🌱",
-    "greetingEvening": "Guten Abend, {name} 🌱",
-    "subtitle": "// {assigned} zugewiesen · {due} jetzt fällig",
+    "greetingMorning": "Guten Morgen, {name}",
+    "greetingAfternoon": "Guten Tag, {name}",
+    "greetingEvening": "Guten Abend, {name}",
+    "subtitle": "{assigned} zugewiesen · {due} jetzt fällig",
     "empty": "Noch keine Schulungen. Bitten Sie Ihren Admin, Ihnen eine Funktion zuzuweisen."
   },
   "trainingCard": {
@@ -87,7 +88,7 @@
   },
   "session": {
     "back": "Meine Schulungen",
-    "stepOf": "// Schritt {step} von 3",
+    "stepOf": "Schritt {step} von 3",
     "startTest": "Test starten →",
     "noMaterial": "Für diese Schulung ist kein Material hinterlegt.",
     "submitTest": "Test abgeben",
@@ -151,7 +152,7 @@
   },
   "trainees": {
     "title": "Teilnehmer",
-    "subtitle": "// wer Ihre Schulungen absolvieren muss",
+    "subtitle": "wer Ihre Schulungen absolvieren muss",
     "onlyDue": "Nur fällige / überfällige anzeigen",
     "emailAll": "Alle anschreiben",
     "empty": "Ihren Schulungen ist derzeit niemand zugewiesen.",
@@ -173,7 +174,7 @@
   },
   "roles": {
     "title": "Funktionen",
-    "subtitle": "// {count} Funktionen",
+    "subtitle": "{count} Funktionen",
     "add": "Funktion hinzufügen",
     "new": "Neue Funktion",
     "create": "Erstellen",
@@ -201,7 +202,7 @@
   },
   "users": {
     "title": "Benutzer",
-    "subtitle": "// {count} Benutzer",
+    "subtitle": "{count} Benutzer",
     "import": "Importieren",
     "add": "Benutzer hinzufügen",
     "thName": "Name",
@@ -242,7 +243,7 @@
   "usersImport": {
     "back": "Benutzer",
     "title": "Benutzer importieren",
-    "subtitle": "// Zeilen aus Excel oder einer beliebigen Tabelle einfügen — Vorschau, dann importieren",
+    "subtitle": "Zeilen aus Excel oder einer beliebigen Tabelle einfügen — Vorschau, dann importieren",
     "pastedData": "Eingefügte Daten",
     "instructions": "Tabulatorgetrennte Spalten Name, E-Mail, Funktionen, Organisationseinheit (eine Kopfzeile wird automatisch erkannt). Funktionen ist eine durch Komma oder Semikolon getrennte Liste von Funktionsnamen; Organisationseinheit ist ein einzelner Einheitsname. Beide werden ohne Beachtung der Groß-/Kleinschreibung abgeglichen; ein unbekannter Name markiert die Zeile als Fehler. Bleibt die Organisationseinheit leer, wird ein neuer Benutzer der obersten Einheit zugeordnet.",
     "pasteFromClipboard": "Aus Zwischenablage einfügen",
@@ -293,7 +294,7 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "subtitle": "// gilt für alle Schulungen gleichzeitig",
+    "subtitle": "gilt für alle Schulungen gleichzeitig",
     "companyTitle": "Firmenname",
     "companyDesc": "Benennt die oberste Organisationseinheit, unter der Ihre Struktur hängt.",
     "saveCompany": "Firmennamen speichern",
@@ -362,7 +363,7 @@
   },
   "orgUnits": {
     "title": "Organisationseinheiten",
-    "subtitle": "// {count} Einheiten",
+    "subtitle": "{count} Einheiten",
     "add": "Einheit hinzufügen",
     "new": "Neue Einheit",
     "create": "Erstellen",
@@ -403,7 +404,7 @@
   },
   "myTeam": {
     "title": "Mein Team",
-    "subtitle": "// alle in Ihrer Organisationseinheit und darunter",
+    "subtitle": "alle in Ihrer Organisationseinheit und darunter",
     "onlyDue": "Nur fällige / überfällige anzeigen",
     "empty": "Sie sind noch für keine Organisationseinheit verantwortlich.",
     "dueCount": "{count} fällig | {count} fällig",
@@ -477,7 +478,7 @@
   },
   "requirements": {
     "title": "Anforderungen",
-    "subtitle": "// {stakeholder} Stakeholder · {system} System · {tests} VT · {cases} Testfälle · verknüpft & nachverfolgbar",
+    "subtitle": "{stakeholder} Stakeholder · {system} System · {tests} Validierungstests · {cases} Testfälle · verknüpft & nachverfolgbar",
     "safetyClass": "IEC 62304 · Klasse {class}",
     "covered": "{covered}/{total} abgedeckt",
     "coverageBreakdown": "{backend} Backend · {e2e} E2E · {manual} manuell ·",
