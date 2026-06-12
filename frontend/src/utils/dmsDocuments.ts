@@ -7,7 +7,8 @@ import type { Requirement, RequirementsDoc, TestCaseRecord, TestResultsDoc } fro
 
 export type DocKind =
   | 'srs' | 'rtm' | 'vnv' | 'review'
-  | 'sdp' | 'ssc' | 'sad' | 'srr' | 'scmp' | 'spr' | 'smp' | 'srmf';
+  | 'sdp' | 'ssc' | 'sad' | 'srr' | 'scmp' | 'spr' | 'smp' | 'srmf'
+  | 'stm';
 
 export interface DocInfo {
   kind: DocKind;
@@ -29,11 +30,13 @@ export const DOC_CATALOG: Record<DocKind, { title: string; docId: string; abbr: 
   spr: { title: 'Software Problem Resolution Record', docId: 'SPR-BRAINGAIN-001', abbr: 'SPR', clause: 'IEC 62304 §9' },
   smp: { title: 'Software Maintenance Plan', docId: 'SMP-BRAINGAIN-001', abbr: 'SMP', clause: 'IEC 62304 §6' },
   srmf: { title: 'Software Risk Management File', docId: 'SRMF-BRAINGAIN-001', abbr: 'SRMF', clause: 'IEC 62304 §7 · ISO 14971' },
+  stm: { title: 'Software Threat Model', docId: 'STM-BRAINGAIN-001', abbr: 'STM', clause: 'IEC 81001-5-1 · AAMI TIR57' },
 };
 
 export const DOC_GROUPS: { label: string; kinds: DocKind[] }[] = [
   { label: 'Requirements & review', kinds: ['srs', 'rtm', 'vnv', 'review'] },
   { label: 'IEC 62304 lifecycle', kinds: ['sdp', 'ssc', 'sad', 'srr', 'scmp', 'spr', 'smp', 'srmf'] },
+  { label: 'Security', kinds: ['stm'] },
 ];
 
 const STANDARDS = 'ISO 13485:2016 · EU MDR 2017/745 · MDSAP · IEC 62304:2006+A1:2015';
@@ -312,6 +315,47 @@ function srmfBody(): Content[] {
   ];
 }
 
+function stmBody(doc: RequirementsDoc): Content[] {
+  const cats = ['Authentication — Email/Password', 'Authentication — Microsoft Entra ID SSO', 'Authorization & Access Control', 'HTTPS & TLS'];
+  const controls = doc.requirements.filter((r) => r.type === 'system' && cats.includes(r.category));
+  const stride: [string, string, string, string][] = [
+    ['Spoofing', 'Stolen or guessed credentials; forged session token', 'Server-side credential verification, Entra ID SSO (OIDC), opaque bearer session tokens', 'SYS-AUTH, SYS-SSO, SYS-SES'],
+    ['Tampering', 'Training/competency records modified in transit or beyond the caller’s role', 'TLS transport; server-side role checks on every API endpoint', 'SYS-TLS, SYS-AC'],
+    ['Repudiation', 'Disputed changes to competency records', 'Impersonated actions carry the impersonator identity; controlled documents carry signature lines', 'SYS-AC-07, SYS-DOC'],
+    ['Information disclosure', 'Personal training data exposed in transit or to unauthorized roles', 'TLS transport; role- and responsibility-scoped access to member data', 'SYS-TLS, SYS-AC, SYS-ORG'],
+    ['Denial of service', 'Flooding of the API or sign-in endpoint', 'Operational controls at the deployment level (reverse proxy / rate limiting) — record in the deployment documentation', '—'],
+    ['Elevation of privilege', 'A member obtains trainer/admin capabilities via direct API calls', 'Server-side authorization on every endpoint; impersonation restricted to administrators', 'SYS-AC'],
+  ];
+  const out: Content[] = [];
+  out.push(para('Software threat model (STRIDE) supporting the secure-development and security-risk-management activities (IEC 81001-5-1, AAMI TIR57). Security risks that can lead to harm feed the ISO 14971 Software Risk Management File (SRMF-BRAINGAIN-001).'));
+  out.push(h3('System overview & trust boundaries'));
+  out.push({ ul: [
+    'Browser SPA (Vue) ↔ backend REST API — bearer session token over HTTPS/TLS.',
+    'Browser ↔ Microsoft Entra ID — OIDC ID token via MSAL.js popup (SSO).',
+    'Backend ↔ SMTP relay — outbound notification e-mail.',
+    'Backend ↔ JSON file persistence on the server host.',
+  ], fontSize: 8.5, color: INK, margin: [0, 0, 0, 6] });
+  out.push(h3('Assets'));
+  out.push({ ul: [
+    'Training & competency records — integrity and availability (safety-relevant).',
+    'Personal data of members (names, e-mail addresses) — confidentiality (GDPR).',
+    'Credentials, session tokens and Entra ID tokens — confidentiality.',
+    'Requirements dataset & generated controlled documents — integrity.',
+  ], fontSize: 8.5, color: INK, margin: [0, 0, 0, 6] });
+  out.push(h3('STRIDE analysis'));
+  out.push(dataTable(['Threat (STRIDE)', 'Example attack', 'Risk control', 'Traced to'],
+    stride.map(([s, ex, ctl, ids]) => [{ text: s, bold: true, fontSize: 8, color: INK }, td(ex), td(ctl), td(ids)]),
+    ['auto', '*', '*', 'auto']));
+  out.push(h3('Security controls traced to requirements'));
+  for (const [cat, items] of Object.entries(byCategory(controls))) {
+    out.push({ text: cat, bold: true, fontSize: 9, color: INK, margin: [0, 6, 0, 2] });
+    out.push(dataTable(['ID', 'Control', 'Status'], items.map((r) => [td(r.id), { text: r.title, fontSize: 8, color: INK }, td(r.status)]), ['auto', '*', 'auto']));
+  }
+  out.push(h3('Additional threats & actions'));
+  out.push(dataTable(['#', 'Threat / action', 'Owner', 'Due'], blankRows(4, 4).map((r, i) => [td(String(i + 1)), ...r.slice(1)]), ['auto', '*', 'auto', 'auto']));
+  return out;
+}
+
 // ── public API ───────────────────────────────────────────────────────────────────────────────────
 export function buildDocument(
   kind: DocKind,
@@ -333,6 +377,7 @@ export function buildDocument(
     spr: () => sprBody(),
     smp: () => smpBody(),
     srmf: () => srmfBody(),
+    stm: () => stmBody(doc),
   };
 
   const def: TDocumentDefinitions = {

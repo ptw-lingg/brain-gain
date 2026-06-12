@@ -5,7 +5,7 @@ import { login } from './fixtures';
 // build only). Covers: SR-120, SR-121, SR-122, SR-123 / SYS-DOC-01..08 / VT-120, VT-121, VT-122, VT-123.
 // Documents render INLINE (pdf.js → page images) — the test asserts a page actually rendered, not
 // just that a blob URL exists — then download for the DMS.
-const ALL_DOCS = ['SRS', 'RTM', 'SVVR', 'DRR', 'SDP', 'SSC', 'SAD', 'SRR', 'SCMP', 'SPR', 'SMP', 'SRMF'];
+const ALL_DOCS = ['SRS', 'RTM', 'SVVR', 'DRR', 'SDP', 'SSC', 'SAD', 'SRR', 'SCMP', 'SPR', 'SMP', 'SRMF', 'STM'];
 
 test.describe('Controlled documents & test traceability (Requirements tab)', () => {
   test('SR-121 / SYS-DOC-02 / VT-121: the tab shows coverage, the Class B pill, the test-run date and per-item Tested by', async ({ page }) => {
@@ -45,6 +45,18 @@ test.describe('Controlled documents & test traceability (Requirements tab)', () 
       page.getByRole('button', { name: 'Download', exact: true }).click(),
     ]);
     expect(download.suggestedFilename()).toMatch(/^SRMF-BRAINGAIN-001-Rev.*\.pdf$/);
+  });
+
+  test('SR-131 / SYS-DOC-11 / VT-134: the Software Threat Model previews and downloads as a controlled PDF', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/requirements');
+    await page.getByRole('button', { name: 'STM', exact: true }).click();
+    await expect(page.locator('img[data-pdf-page]').first()).toBeVisible({ timeout: 30000 });
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Download', exact: true }).click(),
+    ]);
+    expect(download.suggestedFilename()).toMatch(/^STM-BRAINGAIN-001-Rev.*\.pdf$/);
   });
 
   test('SR-123 / SYS-DOC-07 / SYS-DOC-08 / VT-123: test cases are searchable objects with a result badge', async ({ page }) => {

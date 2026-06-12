@@ -6,10 +6,10 @@
     "updated": "2026-06-08",
     "description": "Canonical, machine-readable requirements for BrainGain. Single source of truth: the Markdown docs and the in-app /requirements page are generated/rendered from this file. Edit here, then run requirements/tools/build.mjs.",
     "coverage": {
-      "total": 259,
-      "covered": 259,
+      "total": 262,
+      "covered": 262,
       "backend": 145,
-      "e2e": 104,
+      "e2e": 107,
       "manual": 126,
       "gaps": []
     },
@@ -3283,6 +3283,17 @@
       "status": "implemented"
     },
     {
+      "id": "SR-131",
+      "type": "stakeholder",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Software threat model document (STRIDE, DMS)",
+      "text": "An administrator/quality manager shall be able to generate a Software Threat Model as a controlled PDF for the DMS: system overview with trust boundaries, protected assets, and a STRIDE threat analysis whose risk controls are traced to the security requirements (authentication, SSO, authorization, TLS).",
+      "priority": "S",
+      "source": "compliance-feature",
+      "sourceNote": "stakeholder request 2026-06-11",
+      "status": "approved"
+    },
+    {
       "id": "SR-097",
       "type": "stakeholder",
       "category": "Notifications & Email",
@@ -3410,6 +3421,26 @@
         {
           "path": "frontend/src/utils/pdf.ts",
           "symbol": "pdfmake + vfs"
+        }
+      ]
+    },
+    {
+      "id": "SYS-DOC-11",
+      "type": "system",
+      "category": "Quality & Regulatory Documentation",
+      "title": "Threat model document generator",
+      "text": "The app shall generate the Software Threat Model (STM-BRAINGAIN-001) as a controlled PDF citing IEC 81001-5-1 / AAMI TIR57: system overview & trust boundaries, protected assets, a STRIDE analysis table with risk controls, and the authentication/SSO/authorization/TLS system requirements listed as traced security controls.",
+      "status": "implemented",
+      "links": [
+        {
+          "type": "derivedFrom",
+          "target": "SR-131"
+        }
+      ],
+      "implementedBy": [
+        {
+          "path": "frontend/src/utils/dmsDocuments.ts",
+          "symbol": "stmBody() / buildDocument()"
         }
       ]
     },
@@ -5456,6 +5487,26 @@
       ],
       "expected": "The page sends via POST /api/mail/send; when SMTP is unconfigured the API returns 503 and the UI prompts to configure it in Settings; the SMTP password is redacted by the API.",
       "automated": true
+    },
+    {
+      "id": "VT-134",
+      "testType": "acceptance",
+      "title": "Generate, preview and download the threat model",
+      "method": "e2e",
+      "links": [
+        {
+          "type": "validates",
+          "target": "SR-131"
+        }
+      ],
+      "preconditions": "Signed in as admin (dev/internal build) on the Requirements tab.",
+      "steps": [
+        "Open the STM document in the Security documents group.",
+        "Observe the inline PDF preview with the STRIDE analysis.",
+        "Download it."
+      ],
+      "expected": "The Software Threat Model renders as a controlled PDF preview and downloads as STM-BRAINGAIN-001-Rev<version>.pdf.",
+      "automated": true
     }
   ],
   "testCases": [
@@ -5693,6 +5744,17 @@
       "covers": [
         "SYS-TLS-07",
         "SR-111"
+      ]
+    },
+    {
+      "id": "TC-0f99cb4f1c",
+      "name": "SR-131 / SYS-DOC-11 / VT-134: the Software Threat Model previews and downloads as a controlled PDF",
+      "kind": "e2e",
+      "file": "frontend/e2e/documents.spec.ts",
+      "covers": [
+        "SR-131",
+        "SYS-DOC-11",
+        "VT-134"
       ]
     },
     {

@@ -1,12 +1,12 @@
 {
-  "ranAt": "2026-06-11T10:08:23.201Z",
+  "ranAt": "2026-06-11T13:57:05.686Z",
   "summary": {
-    "total": 245,
-    "passed": 245,
+    "total": 246,
+    "passed": 246,
     "failed": 0,
     "skipped": 0,
     "backend": 176,
-    "e2e": 69
+    "e2e": 70
   },
   "results": {
     "TC-46b6179289": "pass",
@@ -215,6 +215,7 @@
     "TC-ff5e0a0a7c": "pass",
     "TC-544f3f7f22": "pass",
     "TC-74264ec8b4": "pass",
+    "TC-0f99cb4f1c": "pass",
     "TC-d45feffb77": "pass",
     "TC-0c70060fce": "pass",
     "TC-88e24d9ee4": "pass",
