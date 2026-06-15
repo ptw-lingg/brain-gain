@@ -12,7 +12,7 @@ test.describe('Authentication & access control', () => {
   test('SR-004: admin sees the full admin navigation', async ({ page }) => {
     await login(page, 'admin');
     const aside = page.locator('aside');
-    for (const item of ['My Trainings', 'Trainings', 'Trainees', 'Job Roles', 'Users', 'Settings', 'Requirements']) {
+    for (const item of ['My Trainings', 'Trainings', 'Trainees', 'Job Roles', 'Users', 'Settings']) {
       await expect(aside).toContainText(item);
     }
   });

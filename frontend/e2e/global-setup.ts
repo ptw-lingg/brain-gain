@@ -14,11 +14,9 @@ export default async function globalSetup(): Promise<void> {
   const backendRoot = resolve(frontendRoot, '..', 'backend');
   const stateFile = join(frontendRoot, 'e2e', '.server-state.json');
 
-  // The backend serves the SPA from frontend/dist. Always build in INTERNAL mode so the e2e bundle
-  // includes the internal-only Requirements/DMS tooling that several specs exercise (the public
-  // build deliberately omits it).
-  console.log('[e2e] building the internal SPA…');
-  execSync('npx vite build --mode internal', { cwd: frontendRoot, stdio: 'inherit' });
+  // The backend serves the SPA from frontend/dist.
+  console.log('[e2e] building the SPA…');
+  execSync('npx vite build', { cwd: frontendRoot, stdio: 'inherit' });
 
   const dataDir = mkdtempSync(join(tmpdir(), 'bg-e2e-'));
   const proc = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {

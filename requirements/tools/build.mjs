@@ -4,24 +4,25 @@
 //   node requirements/tools/build.mjs           # validate + rebuild testCases/coverage + write JSON
 //   node requirements/tools/build.mjs --check    # validate + fail if JSON is out of date (CI / pre-commit)
 //
-// requirements.json is the single source of truth. This tool:
+// requirements.json is the single source of truth AND the single file handed off to the VeriTrace
+// viewer app. This tool:
 //   1. statically parses the backend + e2e suites into `testCases[]` (kind backend|e2e), preserving any
 //      authored manual test cases (kind manual) for checks automation can't reach,
-//   2. computes `meta.coverage` from `testCases[].covers` (+ self-documented usability/accessibility VTs),
-//   3. writes frontend/src/data/requirements.generated.json (the copy the in-app viewer imports).
-// Live pass/fail results are NOT here — they live in test-results.generated.json (see sync-tests.mjs),
-// so this file stays deterministic and `--check` works as a CI drift gate. No Markdown views are emitted.
+//   2. computes `meta.coverage` from `testCases[].covers` (+ self-documented usability/accessibility VTs).
+// Live pass/fail results are embedded by sync-tests.mjs under `testRun`; this tool passes any existing
+// `testRun` block through unchanged, so the file stays deterministic and `--check` works as a CI drift
+// gate. No separate generated copy and no Markdown views are emitted.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { automatedTestCases } from './testlib.mjs';
+import { serialize } from './serialize.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const reqDir = join(here, '..');
 const repoRoot = join(reqDir, '..');
 const dataPath = join(reqDir, 'requirements.json');
-const generatedPath = join(repoRoot, 'frontend', 'src', 'data', 'requirements.generated.json');
 const rel = (p) => relative(repoRoot, p).replace(/\\/g, '/');
 const CHECK = process.argv.includes('--check');
 
@@ -143,48 +144,23 @@ if (errors.length) {
   process.exit(1);
 }
 
-// ───────────────────────────── 3. serialize (one object per line, CRLF — keeps the file greppable) ─────────────────────────────
-const NL = '\r\n';
-const arr = (key, list, indent) =>
-  !list || !list.length
-    ? `${indent}"${key}": []`
-    : `${indent}"${key}": [${NL}${list.map((o) => `${indent}  ${JSON.stringify(o)}`).join(',' + NL)}${NL}${indent}]`;
-const block = (key, obj, indent) => `${indent}"${key}": ${JSON.stringify(obj, null, 2).split('\n').join(NL + indent)}`;
-
-function serialize(d) {
-  const parts = [];
-  parts.push(`  "$schema": ${JSON.stringify(d.$schema)}`);
-  parts.push(block('meta', d.meta, '  '));
-  const enumParts = Object.entries(d.enums).map(([k, v]) => arr(k, v, '    '));
-  parts.push(`  "enums": {${NL}${enumParts.join(',' + NL)}${NL}  }`);
-  parts.push(arr('actors', d.actors, '  '));
-  if (d.outOfScope) parts.push(arr('outOfScope', d.outOfScope, '  '));
-  parts.push(arr('requirements', d.requirements, '  '));
-  parts.push(arr('tests', d.tests, '  '));
-  parts.push(arr('testCases', d.testCases, '  '));
-  return `{${NL}${parts.join(',' + NL)}${NL}}${NL}`;
-}
-
-const reqOut = serialize(data);
-const genOut = JSON.stringify(data, null, 2) + '\n';
+// ───────────────────────────── 3. serialize (shared writer — one object per line, CRLF) ─────────────────────────────
+const reqOut = serialize(data); // preserves any existing data.testRun block
 
 if (CHECK) {
-  let drift = 0;
-  for (const [p, body] of [[dataPath, reqOut], [generatedPath, genOut]]) {
-    let cur = '';
-    try { cur = readFileSync(p, 'utf8'); } catch { /* missing = drift */ }
-    if (cur !== body) { drift++; console.error(`✗ out of date: ${rel(p)} (run build.mjs)`); }
+  let cur = '';
+  try { cur = readFileSync(dataPath, 'utf8'); } catch { /* missing = drift */ }
+  if (cur !== reqOut) {
+    console.error(`✗ out of date: ${rel(dataPath)} (run build.mjs)`);
+    process.exit(1);
   }
-  if (drift) process.exit(1);
   console.log(`✓ up to date — ${data.testCases.length} test cases · coverage ${cov.covered}/${cov.total} (backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}), gaps ${cov.gaps.length}`);
 } else {
   writeFileSync(dataPath, reqOut, 'utf8');
-  mkdirSync(dirname(generatedPath), { recursive: true });
-  writeFileSync(generatedPath, genOut, 'utf8');
   const sr = data.requirements.filter((r) => r.type === 'stakeholder').length;
   const sys = data.requirements.length - sr;
   console.log(`✓ ${sr} stakeholder + ${sys} system + ${data.tests.length} VT + ${data.testCases.length} test cases`);
   console.log(`  coverage ${cov.covered}/${cov.total} ids — backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}, gaps ${cov.gaps.length}`);
-  console.log(`  wrote ${rel(dataPath)} + ${rel(generatedPath)}`);
+  console.log(`  wrote ${rel(dataPath)}`);
   if (cov.gaps.length) console.log(`  GAPS: ${cov.gaps.join(', ')}`);
 }

@@ -90,6 +90,20 @@
       "type": "array",
       "description": "Concrete test cases: automated cases parsed from the suites (build.mjs) + authored manual cases.",
       "items": { "$ref": "#/$defs/testCaseRecord" }
+    },
+    "testRun": {
+      "type": "object",
+      "description": "Latest test-suite run, embedded by sync-tests.mjs. Dynamic; passed through unchanged by build.mjs.",
+      "required": ["ranAt", "summary", "results"],
+      "additionalProperties": false,
+      "properties": {
+        "ranAt": { "type": "string" },
+        "summary": { "type": "object", "additionalProperties": true },
+        "results": {
+          "type": "object",
+          "additionalProperties": { "enum": ["pass", "fail", "skip"] }
+        }
+      }
     }
   },
   "$defs": {

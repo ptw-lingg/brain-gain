@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Run the test suites and record per-test results to frontend/src/data/test-results.generated.json.
+// Run the test suites and embed per-test results into requirements.json under `testRun`.
 //
 //   node requirements/tools/sync-tests.mjs
 //
-// Results are dynamic, so they live in a SEPARATE generated file (not requirements.json, which stays
-// deterministic for build.mjs --check). The in-app Requirements view and the V&V document merge these
-// results onto the test-case catalog by id. Mapping is by test NAME → idForTest(name), the same id the
-// catalog uses, so no test reporter file paths are needed.
+// requirements.json is the single file handed off to the VeriTrace viewer, so live results travel with
+// it. The viewer and the V&V document merge these results onto the test-case catalog by id. Mapping is
+// by test NAME → idForTest(name), the same id the catalog uses, so no test reporter file paths are
+// needed. build.mjs passes the `testRun` block through unchanged, so `--check` stays a clean drift gate.
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -14,13 +14,14 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { idForTest } from './testlib.mjs';
+import { serialize } from './serialize.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const reqDir = join(here, '..');
 const repoRoot = join(reqDir, '..');
-const outPath = join(repoRoot, 'frontend', 'src', 'data', 'test-results.generated.json');
+const dataPath = join(reqDir, 'requirements.json');
 
-const data = JSON.parse(readFileSync(join(reqDir, 'requirements.json'), 'utf8'));
+const data = JSON.parse(readFileSync(dataPath, 'utf8'));
 const catalog = new Set((data.testCases ?? []).filter((c) => c.kind !== 'manual').map((c) => c.id));
 
 const results = {}; // testCaseId -> 'pass' | 'fail' | 'skip'
@@ -82,7 +83,8 @@ const summary = {
   backend: counts.backend,
   e2e: counts.e2e,
 };
-writeFileSync(outPath, JSON.stringify({ ranAt: new Date().toISOString(), summary, results }, null, 2) + '\n');
+data.testRun = { ranAt: new Date().toISOString(), summary, results };
+writeFileSync(dataPath, serialize(data), 'utf8');
 console.log(`[sync-tests] ${summary.passed} pass / ${summary.failed} fail / ${summary.skipped} skip across ${summary.total} cases (backend ${counts.backend}, e2e ${counts.e2e})`);
-console.log(`[sync-tests] wrote ${outPath.replace(repoRoot, '.')}`);
+console.log(`[sync-tests] embedded results in ${dataPath.replace(repoRoot, '.')}`);
 if (summary.failed) process.exitCode = 1;

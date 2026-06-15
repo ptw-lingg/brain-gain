@@ -9,7 +9,6 @@ import {
   Users,
   UsersRound,
   SlidersHorizontal,
-  ListChecks,
 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
@@ -20,8 +19,6 @@ const { t } = useI18n();
 const isAdmin = computed(() => auth.user?.isAdmin ?? false);
 const isTrainer = computed(() => auth.user?.isTrainer ?? false);
 const isHead = computed(() => auth.user?.isHead ?? false);
-// Requirements/DMS tooling is internal-only (dev + internal build), excluded from the public build.
-const internalTools = import.meta.env.DEV || import.meta.env.VITE_INTERNAL === 'true';
 </script>
 
 <template>
@@ -56,9 +53,6 @@ const internalTools = import.meta.env.DEV || import.meta.env.VITE_INTERNAL === '
         </RouterLink>
         <RouterLink to="/settings" class="nav-item" active-class="nav-active">
           <SlidersHorizontal class="h-4 w-4" /> {{ t('nav.settings') }}
-        </RouterLink>
-        <RouterLink v-if="internalTools" to="/requirements" class="nav-item" active-class="nav-active">
-          <ListChecks class="h-4 w-4" /> {{ t('nav.requirements') }}
         </RouterLink>
       </template>
     </nav>

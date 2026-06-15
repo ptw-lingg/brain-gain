@@ -23,7 +23,6 @@ test.describe('Access control — trainer & member route guards', () => {
     await expect(aside).not.toContainText('Job Roles');
     await expect(aside).not.toContainText('Users');
     await expect(aside).not.toContainText('Settings');
-    await expect(aside).not.toContainText('Requirements');
   });
 
   // ── SYS-AC-04 / SR-003: the trainer-or-admin routes are reachable by a trainer ──
