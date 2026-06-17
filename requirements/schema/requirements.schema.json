@@ -38,6 +38,7 @@
         "status": { "$ref": "#/$defs/enumList" },
         "testType": { "$ref": "#/$defs/enumList" },
         "method": { "$ref": "#/$defs/enumList" },
+        "reqClass": { "$ref": "#/$defs/enumList" },
         "linkType": {
           "type": "array",
           "items": {
@@ -226,6 +227,10 @@
         "id": { "$ref": "#/$defs/idRef" },
         "type": { "enum": ["stakeholder", "system"] },
         "category": { "type": "string" },
+        "reqClass": {
+          "description": "Template chapter bucket for the Stakeholder/System Requirements Specification documents.",
+          "enum": ["regulatory", "market", "operational", "non-functional", "functional", "component", "interface"]
+        },
         "title": { "type": "string" },
         "text": { "type": "string" },
         "status": { "enum": ["proposed", "approved", "implemented", "verified", "superseded"] },

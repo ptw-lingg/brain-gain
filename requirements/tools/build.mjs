@@ -89,12 +89,14 @@ const ids = new Map();
 const enumIds = (k) => new Set((data.enums[k] ?? []).map((e) => e.id));
 const [pri, src, st, lt] = [enumIds('priority'), enumIds('source'), enumIds('status'), enumIds('linkType')];
 const [tt, mt] = [enumIds('testType'), enumIds('method')];
+const rc = enumIds('reqClass');
 
 for (const r of data.requirements) {
   if (!ID.test(r.id)) err(`bad id: ${r.id}`);
   if (ids.has(r.id)) err(`duplicate id: ${r.id}`);
   ids.set(r.id, r);
   if (!st.has(r.status)) err(`${r.id}: bad status ${r.status}`);
+  if (r.reqClass && !rc.has(r.reqClass)) err(`${r.id}: bad reqClass ${r.reqClass}`);
   for (const l of r.links ?? []) if (!lt.has(l.type)) err(`${r.id}: bad link type ${l.type}`);
   if (r.type === 'stakeholder') {
     if (!pri.has(r.priority)) err(`${r.id}: bad priority`);
