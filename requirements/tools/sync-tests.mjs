@@ -50,7 +50,7 @@ for (const line of (be.stdout || '').split('\n')) {
 }
 
 // ── e2e: Playwright JSON report (written to a temp file to avoid mixing with build logs) ─────────
-console.log('[sync-tests] running e2e suite (builds the internal SPA)…');
+console.log('[sync-tests] running e2e suite (builds the SPA)…');
 const reportPath = join(tmpdir(), `bg-e2e-report-${process.pid}.json`);
 spawnSync('npx', ['playwright', 'test', '--reporter=json'], {
   cwd: join(repoRoot, 'frontend'), encoding: 'utf8', shell: true, maxBuffer: 128 * 1024 * 1024,
