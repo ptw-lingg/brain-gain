@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronDown, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
@@ -104,6 +104,10 @@ function closeTrainingPlan(): void {
   planBuilding.value = false;
   planPages.value = [];
   currentPlanPdf = null;
+}
+
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && planOpen.value) closeTrainingPlan();
 }
 
 function blankTraining(): Training {
@@ -263,7 +267,11 @@ async function persistOrder(): Promise<void> {
   }
 }
 
-onMounted(load);
+onMounted(() => {
+  void load();
+  window.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
@@ -377,12 +385,12 @@ onMounted(load);
               <div class="flex-1" />
               <template v-if="confirmDeleteId === tr.id">
                 <span class="font-mono text-xs text-rose-600">{{ t('trainings.deleteConfirm') }}</span>
-                <button class="btn-danger !px-3 !py-1.5" @click="remove(tr.id)">{{ t('trainings.deleteYes') }}</button>
-                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDeleteId = null">{{ t('trainings.deleteNo') }}</button>
+                <button class="btn-danger btn-sm" @click="remove(tr.id)">{{ t('trainings.deleteYes') }}</button>
+                <button class="btn-ghost btn-sm" @click="confirmDeleteId = null">{{ t('trainings.deleteNo') }}</button>
               </template>
               <button
                 v-else
-                class="btn-danger !px-3 !py-1.5"
+                class="btn-danger btn-sm"
                 @click="confirmDeleteId = tr.id"
               >
                 <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
@@ -405,7 +413,12 @@ onMounted(load);
     <Transition name="fade-slide">
       <div v-if="planOpen" class="fixed inset-0 z-40 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-ink/40" @click="closeTrainingPlan" />
-        <div class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift">
+        <div
+          class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="planTitle || t('trainingPlan.modalTitle')"
+        >
           <div class="flex items-center justify-between border-b border-line px-5 py-3">
             <div>
               <h2 class="font-sans text-base font-bold text-ink">{{ planTitle || t('trainingPlan.modalTitle') }}</h2>
@@ -415,10 +428,10 @@ onMounted(load);
               </p>
             </div>
             <div class="flex items-center gap-2">
-              <button class="btn-primary !px-3 !py-1.5 !text-xs" :disabled="planBuilding || planPages.length === 0" @click="downloadTrainingPlan">
+              <button class="btn-primary btn-sm" :disabled="planBuilding || planPages.length === 0" @click="downloadTrainingPlan">
                 <Download class="h-4 w-4" /> {{ t('trainingPlan.download') }}
               </button>
-              <button class="text-ink-light hover:text-ink" :title="t('common.close')" @click="closeTrainingPlan"><X class="h-5 w-5" /></button>
+              <button class="text-ink-light hover:text-ink" :title="t('common.close')" :aria-label="t('common.close')" @click="closeTrainingPlan"><X class="h-5 w-5" /></button>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">

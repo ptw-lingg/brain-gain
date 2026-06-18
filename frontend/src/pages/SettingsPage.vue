@@ -328,7 +328,7 @@ onMounted(load);
 
         <div class="mt-6 flex flex-col gap-4">
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.tenantId') }}</span>
+            <span class="form-label">{{ t('settings.tenantId') }}</span>
             <input
               v-model="tenantId"
               class="bg-input"
@@ -336,7 +336,7 @@ onMounted(load);
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.clientId') }}</span>
+            <span class="form-label">{{ t('settings.clientId') }}</span>
             <input
               v-model="clientId"
               class="bg-input"
@@ -344,7 +344,7 @@ onMounted(load);
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.allowedDomains') }}</span>
+            <span class="form-label">{{ t('settings.allowedDomains') }}</span>
             <input v-model="domains" class="bg-input" placeholder="ptwdosimetry.com, example.com" />
             <span class="font-mono text-[11px] text-ink-light">
               {{ t('settings.domainsHint') }}
@@ -384,11 +384,11 @@ onMounted(load);
 
         <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label class="flex flex-col gap-1 sm:col-span-2">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpHost') }}</span>
+            <span class="form-label">{{ t('settings.smtpHost') }}</span>
             <input v-model="smtpHost" class="bg-input" placeholder="smtp.example.com" />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpPort') }}</span>
+            <span class="form-label">{{ t('settings.smtpPort') }}</span>
             <input v-model.number="smtpPort" type="number" min="1" max="65535" class="bg-input" placeholder="587" />
           </label>
           <label class="flex items-center gap-2 self-end pb-2 font-mono text-sm text-ink-muted">
@@ -396,11 +396,11 @@ onMounted(load);
             {{ t('settings.smtpSecure') }}
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpUser') }}</span>
+            <span class="form-label">{{ t('settings.smtpUser') }}</span>
             <input v-model="smtpUser" class="bg-input" autocomplete="off" />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpPassword') }}</span>
+            <span class="form-label">{{ t('settings.smtpPassword') }}</span>
             <input
               v-model="smtpPassword"
               type="password"
@@ -410,11 +410,11 @@ onMounted(load);
             />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpFromName') }}</span>
+            <span class="form-label">{{ t('settings.smtpFromName') }}</span>
             <input v-model="smtpFromName" class="bg-input" :placeholder="t('common.appName')" />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.smtpFromAddress') }}</span>
+            <span class="form-label">{{ t('settings.smtpFromAddress') }}</span>
             <input v-model="smtpFromAddress" type="email" class="bg-input" placeholder="no-reply@example.com" />
           </label>
         </div>
@@ -445,7 +445,7 @@ onMounted(load);
 
         <!-- Current certificate -->
         <div class="mt-6 rounded-md border border-line bg-pastel-sky/10 px-3 py-3">
-          <p class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.activeCert') }}</p>
+          <p class="form-label">{{ t('settings.activeCert') }}</p>
           <div v-if="tls" class="mt-1 grid grid-cols-1 gap-0.5 font-mono text-[11px] text-ink-light sm:grid-cols-2">
             <span>{{ t('settings.certSource') }} <span class="text-ink">{{ tls.source }}</span></span>
             <span>{{ t('settings.certFingerprint') }} <span class="text-ink">{{ tls.fingerprint.slice(0, 24) }}…</span></span>
@@ -461,17 +461,17 @@ onMounted(load);
         <!-- Upload -->
         <div class="mt-4 flex flex-col gap-4">
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.certPem') }}</span>
+            <span class="form-label">{{ t('settings.certPem') }}</span>
             <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'cert')" />
             <span v-if="certName" class="font-mono text-[11px] text-ink-light">{{ certName }}</span>
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.keyPem') }}</span>
+            <span class="form-label">{{ t('settings.keyPem') }}</span>
             <input type="file" accept=".pem,.key" class="text-xs" @change="onFile($event, 'key')" />
             <span v-if="keyName" class="font-mono text-[11px] text-ink-light">{{ keyName }}</span>
           </label>
           <label class="flex flex-col gap-1">
-            <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('settings.chainPem') }}</span>
+            <span class="form-label">{{ t('settings.chainPem') }}</span>
             <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'chain')" />
           </label>
           <p class="font-mono text-[11px] text-ink-light">

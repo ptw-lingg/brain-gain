@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus } from 'lucide-vue-next';
@@ -100,6 +100,13 @@ function openEdit(u: SafeUser): void {
 function close(): void {
   draft.value = null;
 }
+
+// Close the edit drawer on Escape (the drawer has no always-focused element to bind to).
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && draft.value) close();
+}
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 function toggleRole(id: string): void {
   if (!draft.value) return;
   const i = draft.value.roleIds.indexOf(id);
@@ -237,10 +244,15 @@ onMounted(load);
     <Transition name="fade-slide">
       <div v-if="draft" class="fixed inset-0 z-40 flex justify-end" @click.self="close">
         <div class="absolute inset-0 bg-ink/20" @click="close" />
-        <div class="relative z-10 flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto bg-white p-6 shadow-lift">
+        <div
+          class="relative z-10 flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto bg-white p-6 shadow-lift"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="isNew ? t('users.new') : t('users.edit')"
+        >
           <div class="flex items-center justify-between">
             <h2 class="font-sans text-lg font-bold text-ink">{{ isNew ? t('users.new') : t('users.edit') }}</h2>
-            <button class="text-ink-light hover:text-ink" @click="close"><X class="h-5 w-5" /></button>
+            <button class="text-ink-light hover:text-ink" :aria-label="t('common.close')" @click="close"><X class="h-5 w-5" /></button>
           </div>
 
           <label class="flex flex-col gap-1">
@@ -278,7 +290,7 @@ onMounted(load);
               <label
                 v-for="r in roles"
                 :key="r.id"
-                class="flex cursor-pointer items-center gap-2 rounded-md border border-line px-3 py-2 font-mono text-sm transition hover:bg-pastel-sky/30"
+                class="check-card"
                 :class="draft.roleIds.includes(r.id) ? 'border-accent bg-accent-light/30' : ''"
               >
                 <input
@@ -307,10 +319,10 @@ onMounted(load);
             <template v-if="!isNew">
               <template v-if="confirmDelete">
                 <span class="font-mono text-xs text-rose-600">{{ t('users.deleteConfirm') }}</span>
-                <button class="btn-danger !px-3 !py-1.5" @click="remove">{{ t('users.deleteYes') }}</button>
-                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDelete = false">{{ t('users.deleteNo') }}</button>
+                <button class="btn-danger btn-sm" @click="remove">{{ t('users.deleteYes') }}</button>
+                <button class="btn-ghost btn-sm" @click="confirmDelete = false">{{ t('users.deleteNo') }}</button>
               </template>
-              <button v-else class="btn-danger !px-3 !py-1.5" @click="confirmDelete = true">
+              <button v-else class="btn-danger btn-sm" @click="confirmDelete = true">
                 <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
               </button>
             </template>
@@ -320,9 +332,3 @@ onMounted(load);
     </Transition>
   </div>
 </template>
-
-<style scoped>
-.form-label {
-  @apply font-sans text-xs font-semibold text-ink-muted;
-}
-</style>

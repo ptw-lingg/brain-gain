@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronDown, Download, FileText, UsersRound, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
@@ -144,7 +144,15 @@ function closeReport(): void {
   currentPdf = null;
 }
 
-onMounted(load);
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && reportOpen.value) closeReport();
+}
+
+onMounted(() => {
+  void load();
+  window.addEventListener('keydown', onKeydown);
+});
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
@@ -247,7 +255,12 @@ onMounted(load);
     <Transition name="fade-slide">
       <div v-if="reportOpen" class="fixed inset-0 z-40 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-ink/40" @click="closeReport" />
-        <div class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift">
+        <div
+          class="relative z-10 flex h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('myTeam.reportTitle')"
+        >
           <div class="flex items-center justify-between border-b border-line px-5 py-3">
             <div>
               <h2 class="font-sans text-base font-bold text-ink">{{ t('myTeam.reportTitle') }}</h2>
@@ -257,10 +270,10 @@ onMounted(load);
               </p>
             </div>
             <div class="flex items-center gap-2">
-              <button class="btn-primary !px-3 !py-1.5 !text-xs" :disabled="building || previewPages.length === 0" @click="downloadReport">
+              <button class="btn-primary btn-sm" :disabled="building || previewPages.length === 0" @click="downloadReport">
                 <Download class="h-4 w-4" /> {{ t('myTeam.downloadPdf') }}
               </button>
-              <button class="text-ink-light hover:text-ink" :title="t('common.close')" @click="closeReport"><X class="h-5 w-5" /></button>
+              <button class="text-ink-light hover:text-ink" :title="t('common.close')" :aria-label="t('common.close')" @click="closeReport"><X class="h-5 w-5" /></button>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">

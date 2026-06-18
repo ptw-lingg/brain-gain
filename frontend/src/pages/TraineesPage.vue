@@ -170,7 +170,7 @@ onMounted(load);
               </div>
             </div>
           </button>
-          <button class="btn-ghost !px-3 !py-1.5 !text-xs" :disabled="sending" @click="emailGroup(g)">
+          <button class="btn-ghost btn-sm" :disabled="sending" @click="emailGroup(g)">
             <Mail class="h-3.5 w-3.5" /> {{ t('trainees.emailTrainees') }}
           </button>
         </div>

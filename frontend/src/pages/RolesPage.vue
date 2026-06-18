@@ -134,7 +134,12 @@ onMounted(load);
       <div v-for="r in filteredRoles" :key="r.id" class="card overflow-hidden">
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
+          role="button"
+          tabindex="0"
+          :aria-expanded="expandedId === r.id"
           @click="expandedId === r.id ? cancel() : startEdit(r)"
+          @keydown.enter.prevent="expandedId === r.id ? cancel() : startEdit(r)"
+          @keydown.space.prevent="expandedId === r.id ? cancel() : startEdit(r)"
         >
           <div class="min-w-0 flex-1">
             <div class="font-sans text-sm font-semibold text-ink">{{ r.name }}</div>
@@ -158,10 +163,10 @@ onMounted(load);
               <div class="flex-1" />
               <template v-if="confirmDeleteId === r.id">
                 <span class="font-mono text-xs text-rose-600">{{ t('roles.deleteConfirm') }}</span>
-                <button class="btn-danger !px-3 !py-1.5" @click="remove(r.id)">{{ t('roles.deleteYes') }}</button>
-                <button class="btn-ghost !px-3 !py-1.5" @click="confirmDeleteId = null">{{ t('roles.deleteNo') }}</button>
+                <button class="btn-danger btn-sm" @click="remove(r.id)">{{ t('roles.deleteYes') }}</button>
+                <button class="btn-ghost btn-sm" @click="confirmDeleteId = null">{{ t('roles.deleteNo') }}</button>
               </template>
-              <button v-else class="btn-danger !px-3 !py-1.5" @click="confirmDeleteId = r.id">
+              <button v-else class="btn-danger btn-sm" @click="confirmDeleteId = r.id">
                 <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
               </button>
             </div>

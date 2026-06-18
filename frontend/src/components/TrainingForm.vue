@@ -84,12 +84,12 @@ const windowOptions = [0, 1, 2, 3];
         <div v-for="(link, i) in draft.materialLinks" :key="i" class="flex gap-2">
           <input v-model="link.label" class="bg-input flex-1" :placeholder="t('trainingForm.labelPlaceholder')" />
           <input v-model="link.url" class="bg-input flex-[2]" :placeholder="t('trainingForm.urlPlaceholder')" />
-          <button class="btn-ghost !px-2" @click="$emit('remove-link', i)">
+          <button class="btn-ghost btn-icon" @click="$emit('remove-link', i)">
             <Trash2 class="h-4 w-4" />
           </button>
         </div>
       </div>
-      <button class="btn-ghost mt-2 !px-3 !py-1.5 !text-xs" @click="$emit('add-link')">
+      <button class="btn-ghost btn-sm mt-2" @click="$emit('add-link')">
         <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addLink') }}
       </button>
     </div>
@@ -108,7 +108,7 @@ const windowOptions = [0, 1, 2, 3];
         >
           <div class="flex gap-2">
             <input v-model="q.text" class="bg-input flex-1" :placeholder="t('trainingForm.questionPlaceholder', { n: qi + 1 })" />
-            <button class="btn-ghost !px-2" @click="$emit('remove-question', qi)">
+            <button class="btn-ghost btn-icon" @click="$emit('remove-question', qi)">
               <Trash2 class="h-4 w-4" />
             </button>
           </div>
@@ -126,7 +126,7 @@ const windowOptions = [0, 1, 2, 3];
               />
               <input v-model="q.options[oi]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
               <button
-                class="btn-ghost !px-2"
+                class="btn-ghost btn-icon"
                 :disabled="q.options.length <= 2"
                 @click="$emit('remove-option', q, oi)"
               >
@@ -134,20 +134,14 @@ const windowOptions = [0, 1, 2, 3];
               </button>
             </div>
           </div>
-          <button class="btn-ghost mt-2 !px-3 !py-1 !text-xs" @click="$emit('add-option', q)">
+          <button class="btn-ghost btn-sm mt-2" @click="$emit('add-option', q)">
             <Plus class="h-3 w-3" /> {{ t('trainingForm.addOption') }}
           </button>
         </div>
       </div>
-      <button class="btn-ghost mt-2 !px-3 !py-1.5 !text-xs" @click="$emit('add-question')">
+      <button class="btn-ghost btn-sm mt-2" @click="$emit('add-question')">
         <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addQuestion') }}
       </button>
     </div>
   </div>
 </template>
-
-<style scoped>
-.form-label {
-  @apply font-sans text-xs font-semibold text-ink-muted;
-}
-</style>

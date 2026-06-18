@@ -27,7 +27,7 @@ defineEmits<{ toggle: [id: string] }>();
         <label
           v-for="t in trainings"
           :key="t.id"
-          class="flex cursor-pointer items-center gap-2 rounded-md border border-line bg-white px-3 py-2 font-mono text-sm transition hover:bg-pastel-sky/30"
+          class="check-card"
           :class="draft.trainingIds.includes(t.id) ? 'border-accent bg-accent-light/30' : ''"
         >
           <input
@@ -45,9 +45,3 @@ defineEmits<{ toggle: [id: string] }>();
     </div>
   </div>
 </template>
-
-<style scoped>
-.form-label {
-  @apply font-sans text-xs font-semibold text-ink-muted;
-}
-</style>

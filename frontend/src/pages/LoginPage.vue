@@ -94,11 +94,11 @@ async function submit(): Promise<void> {
 
       <form class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.email') }}</span>
+          <span class="form-label">{{ t('common.email') }}</span>
           <input v-model="email" type="email" autocomplete="username" class="bg-input" required />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.password') }}</span>
+          <span class="form-label">{{ t('common.password') }}</span>
           <input
             v-model="password"
             type="password"

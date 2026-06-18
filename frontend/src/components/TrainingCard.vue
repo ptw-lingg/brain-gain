@@ -33,7 +33,7 @@ const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate))
         <span class="pill bg-white/80 text-ink-muted">{{ training.category }}</span>
         <span class="pill bg-white/80 text-ink-light">{{ cycleLabel(t, training.cycleYears) }}</span>
         <button
-          class="btn-primary ml-auto shrink-0 !px-3 !py-1"
+          class="btn-primary btn-sm ml-auto shrink-0"
           :class="{ '!bg-ink-light/60': !actionable }"
           :title="actionable ? t('trainingCard.startSession') : t('trainingCard.notDueYet')"
           @click="emit('start', training.id)"

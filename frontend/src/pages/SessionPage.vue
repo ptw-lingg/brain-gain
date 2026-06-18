@@ -78,7 +78,7 @@ onMounted(load);
 
 <template>
   <div class="mx-auto max-w-2xl">
-    <button class="btn-ghost mb-4 !px-3 !py-1.5 !text-xs" @click="router.push('/dashboard')">
+    <button class="btn-ghost btn-sm mb-4" @click="router.push('/dashboard')">
       <ArrowLeft class="h-3.5 w-3.5" /> {{ t('session.back') }}
     </button>
 
@@ -127,7 +127,7 @@ onMounted(load);
             <label
               v-for="(opt, oi) in q.options"
               :key="oi"
-              class="flex cursor-pointer items-center gap-3 rounded-md border border-line px-3 py-2 font-mono text-sm transition hover:bg-pastel-sky/30"
+              class="check-card"
               :class="answers[qi] === oi ? 'border-accent bg-accent-light/30' : ''"
             >
               <input

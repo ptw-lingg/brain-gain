@@ -388,7 +388,7 @@ onMounted(loadRoles);
               <div class="truncate text-sm font-semibold text-ink">{{ l.name }}</div>
               <div class="truncate font-mono text-[11px] text-ink-light">{{ l.url }}</div>
             </div>
-            <button class="btn-ghost !px-3 !py-1.5" @click="copy(l.url)">
+            <button class="btn-ghost btn-sm" @click="copy(l.url)">
               <Copy class="h-4 w-4" /> {{ t('usersImport.copy') }}
             </button>
           </li>
@@ -397,9 +397,3 @@ onMounted(loadRoles);
     </template>
   </div>
 </template>
-
-<style scoped>
-.form-label {
-  @apply font-sans text-xs font-semibold text-ink-muted;
-}
-</style>

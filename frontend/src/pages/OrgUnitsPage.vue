@@ -263,7 +263,12 @@ onMounted(load);
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
           :style="{ paddingLeft: `${1.25 + depthOf(u) * 1.25}rem` }"
+          role="button"
+          tabindex="0"
+          :aria-expanded="expandedId === u.id"
           @click="expandedId === u.id ? cancel() : startEdit(u)"
+          @keydown.enter.prevent="expandedId === u.id ? cancel() : startEdit(u)"
+          @keydown.space.prevent="expandedId === u.id ? cancel() : startEdit(u)"
         >
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -306,7 +311,7 @@ onMounted(load);
 
             <!-- Bulk add members -->
             <div class="mt-4 border-t border-line pt-4">
-              <button class="btn-ghost !px-3 !py-1.5 !text-xs" @click="addMembersOpen = !addMembersOpen">
+              <button class="btn-ghost btn-sm" @click="addMembersOpen = !addMembersOpen">
                 <UserPlus class="h-3.5 w-3.5" /> {{ t('orgUnits.addMembers') }}
               </button>
               <div v-if="addMembersOpen" class="mt-3">
@@ -342,7 +347,7 @@ onMounted(load);
                 </div>
                 <div class="mt-2">
                   <button
-                    class="btn-primary !px-3 !py-1.5 !text-xs"
+                    class="btn-primary btn-sm"
                     :disabled="selectedMemberIds.length === 0"
                     @click="addMembers"
                   >
@@ -360,10 +365,10 @@ onMounted(load);
               <template v-if="!isRoot(u)">
                 <template v-if="confirmDeleteId === u.id">
                   <span class="font-mono text-xs text-rose-600">{{ t('orgUnits.deleteConfirm') }}</span>
-                  <button class="btn-danger !px-3 !py-1.5" @click="remove(u.id)">{{ t('orgUnits.deleteYes') }}</button>
-                  <button class="btn-ghost !px-3 !py-1.5" @click="confirmDeleteId = null">{{ t('orgUnits.deleteNo') }}</button>
+                  <button class="btn-danger btn-sm" @click="remove(u.id)">{{ t('orgUnits.deleteYes') }}</button>
+                  <button class="btn-ghost btn-sm" @click="confirmDeleteId = null">{{ t('orgUnits.deleteNo') }}</button>
                 </template>
-                <button v-else class="btn-danger !px-3 !py-1.5" @click="confirmDeleteId = u.id">
+                <button v-else class="btn-danger btn-sm" @click="confirmDeleteId = u.id">
                   <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
                 </button>
               </template>
@@ -377,9 +382,3 @@ onMounted(load);
     </div>
   </div>
 </template>
-
-<style scoped>
-.form-label {
-  @apply font-sans text-xs font-semibold text-ink-muted;
-}
-</style>

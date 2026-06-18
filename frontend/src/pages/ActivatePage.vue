@@ -92,11 +92,11 @@ async function submit(): Promise<void> {
 
       <form v-else class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('common.email') }}</span>
+          <span class="form-label">{{ t('common.email') }}</span>
           <input :value="accountEmail" type="email" class="bg-input" disabled />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('activate.newPassword') }}</span>
+          <span class="form-label">{{ t('activate.newPassword') }}</span>
           <input
             v-model="password"
             type="password"
@@ -106,7 +106,7 @@ async function submit(): Promise<void> {
           />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="font-sans text-xs font-semibold text-ink-muted">{{ t('activate.confirmPassword') }}</span>
+          <span class="form-label">{{ t('activate.confirmPassword') }}</span>
           <input
             v-model="confirm"
             type="password"
