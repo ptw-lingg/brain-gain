@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Clock, Play } from 'lucide-vue-next';
+import { AlertTriangle, Clock, Play } from 'lucide-vue-next';
 import type { DueTraining } from '@/types';
-import { dueLabel, dueClasses, isActionable, categoryTint, cycleLabel } from '@/utils/display';
+import {
+  dueLabel,
+  dueClasses,
+  isActionable,
+  categoryTint,
+  cycleLabel,
+  trainingReadiness,
+} from '@/utils/display';
 
 const props = defineProps<{ item: DueTraining }>();
 const emit = defineEmits<{ start: [id: string] }>();
@@ -12,6 +19,8 @@ const { t } = useI18n();
 const training = computed(() => props.item.training);
 const tint = computed(() => categoryTint(training.value.category));
 const actionable = computed(() => isActionable(props.item.status));
+// Without material to study or questions to be tested on, the training can't be started.
+const readiness = computed(() => trainingReadiness(training.value));
 const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate));
 </script>
 
@@ -32,10 +41,24 @@ const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate))
         <span class="pill bg-white/80 text-ink-muted"><Clock class="h-3 w-3" /> {{ t('trainingCard.hours', { hours: training.durationHours }) }}</span>
         <span class="pill bg-white/80 text-ink-muted">{{ training.category }}</span>
         <span class="pill bg-white/80 text-ink-light">{{ cycleLabel(t, training.cycleYears) }}</span>
+        <!-- Flag missing content; it explains why Start is disabled below. -->
+        <span v-if="!readiness.hasMaterial" class="pill bg-amber-100 text-amber-700">
+          <AlertTriangle class="h-3 w-3" /> {{ t('trainingCard.noMaterial') }}
+        </span>
+        <span v-if="!readiness.hasQuestions" class="pill bg-amber-100 text-amber-700">
+          <AlertTriangle class="h-3 w-3" /> {{ t('trainingCard.noTest') }}
+        </span>
         <button
           class="btn-primary btn-sm ml-auto shrink-0"
-          :class="{ '!bg-ink-light/60': !actionable }"
-          :title="actionable ? t('trainingCard.startSession') : t('trainingCard.notDueYet')"
+          :class="{ '!bg-ink-light/60': !actionable && readiness.ready }"
+          :disabled="!readiness.ready"
+          :title="
+            !readiness.ready
+              ? t('trainingCard.unavailable')
+              : actionable
+                ? t('trainingCard.startSession')
+                : t('trainingCard.notDueYet')
+          "
           @click="emit('start', training.id)"
         >
           <Play class="h-3.5 w-3.5" /> {{ t('trainingCard.start') }}

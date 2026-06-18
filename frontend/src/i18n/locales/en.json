@@ -74,7 +74,10 @@
     "hours": "{hours}h",
     "startSession": "Start session",
     "notDueYet": "Not due yet — you can still review",
-    "start": "Start"
+    "start": "Start",
+    "noMaterial": "No material",
+    "noTest": "No test",
+    "unavailable": "Not available yet — your trainer is still preparing this training"
   },
   "due": {
     "now": "Due now",
@@ -90,6 +93,8 @@
     "stepOf": "step {step} of 3",
     "startTest": "Start test →",
     "noMaterial": "No material attached for this training.",
+    "noQuestions": "No test questions have been added for this training yet — there's nothing to complete.",
+    "testUnavailable": "No test available yet",
     "submitTest": "Submit test",
     "grading": "Grading…",
     "passed": "Passed 🎉",
@@ -114,6 +119,12 @@
     "deleteNo": "No",
     "empty": "No trainings yet. Click “Add Training” to create one.",
     "ownerYou": "You",
+    "ready": "Ready",
+    "noMaterial": "No material",
+    "noQuestions": "No test",
+    "readyTitle": "Has material and a test — trainees can complete it.",
+    "noMaterialTitle": "No material attached — trainees can't study this training.",
+    "noQuestionsTitle": "No test questions — trainees can't complete this training.",
     "toasts": {
       "nameRequired": "Name is required",
       "updated": "Training updated",

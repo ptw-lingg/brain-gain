@@ -74,7 +74,10 @@
     "hours": "{hours} h",
     "startSession": "Sitzung starten",
     "notDueYet": "Noch nicht fällig – Sie können trotzdem wiederholen",
-    "start": "Starten"
+    "start": "Starten",
+    "noMaterial": "Kein Material",
+    "noTest": "Kein Test",
+    "unavailable": "Noch nicht verfügbar – Ihr Trainer bereitet diese Schulung noch vor"
   },
   "due": {
     "now": "Jetzt fällig",
@@ -90,6 +93,8 @@
     "stepOf": "Schritt {step} von 3",
     "startTest": "Test starten →",
     "noMaterial": "Für diese Schulung ist kein Material hinterlegt.",
+    "noQuestions": "Für diese Schulung wurden noch keine Testfragen hinterlegt – es gibt nichts abzuschließen.",
+    "testUnavailable": "Noch kein Test verfügbar",
     "submitTest": "Test abgeben",
     "grading": "Auswertung…",
     "passed": "Bestanden 🎉",
@@ -114,6 +119,12 @@
     "deleteNo": "Nein",
     "empty": "Noch keine Schulungen. Klicken Sie auf „Schulung hinzufügen“, um eine anzulegen.",
     "ownerYou": "Sie",
+    "ready": "Bereit",
+    "noMaterial": "Kein Material",
+    "noQuestions": "Kein Test",
+    "readyTitle": "Material und Test vorhanden – Teilnehmer können sie abschließen.",
+    "noMaterialTitle": "Kein Material hinterlegt – Teilnehmer können diese Schulung nicht durcharbeiten.",
+    "noQuestionsTitle": "Keine Testfragen – Teilnehmer können diese Schulung nicht abschließen.",
     "toasts": {
       "nameRequired": "Name ist erforderlich",
       "updated": "Schulung aktualisiert",

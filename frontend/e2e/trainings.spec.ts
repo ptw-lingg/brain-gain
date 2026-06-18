@@ -145,3 +145,34 @@ test.describe('Trainings — reordering (admin)', () => {
     await expect(page.locator('button[title="Drag to reorder"]').first()).toBeVisible();
   });
 });
+
+// Content-readiness flags (SYS-TRN-10, traced to SR-041 learning material + SR-042 quiz): the trainer
+// list marks each training by whether it has material to study and questions to be tested on, so
+// trainers can see at a glance what still needs work.
+test.describe('Trainings — content readiness flags', () => {
+  test('SYS-TRN-10 / SR-041 / SR-042: a freshly created training (no material, no questions) is flagged in the list', async ({ page }) => {
+    await login(page, 'trainer');
+    const name = `E2E Readiness ${Date.now()}`;
+    await page.goto('/trainings');
+    await page.getByRole('button', { name: 'Add Training' }).click();
+    const editor = page.locator('.card', { hasText: 'New training' });
+    await editor.getByPlaceholder('Training name').fill(name);
+    await editor.getByRole('button', { name: 'Create' }).click();
+
+    // Its list row is flagged as missing both material and a test.
+    const row = page.locator('.card', { hasText: name });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText('No material');
+    await expect(row).toContainText('No test');
+  });
+
+  test('SYS-TRN-10 / SR-041 / SR-042: a complete (seeded) training is flagged "Ready"', async ({ page }) => {
+    await login(page, 'admin');
+    await page.goto('/trainings');
+
+    // The seeded "Laboratory Safety Basics" has both material and questions → ready for trainees.
+    const row = page.locator('.card', { hasText: 'Laboratory Safety Basics' });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText('Ready');
+  });
+});

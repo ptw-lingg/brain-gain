@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronDown, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
@@ -10,7 +10,7 @@ import type { JobRole, MaterialLink, MyTeam, Question, SafeUser, Settings, Train
 import TrainingForm from '@/components/TrainingForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
-import { cycleLabel } from '@/utils/display';
+import { cycleLabel, trainingReadiness } from '@/utils/display';
 
 const auth = useAuthStore();
 const toast = useToastStore();
@@ -355,6 +355,29 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <div class="font-sans text-sm font-semibold text-ink">{{ tr.name }}</div>
             <div class="truncate font-mono text-xs text-ink-light" :title="tr.description">{{ tr.description }}</div>
           </div>
+          <!-- Readiness: trainees need material to study and questions to be tested. Missing either is
+               flagged so trainers see what to finish; a complete training shows a green "Ready". -->
+          <span
+            v-if="!trainingReadiness(tr).hasMaterial"
+            class="pill bg-amber-100 text-amber-700"
+            :title="t('trainings.noMaterialTitle')"
+          >
+            <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
+          </span>
+          <span
+            v-if="!trainingReadiness(tr).hasQuestions"
+            class="pill bg-amber-100 text-amber-700"
+            :title="t('trainings.noQuestionsTitle')"
+          >
+            <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
+          </span>
+          <span
+            v-if="trainingReadiness(tr).ready"
+            class="pill bg-pastel-mint/50 text-emerald-700"
+            :title="t('trainings.readyTitle')"
+          >
+            <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
+          </span>
           <span class="pill pill-col bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
           <span class="pill min-w-[3.5rem] bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
           <span class="pill min-w-[5rem] bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>

@@ -38,6 +38,9 @@ const thresholdPct = computed(() =>
   result.value ? Math.round(result.value.passThreshold * 100) : 80,
 );
 
+// No questions means there is no test to take — the training can't be completed.
+const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
+
 async function load(): Promise<void> {
   loading.value = true;
   try {
@@ -112,7 +115,15 @@ onMounted(load);
             {{ t('session.noMaterial') }}
           </p>
         </div>
-        <button class="btn-primary self-start" @click="startTest">{{ t('session.startTest') }}</button>
+        <p v-if="!hasQuestions" class="font-mono text-xs text-amber-600">{{ t('session.noQuestions') }}</p>
+        <button
+          class="btn-primary self-start"
+          :disabled="!hasQuestions"
+          :title="hasQuestions ? '' : t('session.testUnavailable')"
+          @click="startTest"
+        >
+          {{ t('session.startTest') }}
+        </button>
       </section>
 
       <!-- Step 2: Quiz -->
