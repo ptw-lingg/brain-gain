@@ -102,7 +102,8 @@
     "score": "You scored {pct}% ({correct}/{total}) — you need {threshold}% to pass.",
     "retry": "Retry test",
     "backToTrainings": "Back to My Trainings",
-    "failNote": "Failed attempts aren't recorded — this training stays due until you pass."
+    "failNote": "Failed attempts aren't recorded — this training stays due until you pass.",
+    "downloadError": "Could not download the file."
   },
   "trainings": {
     "title": "Trainings",
@@ -149,10 +150,15 @@
     "windowOpens": "Window opens (months before)",
     "grace": "Grace (months after)",
     "monthsOption": "{n} month | {n} months",
-    "material": "Material (OneDrive links)",
+    "material": "Learning material",
     "labelPlaceholder": "Label",
-    "urlPlaceholder": "https://onedrive…",
+    "urlPlaceholder": "https://…",
     "addLink": "Add link",
+    "files": "Files",
+    "fileHint": "Any file type. Learners download and open it in their installed apps.",
+    "addFile": "Add file",
+    "uploading": "Uploading…",
+    "uploadError": "Could not upload {name}",
     "questions": "Multiple-choice questions",
     "questionPlaceholder": "Question {n}",
     "selectCorrect": "Select the correct answer",

@@ -68,9 +68,20 @@ export interface TrainingReadiness {
 }
 
 export function trainingReadiness(
-  training: Pick<Training, 'materialLinks' | 'questions'>,
+  training: Pick<Training, 'materialLinks' | 'materialFiles' | 'questions'>,
 ): TrainingReadiness {
-  const hasMaterial = training.materialLinks.length > 0;
+  // Material is either a link to study or an uploaded file to download — either one counts.
+  const hasMaterial =
+    (training.materialLinks?.length ?? 0) > 0 || (training.materialFiles?.length ?? 0) > 0;
   const hasQuestions = training.questions.length > 0;
   return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions };
+}
+
+/** Human-readable file size, e.g. 2048 → "2 KB". */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+  const value = bytes / 1024 ** i;
+  return `${i === 0 ? value : value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`;
 }

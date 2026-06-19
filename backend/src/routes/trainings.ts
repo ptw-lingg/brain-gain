@@ -1,8 +1,9 @@
-import { Router } from 'express';
+import { Router, raw } from 'express';
 import { randomUUID } from 'crypto';
 import type {
   DueTraining,
   JobRole,
+  MaterialFile,
   MaterialLink,
   PublicTraining,
   Question,
@@ -11,7 +12,13 @@ import type {
   TrainingSession,
   User,
 } from '../types';
-import { readStore, writeStore } from '../services/fileStore';
+import {
+  deleteMaterial,
+  readMaterial,
+  readStore,
+  saveMaterial,
+  writeStore,
+} from '../services/fileStore';
 import {
   authenticate,
   requireAdmin,
@@ -64,6 +71,37 @@ function sanitizeLinks(input: unknown): MaterialLink[] {
   });
 }
 
+// Material-file descriptors come from the client (it uploads bytes first via POST /materials, then
+// sends the returned descriptors back on save). We keep only descriptors whose id is a well-formed
+// UUID — the shape the upload endpoint issues — and coerce the remaining fields; the bytes were
+// already written at upload time. A descriptor pointing at a non-existent id simply yields a 404 on
+// download, never a path-traversal read.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function sanitizeFiles(input: unknown): MaterialFile[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((f): MaterialFile | null => {
+      const obj = (f ?? {}) as Record<string, unknown>;
+      if (typeof obj.id !== 'string' || !UUID_RE.test(obj.id)) return null;
+      const size = Number(obj.size);
+      return {
+        id: obj.id,
+        name: typeof obj.name === 'string' ? obj.name : 'file',
+        size: Number.isFinite(size) && size >= 0 ? Math.round(size) : 0,
+        type: typeof obj.type === 'string' ? obj.type : '',
+      };
+    })
+    .filter((f): f is MaterialFile => f !== null);
+}
+
+/** Keep only a base filename — defeats path traversal and header injection via the upload name. */
+function sanitizeFileName(raw: unknown): string {
+  const base = (typeof raw === 'string' ? raw : 'file').split(/[/\\]/).pop() ?? 'file';
+  const cleaned = base.replace(/[\r\n"]/g, '').trim();
+  return cleaned.slice(0, 255) || 'file';
+}
+
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
   const v = Number(n);
   if (!Number.isFinite(v)) return fallback;
@@ -81,6 +119,11 @@ async function readOrderedTrainings(): Promise<Training[]> {
   trainings.forEach((t, i) => {
     if (typeof t.order !== 'number' || !Number.isFinite(t.order)) {
       t.order = i;
+      changed = true;
+    }
+    // Backfill records written before file uploads existed so the field is always an array.
+    if (!Array.isArray(t.materialFiles)) {
+      t.materialFiles = [];
       changed = true;
     }
   });
@@ -147,11 +190,51 @@ router.get('/trainees', requireTrainerOrAdmin, async (req: AuthRequest, res) => 
   res.json(groups);
 });
 
+// POST /api/trainings/materials  — upload one learning-material file of any type (trainer/admin).
+// The raw bytes are the request body (content-type application/octet-stream); the original filename
+// and MIME type ride along as query params. Returns the descriptor the editor stores on the training.
+// Registered before '/:id' so the literal path is never mistaken for a training id.
+router.post(
+  '/materials',
+  requireTrainerOrAdmin,
+  raw({ type: '*/*', limit: '100mb' }),
+  async (req: AuthRequest, res) => {
+    const bytes = req.body;
+    if (!Buffer.isBuffer(bytes) || bytes.length === 0) {
+      return res.status(400).json({ error: 'empty upload' });
+    }
+    const id = randomUUID();
+    const name = sanitizeFileName(req.query.name);
+    const type = typeof req.query.type === 'string' ? req.query.type.slice(0, 255) : '';
+    await saveMaterial(id, bytes, { name, size: bytes.length, type });
+    const file: MaterialFile = { id, name, size: bytes.length, type };
+    return res.status(201).json(file);
+  },
+);
+
+// GET /api/trainings/materials/:fileId  — stream a stored file to any authenticated user (learners
+// download material to study). No preview: the file is sent as an attachment to open in installed apps.
+router.get('/materials/:fileId', async (req: AuthRequest, res) => {
+  const { fileId } = req.params;
+  if (!UUID_RE.test(fileId)) return res.status(400).json({ error: 'bad file id' });
+  const file = await readMaterial(fileId);
+  if (!file) return res.status(404).json({ error: 'Not found' });
+  const safeAscii = file.meta.name.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '');
+  res.setHeader('Content-Type', file.meta.type || 'application/octet-stream');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${safeAscii}"; filename*=UTF-8''${encodeURIComponent(file.meta.name)}`,
+  );
+  res.setHeader('Content-Length', String(file.bytes.length));
+  return res.end(file.bytes);
+});
+
 // GET /api/trainings/:id  — single training, answer key stripped for non-owners
 router.get('/:id', async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
   if (!training) return res.status(404).json({ error: 'Not found' });
+  if (!Array.isArray(training.materialFiles)) training.materialFiles = []; // backfill legacy records
   const canSeeAnswers = req.user?.isAdmin || training.ownerId === req.user?.id;
   return res.json(canSeeAnswers ? training : toPublic(training));
 });
@@ -182,6 +265,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     windowAfterMonths: clamp(b.windowAfterMonths, 0, 3, 3),
     order: maxOrder + 1,
     materialLinks: sanitizeLinks(b.materialLinks),
+    materialFiles: sanitizeFiles(b.materialFiles),
     questions: sanitizeQuestions(b.questions),
     createdAt: new Date().toISOString(),
   };
@@ -236,6 +320,8 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
         ? clamp(b.windowAfterMonths, 0, 3, current.windowAfterMonths)
         : current.windowAfterMonths,
     materialLinks: b.materialLinks != null ? sanitizeLinks(b.materialLinks) : current.materialLinks,
+    materialFiles:
+      b.materialFiles != null ? sanitizeFiles(b.materialFiles) : current.materialFiles ?? [],
     questions: b.questions != null ? sanitizeQuestions(b.questions) : current.questions,
   };
   await writeStore('trainings', trainings);
@@ -245,9 +331,11 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
 // DELETE /api/trainings/:id  — admin or owning trainer
 router.delete('/:id', requireAdminOrOwner, async (req, res) => {
   const trainings = await readStore<Training>('trainings');
-  const next = trainings.filter((t) => t.id !== req.params.id);
-  if (next.length === trainings.length) return res.status(404).json({ error: 'Not found' });
-  await writeStore('trainings', next);
+  const removed = trainings.find((t) => t.id === req.params.id);
+  if (!removed) return res.status(404).json({ error: 'Not found' });
+  await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
+  // Best-effort cleanup of the deleted training's uploaded files so they don't linger on disk.
+  await Promise.all((removed.materialFiles ?? []).map((f) => deleteMaterial(f.id)));
   return res.status(204).end();
 });
 

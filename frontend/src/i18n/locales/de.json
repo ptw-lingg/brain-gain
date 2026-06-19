@@ -102,7 +102,8 @@
     "score": "Sie haben {pct}% erreicht ({correct}/{total}) – zum Bestehen sind {threshold}% erforderlich.",
     "retry": "Test wiederholen",
     "backToTrainings": "Zurück zu Meine Schulungen",
-    "failNote": "Fehlversuche werden nicht gespeichert – diese Schulung bleibt fällig, bis Sie bestehen."
+    "failNote": "Fehlversuche werden nicht gespeichert – diese Schulung bleibt fällig, bis Sie bestehen.",
+    "downloadError": "Die Datei konnte nicht heruntergeladen werden."
   },
   "trainings": {
     "title": "Schulungen",
@@ -149,10 +150,15 @@
     "windowOpens": "Fenster öffnet (Monate vorher)",
     "grace": "Kulanz (Monate danach)",
     "monthsOption": "{n} Monat | {n} Monate",
-    "material": "Material (OneDrive-Links)",
+    "material": "Lernmaterial",
     "labelPlaceholder": "Bezeichnung",
-    "urlPlaceholder": "https://onedrive…",
+    "urlPlaceholder": "https://…",
     "addLink": "Link hinzufügen",
+    "files": "Dateien",
+    "fileHint": "Beliebiger Dateityp. Teilnehmer laden die Datei herunter und öffnen sie in ihren installierten Apps.",
+    "addFile": "Datei hinzufügen",
+    "uploading": "Wird hochgeladen…",
+    "uploadError": "{name} konnte nicht hochgeladen werden",
     "questions": "Multiple-Choice-Fragen",
     "questionPlaceholder": "Frage {n}",
     "selectCorrect": "Wählen Sie die richtige Antwort",

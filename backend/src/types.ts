@@ -5,6 +5,16 @@ export interface MaterialLink {
   url: string;
 }
 
+// An uploaded learning-material file of any type. The bytes live on disk under DATA_DIR/materials
+// keyed by `id`; only this descriptor is stored on the training. Files are downloaded and opened in
+// the learner's installed apps — the app never previews them.
+export interface MaterialFile {
+  id: string; // server-assigned storage key (UUID); also the download path segment
+  name: string; // original filename, including extension
+  size: number; // bytes
+  type: string; // MIME type as reported by the browser ('' when unknown)
+}
+
 export interface Question {
   id: string;
   text: string;
@@ -24,6 +34,7 @@ export interface Training {
   windowAfterMonths: number; // 0–3: grace months after the due date before overdue
   order: number; // admin-defined display order across all views (ascending)
   materialLinks: MaterialLink[];
+  materialFiles: MaterialFile[]; // uploaded files of any type (download-only, no in-app preview)
   questions: Question[];
   createdAt: string;
 }

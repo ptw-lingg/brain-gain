@@ -50,14 +50,15 @@ export async function seed(): Promise<void> {
     order: 0,
     materialLinks: [
       {
-        label: 'Lab Safety Handbook (OneDrive)',
-        url: 'https://onedrive.live.com/?id=demo-safety-handbook',
+        label: 'Lab Safety Handbook',
+        url: 'https://docs.example.com/lab-safety-handbook',
       },
       {
-        label: 'Emergency Procedures (OneDrive)',
-        url: 'https://onedrive.live.com/?id=demo-emergency',
+        label: 'Emergency Procedures',
+        url: 'https://docs.example.com/emergency-procedures',
       },
     ],
+    materialFiles: [],
     questions: [
       {
         id: randomUUID(),
@@ -93,8 +94,9 @@ export async function seed(): Promise<void> {
     windowAfterMonths: 3,
     order: 1,
     materialLinks: [
-      { label: 'QM Handbook (OneDrive)', url: 'https://onedrive.live.com/?id=demo-qm-handbook' },
+      { label: 'QM Handbook', url: 'https://docs.example.com/qm-handbook' },
     ],
+    materialFiles: [],
     questions: [
       {
         id: randomUUID(),

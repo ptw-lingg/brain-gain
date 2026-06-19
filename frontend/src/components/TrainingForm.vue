@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Trash2, Link as LinkIcon, HelpCircle } from 'lucide-vue-next';
-import type { Question, SafeUser, Training } from '@/types';
+import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText } from 'lucide-vue-next';
+import client from '@/api/client';
+import { useToastStore } from '@/stores/toast';
+import type { MaterialFile, Question, SafeUser, Training } from '@/types';
+import { formatBytes } from '@/utils/display';
 
 const { t } = useI18n();
+const toast = useToastStore();
 
-defineProps<{
+const props = defineProps<{
   draft: Training;
   isAdmin: boolean;
   owners: SafeUser[];
@@ -22,6 +27,44 @@ defineEmits<{
 
 const cycleOptions = [1, 2, 3, 4, 5];
 const windowOptions = [0, 1, 2, 3];
+
+// Material files: any file type is allowed. Each picked file is uploaded immediately (bytes stored
+// server-side); only the returned descriptor is kept on the draft and persisted when the form saves.
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploading = ref(false);
+
+function pickFiles(): void {
+  fileInput.value?.click();
+}
+
+async function onFilesPicked(e: Event): Promise<void> {
+  const input = e.target as HTMLInputElement;
+  const files = Array.from(input.files ?? []);
+  input.value = ''; // reset so picking the same file again still fires change
+  if (!files.length) return;
+  if (!Array.isArray(props.draft.materialFiles)) props.draft.materialFiles = [];
+  uploading.value = true;
+  try {
+    for (const file of files) {
+      try {
+        // Sent as a raw octet-stream body so any type (incl. .json) bypasses the JSON body parser.
+        const { data } = await client.post<MaterialFile>('/trainings/materials', file, {
+          params: { name: file.name, type: file.type },
+          headers: { 'Content-Type': 'application/octet-stream' },
+        });
+        props.draft.materialFiles.push(data);
+      } catch {
+        toast.error(t('trainingForm.uploadError', { name: file.name }));
+      }
+    }
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function removeFile(i: number): void {
+  props.draft.materialFiles.splice(i, 1);
+}
 </script>
 
 <template>
@@ -74,12 +117,14 @@ const windowOptions = [0, 1, 2, 3];
       </label>
     </div>
 
-    <!-- Material links -->
+    <!-- Material -->
     <div>
       <div class="mb-2 flex items-center gap-2">
         <LinkIcon class="h-4 w-4 text-accent" />
         <span class="form-label !text-ink">{{ t('trainingForm.material') }}</span>
       </div>
+
+      <!-- Links -->
       <div class="flex flex-col gap-2">
         <div v-for="(link, i) in draft.materialLinks" :key="i" class="flex gap-2">
           <input v-model="link.label" class="bg-input flex-1" :placeholder="t('trainingForm.labelPlaceholder')" />
@@ -91,6 +136,33 @@ const windowOptions = [0, 1, 2, 3];
       </div>
       <button class="btn-ghost btn-sm mt-2" @click="$emit('add-link')">
         <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addLink') }}
+      </button>
+
+      <!-- Files (any type — download only, no preview) -->
+      <div class="mt-4 mb-1 flex items-center gap-2">
+        <Paperclip class="h-4 w-4 text-accent" />
+        <span class="form-label !text-ink">{{ t('trainingForm.files') }}</span>
+      </div>
+      <p class="mb-2 font-mono text-[11px] text-ink-light">{{ t('trainingForm.fileHint') }}</p>
+      <div v-if="draft.materialFiles?.length" class="flex flex-col gap-2">
+        <div
+          v-for="(file, i) in draft.materialFiles"
+          :key="file.id"
+          class="flex items-center gap-3 rounded-lg border border-line bg-white px-3 py-2"
+        >
+          <FileText class="h-4 w-4 shrink-0 text-ink-light" />
+          <span class="min-w-0 flex-1 truncate font-sans text-sm text-ink" :title="file.name">{{ file.name }}</span>
+          <span class="shrink-0 font-mono text-[11px] text-ink-light">{{ formatBytes(file.size) }}</span>
+          <button class="btn-ghost btn-icon" @click="removeFile(i)">
+            <Trash2 class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <input ref="fileInput" type="file" multiple class="hidden" @change="onFilesPicked" />
+      <button class="btn-ghost btn-sm mt-2" :disabled="uploading" @click="pickFiles">
+        <Loader2 v-if="uploading" class="h-3.5 w-3.5 animate-spin" />
+        <Upload v-else class="h-3.5 w-3.5" />
+        {{ uploading ? t('trainingForm.uploading') : t('trainingForm.addFile') }}
       </button>
     </div>
 

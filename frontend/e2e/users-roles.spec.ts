@@ -173,7 +173,9 @@ test.describe('Roles page — admin manages a job role (SYS-ROL-02)', () => {
     await roleRow.locator('div.cursor-pointer').first().click();
 
     const editor = page.locator('.card', { hasText: roleName });
-    await editor.getByRole('button', { name: 'Delete' }).click();
+    // exact: true — the role name contains the word "Delete", and the expanded row header is itself a
+    // role="button"; without exact matching the name-substring would also match the row (strict-mode clash).
+    await editor.getByRole('button', { name: 'Delete', exact: true }).click();
     await editor.getByRole('button', { name: 'Yes' }).click();
 
     await expect(page.locator('.card', { hasText: roleName })).toHaveCount(0);

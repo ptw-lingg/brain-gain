@@ -3,6 +3,15 @@ export interface MaterialLink {
   url: string;
 }
 
+// An uploaded learning-material file of any type. Downloaded and opened in the learner's installed
+// apps — never previewed in the app. The bytes live on the server keyed by `id`.
+export interface MaterialFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+}
+
 export interface Question {
   id: string;
   text: string;
@@ -22,6 +31,7 @@ export interface Training {
   windowAfterMonths: number;
   order: number;
   materialLinks: MaterialLink[];
+  materialFiles: MaterialFile[];
   questions: Question[];
   createdAt: string;
 }

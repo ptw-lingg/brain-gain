@@ -123,6 +123,7 @@ function blankTraining(): Training {
     windowAfterMonths: 3,
     order: 0,
     materialLinks: [],
+    materialFiles: [],
     questions: [],
     createdAt: '',
   };
@@ -355,35 +356,39 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <div class="font-sans text-sm font-semibold text-ink">{{ tr.name }}</div>
             <div class="truncate font-mono text-xs text-ink-light" :title="tr.description">{{ tr.description }}</div>
           </div>
-          <!-- Readiness: trainees need material to study and questions to be tested. Missing either is
-               flagged so trainers see what to finish; a complete training shows a green "Ready". -->
-          <span
-            v-if="!trainingReadiness(tr).hasMaterial"
-            class="pill bg-amber-100 text-amber-700"
-            :title="t('trainings.noMaterialTitle')"
-          >
-            <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
-          </span>
-          <span
-            v-if="!trainingReadiness(tr).hasQuestions"
-            class="pill bg-amber-100 text-amber-700"
-            :title="t('trainings.noQuestionsTitle')"
-          >
-            <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
-          </span>
-          <span
-            v-if="trainingReadiness(tr).ready"
-            class="pill bg-pastel-mint/50 text-emerald-700"
-            :title="t('trainings.readyTitle')"
-          >
-            <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
-          </span>
-          <span class="pill pill-col bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
-          <span class="pill min-w-[3.5rem] bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
-          <span class="pill min-w-[5rem] bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
-          <span v-if="isAdmin" class="pill pill-col bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
+          <!-- Status column: trainees need material to study and questions to be tested. Missing either
+               is flagged so trainers see what to finish; a complete training shows a green "Ready". The
+               flags stack within a fixed-width cell; every badge below fills its column so that all
+               badges in a given column are the same size and the row reads like a table. -->
+          <div class="flex w-[8.5rem] shrink-0 flex-col justify-center gap-1">
+            <span
+              v-if="!trainingReadiness(tr).hasMaterial"
+              class="pill w-full bg-amber-100 text-amber-700"
+              :title="t('trainings.noMaterialTitle')"
+            >
+              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
+            </span>
+            <span
+              v-if="!trainingReadiness(tr).hasQuestions"
+              class="pill w-full bg-amber-100 text-amber-700"
+              :title="t('trainings.noQuestionsTitle')"
+            >
+              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
+            </span>
+            <span
+              v-if="trainingReadiness(tr).ready"
+              class="pill w-full bg-pastel-mint/50 text-emerald-700"
+              :title="t('trainings.readyTitle')"
+            >
+              <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
+            </span>
+          </div>
+          <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
+          <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
+          <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
+          <span v-if="isAdmin" class="pill w-32 shrink-0 truncate bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
           <ChevronDown
-            class="h-4 w-4 text-ink-light transition"
+            class="h-4 w-4 shrink-0 text-ink-light transition"
             :class="expandedId === tr.id ? 'rotate-180' : ''"
           />
         </div>

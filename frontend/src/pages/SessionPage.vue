@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ArrowLeft,
+  Download,
   ExternalLink,
   FileText,
   Loader2,
@@ -12,11 +13,14 @@ import {
   XCircle,
 } from 'lucide-vue-next';
 import client from '@/api/client';
-import type { GradeResult, Training } from '@/types';
+import { useToastStore } from '@/stores/toast';
+import { formatBytes } from '@/utils/display';
+import type { GradeResult, MaterialFile, Training } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const toast = useToastStore();
 const trainingId = route.params.trainingId as string;
 
 const training = ref<Training | null>(null);
@@ -54,6 +58,24 @@ async function load(): Promise<void> {
 
 function startTest(): void {
   step.value = 'quiz';
+}
+
+// Material files are download-only (no in-app preview). Fetch the bytes with the auth header, then
+// save under the original filename so the learner can open it in their installed app.
+async function downloadFile(file: MaterialFile): Promise<void> {
+  try {
+    const res = await client.get(`/trainings/materials/${file.id}`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data as Blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    toast.error(t('session.downloadError'));
+  }
 }
 
 async function submit(): Promise<void> {
@@ -97,9 +119,10 @@ onMounted(load);
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
         <p class="font-mono text-sm text-ink-muted">{{ training.description }}</p>
         <div class="flex flex-col gap-2">
+          <!-- Links open in a new tab -->
           <a
             v-for="(link, i) in training.materialLinks"
-            :key="i"
+            :key="`l-${i}`"
             :href="link.url"
             target="_blank"
             rel="noopener noreferrer"
@@ -111,7 +134,27 @@ onMounted(load);
             <span class="flex-1 font-sans text-sm font-semibold text-ink">{{ link.label }}</span>
             <ExternalLink class="h-4 w-4 text-ink-light" />
           </a>
-          <p v-if="training.materialLinks.length === 0" class="font-mono text-xs text-ink-light">
+          <!-- Files download to open in the learner's installed apps -->
+          <button
+            v-for="file in training.materialFiles ?? []"
+            :key="`f-${file.id}`"
+            type="button"
+            class="card flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lift"
+            @click="downloadFile(file)"
+          >
+            <div class="flex h-9 w-9 items-center justify-center rounded-md bg-pastel-mint/60">
+              <FileText class="h-4 w-4 text-accent" />
+            </div>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate font-sans text-sm font-semibold text-ink">{{ file.name }}</span>
+              <span class="font-mono text-[11px] text-ink-light">{{ formatBytes(file.size) }}</span>
+            </span>
+            <Download class="h-4 w-4 text-ink-light" />
+          </button>
+          <p
+            v-if="training.materialLinks.length === 0 && (training.materialFiles?.length ?? 0) === 0"
+            class="font-mono text-xs text-ink-light"
+          >
             {{ t('session.noMaterial') }}
           </p>
         </div>
