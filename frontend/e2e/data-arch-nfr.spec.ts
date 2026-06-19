@@ -52,7 +52,7 @@ test.describe('Data/Arch/NFR — all entities editable via UI (SR-103 / VT-103)'
   test('SYS-DATA-04 / VT-103: admin can expand a seeded training to edit it', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/trainings');
-    // Clicking a training row expands its inline editor (TrainingForm) — fully editable in the UI.
+    // Clicking a training row opens its detail/edit dialog (TrainingForm) — fully editable in the UI.
     await page.getByText('Laboratory Safety Basics').click();
     await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
   });

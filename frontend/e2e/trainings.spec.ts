@@ -11,11 +11,11 @@ import { login } from './fixtures';
 // NOTE: these specs are written but NOT run here — the shared fixed-port server is driven centrally.
 
 test.describe('Trainings — create, edit & ownership', () => {
-  // Helper: open the "Add Training" draft editor and return the editor card locator.
+  // Helper: open the "Add Training" editor dialog and return the dialog locator.
   async function openCreate(page: import('@playwright/test').Page) {
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
-    const editor = page.locator('.card', { hasText: 'New training' });
+    const editor = page.getByRole('dialog');
     await expect(editor).toBeVisible();
     return editor;
   }
@@ -40,9 +40,9 @@ test.describe('Trainings — create, edit & ownership', () => {
     // First create a training to edit (keeps the test self-contained).
     const original = `E2E Editable ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
-    const createCard = page.locator('.card', { hasText: 'New training' });
-    await createCard.getByPlaceholder('Training name').fill(original);
-    await createCard.getByRole('button', { name: 'Create' }).click();
+    const createDialog = page.getByRole('dialog');
+    await createDialog.getByPlaceholder('Training name').fill(original);
+    await createDialog.getByRole('button', { name: 'Create' }).click();
     await expect(page.getByText(original)).toBeVisible();
 
     // Open it by clicking the row, rename it, and save.
@@ -155,7 +155,7 @@ test.describe('Trainings — content readiness flags', () => {
     const name = `E2E Readiness ${Date.now()}`;
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
-    const editor = page.locator('.card', { hasText: 'New training' });
+    const editor = page.getByRole('dialog');
     await editor.getByPlaceholder('Training name').fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
 

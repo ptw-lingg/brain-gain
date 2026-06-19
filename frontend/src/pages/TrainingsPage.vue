@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertTriangle, CheckCircle2, ChevronDown, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle2, ChevronRight, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
@@ -19,8 +19,9 @@ const { t } = useI18n();
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
 const loading = ref(true);
-const expandedId = ref<string | null>(null);
-const draft = ref<Training | null>(null); // editing buffer (also used for new)
+// The editor is a modal dialog: `draft` non-null means it's open (a blank training = create, an
+// existing id = edit/details). Replaces the former inline expand-in-place editor.
+const draft = ref<Training | null>(null);
 const confirmDeleteId = ref<string | null>(null);
 const search = ref('');
 
@@ -107,7 +108,9 @@ function closeTrainingPlan(): void {
 }
 
 function onKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Escape' && planOpen.value) closeTrainingPlan();
+  if (e.key !== 'Escape') return;
+  if (planOpen.value) closeTrainingPlan();
+  else if (draft.value) cancel();
 }
 
 function blankTraining(): Training {
@@ -154,17 +157,17 @@ function ownerName(id: string): string {
 
 function startCreate(): void {
   draft.value = blankTraining();
-  expandedId.value = '__new__';
 }
 
-function startEdit(t: Training): void {
+// Open the dialog on a training to view its details / edit it (works on a deep clone so edits only
+// take effect on save).
+function openTraining(t: Training): void {
   draft.value = JSON.parse(JSON.stringify(t));
-  expandedId.value = t.id;
 }
 
 function cancel(): void {
   draft.value = null;
-  expandedId.value = null;
+  confirmDeleteId.value = null;
 }
 
 function addLink(): void {
@@ -219,8 +222,7 @@ async function remove(id: string): Promise<void> {
   try {
     await client.delete(`/trainings/${id}`);
     toast.success(t('trainings.toasts.deleted'));
-    confirmDeleteId.value = null;
-    if (expandedId.value === id) cancel();
+    cancel(); // close the dialog showing the now-deleted training
     await load();
   } catch {
     toast.error(t('trainings.toasts.deleteError'));
@@ -292,28 +294,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
       </div>
     </header>
 
-    <!-- New draft editor -->
-    <div v-if="expandedId === '__new__' && draft" class="mt-6">
-      <div class="card border-accent/40 p-5">
-        <h3 class="mb-3 font-sans text-sm font-bold text-accent">{{ t('trainings.new') }}</h3>
-        <TrainingForm
-          :draft="draft"
-          :is-admin="isAdmin"
-          :owners="owners"
-          @add-link="addLink"
-          @remove-link="removeLink"
-          @add-question="addQuestion"
-          @remove-question="removeQuestion"
-          @add-option="addOption"
-          @remove-option="removeOption"
-        />
-        <div class="mt-4 flex gap-2">
-          <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('trainings.create') }}</button>
-          <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
-        </div>
-      </div>
-    </div>
-
     <div v-if="loading" class="mt-6 flex flex-col gap-3">
       <div v-for="n in 3" :key="n" class="card h-16 animate-pulse bg-pastel-slate/30" />
     </div>
@@ -336,10 +316,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
         @drop="persistOrder"
         @dragend="onDragEnd"
       >
-        <!-- Row -->
+        <!-- Row — opens the detail/edit dialog -->
         <div
           class="flex cursor-pointer items-center gap-3 px-5 py-4 transition hover:bg-pastel-sky/20"
-          @click="expandedId === tr.id ? cancel() : startEdit(tr)"
+          role="button"
+          tabindex="0"
+          @click="openTraining(tr)"
+          @keydown.enter="openTraining(tr)"
         >
           <button
             v-if="isAdmin"
@@ -387,45 +370,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
           <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
           <span v-if="isAdmin" class="pill w-32 shrink-0 truncate bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
-          <ChevronDown
-            class="h-4 w-4 shrink-0 text-ink-light transition"
-            :class="expandedId === tr.id ? 'rotate-180' : ''"
-          />
+          <ChevronRight class="h-4 w-4 shrink-0 text-ink-light" />
         </div>
-
-        <!-- Expanded editor -->
-        <Transition name="list">
-          <div v-if="expandedId === tr.id && draft" class="border-t border-line bg-pastel-sky/10 p-5">
-            <TrainingForm
-              :draft="draft"
-              :is-admin="isAdmin"
-              :owners="owners"
-              @add-link="addLink"
-              @remove-link="removeLink"
-              @add-question="addQuestion"
-              @remove-question="removeQuestion"
-              @add-option="addOption"
-              @remove-option="removeOption"
-            />
-            <div class="mt-4 flex items-center gap-2">
-              <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('trainings.save') }}</button>
-              <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
-              <div class="flex-1" />
-              <template v-if="confirmDeleteId === tr.id">
-                <span class="font-mono text-xs text-rose-600">{{ t('trainings.deleteConfirm') }}</span>
-                <button class="btn-danger btn-sm" @click="remove(tr.id)">{{ t('trainings.deleteYes') }}</button>
-                <button class="btn-ghost btn-sm" @click="confirmDeleteId = null">{{ t('trainings.deleteNo') }}</button>
-              </template>
-              <button
-                v-else
-                class="btn-danger btn-sm"
-                @click="confirmDeleteId = tr.id"
-              >
-                <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
-              </button>
-            </div>
-          </div>
-        </Transition>
       </div>
 
       <p v-if="trainings.length === 0" class="font-mono text-sm text-ink-light">
@@ -467,6 +413,60 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               <img v-for="(p, i) in planPages" :key="i" :src="p" data-pdf-page class="w-full rounded shadow-soft" :alt="t('trainingPlan.pageAlt', { n: i + 1 })" />
             </div>
             <div v-else class="flex h-full items-center justify-center font-mono text-sm text-ink-light">{{ t('trainingPlan.rendering') }}</div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Training detail / editor dialog (create when draft has no id, edit otherwise) -->
+    <Transition name="fade-slide">
+      <div v-if="draft" class="fixed inset-0 z-40 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-ink/40" @click="cancel" />
+        <div
+          class="relative z-10 flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="draft.id ? draft.name || t('trainings.edit') : t('trainings.new')"
+        >
+          <div class="flex items-center justify-between border-b border-line px-5 py-3">
+            <h2 class="min-w-0 truncate font-sans text-base font-bold text-ink">
+              {{ draft.id ? draft.name || t('trainings.edit') : t('trainings.new') }}
+            </h2>
+            <button class="ml-3 shrink-0 text-ink-light hover:text-ink" :title="t('common.close')" :aria-label="t('common.close')" @click="cancel">
+              <X class="h-5 w-5" />
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-5">
+            <TrainingForm
+              :draft="draft"
+              :is-admin="isAdmin"
+              :owners="owners"
+              @add-link="addLink"
+              @remove-link="removeLink"
+              @add-question="addQuestion"
+              @remove-question="removeQuestion"
+              @add-option="addOption"
+              @remove-option="removeOption"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 border-t border-line px-5 py-3">
+            <button class="btn-primary" @click="save">
+              <Save class="h-4 w-4" /> {{ draft.id ? t('trainings.save') : t('trainings.create') }}
+            </button>
+            <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
+            <div class="flex-1" />
+            <template v-if="draft.id">
+              <template v-if="confirmDeleteId === draft.id">
+                <span class="font-mono text-xs text-rose-600">{{ t('trainings.deleteConfirm') }}</span>
+                <button class="btn-danger btn-sm" @click="remove(draft.id)">{{ t('trainings.deleteYes') }}</button>
+                <button class="btn-ghost btn-sm" @click="confirmDeleteId = null">{{ t('trainings.deleteNo') }}</button>
+              </template>
+              <button v-else class="btn-danger btn-sm" @click="confirmDeleteId = draft.id">
+                <Trash2 class="h-4 w-4" /> {{ t('common.delete') }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
