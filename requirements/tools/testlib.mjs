@@ -1,5 +1,8 @@
 // Shared helpers for the requirements tooling: parse test files into test-case objects, and derive
 // a stable id from a test name. Used by build.mjs (static catalog) and sync-tests.mjs (results).
+//
+// NOTE: this file is maintained as an identical copy in the brain-gain and veri-trace repos
+// (drift-check.mjs enforces that) — keep it repo-agnostic.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';

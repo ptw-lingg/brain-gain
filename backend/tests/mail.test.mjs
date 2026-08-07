@@ -1,6 +1,8 @@
 // Automated tests for outbound email (SYS-MAIL-01), traced to SR-097 / VT-133:
 //   - POST /api/mail/send: validation (400), access control (member 403), 503 when SMTP unconfigured,
 //     and — once configured — an actual delivery attempt (502 against an unreachable server).
+//   - POST /api/mail/test: admin-only SMTP connection check to the caller's own address (401/403
+//     guards, 503 unconfigured, 502 unreachable).
 //   - The SMTP password is stored but never returned by the API (redacted; passwordSet flag), and a
 //     blank password on a later save keeps the stored secret.
 // Runs against a freshly-seeded, isolated backend (helpers/server.mjs); SMTP starts unconfigured.
@@ -92,4 +94,35 @@ test('SYS-MAIL-01 / VT-133: once configured, /send attempts delivery (502 on an 
     body: { to: ['x@test.local'], subject: 'Hi', text: 'Body' },
   });
   assert.equal(res.status, 502, 'configured → tries to send → connection refused → 502');
+});
+
+// ───────────────────────── POST /api/mail/test — the admin's SMTP connection check ─────────────────────────
+
+test('SYS-MAIL-01 / SYS-AC-01: POST /api/mail/test is admin-only (401 anonymous, 403 trainer and member)', async () => {
+  const anon = await srv.request('POST', '/api/mail/test');
+  assert.equal(anon.status, 401, 'no token → 401');
+  const trainer = await srv.request('POST', '/api/mail/test', { token: trainerToken });
+  assert.equal(trainer.status, 403, 'trainer → 403 (stricter than /send)');
+  const member = await srv.request('POST', '/api/mail/test', { token: memberToken });
+  assert.equal(member.status, 403, 'member → 403');
+});
+
+test('SYS-MAIL-01: POST /api/mail/test returns 503 while SMTP is disabled', async () => {
+  const off = await srv.request('PUT', '/api/settings', {
+    token: adminToken,
+    body: { smtp: { enabled: false, host: '127.0.0.1', port: 59999, secure: false, username: '', password: '', fromName: 'BrainGain', fromAddress: 'no-reply@test.local' } },
+  });
+  assert.equal(off.status, 200);
+  const res = await srv.request('POST', '/api/mail/test', { token: adminToken });
+  assert.equal(res.status, 503, 'unconfigured → 503, no delivery attempt');
+});
+
+test('SYS-MAIL-01 / VT-133: once configured, /api/mail/test attempts delivery to the caller (502 on an unreachable server)', async () => {
+  const on = await srv.request('PUT', '/api/settings', {
+    token: adminToken,
+    body: { smtp: { enabled: true, host: '127.0.0.1', port: 59999, secure: false, username: '', password: '', fromName: 'BrainGain', fromAddress: 'no-reply@test.local' } },
+  });
+  assert.equal(on.status, 200);
+  const res = await srv.request('POST', '/api/mail/test', { token: adminToken });
+  assert.equal(res.status, 502, 'configured → sends to the admin\'s own address → connection refused → 502');
 });

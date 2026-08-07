@@ -8,8 +8,8 @@
 // Traces to stakeholder reqs SR-006 (sign in with Entra), SR-007 (optional/configurable), SR-010 (keep password login).
 //
 // The full token-verification + auto-provision + account-linking + domain-restriction logic
-// (SYS-SSO-04/05/06/07 / VT-009) needs a real Entra IdP signing tokens against published JWKS,
-// so those are documented as MANUAL procedures in requirements/manual-tests/sso.md.
+// (SYS-SSO-04/05/06/07 / VT-009) is covered in sso-tokens.test.mjs against a local stub IdP
+// (helpers/entra.mjs + ENTRA_AUTHORITY_BASE); only the real MSAL popup flow remains manual.
 //
 // Runs against a freshly-seeded, isolated backend (see helpers/server.mjs). Seeded fixtures:
 //   admin@braingain.app / admin123     (admin)

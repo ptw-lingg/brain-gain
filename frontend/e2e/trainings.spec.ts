@@ -7,8 +7,6 @@ import { login } from './fixtures';
 //
 // Follows the reference pattern in auth.spec.ts: login(page, role) lands on /dashboard, then we
 // navigate to /trainings. Each test gets a fresh browser context.
-//
-// NOTE: these specs are written but NOT run here — the shared fixed-port server is driven centrally.
 
 test.describe('Trainings — create, edit & ownership', () => {
   // Helper: open the "Add Training" editor dialog and return the dialog locator.
@@ -143,6 +141,55 @@ test.describe('Trainings — reordering (admin)', () => {
     // Persistence: reload and the (server-saved) order is reflected.
     await page.reload();
     await expect(page.locator('button[title="Drag to reorder"]').first()).toBeVisible();
+  });
+});
+
+// The editor became a modal dialog (role="dialog", aria-modal) opened from a keyboard-operable row —
+// these specs pin the dialog behaviors themselves (SYS-UI-04 keyboard/A11y surface, VT-A01).
+test.describe('Trainings — editor dialog behavior', () => {
+  test('SYS-TRN-04 / SYS-UI-04 / VT-A01: a training row opens with the keyboard and Escape closes the dialog discarding the draft', async ({ page }) => {
+    await login(page, 'trainer');
+    await page.goto('/trainings');
+
+    // Keyboard path: the row is a focusable role="button"; Enter opens the dialog.
+    const row = page.getByRole('button', { name: /Laboratory Safety Basics/ }).first();
+    await row.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    // Type into the draft, then Escape — the dialog closes and the edit is discarded, not saved.
+    await dialog.getByPlaceholder('Training name').fill('Discarded Draft Name');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText('Laboratory Safety Basics')).toBeVisible();
+    await expect(page.getByText('Discarded Draft Name')).toHaveCount(0);
+
+    // Reopening shows the untouched name.
+    await page.getByText('Laboratory Safety Basics').click();
+    await expect(page.getByRole('dialog').getByPlaceholder('Training name')).toHaveValue('Laboratory Safety Basics');
+  });
+
+  test('SYS-TRN-05 / VT-040: deleting from the open dialog asks for confirmation, closes the dialog and removes the row', async ({ page }) => {
+    await login(page, 'trainer');
+    const name = `E2E Delete Me ${Date.now()}`;
+    await page.goto('/trainings');
+    await page.getByRole('button', { name: 'Add Training' }).click();
+    const editor = page.getByRole('dialog');
+    await editor.getByPlaceholder('Training name').fill(name);
+    await editor.getByRole('button', { name: 'Create' }).click();
+    await expect(page.getByText(name)).toBeVisible();
+
+    // Open it and delete from within the dialog — a two-step confirm guards the destructive action.
+    await page.getByText(name).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('button', { name: 'Delete' }).click();
+    await expect(dialog.getByText('Delete this training?')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Yes, delete' }).click();
+
+    // The dialog closes itself (it was showing the now-deleted training) and the row is gone.
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText(name)).toHaveCount(0);
   });
 });
 

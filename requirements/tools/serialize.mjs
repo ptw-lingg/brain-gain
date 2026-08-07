@@ -1,6 +1,9 @@
 // Shared serializer for requirements.json — one object per line, CRLF, so the file stays greppable
 // and diff-friendly. Both build.mjs (catalog + coverage) and sync-tests.mjs (embedded test results)
 // write through this, so their output is byte-identical and build.mjs --check stays a clean drift gate.
+//
+// NOTE: this file is maintained as an identical copy in the brain-gain and veri-trace repos
+// (drift-check.mjs enforces that) — keep it repo-agnostic.
 
 const NL = '\r\n';
 const arr = (key, list, indent) =>

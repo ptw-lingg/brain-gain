@@ -1,0 +1,9 @@
+{
+  "name": "brain-gain-root",
+  "private": true,
+  "scripts": {
+    "test:backend": "npm --prefix backend test",
+    "e2e": "npm --prefix frontend run e2e",
+    "verify": "node requirements/tools/build.mjs && node requirements/tools/sync-tests.mjs && node requirements/tools/build.mjs --check && node requirements/tools/drift-check.mjs"
+  }
+}

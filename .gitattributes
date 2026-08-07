@@ -1,0 +1,3 @@
+# The requirements tools are maintained as identical copies in brain-gain and veri-trace
+# (requirements/tools/drift-check.mjs). Pin LF so the copies stay byte-identical across checkouts.
+requirements/tools/*.mjs text eol=lf

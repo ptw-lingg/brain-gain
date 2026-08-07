@@ -19,15 +19,16 @@ export function decodeJwt(token) {
 
 /**
  * Boot a fresh backend with a temp data dir on a random free-ish port (so multiple test files —
- * and parallel agents — never collide). Pass an explicit httpsPort to pin it. Retries on a fresh
- * port if the chosen one was taken. Returns { baseUrl, request, stop }.
+ * and parallel agents — never collide). Pass an explicit httpsPort to pin it; pass `env` to add
+ * process env vars for the backend (e.g. ENTRA_AUTHORITY_BASE for the SSO stub IdP). Retries on a
+ * fresh port if the chosen one was taken. Returns { baseUrl, request, stop }.
  */
 export async function startTestServer(opts = {}) {
   let lastErr;
   for (let attempt = 0; attempt < 4; attempt++) {
     const base = opts.httpsPort ?? 20000 + Math.floor(Math.random() * 40000);
     try {
-      return await boot(base, base + 1);
+      return await boot(base, base + 1, opts.env);
     } catch (err) {
       lastErr = err;
       if (opts.httpsPort) break; // caller pinned the port — don't reroll
@@ -36,7 +37,7 @@ export async function startTestServer(opts = {}) {
   throw lastErr;
 }
 
-async function boot(httpsPort, httpPort) {
+async function boot(httpsPort, httpPort, extraEnv = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'braingain-test-'));
   const proc = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
     cwd: backendRoot,
@@ -46,6 +47,7 @@ async function boot(httpsPort, httpPort) {
       HTTPS_PORT: String(httpsPort),
       HTTP_PORT: String(httpPort),
       JWT_SECRET: 'test-secret',
+      ...extraEnv,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });

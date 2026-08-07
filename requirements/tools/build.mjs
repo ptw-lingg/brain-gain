@@ -1,17 +1,21 @@
 #!/usr/bin/env node
-// Validate requirements.json, build the test-case catalog + coverage, and sync the app's data copy.
+// Validate requirements.json and rebuild the test-case catalog + coverage.
 //
 //   node requirements/tools/build.mjs           # validate + rebuild testCases/coverage + write JSON
 //   node requirements/tools/build.mjs --check    # validate + fail if JSON is out of date (CI / pre-commit)
 //
-// requirements.json is the single source of truth AND the single file handed off to the VeriTrace
-// viewer app. This tool:
+// requirements.json is the single source of truth AND the single file opened in the VeriTrace viewer.
+// This tool:
 //   1. statically parses the backend + e2e suites into `testCases[]` (kind backend|e2e), preserving any
 //      authored manual test cases (kind manual) for checks automation can't reach,
-//   2. computes `meta.coverage` from `testCases[].covers` (+ self-documented usability/accessibility VTs).
+//   2. computes `meta.coverage` from `testCases[].covers` (+ self-documented usability/accessibility VTs),
+//   3. bumps `meta.updated` to today whenever a write actually changes the file.
 // Live pass/fail results are embedded by sync-tests.mjs under `testRun`; this tool passes any existing
 // `testRun` block through unchanged, so the file stays deterministic and `--check` works as a CI drift
 // gate. No separate generated copy and no Markdown views are emitted.
+//
+// NOTE: this file is maintained as an identical copy in the brain-gain and veri-trace repos
+// (drift-check.mjs enforces that) — keep it repo-agnostic.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +30,8 @@ const dataPath = join(reqDir, 'requirements.json');
 const rel = (p) => relative(repoRoot, p).replace(/\\/g, '/');
 const CHECK = process.argv.includes('--check');
 
-const data = JSON.parse(readFileSync(dataPath, 'utf8'));
+const raw = readFileSync(dataPath, 'utf8');
+const data = JSON.parse(raw);
 
 // ───────────────────────────── 1. test-case catalog (manual authored + automated parsed) ─────────────────────────────
 const manualCases = (data.testCases ?? []).filter((tc) => tc.kind === 'manual');
@@ -147,17 +152,20 @@ if (errors.length) {
 }
 
 // ───────────────────────────── 3. serialize (shared writer — one object per line, CRLF) ─────────────────────────────
-const reqOut = serialize(data); // preserves any existing data.testRun block
+let reqOut = serialize(data); // preserves any existing data.testRun block
 
 if (CHECK) {
-  let cur = '';
-  try { cur = readFileSync(dataPath, 'utf8'); } catch { /* missing = drift */ }
-  if (cur !== reqOut) {
+  if (raw !== reqOut) {
     console.error(`✗ out of date: ${rel(dataPath)} (run build.mjs)`);
     process.exit(1);
   }
   console.log(`✓ up to date — ${data.testCases.length} test cases · coverage ${cov.covered}/${cov.total} (backend ${cov.backend}, e2e ${cov.e2e}, manual ${cov.manual}), gaps ${cov.gaps.length}`);
 } else {
+  if (reqOut !== raw) {
+    // Content changed — stamp the dataset with today's date so meta.updated cannot rot.
+    data.meta.updated = new Date().toISOString().slice(0, 10);
+    reqOut = serialize(data);
+  }
   writeFileSync(dataPath, reqOut, 'utf8');
   const sr = data.requirements.filter((r) => r.type === 'stakeholder').length;
   const sys = data.requirements.length - sr;

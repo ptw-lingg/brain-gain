@@ -31,8 +31,13 @@ export function isEntraConfigured(s: Settings): boolean {
   return Boolean(e && e.enabled && e.tenantId && e.clientId);
 }
 
+// Base of the identity-provider endpoints. ENTRA_AUTHORITY_BASE exists so automated tests can point
+// token verification (JWKS fetch + issuer check, which must agree) at a local stub IdP; production
+// deployments never set it and always use the real Microsoft endpoint.
+const AUTHORITY_BASE = process.env.ENTRA_AUTHORITY_BASE || 'https://login.microsoftonline.com';
+
 export function authority(tenantId: string): string {
-  return `https://login.microsoftonline.com/${tenantId}`;
+  return `${AUTHORITY_BASE}/${tenantId}`;
 }
 
 // One JWKS client per tenant id. The tenant can change at runtime via Settings, so we key the

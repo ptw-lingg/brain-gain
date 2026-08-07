@@ -76,16 +76,22 @@ results), generated and kept in sync by the tooling. That one file is the handof
 **VeriTrace** viewer, which renders it and builds the IEC 62304 controlled documents — the repos
 never reference each other.
 
-From the repo root:
+From the repo root, `npm run verify` is the single entry point — it rebuilds the catalog, runs both
+suites, embeds the results, and gates on drift:
 
 ```
-npm --prefix backend test                   # backend unit/API tests (node --test)
-npm --prefix frontend run e2e               # Playwright e2e (builds the SPA, drives the app)
-node requirements/tools/build.mjs           # validate dataset + rebuild test-case catalog + coverage
-node requirements/tools/build.mjs --check   # CI drift gate
-node requirements/tools/sync-tests.mjs      # run the suites + embed results under testRun
+npm run verify
+  = node requirements/tools/build.mjs           # validate dataset + rebuild test-case catalog + coverage
+  + node requirements/tools/sync-tests.mjs      # run the suites + embed results under testRun (fails hard on partial runs)
+  + node requirements/tools/build.mjs --check   # drift gate: file must be byte-identical to a rebuild
+  + node requirements/tools/drift-check.mjs     # tooling must match the veri-trace sibling checkout
+
+npm run test:backend                            # backend suite only (node --test)
+npm run e2e                                     # Playwright e2e only (builds the SPA, drives the app)
 ```
 
-Authoring rule: edit `requirements.json`, then run `build.mjs` (rebuilds the catalog and
-`meta.coverage`) and `sync-tests.mjs` (runs the suites and embeds per-test pass/fail/skip under
-`testRun`). Never hand-edit the generated catalog/coverage/result blocks.
+Authoring rule: edit `requirements.json`, then `npm run verify`. `build.mjs` rebuilds the catalog and
+`meta.coverage` and stamps `meta.updated` on any content change; `sync-tests.mjs` refuses to embed a
+partial or failed-to-launch run. Never hand-edit the generated catalog/coverage/result blocks. The
+tools under `requirements/tools/` are identical copies shared with the VeriTrace repo — change them in
+lockstep (drift-check enforces this when both checkouts sit side by side).
