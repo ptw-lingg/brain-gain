@@ -169,7 +169,21 @@
     "addOption": "Option hinzufügen",
     "addQuestion": "Frage hinzufügen",
     "markCorrect": "Diese Antwort als richtig markieren",
-    "needOneCorrect": "Eine Frage braucht mindestens eine richtige Antwort"
+    "needOneCorrect": "Eine Frage braucht mindestens eine richtige Antwort",
+    "sectionBasics": "Grunddaten",
+    "sectionSchedule": "Zeitplan",
+    "questionText": "Frage",
+    "summaryEmpty": "leer",
+    "summaryWindow": "{before} Monate vorher / {after} danach",
+    "summaryLinks": "{count} Link | {count} Links",
+    "summaryFiles": "{count} Datei | {count} Dateien",
+    "summaryQuestions": "{count} Frage | {count} Fragen",
+    "summaryOptions": "{count} Option | {count} Optionen",
+    "summaryCorrect": "{count} richtig",
+    "removeLink": "Link entfernen",
+    "removeFile": "Datei entfernen",
+    "removeQuestion": "Frage entfernen",
+    "removeOption": "Option entfernen"
   },
   "trainees": {
     "title": "Teilnehmer",

@@ -428,7 +428,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
       <div v-if="draft" class="fixed inset-0 z-40 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-ink/40" @click="cancel" />
         <div
-          class="relative z-10 flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
+          class="relative z-10 flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
           role="dialog"
           aria-modal="true"
           :aria-label="draft.id ? draft.name || t('trainings.edit') : t('trainings.new')"
@@ -442,7 +442,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             </button>
           </div>
 
-          <div class="flex-1 overflow-y-auto p-5">
+          <!-- Tinted like the preview modals, so the collapsible sections read as separate surfaces. -->
+          <div class="flex-1 overflow-y-auto bg-pastel-slate/20 p-4">
             <TrainingForm
               :draft="draft"
               :is-admin="isAdmin"
@@ -456,7 +457,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             />
           </div>
 
-          <div class="flex items-center gap-2 border-t border-line px-5 py-3">
+          <div class="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
             <button class="btn-primary" @click="save">
               <Save class="h-4 w-4" /> {{ draft.id ? t('trainings.save') : t('trainings.create') }}
             </button>

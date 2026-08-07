@@ -15,7 +15,9 @@ test.describe('Quiz questions — several correct answers', () => {
     const dialog = page.getByRole('dialog');
     await dialog.getByPlaceholder('Training name').fill(name);
 
-    // Add a question with four options.
+    // Add a question with four options. Adding one opens the Questions section and the new question
+    // itself, so authoring needs no extra clicks (SYS-TRN-13).
+    await dialog.getByRole('button', { name: /Multiple-choice questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
     await dialog.getByPlaceholder('Question 1').fill('Which are examples of design output?');
     await dialog.getByRole('button', { name: 'Add option' }).click();
@@ -41,10 +43,17 @@ test.describe('Quiz questions — several correct answers', () => {
     await dialog.getByRole('button', { name: 'Create' }).click();
     await expect(page.getByText(name)).toBeVisible();
 
-    // Reopen after a reload: the full answer key came back from the server.
+    // Reopen after a reload: the full answer key came back from the server. Questions start collapsed,
+    // and the question's own row summarises the key before it is opened.
     await page.reload();
     await page.getByText(name).click();
     const reopened = page.getByRole('dialog');
+    await reopened.getByRole('button', { name: /Multiple-choice questions/ }).click();
+    const questionRow = reopened.getByRole('button', { name: /Which are examples of design output\?/ });
+    await expect(questionRow).toContainText('4 options');
+    await expect(questionRow).toContainText('3 correct');
+    await questionRow.click();
+
     const saved = reopened.locator('input[type="checkbox"]');
     await expect(saved.nth(0)).toBeChecked();
     await expect(saved.nth(1)).toBeChecked();
@@ -58,6 +67,7 @@ test.describe('Quiz questions — several correct answers', () => {
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByPlaceholder('Training name').fill(`E2E One-correct ${Date.now()}`);
+    await dialog.getByRole('button', { name: /Multiple-choice questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
 
     // A fresh question has exactly one correct answer, and that one is locked so the question can

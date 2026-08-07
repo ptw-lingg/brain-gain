@@ -20,20 +20,25 @@ test.describe('Trainings — material files end to end', () => {
     await expect(dialog).toBeVisible();
 
     // The picker input is hidden (a styled button triggers it) — setInputFiles targets it directly.
+    // It stays mounted even while the Material section is collapsed (SYS-TRN-13 uses v-show).
     await page.locator('input[type="file"]').setInputFiles({
       name: FILE_NAME,
       mimeType: 'text/plain',
       buffer: Buffer.from(FILE_TEXT),
     });
-    // The file uploads immediately and is listed by name inside the dialog.
+    // Uploading opens the Material section by itself, and the file is listed there by name.
     await expect(dialog.getByText(FILE_NAME)).toBeVisible();
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(dialog).toBeHidden();
 
-    // Persistence: reload and reopen — the saved training still carries the file.
+    // Persistence: reload and reopen — the saved training still carries the file. The section starts
+    // collapsed, and its summary badge reports the file before it is opened.
     await page.reload();
     await page.getByText('Laboratory Safety Basics').click();
-    await expect(page.getByRole('dialog').getByText(FILE_NAME)).toBeVisible();
+    const reopened = page.getByRole('dialog');
+    await expect(reopened.getByRole('button', { name: /Learning material/ })).toContainText('1 file');
+    await reopened.getByRole('button', { name: /Learning material/ }).click();
+    await expect(reopened.getByText(FILE_NAME)).toBeVisible();
     await page.keyboard.press('Escape');
   });
 

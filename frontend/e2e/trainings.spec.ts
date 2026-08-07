@@ -77,6 +77,8 @@ test.describe('Trainings — create, edit & ownership', () => {
     const editor = await openCreate(page);
 
     await editor.getByPlaceholder('Training name').fill(name);
+    // Cycle and window live in the Schedule section, which starts collapsed (SYS-TRN-13).
+    await editor.getByRole('button', { name: /Schedule/ }).click();
     // The form offers Repeat every (years) 1–5 and the two window selects 0–3.
     await expect(editor.getByText('Repeat every (years)')).toBeVisible();
     await expect(editor.getByText('Window opens (months before)')).toBeVisible();
@@ -145,8 +147,63 @@ test.describe('Trainings — reordering (admin)', () => {
 });
 
 // The editor became a modal dialog (role="dialog", aria-modal) opened from a keyboard-operable row —
-// these specs pin the dialog behaviors themselves (SYS-UI-04 keyboard/A11y surface, VT-A01).
+// these specs pin the dialog behaviors themselves (SYS-UI-04 keyboard/A11y surface, VT-A01) and its
+// collapsible structure (SYS-TRN-13).
 test.describe('Trainings — editor dialog behavior', () => {
+  test('SYS-TRN-13 / SR-148 / VT-U14: the editor opens with only Basics expanded, and each section reports what it holds', async ({ page }) => {
+    await login(page, 'trainer');
+    await page.goto('/trainings');
+    // The seeded safety training has 3 questions, 1 link and no files.
+    await page.getByText('Laboratory Safety Basics').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    // Basics is open on arrival, so a quick rename needs no clicks.
+    await expect(dialog.getByPlaceholder('Training name')).toBeVisible();
+
+    // The other three are collapsed, and each summarises its hidden content. Counts are matched loosely
+    // because the specs share one server and other specs add material to this training.
+    await expect(dialog.getByText('Repeat every (years)')).toBeHidden();
+    await expect(dialog.getByRole('button', { name: /Schedule/ })).toContainText('Yearly');
+    await expect(dialog.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ link/);
+    const questionsHeader = dialog.getByRole('button', { name: /Multiple-choice questions/ });
+    await expect(questionsHeader).toContainText(/\d+ questions/);
+
+    // Opening a section reveals its fields; the questions stay collapsed one level down, so three
+    // questions cost three rows rather than three full editors.
+    await questionsHeader.click();
+    const questionRows = dialog.getByRole('button', { name: /options ·/ });
+    await expect(questionRows).toHaveCount(3);
+    // Every question has an "Option 1" field, hence .first() — all of them are hidden while collapsed.
+    await expect(dialog.getByPlaceholder('Option 1').first()).toBeHidden();
+
+    // Expanding one question shows its options — and only that question's.
+    await questionRows.first().click();
+    await expect(dialog.getByPlaceholder('Option 1').first()).toBeVisible();
+    await expect(dialog.getByPlaceholder('Option 1').nth(1)).toBeHidden();
+  });
+
+  test('SYS-TRN-13 / VT-U14: a newly added question is expanded so it can be filled in straight away', async ({ page }) => {
+    await login(page, 'trainer');
+    await page.goto('/trainings');
+    await page.getByRole('button', { name: 'Add Training' }).click();
+    const dialog = page.getByRole('dialog');
+
+    // Questions starts collapsed and flags itself as empty.
+    const questionsHeader = dialog.getByRole('button', { name: /Multiple-choice questions/ });
+    await expect(questionsHeader).toContainText('empty');
+    await questionsHeader.click();
+
+    // The added question comes up expanded — no second click to start typing.
+    await dialog.getByRole('button', { name: 'Add question' }).click();
+    await expect(dialog.getByPlaceholder('Question 1')).toBeVisible();
+    await expect(dialog.getByPlaceholder('Option 1')).toBeVisible();
+
+    // A second question expands too, and the first collapses out of the way on demand.
+    await dialog.getByRole('button', { name: 'Add question' }).click();
+    await expect(dialog.getByPlaceholder('Question 2')).toBeVisible();
+  });
+
   test('SYS-TRN-04 / SYS-UI-04 / VT-A01: a training row opens with the keyboard and Escape closes the dialog discarding the draft', async ({ page }) => {
     await login(page, 'trainer');
     await page.goto('/trainings');
@@ -181,9 +238,10 @@ test.describe('Trainings — editor dialog behavior', () => {
     await expect(page.getByText(name)).toBeVisible();
 
     // Open it and delete from within the dialog — a two-step confirm guards the destructive action.
+    // `exact` because the per-row remove buttons now carry accessible names containing "Remove".
     await page.getByText(name).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByRole('button', { name: 'Delete' }).click();
+    await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(dialog.getByText('Delete this training?')).toBeVisible();
     await dialog.getByRole('button', { name: 'Yes, delete' }).click();
 

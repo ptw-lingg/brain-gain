@@ -169,7 +169,21 @@
     "addOption": "Add option",
     "addQuestion": "Add question",
     "markCorrect": "Mark this answer as correct",
-    "needOneCorrect": "A question needs at least one correct answer"
+    "needOneCorrect": "A question needs at least one correct answer",
+    "sectionBasics": "Basics",
+    "sectionSchedule": "Schedule",
+    "questionText": "Question",
+    "summaryEmpty": "empty",
+    "summaryWindow": "{before} months before / {after} after",
+    "summaryLinks": "{count} link | {count} links",
+    "summaryFiles": "{count} file | {count} files",
+    "summaryQuestions": "{count} question | {count} questions",
+    "summaryOptions": "{count} option | {count} options",
+    "summaryCorrect": "{count} correct",
+    "removeLink": "Remove link",
+    "removeFile": "Remove file",
+    "removeQuestion": "Remove question",
+    "removeOption": "Remove option"
   },
   "trainees": {
     "title": "Trainees",
