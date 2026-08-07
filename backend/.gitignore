@@ -5,3 +5,7 @@ dist/
 # TLS private key + certificate material — never commit
 src/data/tls/
 dist/data/tls/
+
+# Server-side backup archives — full data dumps incl. password hashes; never commit
+src/data/backups/
+dist/data/backups/

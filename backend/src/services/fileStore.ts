@@ -6,7 +6,38 @@ import type { Settings } from '../types';
 // run against an isolated, throwaway data directory).
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, '..', 'data');
 
-type ArrayFile = 'users' | 'roles' | 'trainings' | 'sessions' | 'orgUnits';
+/** The active data directory — one definition, so tls.ts and backup.ts resolve the same path. */
+export function dataDir(): string {
+  return DATA_DIR;
+}
+
+// The array stores, and — derived from them — every JSON store the app persists. STORE_FILES is the
+// allowlist backup.ts archives and restores, and ArrayFile is derived FROM it rather than declared
+// beside it: a new store can only be added by extending this list, so it cannot be introduced through
+// readStore/writeStore and then be silently missing from backups.
+export const ARRAY_FILES = ['users', 'roles', 'trainings', 'sessions', 'orgUnits'] as const;
+export type ArrayFile = (typeof ARRAY_FILES)[number];
+export const STORE_FILES = [...ARRAY_FILES, 'settings'] as const;
+export type StoreFile = (typeof STORE_FILES)[number];
+
+/** Absolute path of a JSON store — the one place the `<name>.json` layout is encoded. */
+export function storeFilePath(name: StoreFile): string {
+  return filePath(name);
+}
+
+/** The uploaded-material files present on disk (bytes and their `<id>.meta.json` sidecars). */
+export async function listMaterialFiles(): Promise<string[]> {
+  try {
+    return await fs.readdir(MATERIALS_DIR);
+  } catch {
+    return []; // nothing uploaded yet
+  }
+}
+
+/** Absolute path of one entry inside the materials directory (bytes or sidecar). */
+export function materialFilePath(entry: string): string {
+  return path.join(MATERIALS_DIR, entry);
+}
 
 function filePath(name: string): string {
   return path.join(DATA_DIR, `${name}.json`);

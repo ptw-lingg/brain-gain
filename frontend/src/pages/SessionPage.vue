@@ -15,6 +15,7 @@ import {
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import { formatBytes } from '@/utils/display';
+import { downloadFile as saveFile } from '@/utils/download';
 import type { GradeResult, MaterialFile, Training } from '@/types';
 
 const route = useRoute();
@@ -64,15 +65,7 @@ function startTest(): void {
 // save under the original filename so the learner can open it in their installed app.
 async function downloadFile(file: MaterialFile): Promise<void> {
   try {
-    const res = await client.get(`/trainings/materials/${file.id}`, { responseType: 'blob' });
-    const url = URL.createObjectURL(res.data as Blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    await saveFile(`/trainings/materials/${file.id}`, file.name);
   } catch {
     toast.error(t('session.downloadError'));
   }

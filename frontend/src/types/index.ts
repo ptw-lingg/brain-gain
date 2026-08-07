@@ -147,3 +147,13 @@ export interface GradeResult {
   correct: number;
   total: number;
 }
+
+/** A server-side backup archive of all app data (see backend/src/services/backup.ts). */
+export interface BackupMeta {
+  id: string;
+  fileName: string;
+  createdAt: string;
+  size: number;
+  source: 'manual' | 'pre-restore' | 'upload';
+  contents: { users: number; trainings: number; materials: number };
+}

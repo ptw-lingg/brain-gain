@@ -52,8 +52,10 @@ async function boot(httpsPort, httpPort, extraEnv = {}) {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let log = '';
-  proc.stdout.on('data', (d) => (log += d));
-  proc.stderr.on('data', (d) => (log += d));
+  // Set SHOW_SERVER_LOG=1 to echo the backend's own output while debugging a failing test.
+  const echo = process.env.SHOW_SERVER_LOG ? (d) => process.stderr.write(`[server] ${d}`) : () => {};
+  proc.stdout.on('data', (d) => { log += d; echo(d); });
+  proc.stderr.on('data', (d) => { log += d; echo(d); });
 
   const baseUrl = `https://localhost:${httpsPort}`;
   const deadline = Date.now() + 30000;

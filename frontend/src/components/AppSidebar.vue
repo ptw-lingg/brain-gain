@@ -9,6 +9,7 @@ import {
   Users,
   UsersRound,
   SlidersHorizontal,
+  Archive,
 } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
@@ -53,6 +54,9 @@ const isHead = computed(() => auth.user?.isHead ?? false);
         </RouterLink>
         <RouterLink to="/settings" class="nav-item" active-class="nav-active">
           <SlidersHorizontal class="h-4 w-4" /> {{ t('nav.settings') }}
+        </RouterLink>
+        <RouterLink to="/backups" class="nav-item" active-class="nav-active">
+          <Archive class="h-4 w-4" /> {{ t('nav.backups') }}
         </RouterLink>
       </template>
     </nav>

@@ -29,6 +29,7 @@ import {
 import { computeDue, sessionsFor } from '../services/due';
 import { requiredTrainingIds } from '../services/training';
 import { toSafeUser } from './auth';
+import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
 
 const router = Router();
 
@@ -76,8 +77,6 @@ function sanitizeLinks(input: unknown): MaterialLink[] {
 // UUID — the shape the upload endpoint issues — and coerce the remaining fields; the bytes were
 // already written at upload time. A descriptor pointing at a non-existent id simply yields a 404 on
 // download, never a path-traversal read.
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 function sanitizeFiles(input: unknown): MaterialFile[] {
   if (!Array.isArray(input)) return [];
   return input
@@ -93,13 +92,6 @@ function sanitizeFiles(input: unknown): MaterialFile[] {
       };
     })
     .filter((f): f is MaterialFile => f !== null);
-}
-
-/** Keep only a base filename — defeats path traversal and header injection via the upload name. */
-function sanitizeFileName(raw: unknown): string {
-  const base = (typeof raw === 'string' ? raw : 'file').split(/[/\\]/).pop() ?? 'file';
-  const cleaned = base.replace(/[\r\n"]/g, '').trim();
-  return cleaned.slice(0, 255) || 'file';
 }
 
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
@@ -219,14 +211,7 @@ router.get('/materials/:fileId', async (req: AuthRequest, res) => {
   if (!UUID_RE.test(fileId)) return res.status(400).json({ error: 'bad file id' });
   const file = await readMaterial(fileId);
   if (!file) return res.status(404).json({ error: 'Not found' });
-  const safeAscii = file.meta.name.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '');
-  res.setHeader('Content-Type', file.meta.type || 'application/octet-stream');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="${safeAscii}"; filename*=UTF-8''${encodeURIComponent(file.meta.name)}`,
-  );
-  res.setHeader('Content-Length', String(file.bytes.length));
-  return res.end(file.bytes);
+  return sendAttachment(res, file.bytes, file.meta.name, file.meta.type);
 });
 
 // GET /api/trainings/:id  — single training, answer key stripped for non-owners
