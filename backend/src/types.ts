@@ -19,7 +19,10 @@ export interface Question {
   id: string;
   text: string;
   options: string[];
-  correctIndex: number; // index into options of the single correct answer
+  // Indices into options of every correct answer — always at least one. A question with several is
+  // answered correctly only by selecting exactly that set (see the grading in routes/sessions.ts).
+  // Legacy records carrying a single `correctIndex` are migrated on boot by services/questions.ts.
+  correctIndices: number[];
 }
 
 export interface Training {
@@ -130,9 +133,10 @@ export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
 
-// Training with correctIndex stripped — what a learner is allowed to see.
+// Training with the answer key stripped — what a learner is allowed to see. Note that the COUNT of
+// correct answers is withheld too, not just which ones: the learner UI always offers multi-select.
 export type PublicTraining = Omit<Training, 'questions'> & {
-  questions: Omit<Question, 'correctIndex'>[];
+  questions: Omit<Question, 'correctIndices'>[];
 };
 
 export interface DueTraining {

@@ -27,6 +27,7 @@ import {
   type AuthRequest,
 } from '../middleware/auth';
 import { computeDue, sessionsFor } from '../services/due';
+import { normalizeCorrectIndices } from '../services/questions';
 import { requiredTrainingIds } from '../services/training';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
@@ -35,12 +36,12 @@ const router = Router();
 
 router.use(authenticate);
 
-/** Strip correctIndex so learners never receive the answer key. */
+/** Strip the answer key so learners never receive it — not which answers, nor how many. */
 function toPublic(t: Training): PublicTraining {
   return {
     ...t,
-    questions: t.questions.map(({ correctIndex, ...rest }) => {
-      void correctIndex;
+    questions: t.questions.map(({ correctIndices, ...rest }) => {
+      void correctIndices;
       return rest;
     }),
   };
@@ -51,12 +52,11 @@ function sanitizeQuestions(input: unknown): Question[] {
   return input.map((q): Question => {
     const obj = (q ?? {}) as Record<string, unknown>;
     const options = Array.isArray(obj.options) ? obj.options.map(String) : [];
-    const correctIndex = Number(obj.correctIndex);
     return {
       id: typeof obj.id === 'string' && obj.id ? obj.id : randomUUID(),
       text: typeof obj.text === 'string' ? obj.text : '',
       options,
-      correctIndex: Number.isInteger(correctIndex) ? correctIndex : 0,
+      correctIndices: normalizeCorrectIndices(obj.correctIndices ?? obj.correctIndex, options.length),
     };
   });
 }

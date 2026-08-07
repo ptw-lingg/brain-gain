@@ -27,16 +27,29 @@ const trainingId = route.params.trainingId as string;
 const training = ref<Training | null>(null);
 const loading = ref(true);
 const step = ref<'material' | 'quiz' | 'result'>('material');
-const answers = ref<number[]>([]);
+// One selection set per question — a question may have several correct options, so the answer is a set
+// of option indices rather than a single index.
+const answers = ref<number[][]>([]);
 const submitting = ref(false);
 const result = ref<GradeResult | null>(null);
 
+const isSelected = (qi: number, oi: number): boolean => answers.value[qi]?.includes(oi) ?? false;
+
+function toggleAnswer(qi: number, oi: number): void {
+  const selection = answers.value[qi] ?? (answers.value[qi] = []);
+  const at = selection.indexOf(oi);
+  if (at === -1) selection.push(oi);
+  else selection.splice(at, 1);
+  selection.sort((a, b) => a - b);
+}
+
+// Every question needs at least one ticked option before the test can be submitted.
 const allAnswered = computed(
   () =>
     training.value != null &&
     training.value.questions.length > 0 &&
     answers.value.length === training.value.questions.length &&
-    answers.value.every((a) => a >= 0),
+    answers.value.every((selection) => selection.length > 0),
 );
 
 const thresholdPct = computed(() =>
@@ -51,7 +64,7 @@ async function load(): Promise<void> {
   try {
     const { data } = await client.get<Training>(`/trainings/${trainingId}`);
     training.value = data;
-    answers.value = new Array(data.questions.length).fill(-1);
+    answers.value = Array.from({ length: data.questions.length }, () => []);
   } finally {
     loading.value = false;
   }
@@ -86,7 +99,7 @@ async function submit(): Promise<void> {
 }
 
 function retry(): void {
-  if (training.value) answers.value = new Array(training.value.questions.length).fill(-1);
+  if (training.value) answers.value = Array.from({ length: training.value.questions.length }, () => []);
   result.value = null;
   step.value = 'quiz';
 }
@@ -170,19 +183,21 @@ onMounted(load);
           class="card p-5"
         >
           <p class="font-sans text-sm font-semibold text-ink">{{ qi + 1 }}. {{ q.text }}</p>
+          <!-- Always multi-select: one or more options may be correct, and the payload deliberately
+               does not say how many, so the control must not reveal it either. -->
+          <p class="mt-1 font-mono text-[11px] text-ink-light">{{ t('session.selectAllThatApply') }}</p>
           <div class="mt-3 flex flex-col gap-2">
             <label
               v-for="(opt, oi) in q.options"
               :key="oi"
               class="check-card"
-              :class="answers[qi] === oi ? 'border-accent bg-accent-light/30' : ''"
+              :class="isSelected(qi, oi) ? 'border-accent bg-accent-light/30' : ''"
             >
               <input
-                v-model.number="answers[qi]"
-                type="radio"
-                :name="`q-${q.id}`"
-                :value="oi"
+                type="checkbox"
+                :checked="isSelected(qi, oi)"
                 class="accent-accent"
+                @change="toggleAnswer(qi, oi)"
               />
               {{ opt }}
             </label>

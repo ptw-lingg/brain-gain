@@ -11,7 +11,7 @@
 //   SYS-DATA-06  Settings defaults backfilled (threshold + entra)  ← SR-080 / SR-008
 //   SYS-DATA-07  SafeUser strips passwordHash + entraOid           ← SR-003 / SR-105
 //   SYS-NFR-01   Server-side enforcement (mutations need auth)     ← SR-104
-//   SYS-NFR-02   No secret leakage (passwordHash/entraOid/correctIndex) ← SR-105 / SR-051
+//   SYS-NFR-02   No secret leakage (passwordHash/entraOid/correctIndices) ← SR-105 / SR-051
 //
 // Validation tests exercised here (API-observable parts):
 //   VT-101 (JSON persistence) · VT-103 (entities editable, API layer) ·
@@ -167,7 +167,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
       windowAfterMonths: 2,
       materialLinks: [{ label: 'Doc', url: 'https://example.com/doc' }],
       questions: [
-        { text: 'Where does data live?', options: ['DB', 'JSON files'], correctIndex: 1 },
+        { text: 'Where does data live?', options: ['DB', 'JSON files'], correctIndices: [1] },
       ],
     },
   });
@@ -186,18 +186,18 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   assert.equal(readBack.body.windowAfterMonths, 2);
   assert.equal(readBack.body.materialLinks.length, 1, 'materialLinks persisted');
   assert.equal(readBack.body.questions.length, 1, 'questions persisted');
-  assert.equal(readBack.body.questions[0].correctIndex, 1, 'admin (owner-level) sees correctIndex');
+  assert.deepEqual(readBack.body.questions[0].correctIndices, [1], 'admin (owner-level) sees the answer key');
 });
 
-test('SYS-DATA-05 / VT-105: correctIndex is stripped from the learner training payload', async () => {
+test('SYS-DATA-05 / VT-105: correctIndices is stripped from the learner training payload', async () => {
   // The seeded member is required to take 2 trainings; they are NOT the owner, so the public shape
-  // (no answer key) is what they receive. SYS-NFR-02: correctIndex must never reach a test-taker.
+  // (no answer key) is what they receive. SYS-NFR-02: correctIndices must never reach a test-taker.
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   assert.equal(mine.status, 200);
   assert.equal(mine.body.length, 2, 'member has 2 required trainings');
   for (const dt of mine.body) {
     for (const q of dt.training.questions) {
-      assert.ok(!('correctIndex' in q), `correctIndex stripped from question "${q.text}"`);
+      assert.ok(!('correctIndices' in q), `correctIndices stripped from question "${q.text}"`);
       assert.ok(Array.isArray(q.options) && q.options.length > 0, 'options still present');
     }
   }

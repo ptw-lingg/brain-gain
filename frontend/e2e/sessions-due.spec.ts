@@ -39,18 +39,22 @@ test.describe('Training sessions & due status', () => {
     await page.getByRole('button', { name: 'Start test' }).click();
     await expect(page.getByText('step 2 of 3')).toBeVisible();
 
-    // The quiz must NOT visually mark a correct answer (answer key hidden) — just radio options.
+    // The quiz must NOT visually mark a correct answer (answer key hidden) — just selectable options.
     const questionCards = page.locator('section >> .card');
     expect(await questionCards.count()).toBeGreaterThanOrEqual(1);
+    // Options are checkboxes for every question, so the learner is never told how many answers are
+    // correct (SYS-SES-05). The prompt is repeated per question, hence .first().
+    await expect(page.getByText(/Select all correct answers/).first()).toBeVisible();
+    expect(await page.locator('input[type="radio"]').count()).toBe(0);
 
     // Submit is disabled until every question is answered.
     const submit = page.getByRole('button', { name: 'Submit test' });
     await expect(submit).toBeDisabled();
 
-    // Answer every question by choosing its first option, then submit.
+    // Answer every question by ticking its first option, then submit.
     const cards = await questionCards.all();
     for (const card of cards) {
-      await card.locator('input[type="radio"]').first().check();
+      await card.locator('input[type="checkbox"]').first().check();
     }
     await expect(submit).toBeEnabled();
     await submit.click();
@@ -74,7 +78,7 @@ test.describe('Training sessions & due status', () => {
 
     const cards = await page.locator('section >> .card').all();
     for (const card of cards) {
-      await card.locator('input[type="radio"]').first().check();
+      await card.locator('input[type="checkbox"]').first().check();
     }
     await page.getByRole('button', { name: 'Submit test' }).click();
 

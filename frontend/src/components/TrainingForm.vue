@@ -28,6 +28,21 @@ defineEmits<{
 const cycleOptions = [1, 2, 3, 4, 5];
 const windowOptions = [0, 1, 2, 3];
 
+// ── answer key ────────────────────────────────────────────────────────────────────────────────────
+// A question may have several correct options. The key is kept sorted so it is stable in the payload,
+// and never emptied — a question with no correct answer would be unanswerable.
+const keyOf = (q: Question): number[] => (q.correctIndices ??= [0]);
+const isCorrect = (q: Question, oi: number): boolean => keyOf(q).includes(oi);
+const correctCount = (q: Question): number => keyOf(q).length;
+
+function toggleCorrect(q: Question, oi: number): void {
+  const key = keyOf(q);
+  const at = key.indexOf(oi);
+  if (at === -1) key.push(oi);
+  else if (key.length > 1) key.splice(at, 1); // keep at least one correct answer
+  key.sort((a, b) => a - b);
+}
+
 // Material files: any file type is allowed. Each picked file is uploaded immediately (bytes stored
 // server-side); only the returned descriptor is kept on the draft and persisted when the form saves.
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -189,12 +204,15 @@ function removeFile(i: number): void {
           </p>
           <div class="mt-1 flex flex-col gap-1.5">
             <div v-for="(_opt, oi) in q.options" :key="oi" class="flex items-center gap-2">
+              <!-- Several options may be correct; a learner must then select exactly that set. The last
+                   remaining correct answer cannot be unticked — a question needs at least one. -->
               <input
-                type="radio"
-                :name="`correct-${qi}`"
-                :checked="q.correctIndex === oi"
+                type="checkbox"
+                :checked="isCorrect(q, oi)"
+                :disabled="isCorrect(q, oi) && correctCount(q) === 1"
+                :title="isCorrect(q, oi) && correctCount(q) === 1 ? t('trainingForm.needOneCorrect') : t('trainingForm.markCorrect')"
                 class="accent-accent"
-                @change="q.correctIndex = oi"
+                @change="toggleCorrect(q, oi)"
               />
               <input v-model="q.options[oi]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
               <button

@@ -77,19 +77,19 @@ test('SYS-DUE-01 / VT-053: a never-taken training reports status "never" with no
 
 // ───────────────────────── SYS-SES-02 / SR-051 / VT-051 — answers hidden ─────────────────────────
 
-test('SYS-SES-02 / VT-051: the learner training payload never includes correctIndex', async () => {
+test('SYS-SES-02 / VT-051: the learner training payload never includes correctIndices', async () => {
   // Public shape from /trainings/mine
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   for (const d of mine.body) {
     for (const q of d.training.questions) {
-      assert.ok(!('correctIndex' in q), 'correctIndex stripped from /trainings/mine quiz payload');
+      assert.ok(!('correctIndices' in q), 'correctIndices stripped from /trainings/mine quiz payload');
     }
   }
   // Public shape from the single-training endpoint the Session page fetches.
   const one = await srv.request('GET', `/api/trainings/${safety.id}`, { token: memberToken });
   assert.equal(one.status, 200);
   for (const q of one.body.questions) {
-    assert.ok(!('correctIndex' in q), 'correctIndex stripped from GET /trainings/:id for a non-owner');
+    assert.ok(!('correctIndices' in q), 'correctIndices stripped from GET /trainings/:id for a non-owner');
   }
 });
 
@@ -149,7 +149,7 @@ test('SYS-SES-02 / VT-051: a partial-but-below-threshold submission fails (0.8 t
 
 test('SYS-SES-02 / SYS-SES-04 / VT-052: a passing submission is recorded and returned by /sessions/mine', async () => {
   // All-correct answers for Quality (2 questions) — discovered by brute force so the test never
-  // hard-codes the seed's correctIndex (which the answer key, correctly, never exposes to us).
+  // hard-codes the seed's correctIndices (which the answer key, correctly, never exposes to us).
   const correct = await solve(quality);
   const res = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,

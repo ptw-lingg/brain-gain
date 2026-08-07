@@ -11,11 +11,11 @@
     "windowAfterMonths": 3,
     "materialLinks": [
       {
-        "label": "SOP-10.00",
+        "label": "Presentation",
         "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
       },
       {
-        "label": "Trainingsvideo",
+        "label": "Video",
         "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
       }
     ],
@@ -28,7 +28,9 @@
           "Die Redokumentation wird in SOP 43.10 beschrieben und muss bis 2035 abgeschlossen sein.  The redocumentation is described in SOP 43.10 and must be completed by 2035.",
           "Der zeitliche Rahmen der MDR Redokumentationen der MDD Projekte ist im Transition Plan beschrieben. Alle Redokumentationen müssen bis Ende 2028 abgeschlossen sein.  The time frame for the MDR redocumentation of MDD projects is described in the Transition Plan. All redocumentation must be completed by the end of 2028."
         ],
-        "correctIndex": 2
+        "correctIndices": [
+          2
+        ]
       }
     ],
     "createdAt": "2026-06-02T14:32:18.157Z",
@@ -45,7 +47,16 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
+    "materialLinks": [
+      {
+        "label": "Video",
+        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
+      },
+      {
+        "label": "Presentation",
+        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
+      }
+    ],
     "questions": [],
     "createdAt": "2026-06-02T14:55:48.130Z",
     "order": 2,
@@ -61,8 +72,41 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
-    "questions": [],
+    "materialLinks": [
+      {
+        "label": "Video",
+        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
+      },
+      {
+        "label": "Presentation",
+        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
+      }
+    ],
+    "questions": [
+      {
+        "id": "81cc244d-1c88-48db-803d-6f0f2d490eae",
+        "text": "Wozu dient der Design-Input-Prozess?\nWhat is the purpose of the Design Input process?",
+        "options": [
+          "Um Anforderungen an das Produkt festzulegen / To define product requirements",
+          "Um Werbematerial zu erstellen / To create marketing materials",
+          "Um Produktionsschichten zu planen / To plan production shifts"
+        ],
+        "correctIndices": [
+          0
+        ]
+      },
+      {
+        "id": "311665e1-f486-4f9e-ac9e-11246895dae7",
+        "text": "Wann werden Component Requirements typischerweise erstellt?\nWhen are Component Requirements typically created?",
+        "options": [
+          "Während der Implementierungsphase / During the implementation phase",
+          "Während der Verkaufsphase / During the sales phase"
+        ],
+        "correctIndices": [
+          0
+        ]
+      }
+    ],
     "createdAt": "2026-06-02T14:58:30.564Z",
     "order": 3,
     "materialFiles": []
@@ -77,8 +121,59 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
-    "questions": [],
+    "materialLinks": [
+      {
+        "label": "Video",
+        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
+      },
+      {
+        "label": "Presentation",
+        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
+      }
+    ],
+    "questions": [
+      {
+        "id": "766f6a11-6f41-4ae9-a034-cc1604c98d9c",
+        "text": "Welche Dokumente enthalten das \"Detailed Design\"?\nWhat documents contain the \"Detailed Design\"?",
+        "options": [
+          "SDS, CDS",
+          "SRS, CRS",
+          "MDRS"
+        ],
+        "correctIndices": [
+          0
+        ]
+      },
+      {
+        "id": "4caebb0f-0874-4512-b44c-16e90adf1e43",
+        "text": "Was sind Beispiele für Design Output?\nWhat are examples for design output?",
+        "options": [
+          "software libraries",
+          "drawings",
+          "electrical boards",
+          "firmware releases",
+          "software releases"
+        ],
+        "correctIndices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "id": "b9c89043-5a3e-49c5-8016-470fdbd3ccbf",
+        "text": "Does the Usability Engineering File (UEF) provide input to the Design Output?",
+        "options": [
+          "yes",
+          "no"
+        ],
+        "correctIndices": [
+          0
+        ]
+      }
+    ],
     "createdAt": "2026-06-02T14:58:59.018Z",
     "order": 4,
     "materialFiles": []

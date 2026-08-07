@@ -182,7 +182,7 @@ function addQuestion(): void {
     id: '',
     text: '',
     options: ['', ''],
-    correctIndex: 0,
+    correctIndices: [0],
   } as Question);
 }
 function removeQuestion(i: number): void {
@@ -193,7 +193,12 @@ function addOption(q: Question): void {
 }
 function removeOption(q: Question, oi: number): void {
   q.options.splice(oi, 1);
-  if (q.correctIndex && q.correctIndex >= q.options.length) q.correctIndex = 0;
+  // Drop the removed option from the answer key and shift the indices above it down, so the key still
+  // points at the same answers. Never leave it empty.
+  const key = (q.correctIndices ?? [0])
+    .filter((i) => i !== oi)
+    .map((i) => (i > oi ? i - 1 : i));
+  q.correctIndices = key.length ? key : [0];
 }
 
 async function save(): Promise<void> {

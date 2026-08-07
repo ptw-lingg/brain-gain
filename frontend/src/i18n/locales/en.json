@@ -104,7 +104,8 @@
     "retry": "Retry test",
     "backToTrainings": "Back to My Trainings",
     "failNote": "Failed attempts aren't recorded — this training stays due until you pass.",
-    "downloadError": "Could not download the file."
+    "downloadError": "Could not download the file.",
+    "selectAllThatApply": "Select all correct answers — there may be more than one."
   },
   "trainings": {
     "title": "Trainings",
@@ -163,10 +164,12 @@
     "uploadError": "Could not upload {name}",
     "questions": "Multiple-choice questions",
     "questionPlaceholder": "Question {n}",
-    "selectCorrect": "Select the correct answer",
+    "selectCorrect": "Tick every correct answer (at least one)",
     "optionPlaceholder": "Option {n}",
     "addOption": "Add option",
-    "addQuestion": "Add question"
+    "addQuestion": "Add question",
+    "markCorrect": "Mark this answer as correct",
+    "needOneCorrect": "A question needs at least one correct answer"
   },
   "trainees": {
     "title": "Trainees",

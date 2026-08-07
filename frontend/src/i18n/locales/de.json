@@ -104,7 +104,8 @@
     "retry": "Test wiederholen",
     "backToTrainings": "Zurück zu Meine Schulungen",
     "failNote": "Fehlversuche werden nicht gespeichert – diese Schulung bleibt fällig, bis Sie bestehen.",
-    "downloadError": "Die Datei konnte nicht heruntergeladen werden."
+    "downloadError": "Die Datei konnte nicht heruntergeladen werden.",
+    "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein."
   },
   "trainings": {
     "title": "Schulungen",
@@ -163,10 +164,12 @@
     "uploadError": "{name} konnte nicht hochgeladen werden",
     "questions": "Multiple-Choice-Fragen",
     "questionPlaceholder": "Frage {n}",
-    "selectCorrect": "Wählen Sie die richtige Antwort",
+    "selectCorrect": "Alle richtigen Antworten ankreuzen (mindestens eine)",
     "optionPlaceholder": "Option {n}",
     "addOption": "Option hinzufügen",
-    "addQuestion": "Frage hinzufügen"
+    "addQuestion": "Frage hinzufügen",
+    "markCorrect": "Diese Antwort als richtig markieren",
+    "needOneCorrect": "Eine Frage braucht mindestens eine richtige Antwort"
   },
   "trainees": {
     "title": "Teilnehmer",

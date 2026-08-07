@@ -16,7 +16,9 @@ export interface Question {
   id: string;
   text: string;
   options: string[];
-  correctIndex?: number; // present only for owners/admins
+  // The answer key: indices of every correct option, at least one. Present only for owners/admins —
+  // a learner's payload omits it entirely, so they cannot tell how many answers are correct either.
+  correctIndices?: number[];
 }
 
 export interface Training {

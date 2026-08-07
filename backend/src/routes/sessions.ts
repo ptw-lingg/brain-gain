@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import type { Training, TrainingSession } from '../types';
 import { readStore, readSettings, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
+import { gradeAnswers } from '../services/questions';
 
 const router = Router();
 
@@ -18,10 +19,10 @@ router.post('/grade', async (req: AuthRequest, res) => {
   const training = trainings.find((t) => t.id === trainingId);
   if (!training) return res.status(404).json({ error: 'Training not found' });
 
+  // answers[i] is the learner's selected option index/indices for question i. A question with several
+  // correct answers counts only when the selection matches the key exactly — no partial credit.
   const total = training.questions.length;
-  const correct = training.questions.reduce((acc, q, i) => {
-    return acc + (answers[i] === q.correctIndex ? 1 : 0);
-  }, 0);
+  const correct = gradeAnswers(training.questions, answers);
   const scorePct = total === 0 ? 1 : correct / total;
 
   const { passThreshold } = await readSettings();

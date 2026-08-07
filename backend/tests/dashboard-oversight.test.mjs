@@ -78,12 +78,12 @@ test('SYS-DSH-01 / VT-060: each item carries a computed due status + the card fi
   }
 });
 
-test('SYS-DSH-01 / VT-060: the answer key (correctIndex) is never sent on /mine (PublicTraining shape)', async () => {
+test('SYS-DSH-01 / VT-060: the answer key (correctIndices) is never sent on /mine (PublicTraining shape)', async () => {
   const res = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   for (const item of res.body) {
     assert.ok(item.training.questions.length > 0, 'training carries its quiz questions');
     for (const q of item.training.questions) {
-      assert.equal('correctIndex' in q, false, 'correctIndex stripped for the learner');
+      assert.equal('correctIndices' in q, false, 'correctIndices stripped for the learner');
       assert.ok(Array.isArray(q.options), 'options still present');
     }
   }
@@ -200,7 +200,8 @@ test('SYS-OVS-01 / VT-070: after a member passes a quiz, oversight flips that tr
   const trainings = await srv.request('GET', '/api/trainings', { token: trainerToken });
   const safety = trainings.body.find((t) => t.name === 'Laboratory Safety Basics');
   assert.ok(safety, 'trainer can read the owned training with the answer key');
-  const correctAnswers = safety.questions.map((q) => q.correctIndex);
+  // The key is a set of indices per question (a question may have several correct answers).
+  const correctAnswers = safety.questions.map((q) => q.correctIndices);
 
   const grade = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,

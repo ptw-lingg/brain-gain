@@ -1,7 +1,7 @@
 // Automated API tests for the Trainings requirement area (SYS-TRN-*).
 //
 // Covers the system requirements:
-//   SYS-TRN-01  GET /api/trainings — sorted by order; admins see all, trainers ?mine=1; correctIndex
+//   SYS-TRN-01  GET /api/trainings — sorted by order; admins see all, trainers ?mine=1; correctIndices
 //               stripped for non-owners            (← SR-040, SR-047, SR-051)
 //   SYS-TRN-02  GET /api/trainings/:id — answer key stripped for non-owners          (← SR-050)
 //   SYS-TRN-03  POST /api/trainings — trainer-or-admin; trainer owns own; admins may target an owner;
@@ -11,12 +11,12 @@
 //   SYS-TRN-06  PUT /api/trainings/reorder — admin-only; sets order by array position  (← SR-046)
 //   SYS-TRN-07  order is the single source of truth across the list endpoints   (← SR-046, SR-047)
 //   SYS-DATA-04 cycleYears (1–5) / windowBefore/AfterMonths (0–3) clamps      (← SR-043, SR-044)
-//   SYS-DATA-05 PublicTraining strips correctIndex; sanitizeQuestions/sanitizeLinks (← SR-042, SR-051)
+//   SYS-DATA-05 PublicTraining strips correctIndices; sanitizeQuestions/sanitizeLinks (← SR-042, SR-051)
 //
 // Validation tests exercised here (API-observable parts):
 //   VT-040 trainings editable · VT-045 trainer ownership enforced · VT-046 reorder persists
 //   VT-047 order respected everywhere · VT-051 server-side grading / answers hidden
-//   VT-104 security enforced server-side · VT-105 no secrets (correctIndex) leak to clients
+//   VT-104 security enforced server-side · VT-105 no secrets (correctIndices) leak to clients
 //
 // Runs against a freshly-seeded, isolated backend (see helpers/server.mjs). Seeded fixtures:
 //   admin@braingain.app   / admin123    (admin)
@@ -69,7 +69,7 @@ test('SYS-TRN-01 / VT-047: GET /api/trainings returns trainings sorted by order 
   assert.deepEqual(orders, sorted, 'order is ascending');
 });
 
-test('SYS-TRN-01 / VT-051 / VT-105: a non-owner (member) receives the PUBLIC shape — correctIndex stripped', async () => {
+test('SYS-TRN-01 / VT-051 / VT-105: a non-owner (member) receives the PUBLIC shape — correctIndices stripped', async () => {
   const res = await srv.request('GET', '/api/trainings', { token: memberToken });
   assert.equal(res.status, 200);
   assert.ok(res.body.length >= 1);
@@ -77,24 +77,24 @@ test('SYS-TRN-01 / VT-051 / VT-105: a non-owner (member) receives the PUBLIC sha
     for (const q of t.questions) {
       assert.ok(Array.isArray(q.options) && q.options.length > 0, 'options still present');
       assert.equal(
-        Object.prototype.hasOwnProperty.call(q, 'correctIndex'),
+        Object.prototype.hasOwnProperty.call(q, 'correctIndices'),
         false,
-        'correctIndex must never be sent to a non-owner',
+        'correctIndices must never be sent to a non-owner',
       );
     }
   }
 });
 
-test('SYS-TRN-01 / VT-051: the owning trainer DOES receive correctIndex (full shape)', async () => {
+test('SYS-TRN-01 / VT-051: the owning trainer DOES receive correctIndices (full shape)', async () => {
   const res = await srv.request('GET', '/api/trainings', { token: trainerToken });
   assert.equal(res.status, 200);
   // The trainer owns both seeded trainings → every question keeps its answer key.
   for (const t of res.body) {
     for (const q of t.questions) {
       assert.equal(
-        Object.prototype.hasOwnProperty.call(q, 'correctIndex'),
+        Object.prototype.hasOwnProperty.call(q, 'correctIndices'),
         true,
-        'owner sees correctIndex',
+        'owner sees correctIndices',
       );
     }
   }
@@ -119,20 +119,20 @@ test('SYS-TRN-01 / VT-104: GET /api/trainings requires authentication → 401', 
 
 // ───────────────────────── SYS-TRN-02 — GET /:id ─────────────────────────
 
-test('SYS-TRN-02 / VT-051: GET /:id strips correctIndex for a non-owner but keeps it for the owner', async () => {
+test('SYS-TRN-02 / VT-051: GET /:id strips correctIndices for a non-owner but keeps it for the owner', async () => {
   const list = await srv.request('GET', '/api/trainings', { token: adminToken });
   const id = list.body[0].id;
 
   const asMember = await srv.request('GET', `/api/trainings/${id}`, { token: memberToken });
   assert.equal(asMember.status, 200);
   for (const q of asMember.body.questions) {
-    assert.equal(Object.prototype.hasOwnProperty.call(q, 'correctIndex'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(q, 'correctIndices'), false);
   }
 
   const asTrainer = await srv.request('GET', `/api/trainings/${id}`, { token: trainerToken });
   assert.equal(asTrainer.status, 200);
   for (const q of asTrainer.body.questions) {
-    assert.equal(Object.prototype.hasOwnProperty.call(q, 'correctIndex'), true);
+    assert.equal(Object.prototype.hasOwnProperty.call(q, 'correctIndices'), true);
   }
 });
 
@@ -237,23 +237,47 @@ test('SYS-DATA-05: material links are sanitized to {label,url} strings', async (
   assert.deepEqual(res.body.materialLinks[2], { label: '', url: '' });
 });
 
-test('SYS-DATA-05: questions are sanitized — id assigned, options stringified, correctIndex integer', async () => {
+test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, options stringified, answer key normalized', async () => {
   const res = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: {
       name: 'Questions',
       questions: [
-        { text: 'Q1', options: ['a', 'b', 'c'], correctIndex: 2 },
-        { text: 'Q2', options: ['x', 'y'], correctIndex: 'nope' }, // invalid index → 0
+        { text: 'Q1', options: ['a', 'b', 'c'], correctIndices: [2] },
+        { text: 'Q2', options: ['x', 'y'], correctIndices: 'nope' }, // unusable → falls back to [0]
+        // A bare number (a legacy client) still normalizes to a one-element key.
+        { text: 'Q3', options: ['p', 'q'], correctIndex: 1 },
+        // Out-of-range, duplicate and unordered entries are cleaned up.
+        { text: 'Q4', options: ['a', 'b', 'c'], correctIndices: [2, 0, 2, 9, -1, 'x'] },
       ],
     },
   });
   assert.equal(res.status, 201);
-  assert.equal(res.body.questions.length, 2);
+  assert.equal(res.body.questions.length, 4);
   assert.ok(res.body.questions[0].id, 'a question id was generated');
-  assert.equal(res.body.questions[0].correctIndex, 2);
+  assert.deepEqual(res.body.questions[0].correctIndices, [2]);
   assert.deepEqual(res.body.questions[0].options, ['a', 'b', 'c']);
-  assert.equal(res.body.questions[1].correctIndex, 0, 'invalid correctIndex falls back to 0');
+  assert.deepEqual(res.body.questions[1].correctIndices, [0], 'an unusable answer key falls back to [0]');
+  assert.deepEqual(res.body.questions[2].correctIndices, [1], 'a legacy scalar correctIndex is accepted');
+  assert.deepEqual(res.body.questions[3].correctIndices, [0, 2], 'deduped, in-bounds and ascending');
+  assert.equal(res.body.questions[3].correctIndex, undefined, 'the legacy field is never stored');
+});
+
+test('SYS-TRN-12 / SR-146 / VT-146: a question may carry several correct answers, stored as given', async () => {
+  const res = await srv.request('POST', '/api/trainings', {
+    token: trainerToken,
+    body: {
+      name: 'Multi-answer',
+      questions: [
+        { text: 'Which are examples of design output?', options: ['libraries', 'drawings', 'boards', 'a wish'], correctIndices: [0, 1, 2] },
+      ],
+    },
+  });
+  assert.equal(res.status, 201);
+  assert.deepEqual(res.body.questions[0].correctIndices, [0, 1, 2], 'all three correct answers persist');
+
+  const readBack = await srv.request('GET', `/api/trainings/${res.body.id}`, { token: trainerToken });
+  assert.deepEqual(readBack.body.questions[0].correctIndices, [0, 1, 2], 'and survive a round-trip');
 });
 
 // ───────────────────────── SYS-TRN-04 — PUT /:id (update) ─────────────────────────

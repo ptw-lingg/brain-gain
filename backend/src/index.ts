@@ -15,6 +15,7 @@ import mailRoutes from './routes/mail';
 import backupRoutes from './routes/backups';
 import { seed } from './seed';
 import { migrateOrgUnits } from './services/orgUnits';
+import { migrateQuestions } from './services/questions';
 import { ensureCredentials, registerHttpsServer } from './services/tls';
 
 const app = express();
@@ -90,6 +91,7 @@ function listenWithRetry(
 
 seed()
   .then(() => migrateOrgUnits())
+  .then(() => migrateQuestions())
   .then(async () => {
     const creds = await ensureCredentials();
     const httpsServer = https.createServer({ key: creds.key, cert: creds.cert, ca: creds.ca }, app);
