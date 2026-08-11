@@ -178,11 +178,13 @@ function removeLink(i: number): void {
 }
 
 function addQuestion(): void {
+  // New questions start as single choice — the common case; the editor offers the switch to multiple.
   draft.value?.questions.push({
     id: '',
     text: '',
     options: ['', ''],
     correctIndices: [0],
+    type: 'single',
   } as Question);
 }
 function removeQuestion(i: number): void {

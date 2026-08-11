@@ -27,7 +27,7 @@ import {
   type AuthRequest,
 } from '../middleware/auth';
 import { computeDue, sessionsFor } from '../services/due';
-import { normalizeCorrectIndices } from '../services/questions';
+import { normalizeCorrectIndices, questionType } from '../services/questions';
 import { requiredTrainingIds } from '../services/training';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
@@ -36,13 +36,19 @@ const router = Router();
 
 router.use(authenticate);
 
-/** Strip the answer key so learners never receive it — not which answers, nor how many. */
+/**
+ * Strip the answer key so learners never receive it — for a multiple-choice question not even the
+ * count. The question type is emitted (computed, so legacy records without one read as 'multiple');
+ * the learner UI needs it to render radio buttons vs checkboxes, and a single-choice question
+ * disclosing "exactly one correct answer" is the point of the type, not a leak.
+ */
 function toPublic(t: Training): PublicTraining {
   return {
     ...t,
-    questions: t.questions.map(({ correctIndices, ...rest }) => {
+    questions: t.questions.map((q) => {
+      const { correctIndices, ...rest } = q;
       void correctIndices;
-      return rest;
+      return { ...rest, type: questionType(q) };
     }),
   };
 }
@@ -52,11 +58,15 @@ function sanitizeQuestions(input: unknown): Question[] {
   return input.map((q): Question => {
     const obj = (q ?? {}) as Record<string, unknown>;
     const options = Array.isArray(obj.options) ? obj.options.map(String) : [];
+    const correctIndices = normalizeCorrectIndices(obj.correctIndices ?? obj.correctIndex, options.length);
     return {
       id: typeof obj.id === 'string' && obj.id ? obj.id : randomUUID(),
       text: typeof obj.text === 'string' ? obj.text : '',
       options,
-      correctIndices: normalizeCorrectIndices(obj.correctIndices ?? obj.correctIndex, options.length),
+      correctIndices,
+      // 'single' requires exactly one correct answer; anything else (including absent — legacy
+      // clients) is coerced to 'multiple' rather than rejected, like the rest of this normalizer.
+      type: obj.type === 'single' && correctIndices.length === 1 ? 'single' : 'multiple',
     };
   });
 }

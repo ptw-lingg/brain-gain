@@ -166,7 +166,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     await expect(dialog.getByText('Repeat every (years)')).toBeHidden();
     await expect(dialog.getByRole('button', { name: /Schedule/ })).toContainText('Yearly');
     await expect(dialog.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ link/);
-    const questionsHeader = dialog.getByRole('button', { name: /Multiple-choice questions/ });
+    const questionsHeader = dialog.getByRole('button', { name: /Quiz questions/ });
     await expect(questionsHeader).toContainText(/\d+ questions/);
 
     // Opening a section reveals its fields; the questions stay collapsed one level down, so three
@@ -190,7 +190,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     const dialog = page.getByRole('dialog');
 
     // Questions starts collapsed and flags itself as empty.
-    const questionsHeader = dialog.getByRole('button', { name: /Multiple-choice questions/ });
+    const questionsHeader = dialog.getByRole('button', { name: /Quiz questions/ });
     await expect(questionsHeader).toContainText('empty');
     await questionsHeader.click();
 

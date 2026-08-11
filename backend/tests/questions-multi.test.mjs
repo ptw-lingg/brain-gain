@@ -142,8 +142,9 @@ test('SYS-SES-05 / SR-147 / VT-147: the learner payload reveals neither which an
   assert.equal('correctIndices' in q, false, 'the answer key is absent');
   assert.equal('correctIndex' in q, false, 'no legacy answer field either');
   assert.equal('correctCount' in q, false, 'the NUMBER of correct answers is not disclosed');
-  // Nothing else in the payload should hint at it.
-  assert.deepEqual(Object.keys(q).sort(), ['id', 'options', 'text'], 'only id/text/options reach a learner');
+  // Nothing else in the payload should hint at it. The question type is deliberately public (the
+  // learner UI needs it for radio vs checkbox); for a multiple-choice question it reveals nothing.
+  assert.deepEqual(Object.keys(q).sort(), ['id', 'options', 'text', 'type'], 'only id/text/options/type reach a learner');
 
   // The same on the dashboard payload.
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });

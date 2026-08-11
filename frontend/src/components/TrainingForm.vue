@@ -77,7 +77,7 @@ const emptyTint = 'bg-amber-100 text-amber-700';
 const questionTitle = (q: Question, i: number): string =>
   `${i + 1}. ${q.text.trim() || t('trainingForm.questionPlaceholder', { n: i + 1 })}`;
 const optionsSummary = (q: Question): string =>
-  `${t('trainingForm.summaryOptions', { count: q.options.length }, q.options.length)} · ${t('trainingForm.summaryCorrect', { count: correctCount(q) })}`;
+  `${t(typeOf(q) === 'single' ? 'trainingForm.typeSingle' : 'trainingForm.typeMultiple')} · ${t('trainingForm.summaryOptions', { count: q.options.length }, q.options.length)} · ${t('trainingForm.summaryCorrect', { count: correctCount(q) })}`;
 
 // Anything just added must be reachable without hunting for it: opening the section and, for a
 // question, the new question itself.
@@ -103,6 +103,20 @@ function toggleCorrect(q: Question, oi: number): void {
   if (at === -1) key.push(oi);
   else if (key.length > 1) key.splice(at, 1); // keep at least one correct answer
   key.sort((a, b) => a - b);
+}
+
+// ── question type ─────────────────────────────────────────────────────────────────────────────────
+// 'single' (radio buttons, exactly one correct answer) or 'multiple' (checkboxes). Records saved
+// before the field existed have no type and read as 'multiple'; a question can only become single
+// while it has exactly one correct answer, so the switch is disabled otherwise.
+const typeOf = (q: Question): 'single' | 'multiple' =>
+  q.type === 'single' && correctCount(q) === 1 ? 'single' : 'multiple';
+const canBeSingle = (q: Question): boolean => correctCount(q) === 1;
+const setType = (q: Question, type: 'single' | 'multiple'): void => { q.type = type; };
+
+/** Single-choice answer key: picking an option replaces the previous one. */
+function setCorrect(q: Question, oi: number): void {
+  q.correctIndices = [oi];
 }
 
 // Material files: any file type is allowed. Each picked file is uploaded immediately (bytes stored
@@ -296,14 +310,57 @@ function removeFile(i: number): void {
             <span class="form-label">{{ t('trainingForm.questionText') }}</span>
             <input v-model="q.text" class="bg-input" :placeholder="t('trainingForm.questionPlaceholder', { n: qi + 1 })" />
           </label>
+          <!-- Question type. A question with several correct answers cannot become single choice —
+               the switch is disabled until the key is reduced to exactly one. -->
           <p class="mt-3 font-mono text-[10px] uppercase tracking-wide text-ink-light">
-            {{ t('trainingForm.selectCorrect') }}
+            {{ t('trainingForm.questionType') }}
+          </p>
+          <div class="mt-1 flex items-center gap-4">
+            <label
+              class="flex items-center gap-1.5 text-sm"
+              :class="canBeSingle(q) ? '' : 'opacity-50'"
+              :title="canBeSingle(q) ? undefined : t('trainingForm.needOneToSwitch')"
+            >
+              <input
+                type="radio"
+                :name="`qtype-${qi}`"
+                :checked="typeOf(q) === 'single'"
+                :disabled="!canBeSingle(q)"
+                class="accent-accent"
+                @change="setType(q, 'single')"
+              />
+              {{ t('trainingForm.typeSingle') }}
+            </label>
+            <label class="flex items-center gap-1.5 text-sm">
+              <input
+                type="radio"
+                :name="`qtype-${qi}`"
+                :checked="typeOf(q) === 'multiple'"
+                class="accent-accent"
+                @change="setType(q, 'multiple')"
+              />
+              {{ t('trainingForm.typeMultiple') }}
+            </label>
+          </div>
+          <p class="mt-3 font-mono text-[10px] uppercase tracking-wide text-ink-light">
+            {{ typeOf(q) === 'single' ? t('trainingForm.selectCorrectSingle') : t('trainingForm.selectCorrect') }}
           </p>
           <div class="mt-1 flex flex-col gap-1.5">
             <div v-for="(_opt, oi) in q.options" :key="oi" class="flex items-center gap-2">
+              <!-- Single choice: exactly one correct answer, picking another replaces it. -->
+              <input
+                v-if="typeOf(q) === 'single'"
+                type="radio"
+                :name="`qkey-${qi}`"
+                :checked="isCorrect(q, oi)"
+                :title="t('trainingForm.markCorrect')"
+                class="accent-accent"
+                @change="setCorrect(q, oi)"
+              />
               <!-- Several options may be correct; a learner must then select exactly that set. The last
                    remaining correct answer cannot be unticked — a question needs at least one. -->
               <input
+                v-else
                 type="checkbox"
                 :checked="isCorrect(q, oi)"
                 :disabled="isCorrect(q, oi) && correctCount(q) === 1"

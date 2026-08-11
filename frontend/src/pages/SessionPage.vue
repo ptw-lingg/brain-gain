@@ -43,6 +43,12 @@ function toggleAnswer(qi: number, oi: number): void {
   selection.sort((a, b) => a - b);
 }
 
+// Single-choice questions: picking an option replaces the previous selection (radio semantics), but
+// the answer is still submitted as a one-element set so grading stays uniform.
+function selectAnswer(qi: number, oi: number): void {
+  answers.value[qi] = [oi];
+}
+
 // Every question needs at least one ticked option before the test can be submitted.
 const allAnswered = computed(
   () =>
@@ -183,9 +189,13 @@ onMounted(load);
           class="card p-5"
         >
           <p class="font-sans text-sm font-semibold text-ink">{{ qi + 1 }}. {{ q.text }}</p>
-          <!-- Always multi-select: one or more options may be correct, and the payload deliberately
-               does not say how many, so the control must not reveal it either. -->
-          <p class="mt-1 font-mono text-[11px] text-ink-light">{{ t('session.selectAllThatApply') }}</p>
+          <!-- Single choice gets radios (exactly one answer, picking another replaces it). Everything
+               else is multi-select: one or more options may be correct, and the payload deliberately
+               does not say how many, so the control must not reveal it either. The `?? 'multiple'`
+               fallback matters for owners/admins, who receive the raw training without computed type. -->
+          <p class="mt-1 font-mono text-[11px] text-ink-light">
+            {{ (q.type ?? 'multiple') === 'single' ? t('session.selectOne') : t('session.selectAllThatApply') }}
+          </p>
           <div class="mt-3 flex flex-col gap-2">
             <label
               v-for="(opt, oi) in q.options"
@@ -194,6 +204,15 @@ onMounted(load);
               :class="isSelected(qi, oi) ? 'border-accent bg-accent-light/30' : ''"
             >
               <input
+                v-if="(q.type ?? 'multiple') === 'single'"
+                type="radio"
+                :name="`q-${qi}`"
+                :checked="isSelected(qi, oi)"
+                class="accent-accent"
+                @change="selectAnswer(qi, oi)"
+              />
+              <input
+                v-else
                 type="checkbox"
                 :checked="isSelected(qi, oi)"
                 class="accent-accent"

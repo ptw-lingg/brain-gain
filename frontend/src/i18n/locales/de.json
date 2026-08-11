@@ -105,7 +105,8 @@
     "backToTrainings": "Zurück zu Meine Schulungen",
     "failNote": "Fehlversuche werden nicht gespeichert – diese Schulung bleibt fällig, bis Sie bestehen.",
     "downloadError": "Die Datei konnte nicht heruntergeladen werden.",
-    "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein."
+    "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein.",
+    "selectOne": "Die eine richtige Antwort auswählen."
   },
   "trainings": {
     "title": "Schulungen",
@@ -162,9 +163,14 @@
     "addFile": "Datei hinzufügen",
     "uploading": "Wird hochgeladen…",
     "uploadError": "{name} konnte nicht hochgeladen werden",
-    "questions": "Multiple-Choice-Fragen",
+    "questions": "Quizfragen",
     "questionPlaceholder": "Frage {n}",
+    "questionType": "Fragetyp",
+    "typeSingle": "Single Choice",
+    "typeMultiple": "Multiple Choice",
+    "needOneToSwitch": "Nur eine Frage mit genau einer richtigen Antwort kann Single Choice werden",
     "selectCorrect": "Alle richtigen Antworten ankreuzen (mindestens eine)",
+    "selectCorrectSingle": "Die richtige Antwort auswählen",
     "optionPlaceholder": "Option {n}",
     "addOption": "Option hinzufügen",
     "addQuestion": "Frage hinzufügen",

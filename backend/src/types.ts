@@ -23,6 +23,9 @@ export interface Question {
   // answered correctly only by selecting exactly that set (see the grading in routes/sessions.ts).
   // Legacy records carrying a single `correctIndex` are migrated on boot by services/questions.ts.
   correctIndices: number[];
+  // Absent = 'multiple' (legacy records predate the field). 'single' implies exactly one correct
+  // index — enforced on write by sanitizeQuestions, re-checked on read by questionType().
+  type?: 'single' | 'multiple';
 }
 
 export interface Training {
@@ -133,8 +136,10 @@ export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
 
-// Training with the answer key stripped — what a learner is allowed to see. Note that the COUNT of
-// correct answers is withheld too, not just which ones: the learner UI always offers multi-select.
+// Training with the answer key stripped — what a learner is allowed to see. The question `type`
+// stays in (the learner UI needs it to pick radio vs checkbox controls); for multiple-choice
+// questions the COUNT of correct answers is still withheld, not just which ones. A single-choice
+// question discloses "exactly one" by design.
 export type PublicTraining = Omit<Training, 'questions'> & {
   questions: Omit<Question, 'correctIndices'>[];
 };

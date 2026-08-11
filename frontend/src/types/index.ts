@@ -17,8 +17,12 @@ export interface Question {
   text: string;
   options: string[];
   // The answer key: indices of every correct option, at least one. Present only for owners/admins —
-  // a learner's payload omits it entirely, so they cannot tell how many answers are correct either.
+  // a learner's payload omits it entirely, so for a multiple-choice question they cannot tell how
+  // many answers are correct either.
   correctIndices?: number[];
+  // 'single' = radio buttons, exactly one correct answer; 'multiple' = checkboxes. Absent on
+  // records saved before the field existed — treated as 'multiple'.
+  type?: 'single' | 'multiple';
 }
 
 export interface Training {

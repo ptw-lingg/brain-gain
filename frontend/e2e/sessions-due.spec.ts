@@ -42,8 +42,10 @@ test.describe('Training sessions & due status', () => {
     // The quiz must NOT visually mark a correct answer (answer key hidden) — just selectable options.
     const questionCards = page.locator('section >> .card');
     expect(await questionCards.count()).toBeGreaterThanOrEqual(1);
-    // Options are checkboxes for every question, so the learner is never told how many answers are
-    // correct (SYS-SES-05). The prompt is repeated per question, hence .first().
+    // The seeded questions are all multiple-choice, so every option is a checkbox and the learner is
+    // never told how many answers are correct (SYS-SES-05) — no radios anywhere on an all-multiple
+    // quiz. The prompt is repeated per question, hence .first(). (Single-choice questions render
+    // radios instead — covered in questions-single.spec.ts.)
     await expect(page.getByText(/Select all correct answers/).first()).toBeVisible();
     expect(await page.locator('input[type="radio"]').count()).toBe(0);
 

@@ -105,7 +105,8 @@
     "backToTrainings": "Back to My Trainings",
     "failNote": "Failed attempts aren't recorded — this training stays due until you pass.",
     "downloadError": "Could not download the file.",
-    "selectAllThatApply": "Select all correct answers — there may be more than one."
+    "selectAllThatApply": "Select all correct answers — there may be more than one.",
+    "selectOne": "Select the one correct answer."
   },
   "trainings": {
     "title": "Trainings",
@@ -162,9 +163,14 @@
     "addFile": "Add file",
     "uploading": "Uploading…",
     "uploadError": "Could not upload {name}",
-    "questions": "Multiple-choice questions",
+    "questions": "Quiz questions",
     "questionPlaceholder": "Question {n}",
+    "questionType": "Question type",
+    "typeSingle": "Single choice",
+    "typeMultiple": "Multiple choice",
+    "needOneToSwitch": "Only a question with exactly one correct answer can become single choice",
     "selectCorrect": "Tick every correct answer (at least one)",
+    "selectCorrectSingle": "Select the correct answer",
     "optionPlaceholder": "Option {n}",
     "addOption": "Add option",
     "addQuestion": "Add question",

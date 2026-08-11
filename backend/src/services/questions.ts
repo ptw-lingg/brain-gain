@@ -5,6 +5,10 @@
 // is EXACT SET MATCH: an attempt is right only when the selected options are exactly the correct ones,
 // with no partial credit for finding some of them. That is the defensible rule for a pass/fail
 // competency record, and it keeps a multi-answer question from being passable by ticking everything.
+//
+// A question additionally carries a presentation type: 'single' (radio buttons, exactly one correct
+// answer) or 'multiple' (checkboxes). The type does not change the grading rule — a single-choice
+// question is just an exact set match on a one-element set.
 
 import type { Question, Training } from '../types';
 import { readStore, writeStore } from './fileStore';
@@ -25,6 +29,15 @@ export function normalizeCorrectIndices(input: unknown, optionCount: number): nu
     ),
   ].sort((a, b) => a - b);
   return cleaned.length ? cleaned : [0];
+}
+
+/**
+ * A question's effective type. Absent means 'multiple' (records predating the field), and 'single'
+ * only counts when the answer key really has exactly one entry — so a record edited by hand or
+ * restored from an old backup can never present as single-choice with a multi-answer key.
+ */
+export function questionType(q: Pick<Question, 'type' | 'correctIndices'>): 'single' | 'multiple' {
+  return q.type === 'single' && q.correctIndices.length === 1 ? 'single' : 'multiple';
 }
 
 /** The learner's selection for one question, normalized the same way (may legitimately be empty). */
