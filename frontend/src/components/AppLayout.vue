@@ -30,6 +30,7 @@ const PAGE_TITLES: [prefix: string, key: string][] = [
   ['/org-units', 'nav.orgUnits'],
   ['/users', 'nav.users'],
   ['/settings', 'nav.settings'],
+  ['/backups', 'nav.backups'],
 ];
 const pageTitle = computed(() => {
   const hit = PAGE_TITLES.find(([prefix]) => route.path.startsWith(prefix));

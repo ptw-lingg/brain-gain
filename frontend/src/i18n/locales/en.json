@@ -98,7 +98,7 @@
     "testUnavailable": "No test available yet",
     "submitTest": "Submit test",
     "grading": "Grading…",
-    "passed": "Passed 🎉",
+    "passed": "Passed",
     "notPassed": "Not passed",
     "score": "You scored {pct}% ({correct}/{total}) — you need {threshold}% to pass.",
     "retry": "Retry test",

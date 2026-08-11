@@ -98,7 +98,7 @@
     "testUnavailable": "Noch kein Test verfügbar",
     "submitTest": "Test abgeben",
     "grading": "Auswertung…",
-    "passed": "Bestanden 🎉",
+    "passed": "Bestanden",
     "notPassed": "Nicht bestanden",
     "score": "Sie haben {pct}% erreicht ({correct}/{total}) – zum Bestehen sind {threshold}% erforderlich.",
     "retry": "Test wiederholen",
