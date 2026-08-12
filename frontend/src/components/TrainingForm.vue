@@ -6,8 +6,9 @@ import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import CollapsibleSection from '@/components/CollapsibleSection.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
-import type { Material, MaterialFile, MaterialVariant, Question, SafeUser, Training } from '@/types';
+import type { LocalizedText, Material, MaterialFile, MaterialVariant, Question, SafeUser, Training } from '@/types';
 import { formatBytes } from '@/utils/display';
+import { MATERIAL_LOCALES } from '@/utils/locales';
 
 const { t } = useI18n();
 const toast = useToastStore();
@@ -16,9 +17,10 @@ const props = defineProps<{
   draft: Training;
   isAdmin: boolean;
   owners: SafeUser[];
-  // The configured material languages (Settings.materialLocales) — one editable row per locale.
-  materialLocales: string[];
 }>();
+
+// The fixed content languages — one editable row per language on materials, questions and answers.
+const materialLocales = MATERIAL_LOCALES;
 
 defineEmits<{
   'add-question': [];
@@ -79,8 +81,12 @@ const questionsSummary = computed(() =>
 // A section that holds nothing reads as a prompt to fill it, not as a neutral count.
 const emptyTint = 'bg-amber-100 text-amber-700';
 
+// The first filled language of a localized string, English preferred — for titles and summaries.
+const firstText = (lt: LocalizedText): string =>
+  (lt.en ?? Object.values(lt).find((v) => v.trim()) ?? '').trim();
+
 const questionTitle = (q: Question, i: number): string =>
-  `${i + 1}. ${q.text.trim() || t('trainingForm.questionPlaceholder', { n: i + 1 })}`;
+  `${i + 1}. ${firstText(q.text) || t('trainingForm.questionPlaceholder', { n: i + 1 })}`;
 const optionsSummary = (q: Question): string =>
   `${t(typeOf(q) === 'single' ? 'trainingForm.typeSingle' : 'trainingForm.typeMultiple')} · ${t('trainingForm.summaryOptions', { count: q.options.length }, q.options.length)} · ${t('trainingForm.summaryCorrect', { count: correctCount(q) })}`;
 
@@ -132,18 +138,26 @@ const hasContent = (v: MaterialVariant): boolean => Boolean(v.file) || Boolean(v
 
 function normalizeMaterials(): void {
   if (!Array.isArray(props.draft.materials)) props.draft.materials = [];
-  if (!props.materialLocales.length) return; // settings not loaded yet — the watcher re-runs
+  if (!materialLocales.length) return; // settings not loaded yet — the watcher re-runs
   for (const m of props.draft.materials) {
     const byLocale = new Map(m.variants.map((v) => [v.locale, v]));
-    m.variants = props.materialLocales.map(
+    m.variants = materialLocales.map(
       (locale) => byLocale.get(locale) ?? { locale, label: '', url: '' },
     );
   }
+  // Questions are localized the same way: seed every configured language on the text and each
+  // option, so the per-language inputs can v-model directly. Blanks are dropped by the server.
+  for (const q of props.draft.questions ?? []) {
+    for (const locale of materialLocales) {
+      q.text[locale] ??= '';
+      for (const opt of q.options) opt[locale] ??= '';
+    }
+  }
 }
-watch([() => props.draft, () => props.materialLocales], normalizeMaterials, { immediate: true });
+watch([() => props.draft, () => materialLocales], normalizeMaterials, { immediate: true });
 
 const blankVariants = (): MaterialVariant[] =>
-  props.materialLocales.map((locale) => ({ locale, label: '', url: '' }));
+  materialLocales.map((locale) => ({ locale, label: '', url: '' }));
 
 function addMaterial(): void {
   props.draft.materials.push({ id: '', variants: blankVariants() }); // the server assigns the id
@@ -371,10 +385,17 @@ function removeVariantFile(variant: MaterialVariant): void {
             </button>
           </template>
 
-          <label class="flex flex-col gap-1">
+          <div class="flex flex-col gap-1">
             <span class="form-label">{{ t('trainingForm.questionText') }}</span>
-            <input v-model="q.text" class="bg-input" :placeholder="t('trainingForm.questionPlaceholder', { n: qi + 1 })" />
-          </label>
+            <!-- One text input per configured language; blank languages are dropped on save. -->
+            <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
+              <span class="flex w-14 shrink-0 items-center gap-1.5">
+                <LocaleFlag :code="loc" />
+                <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ loc }}</span>
+              </span>
+              <input v-model="q.text[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.questionPlaceholder', { n: qi + 1 })" />
+            </div>
+          </div>
           <!-- Question type. A question with several correct answers cannot become single choice —
                the switch is disabled until the key is reduced to exactly one. -->
           <p class="mt-3 font-mono text-[10px] uppercase tracking-wide text-ink-light">
@@ -410,8 +431,8 @@ function removeVariantFile(variant: MaterialVariant): void {
           <p class="mt-3 font-mono text-[10px] uppercase tracking-wide text-ink-light">
             {{ typeOf(q) === 'single' ? t('trainingForm.selectCorrectSingle') : t('trainingForm.selectCorrect') }}
           </p>
-          <div class="mt-1 flex flex-col gap-1.5">
-            <div v-for="(_opt, oi) in q.options" :key="oi" class="flex items-center gap-2">
+          <div class="mt-1 flex flex-col gap-2">
+            <div v-for="(opt, oi) in q.options" :key="oi" class="flex items-start gap-2">
               <!-- Single choice: exactly one correct answer, picking another replaces it. -->
               <input
                 v-if="typeOf(q) === 'single'"
@@ -419,7 +440,7 @@ function removeVariantFile(variant: MaterialVariant): void {
                 :name="`qkey-${qi}`"
                 :checked="isCorrect(q, oi)"
                 :title="t('trainingForm.markCorrect')"
-                class="accent-accent"
+                class="mt-2.5 accent-accent"
                 @change="setCorrect(q, oi)"
               />
               <!-- Several options may be correct; a learner must then select exactly that set. The last
@@ -430,12 +451,21 @@ function removeVariantFile(variant: MaterialVariant): void {
                 :checked="isCorrect(q, oi)"
                 :disabled="isCorrect(q, oi) && correctCount(q) === 1"
                 :title="isCorrect(q, oi) && correctCount(q) === 1 ? t('trainingForm.needOneCorrect') : t('trainingForm.markCorrect')"
-                class="accent-accent"
+                class="mt-2.5 accent-accent"
                 @change="toggleCorrect(q, oi)"
               />
-              <input v-model="q.options[oi]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
+              <!-- One input per configured language; the option itself (and the answer key) is shared. -->
+              <div class="flex flex-1 flex-col gap-1">
+                <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
+                  <span class="flex w-14 shrink-0 items-center gap-1.5">
+                    <LocaleFlag :code="loc" />
+                    <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ loc }}</span>
+                  </span>
+                  <input v-model="opt[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
+                </div>
+              </div>
               <button
-                class="btn-ghost btn-icon"
+                class="btn-ghost btn-icon mt-1"
                 :disabled="q.options.length <= 2"
                 :aria-label="t('trainingForm.removeOption')"
                 :title="t('trainingForm.removeOption')"

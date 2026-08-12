@@ -19,12 +19,12 @@ test.describe('Quiz questions — several correct answers', () => {
     // itself, so authoring needs no extra clicks (SYS-TRN-13).
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
-    await dialog.getByPlaceholder('Question 1').fill('Which are examples of design output?');
+    await dialog.getByPlaceholder('Question 1').first().fill('Which are examples of design output?');
     await dialog.getByRole('button', { name: 'Add option' }).click();
     await dialog.getByRole('button', { name: 'Add option' }).click();
     const options = ['software libraries', 'drawings', 'electrical boards', 'a wish list'];
     for (const [i, text] of options.entries()) {
-      await dialog.getByPlaceholder(`Option ${i + 1}`).fill(text);
+      await dialog.getByPlaceholder(`Option ${i + 1}`).first().fill(text);
     }
 
     // A new question starts as single choice — switch it to multiple choice to tick several answers.

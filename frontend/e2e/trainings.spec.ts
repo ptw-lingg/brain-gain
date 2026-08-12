@@ -180,7 +180,8 @@ test.describe('Trainings — editor dialog behavior', () => {
     // Expanding one question shows its options — and only that question's.
     await questionRows.first().click();
     await expect(dialog.getByPlaceholder('Option 1').first()).toBeVisible();
-    await expect(dialog.getByPlaceholder('Option 1').nth(1)).toBeHidden();
+    // Each option now has one input per language — the next QUESTION's first input is two further on.
+    await expect(dialog.getByPlaceholder('Option 1').nth(2)).toBeHidden();
   });
 
   test('SYS-TRN-13 / VT-U14: a newly added question is expanded so it can be filled in straight away', async ({ page }) => {
@@ -196,12 +197,12 @@ test.describe('Trainings — editor dialog behavior', () => {
 
     // The added question comes up expanded — no second click to start typing.
     await dialog.getByRole('button', { name: 'Add question' }).click();
-    await expect(dialog.getByPlaceholder('Question 1')).toBeVisible();
-    await expect(dialog.getByPlaceholder('Option 1')).toBeVisible();
+    await expect(dialog.getByPlaceholder('Question 1').first()).toBeVisible();
+    await expect(dialog.getByPlaceholder('Option 1').first()).toBeVisible();
 
     // A second question expands too, and the first collapses out of the way on demand.
     await dialog.getByRole('button', { name: 'Add question' }).click();
-    await expect(dialog.getByPlaceholder('Question 2')).toBeVisible();
+    await expect(dialog.getByPlaceholder('Question 2').first()).toBeVisible();
   });
 
   test('SYS-TRN-04 / SYS-UI-04 / VT-A01: a training row opens with the keyboard and Escape closes the dialog discarding the draft', async ({ page }) => {

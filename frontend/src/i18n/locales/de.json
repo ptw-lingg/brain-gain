@@ -108,7 +108,6 @@
     "downloadError": "Die Datei konnte nicht heruntergeladen werden.",
     "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein.",
     "selectOne": "Die eine richtige Antwort auswählen.",
-    "materialLanguage": "Materialsprache",
     "altLanguage": "Alternative Sprache"
   },
   "trainings": {
@@ -346,20 +345,6 @@
     "thresholdDesc": "Mindestpunktzahl, die ein Benutzer erreichen muss, um den Test einer Schulung zu bestehen.",
     "revealWrong": "Falsch beantwortete Fragen nach einem nicht bestandenen Test anzeigen",
     "revealWrongHint": "Die Lernenden sehen, welche Fragen falsch waren – niemals die richtigen Antworten.",
-    "locales": {
-      "title": "Sprachen für Lernmaterial",
-      "desc": "Sprachen, in denen Trainer Material bereitstellen können. Englisch ist Standard und Fallback.",
-      "add": "Hinzufügen",
-      "selectPlaceholder": "Sprache auswählen…",
-      "defaultBadge": "Standard & Fallback",
-      "remove": "Sprache entfernen",
-      "confirmRemove": "Diese Sprache entfernen?",
-      "toasts": {
-        "added": "Sprache hinzugefügt",
-        "removed": "Sprache entfernt",
-        "error": "Die Sprachliste konnte nicht aktualisiert werden"
-      }
-    },
     "saveChanges": "Änderungen speichern",
     "ssoTitle": "Microsoft Entra ID (SSO)",
     "ssoDesc": "Benutzer können sich mit ihrem Microsoft-Geschäftskonto anmelden.",

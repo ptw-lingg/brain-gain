@@ -10,8 +10,28 @@
 // answer) or 'multiple' (checkboxes). The type does not change the grading rule — a single-choice
 // question is just an exact set match on a one-element set.
 
-import type { Question, Training } from '../types';
+import type { LocalizedText, Question, Training } from '../types';
 import { readStore, writeStore } from './fileStore';
+
+/**
+ * Coerce a question text or answer option into its localized form: an object keeps only configured
+ * locales with non-empty trimmed strings; a legacy plain string becomes the English entry (English
+ * is always configured). An empty result means "no language filled" — the caller drops the item,
+ * mirroring the material rules.
+ */
+export function sanitizeLocalizedText(input: unknown, allowedLocales: readonly string[]): LocalizedText {
+  if (typeof input === 'string') {
+    const s = input.trim();
+    return s ? { en: s } : {};
+  }
+  const obj = (input ?? {}) as Record<string, unknown>;
+  const out: LocalizedText = {};
+  for (const locale of allowedLocales) {
+    const v = obj[locale];
+    if (typeof v === 'string' && v.trim()) out[locale] = v.trim();
+  }
+  return out;
+}
 
 /**
  * Coerce whatever a client sent into a valid answer key: unique, in-bounds, ascending integers, and
@@ -75,19 +95,30 @@ export async function migrateQuestions(): Promise<void> {
 
   for (const training of trainings) {
     for (const q of training.questions ?? []) {
-      const legacy = q as Question & { correctIndex?: number };
-      if (Array.isArray(legacy.correctIndices) && legacy.correctIndices.length) {
-        delete legacy.correctIndex; // new field wins; drop any leftover
-        continue;
+      // Stored records may predate several shapes — treat the fields as unknown while converting.
+      const legacy = q as unknown as { correctIndex?: number; correctIndices?: unknown; text: unknown; options: unknown[] };
+      if (!Array.isArray(legacy.correctIndices) || !legacy.correctIndices.length) {
+        legacy.correctIndices = normalizeCorrectIndices(legacy.correctIndex, legacy.options?.length ?? 0);
+        migrated += 1;
       }
-      legacy.correctIndices = normalizeCorrectIndices(legacy.correctIndex, legacy.options?.length ?? 0);
-      delete legacy.correctIndex;
-      migrated += 1;
+      delete legacy.correctIndex; // new field wins; drop any leftover
+      // Pre-localization records carry plain strings — wrap them as the English entry. (The live
+      // bilingual strings were separated by hand into proper de/en entries in the data itself.)
+      if (typeof legacy.text === 'string') {
+        legacy.text = legacy.text.trim() ? { en: legacy.text.trim() } : {};
+        migrated += 1;
+      }
+      if (Array.isArray(legacy.options) && legacy.options.some((o) => typeof o === 'string')) {
+        legacy.options = legacy.options.map((o) =>
+          typeof o === 'string' ? (o.trim() ? { en: o.trim() } : {}) : o,
+        );
+        migrated += 1;
+      }
     }
   }
 
   // Only write when something changed, so a normal boot doesn't rewrite the store.
   if (!migrated) return;
   await writeStore('trainings', trainings);
-  console.log(`↪  migrated ${migrated} quiz question(s) to multi-answer (correctIndices)`);
+  console.log(`↪  migrated ${migrated} quiz question field(s) (correctIndices / localized text)`);
 }

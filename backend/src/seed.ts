@@ -65,20 +65,20 @@ export async function seed(): Promise<void> {
     questions: [
       {
         id: randomUUID(),
-        text: 'What should you do first in case of a chemical spill?',
-        options: ['Ignore it', 'Alert others and contain the area', 'Take a photo', 'Leave the building'],
+        text: { en: 'What should you do first in case of a chemical spill?' },
+        options: [{ en: 'Ignore it' }, { en: 'Alert others and contain the area' }, { en: 'Take a photo' }, { en: 'Leave the building' }],
         correctIndices: [1],
       },
       {
         id: randomUUID(),
-        text: 'Where is personal protective equipment (PPE) stored?',
-        options: ['At home', 'In the designated PPE cabinet', 'Anywhere convenient', 'It is optional'],
+        text: { en: 'Where is personal protective equipment (PPE) stored?' },
+        options: [{ en: 'At home' }, { en: 'In the designated PPE cabinet' }, { en: 'Anywhere convenient' }, { en: 'It is optional' }],
         correctIndices: [1],
       },
       {
         id: randomUUID(),
-        text: 'How often must this training be repeated?',
-        options: ['Never', 'Every month', 'Every year', 'Every 10 years'],
+        text: { en: 'How often must this training be repeated?' },
+        options: [{ en: 'Never' }, { en: 'Every month' }, { en: 'Every year' }, { en: 'Every 10 years' }],
         correctIndices: [2],
       },
     ],
@@ -105,14 +105,14 @@ export async function seed(): Promise<void> {
     questions: [
       {
         id: randomUUID(),
-        text: 'What does ISO 9001 primarily address?',
-        options: ['Quality management systems', 'Environmental policy', 'IT security', 'Payroll'],
+        text: { en: 'What does ISO 9001 primarily address?' },
+        options: [{ en: 'Quality management systems' }, { en: 'Environmental policy' }, { en: 'IT security' }, { en: 'Payroll' }],
         correctIndices: [0],
       },
       {
         id: randomUUID(),
-        text: 'Who is responsible for quality?',
-        options: ['Only managers', 'Only auditors', 'Everyone', 'No one'],
+        text: { en: 'Who is responsible for quality?' },
+        options: [{ en: 'Only managers' }, { en: 'Only auditors' }, { en: 'Everyone' }, { en: 'No one' }],
         correctIndices: [2],
       },
     ],

@@ -28,10 +28,17 @@ export interface Material {
   variants: MaterialVariant[];
 }
 
+// A per-language string: locale code → text. At least one locale is filled; display resolves
+// chosen → English → all filled values (the material fallback logic, applied per string).
+export type LocalizedText = Record<string, string>;
+
 export interface Question {
   id: string;
-  text: string;
-  options: string[];
+  // Localized question text — at least one language filled (legacy plain strings migrate to en).
+  text: LocalizedText;
+  // Localized answer options. Structure is language-independent: one entry per option, shared
+  // across languages, so correctIndices and grading never depend on the display language.
+  options: LocalizedText[];
   // Indices into options of every correct answer — always at least one. A question with several is
   // answered correctly only by selecting exactly that set (see the grading in routes/sessions.ts).
   // Legacy records carrying a single `correctIndex` are migrated on boot by services/questions.ts.
@@ -146,10 +153,6 @@ export interface Settings {
   // (indices only — never the correct answers). Off by default: with unlimited retries, telling a
   // learner which questions were wrong makes brute-forcing the quiz easier, so it is an admin choice.
   revealWrongQuestions: boolean;
-  // Languages trainers can provide material in — codes from MATERIAL_LOCALE_CATALOG, always
-  // containing 'en' (the default and fallback). Entries are immutable: they can only be added from
-  // the catalog or removed, and removal is refused while any material still has a variant in them.
-  materialLocales: string[];
   companyName: string; // names the root org unit; admin-editable in Settings
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)

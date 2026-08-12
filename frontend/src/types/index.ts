@@ -24,10 +24,17 @@ export interface Material {
   variants: MaterialVariant[];
 }
 
+// A per-language string: locale code → text. At least one locale is filled; display resolves
+// chosen → English → all filled values (the material fallback logic, applied per string).
+export type LocalizedText = Record<string, string>;
+
 export interface Question {
   id: string;
-  text: string;
-  options: string[];
+  // Localized question text — at least one language filled.
+  text: LocalizedText;
+  // Localized answer options; the option list itself (count/order/answer key) is shared across
+  // languages, only the strings vary.
+  options: LocalizedText[];
   // The answer key: indices of every correct option, at least one. Present only for owners/admins —
   // a learner's payload omits it entirely, so for a multiple-choice question they cannot tell how
   // many answers are correct either.
@@ -138,8 +145,6 @@ export interface Settings {
   passThreshold: number;
   // When on, a failed attempt's grade response names the wrongly answered questions (default off).
   revealWrongQuestions: boolean;
-  // Languages trainers can provide material in — always contains 'en' (default & fallback).
-  materialLocales: string[];
   companyName: string;
   entra: EntraSsoSettings;
   tls: TlsSettings | null;

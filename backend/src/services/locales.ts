@@ -9,23 +9,10 @@
 export const MATERIAL_LOCALE_CATALOG = [
   { code: 'en', name: 'English', flag: 'us' },
   { code: 'de', name: 'Deutsch', flag: 'de' },
-  { code: 'fr', name: 'Français', flag: 'fr' },
-  { code: 'it', name: 'Italiano', flag: 'it' },
-  { code: 'es', name: 'Español', flag: 'es' },
-  { code: 'pt', name: 'Português', flag: 'pt' },
-  { code: 'nl', name: 'Nederlands', flag: 'nl' },
-  { code: 'pl', name: 'Polski', flag: 'pl' },
-  { code: 'cs', name: 'Čeština', flag: 'cz' },
-  { code: 'sv', name: 'Svenska', flag: 'se' },
-  { code: 'da', name: 'Dansk', flag: 'dk' },
-  { code: 'fi', name: 'Suomi', flag: 'fi' },
-  { code: 'no', name: 'Norsk', flag: 'no' },
-  { code: 'hu', name: 'Magyar', flag: 'hu' },
-  { code: 'tr', name: 'Türkçe', flag: 'tr' },
-  { code: 'zh', name: '中文', flag: 'cn' },
-  { code: 'ja', name: '日本語', flag: 'jp' },
-  { code: 'ko', name: '한국어', flag: 'kr' },
 ] as const;
+
+/** The fixed content languages — English and German, for material and quiz texts alike. */
+export const MATERIAL_LOCALES = ['en', 'de'] as const;
 
 /** English is always present in Settings.materialLocales and is the per-material fallback. */
 export const FALLBACK_LOCALE = 'en';

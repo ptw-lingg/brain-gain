@@ -19,10 +19,10 @@ test.describe('Quiz questions — single choice', () => {
     await dialog.getByPlaceholder('Training name').fill(name);
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
-    await dialog.getByPlaceholder('Question 1').fill('Which SOP covers design outputs?');
+    await dialog.getByPlaceholder('Question 1').first().fill('Which SOP covers design outputs?');
     await dialog.getByRole('button', { name: 'Add option' }).click();
     for (const [i, text] of ['SOP-10.00', 'SOP-10.02', 'SOP-10.03'].entries()) {
-      await dialog.getByPlaceholder(`Option ${i + 1}`).fill(text);
+      await dialog.getByPlaceholder(`Option ${i + 1}`).first().fill(text);
     }
     await dialog.getByRole('radio', { name: 'Multiple choice' }).check();
     await dialog.getByRole('button', { name: 'Create' }).click();

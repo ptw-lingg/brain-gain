@@ -108,7 +108,6 @@
     "downloadError": "Could not download the file.",
     "selectAllThatApply": "Select all correct answers — there may be more than one.",
     "selectOne": "Select the one correct answer.",
-    "materialLanguage": "Material language",
     "altLanguage": "Alternative language"
   },
   "trainings": {
@@ -346,20 +345,6 @@
     "thresholdDesc": "Minimum score a user must reach to pass any training's test.",
     "revealWrong": "Show wrongly answered questions after a failed test",
     "revealWrongHint": "The learner sees which questions were wrong — never the correct answers.",
-    "locales": {
-      "title": "Training material languages",
-      "desc": "Languages trainers can provide material in. English is the default and fallback.",
-      "add": "Add",
-      "selectPlaceholder": "Select a language…",
-      "defaultBadge": "Default & fallback",
-      "remove": "Remove language",
-      "confirmRemove": "Remove this language?",
-      "toasts": {
-        "added": "Language added",
-        "removed": "Language removed",
-        "error": "Could not update the language list"
-      }
-    },
     "saveChanges": "Save changes",
     "ssoTitle": "Microsoft Entra ID (SSO)",
     "ssoDesc": "Let users sign in with their Microsoft work account.",

@@ -111,7 +111,7 @@ test('SYS-TRN-14 / VT-151: an existing question without a type keeps behaving as
   ]);
 
   const asLearner = await srv.request('GET', `/api/trainings/${training.id}`, { token: memberToken });
-  const q = asLearner.body.questions.find((x) => x.text === 'Legacy multi');
+  const q = asLearner.body.questions.find((x) => x.text.en === 'Legacy multi');
   assert.equal(q.type, 'multiple', 'the computed public type defaults to multiple');
 
   const exact = await grade(training.id, [[0, 1]]);
@@ -129,7 +129,7 @@ test('SYS-SES-06 / SR-150 / VT-151: the learner payload names the question type 
 
   const asLearner = await srv.request('GET', `/api/trainings/${training.id}`, { token: memberToken });
   assert.equal(asLearner.status, 200);
-  const q = asLearner.body.questions.find((x) => x.text === 'Pick the SOP');
+  const q = asLearner.body.questions.find((x) => x.text.en === 'Pick the SOP');
   assert.ok(q, 'the learner receives the question');
   assert.equal(q.type, 'single', 'the type is disclosed — the UI needs it for radio buttons');
   assert.equal('correctIndices' in q, false, 'the answer key is absent');

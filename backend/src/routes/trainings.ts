@@ -20,6 +20,7 @@ import {
   writeStore,
 } from '../services/fileStore';
 import { materialFileIds, sanitizeMaterials } from '../services/materials';
+import { MATERIAL_LOCALES } from '../services/locales';
 import {
   authenticate,
   requireAdmin,
@@ -28,7 +29,7 @@ import {
   type AuthRequest,
 } from '../middleware/auth';
 import { computeDue, sessionsFor } from '../services/due';
-import { normalizeCorrectIndices, questionType } from '../services/questions';
+import { normalizeCorrectIndices, questionType, sanitizeLocalizedText } from '../services/questions';
 import { requiredTrainingIds } from '../services/training';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
@@ -54,22 +55,41 @@ function toPublic(t: Training): PublicTraining {
   };
 }
 
-function sanitizeQuestions(input: unknown): Question[] {
+function sanitizeQuestions(input: unknown, allowedLocales: readonly string[]): Question[] {
   if (!Array.isArray(input)) return [];
-  return input.map((q): Question => {
-    const obj = (q ?? {}) as Record<string, unknown>;
-    const options = Array.isArray(obj.options) ? obj.options.map(String) : [];
-    const correctIndices = normalizeCorrectIndices(obj.correctIndices ?? obj.correctIndex, options.length);
-    return {
-      id: typeof obj.id === 'string' && obj.id ? obj.id : randomUUID(),
-      text: typeof obj.text === 'string' ? obj.text : '',
-      options,
-      correctIndices,
-      // 'single' requires exactly one correct answer; anything else (including absent — legacy
-      // clients) is coerced to 'multiple' rather than rejected, like the rest of this normalizer.
-      type: obj.type === 'single' && correctIndices.length === 1 ? 'single' : 'multiple',
-    };
-  });
+  return input
+    .map((q): Question | null => {
+      const obj = (q ?? {}) as Record<string, unknown>;
+      const text = sanitizeLocalizedText(obj.text, allowedLocales);
+      // A question must keep at least one language of text — the material ≥1 rule.
+      if (Object.keys(text).length === 0) return null;
+      // Options empty in every language are dropped, with the answer key remapped to the surviving
+      // indices (the same reindexing the editor does when an option row is removed).
+      const rawOptions = Array.isArray(obj.options)
+        ? obj.options.map((o) => sanitizeLocalizedText(o, allowedLocales))
+        : [];
+      const keptIndex = new Map<number, number>();
+      const options = rawOptions.filter((o, i) => {
+        if (Object.keys(o).length === 0) return false;
+        keptIndex.set(i, keptIndex.size);
+        return true;
+      });
+      const rawKey = Array.isArray(obj.correctIndices) ? obj.correctIndices : [obj.correctIndex];
+      const remappedKey = rawKey
+        .map((v) => keptIndex.get(Number(v)))
+        .filter((v): v is number => v !== undefined);
+      const correctIndices = normalizeCorrectIndices(remappedKey, options.length);
+      return {
+        id: typeof obj.id === 'string' && obj.id ? obj.id : randomUUID(),
+        text,
+        options,
+        correctIndices,
+        // 'single' requires exactly one correct answer; anything else (including absent — legacy
+        // clients) is coerced to 'multiple' rather than rejected, like the rest of this normalizer.
+        type: obj.type === 'single' && correctIndices.length === 1 ? 'single' : 'multiple',
+      };
+    })
+    .filter((q): q is Question => q !== null);
 }
 
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
@@ -211,7 +231,6 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   }
   // Trainers always own what they create; admins may target any owner.
   const ownerId = req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : req.user!.id;
-  const { materialLocales } = await readSettings();
   const trainings = await readStore<Training>('trainings');
   // New trainings go to the end of the ordering.
   const maxOrder = trainings.reduce(
@@ -229,8 +248,8 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
     windowAfterMonths: clamp(b.windowAfterMonths, 0, 3, 3),
     order: maxOrder + 1,
-    materials: sanitizeMaterials(b.materials, materialLocales),
-    questions: sanitizeQuestions(b.questions),
+    materials: sanitizeMaterials(b.materials, MATERIAL_LOCALES),
+    questions: sanitizeQuestions(b.questions, MATERIAL_LOCALES),
     createdAt: new Date().toISOString(),
   };
   trainings.push(training);
@@ -259,7 +278,6 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
 // PUT /api/trainings/:id  — admin or owning trainer
 router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
-  const { materialLocales } = await readSettings();
   const trainings = await readStore<Training>('trainings');
   const idx = trainings.findIndex((t) => t.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
@@ -284,8 +302,8 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
       b.windowAfterMonths != null
         ? clamp(b.windowAfterMonths, 0, 3, current.windowAfterMonths)
         : current.windowAfterMonths,
-    materials: b.materials != null ? sanitizeMaterials(b.materials, materialLocales) : current.materials ?? [],
-    questions: b.questions != null ? sanitizeQuestions(b.questions) : current.questions,
+    materials: b.materials != null ? sanitizeMaterials(b.materials, MATERIAL_LOCALES) : current.materials ?? [],
+    questions: b.questions != null ? sanitizeQuestions(b.questions, MATERIAL_LOCALES) : current.questions,
   };
   await writeStore('trainings', trainings);
   // A variant's file may have been removed or replaced: delete the bytes no longer referenced by

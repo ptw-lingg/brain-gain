@@ -137,7 +137,7 @@ test('SYS-SES-05 / SR-147 / VT-147: the learner payload reveals neither which an
 
   const asLearner = await srv.request('GET', `/api/trainings/${training.id}`, { token: memberToken });
   assert.equal(asLearner.status, 200);
-  const q = asLearner.body.questions.find((x) => x.text === 'Which are design output?');
+  const q = asLearner.body.questions.find((x) => x.text.en === 'Which are design output?');
   assert.ok(q, 'the learner receives the question');
   assert.equal('correctIndices' in q, false, 'the answer key is absent');
   assert.equal('correctIndex' in q, false, 'no legacy answer field either');

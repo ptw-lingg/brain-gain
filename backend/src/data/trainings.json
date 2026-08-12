@@ -12,11 +12,23 @@
     "questions": [
       {
         "id": "22aae908-7847-496a-a6f2-816c7f715bf0",
-        "text": "In welchem Dokument sind die Zeiträume der Redokumentationen zur Überarbeitung der Produkte nach MDR geregelt und bis wann muss diese Überarbeitung abgeschlossen sein. Which document regulates the timeframes for redocumentation for the revision of products in accordance with the MDR, and by when must this revision be completed?",
+        "text": {
+          "en": "Which document regulates the timeframes for redocumentation for the revision of products in accordance with the MDR, and by when must this revision be completed?",
+          "de": "In welchem Dokument sind die Zeiträume der Redokumentationen zur Überarbeitung der Produkte nach MDR geregelt und bis wann muss diese Überarbeitung abgeschlossen sein?"
+        },
         "options": [
-          "Eine Redokumentation nach MDR ist nicht notwendig, daher gibt es auch keine zeitliche Vorgabe.  Redocumentation according to MDR is not necessary, so there is no time limit.",
-          "Die Redokumentation wird in SOP 43.10 beschrieben und muss bis 2035 abgeschlossen sein.  The redocumentation is described in SOP 43.10 and must be completed by 2035.",
-          "Der zeitliche Rahmen der MDR Redokumentationen der MDD Projekte ist im Transition Plan beschrieben. Alle Redokumentationen müssen bis Ende 2028 abgeschlossen sein.  The time frame for the MDR redocumentation of MDD projects is described in the Transition Plan. All redocumentation must be completed by the end of 2028."
+          {
+            "en": "Redocumentation according to MDR is not necessary, so there is no time limit.",
+            "de": "Eine Redokumentation nach MDR ist nicht notwendig, daher gibt es auch keine zeitliche Vorgabe."
+          },
+          {
+            "en": "The redocumentation is described in SOP 43.10 and must be completed by 2035.",
+            "de": "Die Redokumentation wird in SOP 43.10 beschrieben und muss bis 2035 abgeschlossen sein."
+          },
+          {
+            "en": "The time frame for the MDR redocumentation of MDD projects is described in the Transition Plan. All redocumentation must be completed by the end of 2028.",
+            "de": "Der zeitliche Rahmen der MDR Redokumentationen der MDD Projekte ist im Transition Plan beschrieben. Alle Redokumentationen müssen bis Ende 2028 abgeschlossen sein."
+          }
         ],
         "correctIndices": [
           2
@@ -108,11 +120,23 @@
     "questions": [
       {
         "id": "81cc244d-1c88-48db-803d-6f0f2d490eae",
-        "text": "Wozu dient der Design-Input-Prozess?\nWhat is the purpose of the Design Input process?",
+        "text": {
+          "de": "Wozu dient der Design-Input-Prozess?",
+          "en": "What is the purpose of the Design Input process?"
+        },
         "options": [
-          "Um Anforderungen an das Produkt festzulegen / To define product requirements",
-          "Um Werbematerial zu erstellen / To create marketing materials",
-          "Um Produktionsschichten zu planen / To plan production shifts"
+          {
+            "de": "Um Anforderungen an das Produkt festzulegen",
+            "en": "To define product requirements"
+          },
+          {
+            "de": "Um Werbematerial zu erstellen",
+            "en": "To create marketing materials"
+          },
+          {
+            "de": "Um Produktionsschichten zu planen",
+            "en": "To plan production shifts"
+          }
         ],
         "correctIndices": [
           0
@@ -120,10 +144,19 @@
       },
       {
         "id": "311665e1-f486-4f9e-ac9e-11246895dae7",
-        "text": "Wann werden Component Requirements typischerweise erstellt?\nWhen are Component Requirements typically created?",
+        "text": {
+          "de": "Wann werden Component Requirements typischerweise erstellt?",
+          "en": "When are Component Requirements typically created?"
+        },
         "options": [
-          "Während der Implementierungsphase / During the implementation phase",
-          "Während der Verkaufsphase / During the sales phase"
+          {
+            "de": "Während der Implementierungsphase",
+            "en": "During the implementation phase"
+          },
+          {
+            "de": "Während der Verkaufsphase",
+            "en": "During the sales phase"
+          }
         ],
         "correctIndices": [
           0
@@ -168,11 +201,20 @@
     "questions": [
       {
         "id": "766f6a11-6f41-4ae9-a034-cc1604c98d9c",
-        "text": "Welche Dokumente enthalten das \"Detailed Design\"?\nWhat documents contain the \"Detailed Design\"?",
+        "text": {
+          "de": "Welche Dokumente enthalten das \"Detailed Design\"?",
+          "en": "What documents contain the \"Detailed Design\"?"
+        },
         "options": [
-          "SDS, CDS",
-          "SRS, CRS",
-          "MDRS"
+          {
+            "en": "SDS, CDS"
+          },
+          {
+            "en": "SRS, CRS"
+          },
+          {
+            "en": "MDRS"
+          }
         ],
         "correctIndices": [
           0
@@ -180,13 +222,26 @@
       },
       {
         "id": "4caebb0f-0874-4512-b44c-16e90adf1e43",
-        "text": "Was sind Beispiele für Design Output?\nWhat are examples for design output?",
+        "text": {
+          "de": "Was sind Beispiele für Design Output?",
+          "en": "What are examples for design output?"
+        },
         "options": [
-          "software libraries",
-          "drawings",
-          "electrical boards",
-          "firmware releases",
-          "software releases"
+          {
+            "en": "software libraries"
+          },
+          {
+            "en": "drawings"
+          },
+          {
+            "en": "electrical boards"
+          },
+          {
+            "en": "firmware releases"
+          },
+          {
+            "en": "software releases"
+          }
         ],
         "correctIndices": [
           0,
@@ -198,10 +253,16 @@
       },
       {
         "id": "b9c89043-5a3e-49c5-8016-470fdbd3ccbf",
-        "text": "Does the Usability Engineering File (UEF) provide input to the Design Output?",
+        "text": {
+          "en": "Does the Usability Engineering File (UEF) provide input to the Design Output?"
+        },
         "options": [
-          "yes",
-          "no"
+          {
+            "en": "yes"
+          },
+          {
+            "en": "no"
+          }
         ],
         "correctIndices": [
           0

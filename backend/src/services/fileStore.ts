@@ -110,7 +110,6 @@ export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
 const DEFAULT_SETTINGS: Settings = {
   passThreshold: 0.8,
   revealWrongQuestions: false,
-  materialLocales: ['en', 'de'],
   companyName: 'PTW Dosimetry',
   entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
   tls: null,

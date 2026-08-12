@@ -2,7 +2,6 @@ import { Router } from 'express';
 import type { OrgUnit, Settings, Training } from '../types';
 import { readSettings, readStore, writeSettings, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin } from '../middleware/auth';
-import { catalogEntry, FALLBACK_LOCALE, MATERIAL_LOCALE_CATALOG } from '../services/locales';
 import {
   TlsError,
   applyCredentials,
@@ -54,46 +53,6 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
     next.revealWrongQuestions = Boolean(body.revealWrongQuestions);
   }
 
-  if (body.materialLocales !== undefined) {
-    if (!Array.isArray(body.materialLocales) || body.materialLocales.some((c: unknown) => typeof c !== 'string')) {
-      return res.status(400).json({ error: 'materialLocales must be an array of locale codes' });
-    }
-    const requested = [...new Set(body.materialLocales as string[])];
-    const unknown = requested.find((code) => !catalogEntry(code));
-    if (unknown) {
-      return res.status(400).json({ error: `Unknown material locale: ${unknown}` });
-    }
-    if (!requested.includes(FALLBACK_LOCALE)) {
-      return res
-        .status(400)
-        .json({ error: 'English (en) is the default and fallback material language and cannot be removed' });
-    }
-    // Deletion guard: a locale still carried by any material variant cannot be removed — and the
-    // refusal says exactly what stands in the way (the org-unit 409 precedent).
-    const removed = next.materialLocales.filter((code) => !requested.includes(code));
-    if (removed.length) {
-      const trainings = await readStore<Training>('trainings');
-      for (const code of removed) {
-        let materials = 0;
-        let trainingCount = 0;
-        for (const t of trainings) {
-          const hits = (t.materials ?? []).filter((m) => m.variants.some((v) => v.locale === code)).length;
-          if (hits > 0) {
-            materials += hits;
-            trainingCount += 1;
-          }
-        }
-        if (materials > 0) {
-          const { name } = catalogEntry(code)!;
-          return res.status(409).json({
-            error: `Cannot remove ${name} (${code}): ${materials} material${materials === 1 ? '' : 's'} in ${trainingCount} training${trainingCount === 1 ? '' : 's'} still ${materials === 1 ? 'has' : 'have'} a ${name} variant`,
-          });
-        }
-      }
-    }
-    // Store in catalog order so every list/tab/row renders deterministically.
-    next.materialLocales = MATERIAL_LOCALE_CATALOG.filter((l) => requested.includes(l.code)).map((l) => l.code);
-  }
 
   // The company name is the root org unit's name — keep the two in sync.
   if (body.companyName !== undefined) {

@@ -18,7 +18,6 @@ const { t } = useI18n();
 
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
-const materialLocales = ref<string[]>([]); // from Settings — the editor shows one row per language
 const loading = ref(true);
 // The editor is a modal dialog: `draft` non-null means it's open (a blank training = create, an
 // existing id = edit/details). Replaces the former inline expand-in-place editor.
@@ -136,18 +135,16 @@ async function load(): Promise<void> {
   loading.value = true;
   try {
     const params = isAdmin.value ? {} : { mine: '1' };
-    const [t, u, s] = await Promise.all([
+    const [t, u] = await Promise.all([
       client.get<Training[]>('/trainings', { params }),
       isAdmin.value
         ? client.get<SafeUser[]>('/users')
         : Promise.resolve({ data: [] as SafeUser[] }),
-      client.get<Settings>('/settings'), // the configured material languages drive the editor rows
     ]);
     trainings.value = t.data; // kept in the deliberate display order (admin drag-to-reorder)
     owners.value = u.data
       .filter((x) => x.isTrainer || x.isAdmin)
       .sort((a, b) => a.name.localeCompare(b.name)); // alphabetical owner dropdown
-    materialLocales.value = s.data.materialLocales ?? ['en'];
   } finally {
     loading.value = false;
   }
@@ -174,10 +171,11 @@ function cancel(): void {
 
 function addQuestion(): void {
   // New questions start as single choice — the common case; the editor offers the switch to multiple.
+  // Text and options are localized maps; the form seeds the configured languages for editing.
   draft.value?.questions.push({
     id: '',
-    text: '',
-    options: ['', ''],
+    text: {},
+    options: [{}, {}],
     correctIndices: [0],
     type: 'single',
   } as Question);
@@ -186,7 +184,7 @@ function removeQuestion(i: number): void {
   draft.value?.questions.splice(i, 1);
 }
 function addOption(q: Question): void {
-  q.options.push('');
+  q.options.push({}); // the form seeds the configured languages for editing
 }
 function removeOption(q: Question, oi: number): void {
   q.options.splice(oi, 1);
@@ -445,7 +443,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               :draft="draft"
               :is-admin="isAdmin"
               :owners="owners"
-              :material-locales="materialLocales"
               @add-question="addQuestion"
               @remove-question="removeQuestion"
               @add-option="addOption"

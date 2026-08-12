@@ -19,7 +19,7 @@ import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
 import { FALLBACK_LOCALE, localeName } from '@/utils/locales';
-import type { GradeResult, Material, MaterialFile, MaterialVariant, Settings, Training } from '@/types';
+import type { GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, Training } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -69,17 +69,12 @@ const thresholdPct = computed(() =>
 // No questions means there is no test to take — the training can't be completed.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
 
-// ── material language ─────────────────────────────────────────────────────────────────────────────
-// The learner picks the language the material is shown in. Default: their profile locale when it is
-// a configured material language, else English. Resolution is PER MATERIAL: the chosen variant, or
-// the English one when the chosen language is missing — and when English is missing too, every
-// variant is offered so the learner picks one themself.
-const materialLocales = ref<string[]>([]);
-const chosenLocale = ref<string>(FALLBACK_LOCALE);
-
-const showLocalePicker = computed(
-  () => (training.value?.materials.length ?? 0) > 0 && materialLocales.value.length > 1,
-);
+// ── content language ──────────────────────────────────────────────────────────────────────────────
+// The session content follows the UI language — the language switch in the user menu is the ONE
+// place a user changes language. Resolution is PER MATERIAL/string: the current language's version,
+// or the English one when it is missing — and when English is missing too, every version is offered.
+const { locale: uiLocale } = useI18n();
+const chosenLocale = computed<string>(() => uiLocale.value);
 
 function visibleVariants(m: Material): MaterialVariant[] {
   const chosen = m.variants.find((v) => v.locale === chosenLocale.value);
@@ -99,19 +94,25 @@ const isAlternative = (v: MaterialVariant): boolean => v.locale !== chosenLocale
 /** A variant always has something displayable: its label, else the link/file it carries. */
 const variantLabel = (v: MaterialVariant): string => v.label || v.url || v.file?.name || '';
 
+/**
+ * Resolve a localized question/answer string with the material logic applied per string:
+ * chosen language → English → all filled languages joined (so nothing is ever unanswerable).
+ * `alternative` marks anything not shown in the chosen language — it drives the badge.
+ */
+function resolveText(lt: LocalizedText): { value: string; alternative: boolean } {
+  const chosen = lt[chosenLocale.value];
+  if (chosen) return { value: chosen, alternative: false };
+  const fallback = lt[FALLBACK_LOCALE];
+  if (fallback) return { value: fallback, alternative: true };
+  return { value: Object.values(lt).filter(Boolean).join(' / '), alternative: true };
+}
+
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const [{ data }, settings] = await Promise.all([
-      client.get<Training>(`/trainings/${trainingId}`),
-      client.get<Settings>('/settings'),
-    ]);
+    const { data } = await client.get<Training>(`/trainings/${trainingId}`);
     training.value = data;
     answers.value = Array.from({ length: data.questions.length }, () => []);
-    materialLocales.value = settings.data.materialLocales ?? [FALLBACK_LOCALE];
-    const profileLocale = auth.user?.locale;
-    chosenLocale.value =
-      profileLocale && materialLocales.value.includes(profileLocale) ? profileLocale : FALLBACK_LOCALE;
   } finally {
     loading.value = false;
   }
@@ -172,25 +173,6 @@ onMounted(load);
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
         <p class="font-mono text-sm text-ink-muted">{{ training.description }}</p>
 
-        <!-- Material-language picker: defaults to the profile language, English as fallback. -->
-        <div v-if="showLocalePicker" class="flex flex-wrap items-center gap-2">
-          <span class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
-            {{ t('session.materialLanguage') }}
-          </span>
-          <button
-            v-for="code in materialLocales"
-            :key="code"
-            class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs uppercase transition"
-            :class="chosenLocale === code ? 'border-accent bg-accent-light/30 font-semibold text-ink' : 'border-line text-ink-muted hover:border-accent'"
-            :aria-pressed="chosenLocale === code"
-            :aria-label="localeName(code)"
-            :title="localeName(code)"
-            @click="chosenLocale = code"
-          >
-            <LocaleFlag :code="code" /> {{ code }}
-          </button>
-        </div>
-
         <div class="flex flex-col gap-3">
           <!-- Per material: the chosen language's variant, the English one as fallback, or — when
                neither exists — every available language. Anything not in the chosen language wears
@@ -209,10 +191,11 @@ onMounted(load);
                   <FileText class="h-4 w-4 text-accent" />
                 </div>
                 <span class="flex-1 font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
-                <span v-if="isAlternative(v)" class="pill shrink-0 bg-amber-100 text-amber-700">
-                  {{ t('session.altLanguage') }}
-                </span>
-                <LocaleFlag :code="v.locale" />
+                <!-- Only an alternative-language material is marked (badge + flag); a matching one is unadorned. -->
+                <template v-if="isAlternative(v)">
+                  <span class="pill shrink-0 bg-amber-100 text-amber-700">{{ t('session.altLanguage') }}</span>
+                  <LocaleFlag :code="v.locale" />
+                </template>
                 <ExternalLink class="h-4 w-4 text-ink-light" />
               </a>
               <!-- File variants download to open in the learner's installed apps -->
@@ -229,10 +212,10 @@ onMounted(load);
                   <span class="block truncate font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
                   <span class="font-mono text-[11px] text-ink-light">{{ formatBytes(v.file.size) }}</span>
                 </span>
-                <span v-if="isAlternative(v)" class="pill shrink-0 bg-amber-100 text-amber-700">
-                  {{ t('session.altLanguage') }}
-                </span>
-                <LocaleFlag :code="v.locale" />
+                <template v-if="isAlternative(v)">
+                  <span class="pill shrink-0 bg-amber-100 text-amber-700">{{ t('session.altLanguage') }}</span>
+                  <LocaleFlag :code="v.locale" />
+                </template>
                 <Download class="h-4 w-4 text-ink-light" />
               </button>
             </template>
@@ -259,7 +242,12 @@ onMounted(load);
           :key="q.id"
           class="card p-5"
         >
-          <p class="font-sans text-sm font-semibold text-ink">{{ qi + 1 }}. {{ q.text }}</p>
+          <p class="flex items-start gap-2 font-sans text-sm font-semibold text-ink">
+            <span class="flex-1">{{ qi + 1 }}. {{ resolveText(q.text).value }}</span>
+            <span v-if="resolveText(q.text).alternative" class="pill shrink-0 bg-amber-100 text-amber-700">
+              {{ t('session.altLanguage') }}
+            </span>
+          </p>
           <!-- Single choice gets radios (exactly one answer, picking another replaces it). Everything
                else is multi-select: one or more options may be correct, and the payload deliberately
                does not say how many, so the control must not reveal it either. The `?? 'multiple'`
@@ -289,7 +277,7 @@ onMounted(load);
                 class="accent-accent"
                 @change="toggleAnswer(qi, oi)"
               />
-              {{ opt }}
+              {{ resolveText(opt).value }}
             </label>
           </div>
         </div>
@@ -334,7 +322,7 @@ onMounted(load);
                 :key="qi"
                 class="font-mono text-xs text-ink-muted"
               >
-                {{ qi + 1 }}. {{ training.questions[qi]?.text }}
+                {{ qi + 1 }}. {{ training.questions[qi] ? resolveText(training.questions[qi].text).value : '' }}
               </li>
             </ul>
           </div>

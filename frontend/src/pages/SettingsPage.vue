@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Building2, KeyRound, Languages, Lock, Mail, Plus, Save, Send, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { Building2, KeyRound, Lock, Mail, Save, Send, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
-import LocaleFlag from '@/components/LocaleFlag.vue';
-import { MATERIAL_LOCALE_CATALOG, FALLBACK_LOCALE, localeName } from '@/utils/locales';
-import { apiErrorMessage } from '@/utils/download';
 import type { Settings, TlsSettings } from '@/types';
 
 const toast = useToastStore();
@@ -19,40 +16,6 @@ const revealWrong = ref(false);
 const loading = ref(true);
 const saving = ref(false);
 
-// Training-material languages: entries are immutable (add from the catalog / remove only), English
-// always stays. Add/remove act immediately (list semantics, like org units) rather than via a save
-// button; a refused removal surfaces the server's message verbatim — it names what's in the way.
-const materialLocales = ref<string[]>([]);
-const localeToAdd = ref('');
-const savingLocales = ref(false);
-const confirmRemoveLocale = ref<string | null>(null);
-const addableLocales = computed(() =>
-  MATERIAL_LOCALE_CATALOG.filter((l) => !materialLocales.value.includes(l.code)),
-);
-
-async function putLocales(next: string[], successKey: string): Promise<void> {
-  savingLocales.value = true;
-  try {
-    const { data } = await client.put<Settings>('/settings', { materialLocales: next });
-    materialLocales.value = data.materialLocales;
-    toast.success(t(successKey));
-  } catch (err) {
-    toast.error((await apiErrorMessage(err)) || t('settings.locales.toasts.error'));
-  } finally {
-    // Close the confirm either way — on a refusal the toast says exactly why nothing happened.
-    confirmRemoveLocale.value = null;
-    savingLocales.value = false;
-  }
-}
-
-async function addLocale(): Promise<void> {
-  if (!localeToAdd.value) return;
-  await putLocales([...materialLocales.value, localeToAdd.value], 'settings.locales.toasts.added');
-  localeToAdd.value = '';
-}
-
-const removeLocale = (code: string): Promise<void> =>
-  putLocales(materialLocales.value.filter((c) => c !== code), 'settings.locales.toasts.removed');
 
 // Company name — names the root org unit (admin-editable).
 const companyName = ref('');
@@ -127,7 +90,6 @@ async function load(): Promise<void> {
     const { data } = await client.get<Settings>('/settings');
     pct.value = Math.round(data.passThreshold * 100);
     revealWrong.value = data.revealWrongQuestions ?? false;
-    materialLocales.value = data.materialLocales ?? [FALLBACK_LOCALE];
     companyName.value = data.companyName ?? '';
     const e = data.entra;
     if (e) {
@@ -355,60 +317,6 @@ onMounted(load);
         <div class="mt-6">
           <button class="btn-primary" :disabled="saving" @click="save">
             <Save class="h-4 w-4" /> {{ saving ? t('common.saving') : t('settings.saveChanges') }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Training-material languages: add from the catalog, remove when unused; English is fixed -->
-      <div class="card p-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <Languages class="h-5 w-5 text-accent" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.locales.title') }}</h2>
-            <p class="font-mono text-xs text-ink-light">{{ t('settings.locales.desc') }}</p>
-          </div>
-        </div>
-
-        <div class="mt-5 flex flex-col gap-1.5">
-          <div
-            v-for="code in materialLocales"
-            :key="code"
-            class="flex items-center gap-3 rounded-lg border border-line bg-white px-3 py-2"
-          >
-            <LocaleFlag :code="code" />
-            <span class="flex-1 font-sans text-sm text-ink">{{ localeName(code) }}</span>
-            <span class="font-mono text-[11px] uppercase tracking-wide text-ink-light">{{ code }}</span>
-            <span v-if="code === FALLBACK_LOCALE" class="pill bg-pastel-mint/60 text-emerald-700">
-              {{ t('settings.locales.defaultBadge') }}
-            </span>
-            <template v-else-if="confirmRemoveLocale === code">
-              <span class="font-mono text-[11px] text-rose-600">{{ t('settings.locales.confirmRemove') }}</span>
-              <button class="btn-danger btn-sm" :disabled="savingLocales" @click="removeLocale(code)">
-                {{ t('common.delete') }}
-              </button>
-              <button class="btn-ghost btn-sm" @click="confirmRemoveLocale = null">{{ t('common.cancel') }}</button>
-            </template>
-            <button
-              v-else
-              class="btn-ghost btn-icon !text-rose-600"
-              :aria-label="t('settings.locales.remove')"
-              :title="t('settings.locales.remove')"
-              @click="confirmRemoveLocale = code"
-            >
-              <Trash2 class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <select v-model="localeToAdd" class="bg-input flex-1" :aria-label="t('settings.locales.selectPlaceholder')">
-            <option value="" disabled>{{ t('settings.locales.selectPlaceholder') }}</option>
-            <option v-for="l in addableLocales" :key="l.code" :value="l.code">{{ l.name }} ({{ l.code }})</option>
-          </select>
-          <button class="btn-primary" :disabled="!localeToAdd || savingLocales" @click="addLocale">
-            <Plus class="h-4 w-4" /> {{ t('settings.locales.add') }}
           </button>
         </div>
       </div>

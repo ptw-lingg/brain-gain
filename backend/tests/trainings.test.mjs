@@ -239,7 +239,7 @@ test('SYS-DATA-11: link variants are sanitized — junk coerced, empty and unkno
     'extra keys dropped; content-less and unknown-locale variants are gone');
 });
 
-test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, options stringified, answer key normalized', async () => {
+test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, legacy strings localized, answer key normalized', async () => {
   const res = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: {
@@ -258,7 +258,8 @@ test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, options
   assert.equal(res.body.questions.length, 4);
   assert.ok(res.body.questions[0].id, 'a question id was generated');
   assert.deepEqual(res.body.questions[0].correctIndices, [2]);
-  assert.deepEqual(res.body.questions[0].options, ['a', 'b', 'c']);
+  assert.deepEqual(res.body.questions[0].text, { en: 'Q1' }, 'a legacy plain-string text becomes the English entry');
+  assert.deepEqual(res.body.questions[0].options, [{ en: 'a' }, { en: 'b' }, { en: 'c' }], 'legacy string options localize too');
   assert.deepEqual(res.body.questions[1].correctIndices, [0], 'an unusable answer key falls back to [0]');
   assert.deepEqual(res.body.questions[2].correctIndices, [1], 'a legacy scalar correctIndex is accepted');
   assert.deepEqual(res.body.questions[3].correctIndices, [0, 2], 'deduped, in-bounds and ascending');
