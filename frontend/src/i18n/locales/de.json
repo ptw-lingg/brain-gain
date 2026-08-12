@@ -68,6 +68,7 @@
     "greetingMorning": "Guten Morgen, {name}",
     "greetingAfternoon": "Guten Tag, {name}",
     "greetingEvening": "Guten Abend, {name}",
+    "onlyDue": "Nur fällige Schulungen anzeigen",
     "subtitle": "{assigned} zugewiesen · {due} jetzt fällig",
     "empty": "Noch keine Schulungen. Bitten Sie Ihren Admin, Ihnen eine Funktion zuzuweisen."
   },

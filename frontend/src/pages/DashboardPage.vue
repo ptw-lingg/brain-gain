@@ -17,10 +17,15 @@ const { t } = useI18n();
 const items = ref<DueTraining[]>([]);
 const loading = ref(true);
 const search = ref('');
+// On by default: the dashboard is a work list — what still has to be done. Unchecking shows the
+// up-to-date trainings too (e.g. to review one that isn't due yet).
+const onlyDue = ref(true);
 
 const filteredItems = computed(() =>
-  items.value.filter((i) =>
-    matchesQuery(search.value, i.training.name, i.training.description, i.training.category),
+  items.value.filter(
+    (i) =>
+      (!onlyDue.value || i.status !== 'up-to-date') &&
+      matchesQuery(search.value, i.training.name, i.training.description, i.training.category),
   ),
 );
 
@@ -82,11 +87,19 @@ onMounted(load);
 
     <!-- Grid -->
     <div v-else class="mt-8">
-      <ListControls
-        v-model:query="search"
-        :count="filteredItems.length"
-        :total="items.length"
-      />
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="min-w-0 flex-1">
+          <ListControls
+            v-model:query="search"
+            :count="filteredItems.length"
+            :total="items.length"
+          />
+        </div>
+        <label class="flex cursor-pointer items-center gap-2 pb-4 font-mono text-xs text-ink-muted">
+          <input v-model="onlyDue" type="checkbox" class="accent-accent" />
+          {{ t('dashboard.onlyDue') }}
+        </label>
+      </div>
       <TransitionGroup
         name="list"
         tag="div"

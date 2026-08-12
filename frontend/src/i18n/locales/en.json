@@ -68,6 +68,7 @@
     "greetingMorning": "Good morning, {name}",
     "greetingAfternoon": "Good afternoon, {name}",
     "greetingEvening": "Good evening, {name}",
+    "onlyDue": "Only show due trainings",
     "subtitle": "{assigned} assigned · {due} due now",
     "empty": "No trainings yet. Ask your admin to assign you a role."
   },
