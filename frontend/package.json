@@ -14,6 +14,7 @@
     "@azure/msal-browser": "^5.11.0",
     "@types/pdfmake": "^0.3.3",
     "axios": "^1.7.2",
+    "flag-icons": "^7.5.0",
     "lucide-vue-next": "^0.400.0",
     "pdfjs-dist": "^6.0.227",
     "pdfmake": "^0.3.9",

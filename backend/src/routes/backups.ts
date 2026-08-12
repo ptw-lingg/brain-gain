@@ -13,6 +13,7 @@ import {
   restoreBackup,
   storeUploadedBackup,
 } from '../services/backup';
+import { runDataMigrations } from '../services/migrations';
 
 const router = Router();
 
@@ -98,6 +99,9 @@ router.get('/:id/download', async (req: AuthRequest, res) => {
 router.post('/:id/restore', async (req: AuthRequest, res) => {
   try {
     const result = await restoreBackup(req.params.id);
+    // An archive may carry records in any historical shape — normalize them right away rather
+    // than waiting for the next boot (which is when the migrations otherwise run).
+    await runDataMigrations();
     return res.json({
       restored: true,
       fileName: result.meta.fileName,

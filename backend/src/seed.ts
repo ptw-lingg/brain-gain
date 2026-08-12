@@ -48,17 +48,20 @@ export async function seed(): Promise<void> {
     windowBeforeMonths: 2,
     windowAfterMonths: 1,
     order: 0,
-    materialLinks: [
+    materials: [
       {
-        label: 'Lab Safety Handbook',
-        url: 'https://docs.example.com/lab-safety-handbook',
+        id: randomUUID(),
+        variants: [
+          { locale: 'en', label: 'Lab Safety Handbook', url: 'https://docs.example.com/lab-safety-handbook' },
+        ],
       },
       {
-        label: 'Emergency Procedures',
-        url: 'https://docs.example.com/emergency-procedures',
+        id: randomUUID(),
+        variants: [
+          { locale: 'en', label: 'Emergency Procedures', url: 'https://docs.example.com/emergency-procedures' },
+        ],
       },
     ],
-    materialFiles: [],
     questions: [
       {
         id: randomUUID(),
@@ -93,10 +96,12 @@ export async function seed(): Promise<void> {
     windowBeforeMonths: 3,
     windowAfterMonths: 3,
     order: 1,
-    materialLinks: [
-      { label: 'QM Handbook', url: 'https://docs.example.com/qm-handbook' },
+    materials: [
+      {
+        id: randomUUID(),
+        variants: [{ locale: 'en', label: 'QM Handbook', url: 'https://docs.example.com/qm-handbook' }],
+      },
     ],
-    materialFiles: [],
     questions: [
       {
         id: randomUUID(),

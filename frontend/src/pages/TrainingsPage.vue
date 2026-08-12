@@ -6,7 +6,7 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { JobRole, MaterialLink, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
+import type { JobRole, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
@@ -18,6 +18,7 @@ const { t } = useI18n();
 
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
+const materialLocales = ref<string[]>([]); // from Settings — the editor shows one row per language
 const loading = ref(true);
 // The editor is a modal dialog: `draft` non-null means it's open (a blank training = create, an
 // existing id = edit/details). Replaces the former inline expand-in-place editor.
@@ -125,8 +126,7 @@ function blankTraining(): Training {
     windowBeforeMonths: 3,
     windowAfterMonths: 3,
     order: 0,
-    materialLinks: [],
-    materialFiles: [],
+    materials: [],
     questions: [],
     createdAt: '',
   };
@@ -136,16 +136,18 @@ async function load(): Promise<void> {
   loading.value = true;
   try {
     const params = isAdmin.value ? {} : { mine: '1' };
-    const [t, u] = await Promise.all([
+    const [t, u, s] = await Promise.all([
       client.get<Training[]>('/trainings', { params }),
       isAdmin.value
         ? client.get<SafeUser[]>('/users')
         : Promise.resolve({ data: [] as SafeUser[] }),
+      client.get<Settings>('/settings'), // the configured material languages drive the editor rows
     ]);
     trainings.value = t.data; // kept in the deliberate display order (admin drag-to-reorder)
     owners.value = u.data
       .filter((x) => x.isTrainer || x.isAdmin)
       .sort((a, b) => a.name.localeCompare(b.name)); // alphabetical owner dropdown
+    materialLocales.value = s.data.materialLocales ?? ['en'];
   } finally {
     loading.value = false;
   }
@@ -168,13 +170,6 @@ function openTraining(t: Training): void {
 function cancel(): void {
   draft.value = null;
   confirmDeleteId.value = null;
-}
-
-function addLink(): void {
-  draft.value?.materialLinks.push({ label: '', url: '' } as MaterialLink);
-}
-function removeLink(i: number): void {
-  draft.value?.materialLinks.splice(i, 1);
 }
 
 function addQuestion(): void {
@@ -450,8 +445,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               :draft="draft"
               :is-admin="isAdmin"
               :owners="owners"
-              @add-link="addLink"
-              @remove-link="removeLink"
+              :material-locales="materialLocales"
               @add-question="addQuestion"
               @remove-question="removeQuestion"
               @add-option="addOption"

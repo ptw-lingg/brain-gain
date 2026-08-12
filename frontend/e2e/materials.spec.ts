@@ -19,26 +19,28 @@ test.describe('Trainings — material files end to end', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 
-    // The picker input is hidden (a styled button triggers it) — setInputFiles targets it directly.
-    // It stays mounted even while the Material section is collapsed (SYS-TRN-13 uses v-show).
-    await page.locator('input[type="file"]').setInputFiles({
-      name: FILE_NAME,
-      mimeType: 'text/plain',
-      buffer: Buffer.from(FILE_TEXT),
-    });
-    // Uploading opens the Material section by itself, and the file is listed there by name.
-    await expect(dialog.getByText(FILE_NAME)).toBeVisible();
+    // Materials are per-locale now: add a material and upload into its English row. The per-row
+    // upload button opens the (hidden, shared) picker — intercepted via the file chooser.
+    await dialog.getByRole('button', { name: /Learning material/ }).click();
+    await dialog.getByRole('button', { name: 'Add material' }).click();
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser'),
+      dialog.getByRole('button', { name: 'Upload file (EN)' }).last().click(),
+    ]);
+    await chooser.setFiles({ name: FILE_NAME, mimeType: 'text/plain', buffer: Buffer.from(FILE_TEXT) });
+    // The uploaded file lands on the row (and names the material, since the label was empty).
+    await expect(dialog.getByText(FILE_NAME).first()).toBeVisible();
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(dialog).toBeHidden();
 
     // Persistence: reload and reopen — the saved training still carries the file. The section starts
-    // collapsed, and its summary badge reports the file before it is opened.
+    // collapsed, and its summary badge reports the materials before it is opened.
     await page.reload();
     await page.getByText('Laboratory Safety Basics').click();
     const reopened = page.getByRole('dialog');
-    await expect(reopened.getByRole('button', { name: /Learning material/ })).toContainText('1 file');
+    await expect(reopened.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ materials/);
     await reopened.getByRole('button', { name: /Learning material/ }).click();
-    await expect(reopened.getByText(FILE_NAME)).toBeVisible();
+    await expect(reopened.getByText(FILE_NAME).first()).toBeVisible();
     await page.keyboard.press('Escape');
   });
 

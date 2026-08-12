@@ -165,7 +165,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
       cycleYears: 2,
       windowBeforeMonths: 1,
       windowAfterMonths: 2,
-      materialLinks: [{ label: 'Doc', url: 'https://example.com/doc' }],
+      materials: [{ variants: [{ locale: 'en', label: 'Doc', url: 'https://example.com/doc' }] }],
       questions: [
         { text: 'Where does data live?', options: ['DB', 'JSON files'], correctIndices: [1] },
       ],
@@ -184,7 +184,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   assert.equal(readBack.body.cycleYears, 2);
   assert.equal(readBack.body.windowBeforeMonths, 1);
   assert.equal(readBack.body.windowAfterMonths, 2);
-  assert.equal(readBack.body.materialLinks.length, 1, 'materialLinks persisted');
+  assert.equal(readBack.body.materials.length, 1, 'materials persisted');
   assert.equal(readBack.body.questions.length, 1, 'questions persisted');
   assert.deepEqual(readBack.body.questions[0].correctIndices, [1], 'admin (owner-level) sees the answer key');
 });

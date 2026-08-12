@@ -4,9 +4,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Eye, Languages, LogOut, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
-import { SUPPORTED_LOCALES, setLocale, type LocaleCode } from '@/i18n';
+import { SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
 import AppSidebar from './AppSidebar.vue';
 import BrainGainLogo from './BrainGainLogo.vue';
+import LocaleFlag from './LocaleFlag.vue';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -76,7 +77,7 @@ onMounted(() => document.addEventListener('click', onDocClick));
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
 function onLocaleChange(e: Event): void {
-  setLocale((e.target as HTMLSelectElement).value as LocaleCode);
+  auth.saveLocale((e.target as HTMLSelectElement).value as LocaleCode);
 }
 
 function logout(): void {
@@ -141,16 +142,22 @@ function logout(): void {
               <span class="flex items-center gap-2 text-sm text-ink-muted">
                 <Languages class="h-4 w-4" /> {{ t('language.label') }}
               </span>
-              <select
-                :value="locale"
-                class="cursor-pointer rounded-md border border-line bg-white px-2 py-1 text-xs text-ink outline-none transition focus:border-accent"
-                :aria-label="t('language.label')"
-                @change="onLocaleChange"
-              >
-                <option v-for="l in SUPPORTED_LOCALES" :key="l.code" :value="l.code">
-                  {{ l.label }}
-                </option>
-              </select>
+              <!-- A native dropdown (an <option> cannot render a flag, so the current language's
+                   flag sits beside it). The choice switches the UI at once and is persisted to the
+                   profile — except while impersonating, where it stays a local, temporary switch. -->
+              <span class="flex items-center gap-2">
+                <LocaleFlag :code="locale as string" />
+                <select
+                  :value="locale"
+                  class="cursor-pointer rounded-md border border-line bg-white px-2 py-1 text-xs text-ink outline-none transition focus:border-accent"
+                  :aria-label="t('language.label')"
+                  @change="onLocaleChange"
+                >
+                  <option v-for="l in SUPPORTED_LOCALES" :key="l.code" :value="l.code">
+                    {{ l.label }}
+                  </option>
+                </select>
+              </span>
             </div>
 
             <button

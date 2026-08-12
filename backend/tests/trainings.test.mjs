@@ -218,23 +218,25 @@ test('SYS-DATA-04: a non-numeric cycleYears falls back to the default (1)', asyn
   assert.equal(res.body.cycleYears, 1, 'invalid cycleYears → fallback 1');
 });
 
-test('SYS-DATA-05: material links are sanitized to {label,url} strings', async () => {
+test('SYS-DATA-11: link variants are sanitized — junk coerced, empty and unknown-locale variants dropped', async () => {
   const res = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: {
       name: 'Links',
-      materialLinks: [
-        { label: 'Good', url: 'https://example.com/doc' },
-        { label: 42, url: null, junk: 'dropped' }, // non-strings → '' ; extra keys dropped
+      materials: [
+        { variants: [{ locale: 'en', label: 'Good', url: 'https://example.com/doc', junk: 'dropped' }] },
+        { variants: [{ locale: 'en', label: 42, url: null }] }, // no usable content → variant dropped → material dropped
+        { variants: [{ locale: 'xx', label: 'Nope', url: 'https://example.com/xx' }] }, // unknown locale → dropped
         'not-an-object',
       ],
     },
   });
   assert.equal(res.status, 201);
-  assert.equal(res.body.materialLinks.length, 3);
-  assert.deepEqual(res.body.materialLinks[0], { label: 'Good', url: 'https://example.com/doc' });
-  assert.deepEqual(res.body.materialLinks[1], { label: '', url: '' }, 'non-string fields coerced to empty; junk key removed');
-  assert.deepEqual(res.body.materialLinks[2], { label: '', url: '' });
+  assert.equal(res.body.materials.length, 1, 'only the well-formed material survives');
+  const material = res.body.materials[0];
+  assert.ok(material.id, 'the material got a server-assigned id');
+  assert.deepEqual(material.variants, [{ locale: 'en', label: 'Good', url: 'https://example.com/doc' }],
+    'extra keys dropped; content-less and unknown-locale variants are gone');
 });
 
 test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, options stringified, answer key normalized', async () => {

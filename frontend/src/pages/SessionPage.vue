@@ -13,14 +13,18 @@ import {
   XCircle,
 } from 'lucide-vue-next';
 import client from '@/api/client';
+import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
-import type { GradeResult, MaterialFile, Training } from '@/types';
+import { FALLBACK_LOCALE, localeName } from '@/utils/locales';
+import type { GradeResult, Material, MaterialFile, MaterialVariant, Settings, Training } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const auth = useAuthStore();
 const toast = useToastStore();
 const trainingId = route.params.trainingId as string;
 
@@ -65,12 +69,49 @@ const thresholdPct = computed(() =>
 // No questions means there is no test to take — the training can't be completed.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
 
+// ── material language ─────────────────────────────────────────────────────────────────────────────
+// The learner picks the language the material is shown in. Default: their profile locale when it is
+// a configured material language, else English. Resolution is PER MATERIAL: the chosen variant, or
+// the English one when the chosen language is missing — and when English is missing too, every
+// variant is offered so the learner picks one themself.
+const materialLocales = ref<string[]>([]);
+const chosenLocale = ref<string>(FALLBACK_LOCALE);
+
+const showLocalePicker = computed(
+  () => (training.value?.materials.length ?? 0) > 0 && materialLocales.value.length > 1,
+);
+
+function visibleVariants(m: Material): MaterialVariant[] {
+  const chosen = m.variants.find((v) => v.locale === chosenLocale.value);
+  if (chosen) return [chosen];
+  const fallback = m.variants.find((v) => v.locale === FALLBACK_LOCALE);
+  if (fallback) return [fallback];
+  return m.variants;
+}
+
+/**
+ * A shown variant that is not in the chosen language gets an "alternative language" badge — the
+ * transparent hint that this is either the English stand-in or one of the languages offered when
+ * neither the chosen language nor English exists.
+ */
+const isAlternative = (v: MaterialVariant): boolean => v.locale !== chosenLocale.value;
+
+/** A variant always has something displayable: its label, else the link/file it carries. */
+const variantLabel = (v: MaterialVariant): string => v.label || v.url || v.file?.name || '';
+
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const { data } = await client.get<Training>(`/trainings/${trainingId}`);
+    const [{ data }, settings] = await Promise.all([
+      client.get<Training>(`/trainings/${trainingId}`),
+      client.get<Settings>('/settings'),
+    ]);
     training.value = data;
     answers.value = Array.from({ length: data.questions.length }, () => []);
+    materialLocales.value = settings.data.materialLocales ?? [FALLBACK_LOCALE];
+    const profileLocale = auth.user?.locale;
+    chosenLocale.value =
+      profileLocale && materialLocales.value.includes(profileLocale) ? profileLocale : FALLBACK_LOCALE;
   } finally {
     loading.value = false;
   }
@@ -130,43 +171,73 @@ onMounted(load);
       <!-- Step 1: Material -->
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
         <p class="font-mono text-sm text-ink-muted">{{ training.description }}</p>
-        <div class="flex flex-col gap-2">
-          <!-- Links open in a new tab -->
-          <a
-            v-for="(link, i) in training.materialLinks"
-            :key="`l-${i}`"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-lift"
-          >
-            <div class="flex h-9 w-9 items-center justify-center rounded-md bg-pastel-sky/60">
-              <FileText class="h-4 w-4 text-accent" />
-            </div>
-            <span class="flex-1 font-sans text-sm font-semibold text-ink">{{ link.label }}</span>
-            <ExternalLink class="h-4 w-4 text-ink-light" />
-          </a>
-          <!-- Files download to open in the learner's installed apps -->
+
+        <!-- Material-language picker: defaults to the profile language, English as fallback. -->
+        <div v-if="showLocalePicker" class="flex flex-wrap items-center gap-2">
+          <span class="font-mono text-[11px] uppercase tracking-wide text-ink-light">
+            {{ t('session.materialLanguage') }}
+          </span>
           <button
-            v-for="file in training.materialFiles ?? []"
-            :key="`f-${file.id}`"
-            type="button"
-            class="card flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lift"
-            @click="downloadFile(file)"
+            v-for="code in materialLocales"
+            :key="code"
+            class="flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-xs uppercase transition"
+            :class="chosenLocale === code ? 'border-accent bg-accent-light/30 font-semibold text-ink' : 'border-line text-ink-muted hover:border-accent'"
+            :aria-pressed="chosenLocale === code"
+            :aria-label="localeName(code)"
+            :title="localeName(code)"
+            @click="chosenLocale = code"
           >
-            <div class="flex h-9 w-9 items-center justify-center rounded-md bg-pastel-mint/60">
-              <FileText class="h-4 w-4 text-accent" />
-            </div>
-            <span class="min-w-0 flex-1">
-              <span class="block truncate font-sans text-sm font-semibold text-ink">{{ file.name }}</span>
-              <span class="font-mono text-[11px] text-ink-light">{{ formatBytes(file.size) }}</span>
-            </span>
-            <Download class="h-4 w-4 text-ink-light" />
+            <LocaleFlag :code="code" /> {{ code }}
           </button>
-          <p
-            v-if="training.materialLinks.length === 0 && (training.materialFiles?.length ?? 0) === 0"
-            class="font-mono text-xs text-ink-light"
-          >
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <!-- Per material: the chosen language's variant, the English one as fallback, or — when
+               neither exists — every available language. Anything not in the chosen language wears
+               an "alternative language" badge as the transparent hint. -->
+          <div v-for="m in training.materials" :key="m.id" class="flex flex-col gap-2">
+            <template v-for="v in visibleVariants(m)" :key="`${m.id}-${v.locale}`">
+              <!-- Link variants open in a new tab -->
+              <a
+                v-if="v.url"
+                :href="v.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-lift"
+              >
+                <div class="flex h-9 w-9 items-center justify-center rounded-md bg-pastel-sky/60">
+                  <FileText class="h-4 w-4 text-accent" />
+                </div>
+                <span class="flex-1 font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
+                <span v-if="isAlternative(v)" class="pill shrink-0 bg-amber-100 text-amber-700">
+                  {{ t('session.altLanguage') }}
+                </span>
+                <LocaleFlag :code="v.locale" />
+                <ExternalLink class="h-4 w-4 text-ink-light" />
+              </a>
+              <!-- File variants download to open in the learner's installed apps -->
+              <button
+                v-else-if="v.file"
+                type="button"
+                class="card flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lift"
+                @click="downloadFile(v.file)"
+              >
+                <div class="flex h-9 w-9 items-center justify-center rounded-md bg-pastel-mint/60">
+                  <FileText class="h-4 w-4 text-accent" />
+                </div>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
+                  <span class="font-mono text-[11px] text-ink-light">{{ formatBytes(v.file.size) }}</span>
+                </span>
+                <span v-if="isAlternative(v)" class="pill shrink-0 bg-amber-100 text-amber-700">
+                  {{ t('session.altLanguage') }}
+                </span>
+                <LocaleFlag :code="v.locale" />
+                <Download class="h-4 w-4 text-ink-light" />
+              </button>
+            </template>
+          </div>
+          <p v-if="training.materials.length === 0" class="font-mono text-xs text-ink-light">
             {{ t('session.noMaterial') }}
           </p>
         </div>

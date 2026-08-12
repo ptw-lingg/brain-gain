@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock } from 'lucide-vue-next';
+import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import CollapsibleSection from '@/components/CollapsibleSection.vue';
-import type { MaterialFile, Question, SafeUser, Training } from '@/types';
+import LocaleFlag from '@/components/LocaleFlag.vue';
+import type { Material, MaterialFile, MaterialVariant, Question, SafeUser, Training } from '@/types';
 import { formatBytes } from '@/utils/display';
 
 const { t } = useI18n();
@@ -15,11 +16,11 @@ const props = defineProps<{
   draft: Training;
   isAdmin: boolean;
   owners: SafeUser[];
+  // The configured material languages (Settings.materialLocales) — one editable row per locale.
+  materialLocales: string[];
 }>();
 
 defineEmits<{
-  'add-link': [];
-  'remove-link': [i: number];
   'add-question': [];
   'remove-question': [i: number];
   'add-option': [q: Question];
@@ -38,8 +39,7 @@ const openQuestions = ref<Record<number, boolean>>({});
 const toggle = (key: keyof typeof open.value): void => { open.value[key] = !open.value[key]; };
 const toggleQuestion = (i: number): void => { openQuestions.value[i] = !openQuestions.value[i]; };
 
-const linkCount = computed(() => props.draft.materialLinks?.length ?? 0);
-const fileCount = computed(() => props.draft.materialFiles?.length ?? 0);
+const materialCount = computed(() => props.draft.materials?.length ?? 0);
 const questionCount = computed(() => props.draft.questions?.length ?? 0);
 
 // Deliberately not the name — the dialog header already shows it, and repeating it here would put a
@@ -58,14 +58,19 @@ const scheduleSummary = computed(() => {
     after: props.draft.windowAfterMonths,
   })}`;
 });
-const materialSummary = computed(() =>
-  linkCount.value + fileCount.value === 0
-    ? t('trainingForm.summaryEmpty')
-    : [
-        linkCount.value ? t('trainingForm.summaryLinks', { count: linkCount.value }, linkCount.value) : '',
-        fileCount.value ? t('trainingForm.summaryFiles', { count: fileCount.value }, fileCount.value) : '',
-      ].filter(Boolean).join(' · '),
-);
+// e.g. "2 materials · EN DE" — the count plus the distinct languages that actually carry content.
+const materialSummary = computed(() => {
+  if (materialCount.value === 0) return t('trainingForm.summaryEmpty');
+  const locales = [...new Set(
+    (props.draft.materials ?? []).flatMap((m) =>
+      m.variants.filter(hasContent).map((v) => v.locale.toUpperCase()),
+    ),
+  )];
+  return [
+    t('trainingForm.summaryMaterials', { count: materialCount.value }, materialCount.value),
+    locales.join(' '),
+  ].filter(Boolean).join(' · ');
+});
 const questionsSummary = computed(() =>
   questionCount.value === 0
     ? t('trainingForm.summaryEmpty')
@@ -87,8 +92,7 @@ watch(questionCount, (now, before) => {
     openQuestions.value[now - 1] = true;
   }
 });
-watch(linkCount, (now, before) => { if (now > before) open.value.material = true; });
-watch(fileCount, (now, before) => { if (now > before) open.value.material = true; });
+watch(materialCount, (now, before) => { if (now > before) open.value.material = true; });
 
 // ── answer key ────────────────────────────────────────────────────────────────────────────────────
 // A question may have several correct options. The key is kept sorted so it is stable in the payload,
@@ -119,42 +123,78 @@ function setCorrect(q: Question, oi: number): void {
   q.correctIndices = [oi];
 }
 
-// Material files: any file type is allowed. Each picked file is uploaded immediately (bytes stored
-// server-side); only the returned descriptor is kept on the draft and persisted when the form saves.
+// ── materials ─────────────────────────────────────────────────────────────────────────────────────
+// A material is a group of per-locale variants (own label + own content per language). For direct
+// v-model editing, every draft material is normalized to exactly one variant per configured locale
+// (blank rows for the missing ones) — the server drops empty variants on save, so blanks cost
+// nothing. Runs whenever a new draft arrives (dialog open) or the locale list loads.
+const hasContent = (v: MaterialVariant): boolean => Boolean(v.file) || Boolean(v.url?.trim());
+
+function normalizeMaterials(): void {
+  if (!Array.isArray(props.draft.materials)) props.draft.materials = [];
+  if (!props.materialLocales.length) return; // settings not loaded yet — the watcher re-runs
+  for (const m of props.draft.materials) {
+    const byLocale = new Map(m.variants.map((v) => [v.locale, v]));
+    m.variants = props.materialLocales.map(
+      (locale) => byLocale.get(locale) ?? { locale, label: '', url: '' },
+    );
+  }
+}
+watch([() => props.draft, () => props.materialLocales], normalizeMaterials, { immediate: true });
+
+const blankVariants = (): MaterialVariant[] =>
+  props.materialLocales.map((locale) => ({ locale, label: '', url: '' }));
+
+function addMaterial(): void {
+  props.draft.materials.push({ id: '', variants: blankVariants() }); // the server assigns the id
+}
+function removeMaterial(i: number): void {
+  props.draft.materials.splice(i, 1);
+}
+
+const materialTitle = (m: Material, i: number): string =>
+  m.variants.find((v) => v.label.trim())?.label.trim() || t('trainingForm.materialTitle', { n: i + 1 });
+
+// File content per variant: any file type, uploaded immediately (bytes stored server-side); only
+// the returned descriptor lands on the variant and is persisted when the form saves. One hidden
+// single-file input serves every row — the clicked row is remembered in `uploadTarget`.
 const fileInput = ref<HTMLInputElement | null>(null);
 const uploading = ref(false);
+const uploadTarget = ref<MaterialVariant | null>(null);
 
-function pickFiles(): void {
+function pickFileFor(variant: MaterialVariant): void {
+  uploadTarget.value = variant;
   fileInput.value?.click();
 }
 
-async function onFilesPicked(e: Event): Promise<void> {
+async function onFilePicked(e: Event): Promise<void> {
   const input = e.target as HTMLInputElement;
-  const files = Array.from(input.files ?? []);
+  const file = input.files?.[0];
   input.value = ''; // reset so picking the same file again still fires change
-  if (!files.length) return;
-  if (!Array.isArray(props.draft.materialFiles)) props.draft.materialFiles = [];
+  const variant = uploadTarget.value;
+  if (!file || !variant) return;
   uploading.value = true;
   try {
-    for (const file of files) {
-      try {
-        // Sent as a raw octet-stream body so any type (incl. .json) bypasses the JSON body parser.
-        const { data } = await client.post<MaterialFile>('/trainings/materials', file, {
-          params: { name: file.name, type: file.type },
-          headers: { 'Content-Type': 'application/octet-stream' },
-        });
-        props.draft.materialFiles.push(data);
-      } catch {
-        toast.error(t('trainingForm.uploadError', { name: file.name }));
-      }
-    }
+    // Sent as a raw octet-stream body so any type (incl. .json) bypasses the JSON body parser.
+    const { data } = await client.post<MaterialFile>('/trainings/materials', file, {
+      params: { name: file.name, type: file.type },
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+    variant.file = data;
+    delete variant.url; // one content per variant — the file replaces the link
+    if (!variant.label.trim()) variant.label = data.name;
+  } catch {
+    toast.error(t('trainingForm.uploadError', { name: file.name }));
   } finally {
     uploading.value = false;
+    uploadTarget.value = null;
   }
 }
 
-function removeFile(i: number): void {
-  props.draft.materialFiles.splice(i, 1);
+/** Drop a variant's uploaded file; the row falls back to an (empty) url input. */
+function removeVariantFile(variant: MaterialVariant): void {
+  delete variant.file;
+  variant.url = '';
 }
 </script>
 
@@ -224,55 +264,80 @@ function removeFile(i: number): void {
       </div>
     </CollapsibleSection>
 
-    <!-- Material: links to study plus uploaded files -->
+    <!-- Material: one sub-card per material, one row per configured language inside it -->
     <CollapsibleSection
       :title="t('trainingForm.material')"
       :summary="materialSummary"
-      :summary-class="linkCount + fileCount === 0 ? emptyTint : undefined"
+      :summary-class="materialCount === 0 ? emptyTint : undefined"
       :open="open.material"
       @toggle="toggle('material')"
     >
       <template #icon><LinkIcon class="h-4 w-4 shrink-0 text-accent" /></template>
 
-      <!-- Links -->
-      <div class="flex flex-col gap-2">
-        <div v-for="(link, i) in draft.materialLinks" :key="i" class="flex flex-wrap gap-2 sm:flex-nowrap">
-          <input v-model="link.label" class="bg-input min-w-[8rem] flex-1" :placeholder="t('trainingForm.labelPlaceholder')" />
-          <input v-model="link.url" class="bg-input min-w-[12rem] flex-[2]" :placeholder="t('trainingForm.urlPlaceholder')" />
-          <button class="btn-ghost btn-icon" :aria-label="t('trainingForm.removeLink')" :title="t('trainingForm.removeLink')" @click="$emit('remove-link', i)">
-            <Trash2 class="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-      <button class="btn-ghost btn-sm mt-2" @click="$emit('add-link')">
-        <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addLink') }}
-      </button>
-
-      <!-- Files (any type — download only, no preview) -->
-      <div class="mt-4 mb-1 flex items-center gap-2">
-        <Paperclip class="h-4 w-4 text-accent" />
-        <span class="form-label !text-ink">{{ t('trainingForm.files') }}</span>
-      </div>
-      <p class="mb-2 font-mono text-[11px] text-ink-light">{{ t('trainingForm.fileHint') }}</p>
-      <div v-if="draft.materialFiles?.length" class="flex flex-col gap-2">
+      <p class="mb-2 font-mono text-[11px] text-ink-light">
+        {{ t('trainingForm.materialHint') }} {{ t('trainingForm.fileHint') }}
+      </p>
+      <div class="flex flex-col gap-3">
         <div
-          v-for="(file, i) in draft.materialFiles"
-          :key="file.id"
-          class="flex items-center gap-3 rounded-lg border border-line bg-white px-3 py-2"
+          v-for="(m, mi) in draft.materials"
+          :key="mi"
+          class="rounded-lg border border-line bg-white p-3"
         >
-          <FileText class="h-4 w-4 shrink-0 text-ink-light" />
-          <span class="min-w-0 flex-1 truncate font-sans text-sm text-ink" :title="file.name">{{ file.name }}</span>
-          <span class="shrink-0 font-mono text-[11px] text-ink-light">{{ formatBytes(file.size) }}</span>
-          <button class="btn-ghost btn-icon" :aria-label="t('trainingForm.removeFile')" :title="t('trainingForm.removeFile')" @click="removeFile(i)">
-            <Trash2 class="h-4 w-4" />
-          </button>
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <span class="flex min-w-0 items-center gap-2">
+              <Paperclip class="h-4 w-4 shrink-0 text-accent" />
+              <span class="truncate font-sans text-sm font-semibold text-ink">{{ materialTitle(m, mi) }}</span>
+            </span>
+            <button
+              class="btn-ghost btn-icon"
+              :aria-label="t('trainingForm.removeMaterial')"
+              :title="t('trainingForm.removeMaterial')"
+              @click="removeMaterial(mi)"
+            >
+              <Trash2 class="h-4 w-4" />
+            </button>
+          </div>
+
+          <!-- One row per configured language: flag · label · url-or-file · upload -->
+          <div class="flex flex-col gap-1.5">
+            <div v-for="v in m.variants" :key="v.locale" class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+              <span class="flex w-14 shrink-0 items-center gap-1.5">
+                <LocaleFlag :code="v.locale" />
+                <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ v.locale }}</span>
+              </span>
+              <input v-model="v.label" class="bg-input min-w-[8rem] flex-1" :placeholder="t('trainingForm.labelPlaceholder')" />
+              <span v-if="v.file" class="flex min-w-[12rem] flex-[2] items-center gap-2 rounded-lg border border-line bg-bg-primary px-3 py-2">
+                <FileText class="h-4 w-4 shrink-0 text-ink-light" />
+                <span class="min-w-0 flex-1 truncate font-sans text-sm text-ink" :title="v.file.name">{{ v.file.name }}</span>
+                <span class="shrink-0 font-mono text-[11px] text-ink-light">{{ formatBytes(v.file.size) }}</span>
+                <button
+                  class="btn-ghost btn-icon"
+                  :aria-label="t('trainingForm.removeVariantFile')"
+                  :title="t('trainingForm.removeVariantFile')"
+                  @click="removeVariantFile(v)"
+                >
+                  <X class="h-3.5 w-3.5" />
+                </button>
+              </span>
+              <input v-else v-model="v.url" class="bg-input min-w-[12rem] flex-[2]" :placeholder="t('trainingForm.urlPlaceholder')" />
+              <button
+                class="btn-ghost btn-icon"
+                :disabled="uploading"
+                :aria-label="t('trainingForm.uploadForLocale', { locale: v.locale.toUpperCase() })"
+                :title="t('trainingForm.uploadForLocale', { locale: v.locale.toUpperCase() })"
+                @click="pickFileFor(v)"
+              >
+                <Loader2 v-if="uploading && uploadTarget === v" class="h-4 w-4 animate-spin" />
+                <Upload v-else class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <input ref="fileInput" type="file" multiple class="hidden" @change="onFilesPicked" />
-      <button class="btn-ghost btn-sm mt-2" :disabled="uploading" @click="pickFiles">
-        <Loader2 v-if="uploading" class="h-3.5 w-3.5 animate-spin" />
-        <Upload v-else class="h-3.5 w-3.5" />
-        {{ uploading ? t('trainingForm.uploading') : t('trainingForm.addFile') }}
+
+      <input ref="fileInput" type="file" class="hidden" @change="onFilePicked" />
+      <button class="btn-ghost btn-sm mt-2" @click="addMaterial">
+        <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addMaterial') }}
       </button>
     </CollapsibleSection>
 

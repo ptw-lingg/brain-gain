@@ -1,10 +1,5 @@
 // Shared domain types for the BrainGain backend.
 
-export interface MaterialLink {
-  label: string;
-  url: string;
-}
-
 // An uploaded learning-material file of any type. The bytes live on disk under DATA_DIR/materials
 // keyed by `id`; only this descriptor is stored on the training. Files are downloaded and opened in
 // the learner's installed apps — the app never previews them.
@@ -13,6 +8,24 @@ export interface MaterialFile {
   name: string; // original filename, including extension
   size: number; // bytes
   type: string; // MIME type as reported by the browser ('' when unknown)
+}
+
+// One locale's version of a learning material: its own label and its own content. Exactly one of
+// url|file survives sanitization (the file wins when both arrive) — see services/materials.ts.
+export interface MaterialVariant {
+  locale: string; // code from Settings.materialLocales, validated on write
+  label: string; // per-locale display label; a file variant defaults to file.name
+  url?: string;
+  file?: MaterialFile;
+}
+
+// A learning material is a GROUP of per-locale variants — at least one, at most one per locale.
+// Learners resolve a material to their chosen locale, falling back to English; when English is
+// missing too, every variant is offered. Legacy materialLinks/materialFiles records are migrated
+// to single-English-variant materials by services/materials.ts#migrateMaterials.
+export interface Material {
+  id: string; // stable id; server-assigned (UUID) when missing
+  variants: MaterialVariant[];
 }
 
 export interface Question {
@@ -39,8 +52,7 @@ export interface Training {
   windowBeforeMonths: number; // 0–3: months before the due date the window opens
   windowAfterMonths: number; // 0–3: grace months after the due date before overdue
   order: number; // admin-defined display order across all views (ascending)
-  materialLinks: MaterialLink[];
-  materialFiles: MaterialFile[]; // uploaded files of any type (download-only, no in-app preview)
+  materials: Material[]; // localized learning material (replaces the legacy materialLinks/materialFiles)
   questions: Question[];
   createdAt: string;
 }
@@ -78,6 +90,10 @@ export interface User {
   // One-time secret for the activation link; present only while the account is pending, removed
   // on activation. Like passwordHash, it is a secret and never leaves the server in a SafeUser.
   activationToken?: string;
+  // Profile locale (UI language, en/de) — set the first time the user touches the language switch
+  // (PUT /api/auth/me); absent until then, the client falls back to its own detection. Also the
+  // default material language in a training session.
+  locale?: string;
   createdAt: string;
 }
 
@@ -130,6 +146,10 @@ export interface Settings {
   // (indices only — never the correct answers). Off by default: with unlimited retries, telling a
   // learner which questions were wrong makes brute-forcing the quiz easier, so it is an admin choice.
   revealWrongQuestions: boolean;
+  // Languages trainers can provide material in — codes from MATERIAL_LOCALE_CATALOG, always
+  // containing 'en' (the default and fallback). Entries are immutable: they can only be added from
+  // the catalog or removed, and removal is refused while any material still has a variant in them.
+  materialLocales: string[];
   companyName: string; // names the root org unit; admin-editable in Settings
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)

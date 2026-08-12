@@ -68,11 +68,11 @@ export interface TrainingReadiness {
 }
 
 export function trainingReadiness(
-  training: Pick<Training, 'materialLinks' | 'materialFiles' | 'questions'>,
+  training: Pick<Training, 'materials' | 'questions'>,
 ): TrainingReadiness {
-  // Material is either a link to study or an uploaded file to download — either one counts.
-  const hasMaterial =
-    (training.materialLinks?.length ?? 0) > 0 || (training.materialFiles?.length ?? 0) > 0;
+  // Every stored material carries at least one content-bearing variant (a link or an uploaded
+  // file in some language), so one material is enough to have something to study.
+  const hasMaterial = (training.materials?.length ?? 0) > 0;
   const hasQuestions = training.questions.length > 0;
   return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions };
 }

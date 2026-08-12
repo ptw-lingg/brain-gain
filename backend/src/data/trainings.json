@@ -9,16 +9,6 @@
     "cycleYears": 2,
     "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
-    "materialLinks": [
-      {
-        "label": "Presentation",
-        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
-      },
-      {
-        "label": "Video",
-        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
-      }
-    ],
     "questions": [
       {
         "id": "22aae908-7847-496a-a6f2-816c7f715bf0",
@@ -36,7 +26,38 @@
     ],
     "createdAt": "2026-06-02T14:32:18.157Z",
     "order": 1,
-    "materialFiles": []
+    "materials": [
+      {
+        "id": "d8779e0c-e79b-4dcd-8b6e-93d1d71ffc30",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Slides",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
+          }
+        ]
+      },
+      {
+        "id": "2daa5814-c38a-4d16-b20d-7052f0830de3",
+        "variants": [
+          {
+            "locale": "de",
+            "label": "Video",
+            "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
+          }
+        ]
+      },
+      {
+        "id": "08c8e9ab-f93e-4806-bae6-ff944eb88e44",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84376"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
@@ -48,20 +69,31 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [
-      {
-        "label": "Video",
-        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
-      },
-      {
-        "label": "Presentation",
-        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
-      }
-    ],
     "questions": [],
     "createdAt": "2026-06-02T14:55:48.130Z",
     "order": 2,
-    "materialFiles": []
+    "materials": [
+      {
+        "id": "800616c0-808d-45cd-af4a-d7a773ea94d5",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Video",
+            "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.00%20Product%20Life%20Cycle%20und%20SOP%2010.01%20Design%20and%20Development%20Planning-20240304_100012-Besprechungsaufzeichnung.mp4?csf=1&web=1&e=ByVvuF"
+          }
+        ]
+      },
+      {
+        "id": "879632cd-edd1-430c-9c74-6609cb7ee1ce",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Presentation",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "5c321dd7-d79f-4898-869c-62130f325d27",
@@ -73,16 +105,6 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [
-      {
-        "label": "Video",
-        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
-      },
-      {
-        "label": "Presentation",
-        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
-      }
-    ],
     "questions": [
       {
         "id": "81cc244d-1c88-48db-803d-6f0f2d490eae",
@@ -110,7 +132,28 @@
     ],
     "createdAt": "2026-06-02T14:58:30.564Z",
     "order": 3,
-    "materialFiles": []
+    "materials": [
+      {
+        "id": "408dcd29-4588-484b-b9b8-1d2880a602f3",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Video",
+            "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
+          }
+        ]
+      },
+      {
+        "id": "208849f8-0a7e-4233-8162-5a9ceea14b81",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Presentation",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "911c1823-0c2b-40a3-b525-1fe099182273",
@@ -122,16 +165,6 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [
-      {
-        "label": "Video",
-        "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
-      },
-      {
-        "label": "Presentation",
-        "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
-      }
-    ],
     "questions": [
       {
         "id": "766f6a11-6f41-4ae9-a034-cc1604c98d9c",
@@ -177,7 +210,28 @@
     ],
     "createdAt": "2026-06-02T14:58:59.018Z",
     "order": 4,
-    "materialFiles": []
+    "materials": [
+      {
+        "id": "6c25c46b-52af-4f0d-8d7c-ce890815ecb4",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Video",
+            "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.02%20Design%20Input%20und%20SOP%2010.03%20Design%20Output-20240306_100107-Besprechungsaufzeichnung.mp4?d=w494bf8f49d434328ba92c8621fdbe1f1&csf=1&web=1&e=vv8Eoh"
+          }
+        ]
+      },
+      {
+        "id": "d9339365-143f-4018-94c2-9339cf64923e",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Presentation",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
@@ -189,11 +243,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T14:59:40.488Z",
     "order": 5,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "90d2e37b-b87e-4ea2-8ee4-300b03473403",
@@ -205,11 +258,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:03.809Z",
     "order": 6,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
@@ -221,11 +273,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:19.047Z",
     "order": 7,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
@@ -237,11 +288,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:30.086Z",
     "order": 8,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
@@ -253,11 +303,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:37.823Z",
     "order": 9,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "7785e467-1b57-4197-884b-504513e018b1",
@@ -269,11 +318,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:44.810Z",
     "order": 10,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
@@ -285,11 +333,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:00:54.318Z",
     "order": 11,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "efde2ac6-d99d-426b-baea-b340854099c2",
@@ -301,11 +348,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:01:04.539Z",
     "order": 12,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "91e3c885-a123-4ed2-9574-ed5fa35787db",
@@ -317,11 +363,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:01:13.746Z",
     "order": 13,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
@@ -333,11 +378,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:01:30.301Z",
     "order": 14,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "647aae31-ae8a-4479-9850-d4b182ab4c8c",
@@ -349,11 +393,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:01:43.944Z",
     "order": 15,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "e5aeabac-56a6-4b80-ab71-9e770f9df9bd",
@@ -365,11 +408,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:01:54.769Z",
     "order": 17,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "1ff7533e-c176-422c-9234-dbdcec2259e6",
@@ -381,11 +423,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:02:04.521Z",
     "order": 18,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
@@ -397,11 +438,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:02:15.054Z",
     "order": 19,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
@@ -413,11 +453,10 @@
     "cycleYears": 2,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:02:32.297Z",
     "order": 0,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",
@@ -429,11 +468,10 @@
     "cycleYears": 1,
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-02T15:02:46.793Z",
     "order": 20,
-    "materialFiles": []
+    "materials": []
   },
   {
     "id": "ec867de7-dd70-42d2-b156-309041f8fcc1",
@@ -446,9 +484,8 @@
     "windowBeforeMonths": 3,
     "windowAfterMonths": 3,
     "order": 16,
-    "materialLinks": [],
     "questions": [],
     "createdAt": "2026-06-03T12:50:33.144Z",
-    "materialFiles": []
+    "materials": []
   }
 ]

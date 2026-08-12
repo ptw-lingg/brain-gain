@@ -5,7 +5,7 @@
 //               body, name/type as query params; returns { id, name, size, type }.
 //               GET /api/trainings/materials/:fileId — streams the stored bytes to any authenticated
 //               user as a download; the fileId is UUID-validated against path traversal. (← SR-041)
-//   SYS-DATA-05 sanitizeFiles() keeps only descriptors whose id is a real (UUID) upload (← SR-041)
+//   SYS-DATA-11 file variants keep only descriptors whose id is a real (UUID) upload (← SR-041)
 //   SR-041 / VT-041  uploaded files round-trip and are downloadable by a learner (member)
 //   VT-104  upload is gated to trainer/admin; download requires authentication
 //
@@ -139,16 +139,19 @@ test('SYS-TRN-11 / SR-041: an uploaded file attached to a training is visible & 
 
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
-    body: { name: 'With A File', materialFiles: [up.body] },
+    body: {
+      name: 'With A File',
+      materials: [{ variants: [{ locale: 'en', label: 'Procedure', file: up.body }] }],
+    },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.materialFiles.length, 1, 'the descriptor is stored on the training');
-  assert.equal(created.body.materialFiles[0].id, up.body.id);
+  assert.equal(created.body.materials.length, 1, 'the material is stored on the training');
+  assert.equal(created.body.materials[0].variants[0].file.id, up.body.id);
 
   // A member fetching the training sees the file descriptor (carried by the public shape)…
   const asMember = await srv.request('GET', `/api/trainings/${created.body.id}`, { token: memberToken });
   assert.equal(asMember.status, 200);
-  assert.equal(asMember.body.materialFiles[0].name, 'procedure.docx');
+  assert.equal(asMember.body.materials[0].variants[0].file.name, 'procedure.docx');
 
   // …and can download it (learners study material).
   const down = await download(up.body.id, { token: memberToken });
@@ -156,29 +159,32 @@ test('SYS-TRN-11 / SR-041: an uploaded file attached to a training is visible & 
   assert.ok(content.equals(down.bytes));
 });
 
-// ───────────────────────── sanitizeFiles ─────────────────────────
+// ───────────────────────── file-variant sanitization ─────────────────────────
 
-test('SYS-DATA-05: materialFiles are sanitized — forged/non-UUID descriptors are dropped', async () => {
+test('SYS-DATA-11: file variants are sanitized — forged/non-UUID descriptors are dropped', async () => {
   const up = await upload(Buffer.from('real bytes'), { name: 'real.bin', token: trainerToken });
 
   const res = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: {
       name: 'Sanitize Files',
-      materialFiles: [
-        up.body, // a real, stored upload — kept
-        { id: 'not-a-uuid', name: 'fake.exe', size: 9, type: 'x' }, // bad id — dropped
-        { id: '11111111-1111-4111-8111-111111111111', name: 5, size: 'big', type: null }, // valid id shape, junk fields coerced
+      materials: [
+        { variants: [{ locale: 'en', label: 'Real', file: up.body }] }, // a real, stored upload — kept
+        { variants: [{ locale: 'en', label: 'Fake', file: { id: 'not-a-uuid', name: 'fake.exe', size: 9, type: 'x' } }] }, // bad id → file dropped → variant empty → material dropped
+        { variants: [{ locale: 'en', file: { id: '11111111-1111-4111-8111-111111111111', name: 5, size: 'big', type: null } }] }, // valid id shape, junk fields coerced
         'garbage',
       ],
     },
   });
   assert.equal(res.status, 201);
-  const files = res.body.materialFiles;
-  assert.equal(files.length, 2, 'only the two UUID-id descriptors survive');
-  assert.equal(files[0].id, up.body.id);
-  assert.deepEqual(files[1], { id: '11111111-1111-4111-8111-111111111111', name: 'file', size: 0, type: '' },
-    'non-string name → "file"; non-numeric size → 0; null type → ""');
+  const materials = res.body.materials;
+  assert.equal(materials.length, 2, 'only materials with a surviving UUID-id descriptor remain');
+  assert.equal(materials[0].variants[0].file.id, up.body.id);
+  assert.deepEqual(
+    materials[1].variants[0],
+    { locale: 'en', label: 'file', file: { id: '11111111-1111-4111-8111-111111111111', name: 'file', size: 0, type: '' } },
+    'non-string name → "file"; non-numeric size → 0; null type → ""; empty label defaults to the file name',
+  );
 });
 
 // ───────────────────────── delete cleanup ─────────────────────────
@@ -187,7 +193,7 @@ test('SYS-TRN-11 / SR-045: deleting a training removes its uploaded files from d
   const up = await upload(Buffer.from('to be cleaned up'), { name: 'temp.bin', token: trainerToken });
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
-    body: { name: 'Cleanup Me', materialFiles: [up.body] },
+    body: { name: 'Cleanup Me', materials: [{ variants: [{ locale: 'en', file: up.body }] }] },
   });
   assert.equal(created.status, 201);
 

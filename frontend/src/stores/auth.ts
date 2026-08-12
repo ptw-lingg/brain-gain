@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import client from '@/api/client';
+import { setLocale, SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
 import type { SafeUser } from '@/types';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -10,6 +11,17 @@ export const useAuthStore = defineStore('auth', () => {
   // restore it on "stop". Its presence is what `isImpersonating` keys off — survives a refresh.
   const impersonatorToken = ref<string | null>(localStorage.getItem('impersonatorToken'));
   const isImpersonating = computed(() => impersonatorToken.value !== null);
+
+  const isUiLocale = (code: unknown): code is LocaleCode =>
+    SUPPORTED_LOCALES.some((l) => l.code === code);
+
+  // The single place a server identity becomes the session user. Applies the persisted profile
+  // locale to the UI — but NEVER during impersonation, or the target user's language would switch
+  // the admin's UI mid-session (this also covers fetchMe on a mid-impersonation page refresh).
+  function applyUser(u: SafeUser): void {
+    user.value = u;
+    if (!isImpersonating.value && isUiLocale(u.locale)) setLocale(u.locale);
+  }
 
   // A fresh sign-in always starts a clean (non-impersonating) session.
   function clearImpersonation(): void {
@@ -24,8 +36,8 @@ export const useAuthStore = defineStore('auth', () => {
     });
     clearImpersonation();
     token.value = data.token;
-    user.value = data.user;
     localStorage.setItem('token', data.token);
+    applyUser(data.user);
   }
 
   // Exchange a Microsoft Entra ID token (from MSAL) for our own app JWT. Stores the session
@@ -36,8 +48,8 @@ export const useAuthStore = defineStore('auth', () => {
     });
     clearImpersonation();
     token.value = data.token;
-    user.value = data.user;
     localStorage.setItem('token', data.token);
+    applyUser(data.user);
   }
 
   // Activate a pending (imported) account: set the chosen password via the one-time token and sign in.
@@ -49,18 +61,34 @@ export const useAuthStore = defineStore('auth', () => {
     });
     clearImpersonation();
     token.value = data.token;
-    user.value = data.user;
     localStorage.setItem('token', data.token);
+    applyUser(data.user);
   }
 
   async function fetchMe(): Promise<void> {
     if (!token.value) return;
     const { data } = await client.get<SafeUser>('/auth/me');
-    user.value = data;
+    applyUser(data);
+  }
+
+  // The user picked a language: switch the UI immediately (offline-safe — localStorage keeps the
+  // choice), then persist it to the profile so it follows them to any browser. Never persisted
+  // while impersonating: the active token belongs to the TARGET user, so a PUT would silently
+  // overwrite the impersonated user's profile (the server refuses it with 403 as well).
+  async function saveLocale(code: LocaleCode): Promise<void> {
+    setLocale(code);
+    if (isImpersonating.value) return;
+    try {
+      const { data } = await client.put<SafeUser>('/auth/me', { locale: code });
+      user.value = data;
+    } catch {
+      // The UI language is already switched; the profile write can catch up next time.
+    }
   }
 
   // Admin → "view as" a user. The admin token (currently active) is parked, and the
   // server-issued impersonation token takes over, so the whole app renders as the target user.
+  // Deliberately NOT applyUser: the target's locale must not switch the admin's UI language.
   async function startImpersonation(userId: string): Promise<void> {
     const { data } = await client.post<{ token: string; user: SafeUser }>(
       `/auth/impersonate/${userId}`,
@@ -74,7 +102,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token);
   }
 
-  // End a "view as" session: restore the parked admin token and reload the admin's own profile.
+  // End a "view as" session: restore the parked admin token and reload the admin's own profile
+  // (fetchMe → applyUser also restores the admin's own UI language).
   async function stopImpersonation(): Promise<void> {
     if (!impersonatorToken.value) return;
     token.value = impersonatorToken.value;
@@ -100,6 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
     loginWithEntra,
     activate,
     fetchMe,
+    saveLocale,
     startImpersonation,
     stopImpersonation,
     logout,

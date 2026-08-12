@@ -4,7 +4,6 @@ import type {
   DueTraining,
   JobRole,
   MaterialFile,
-  MaterialLink,
   PublicTraining,
   Question,
   Training,
@@ -15,10 +14,12 @@ import type {
 import {
   deleteMaterial,
   readMaterial,
+  readSettings,
   readStore,
   saveMaterial,
   writeStore,
 } from '../services/fileStore';
+import { materialFileIds, sanitizeMaterials } from '../services/materials';
 import {
   authenticate,
   requireAdmin,
@@ -71,39 +72,6 @@ function sanitizeQuestions(input: unknown): Question[] {
   });
 }
 
-function sanitizeLinks(input: unknown): MaterialLink[] {
-  if (!Array.isArray(input)) return [];
-  return input.map((l): MaterialLink => {
-    const obj = (l ?? {}) as Record<string, unknown>;
-    return {
-      label: typeof obj.label === 'string' ? obj.label : '',
-      url: typeof obj.url === 'string' ? obj.url : '',
-    };
-  });
-}
-
-// Material-file descriptors come from the client (it uploads bytes first via POST /materials, then
-// sends the returned descriptors back on save). We keep only descriptors whose id is a well-formed
-// UUID — the shape the upload endpoint issues — and coerce the remaining fields; the bytes were
-// already written at upload time. A descriptor pointing at a non-existent id simply yields a 404 on
-// download, never a path-traversal read.
-function sanitizeFiles(input: unknown): MaterialFile[] {
-  if (!Array.isArray(input)) return [];
-  return input
-    .map((f): MaterialFile | null => {
-      const obj = (f ?? {}) as Record<string, unknown>;
-      if (typeof obj.id !== 'string' || !UUID_RE.test(obj.id)) return null;
-      const size = Number(obj.size);
-      return {
-        id: obj.id,
-        name: typeof obj.name === 'string' ? obj.name : 'file',
-        size: Number.isFinite(size) && size >= 0 ? Math.round(size) : 0,
-        type: typeof obj.type === 'string' ? obj.type : '',
-      };
-    })
-    .filter((f): f is MaterialFile => f !== null);
-}
-
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
   const v = Number(n);
   if (!Number.isFinite(v)) return fallback;
@@ -123,9 +91,10 @@ async function readOrderedTrainings(): Promise<Training[]> {
       t.order = i;
       changed = true;
     }
-    // Backfill records written before file uploads existed so the field is always an array.
-    if (!Array.isArray(t.materialFiles)) {
-      t.materialFiles = [];
+    // Guard only — the real conversion of legacy materialLinks/materialFiles happens in the boot
+    // migration (services/materials.ts); this keeps the field an array no matter what.
+    if (!Array.isArray(t.materials)) {
+      t.materials = [];
       changed = true;
     }
   });
@@ -229,7 +198,7 @@ router.get('/:id', async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
   if (!training) return res.status(404).json({ error: 'Not found' });
-  if (!Array.isArray(training.materialFiles)) training.materialFiles = []; // backfill legacy records
+  if (!Array.isArray(training.materials)) training.materials = []; // backfill legacy records
   const canSeeAnswers = req.user?.isAdmin || training.ownerId === req.user?.id;
   return res.json(canSeeAnswers ? training : toPublic(training));
 });
@@ -242,6 +211,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   }
   // Trainers always own what they create; admins may target any owner.
   const ownerId = req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : req.user!.id;
+  const { materialLocales } = await readSettings();
   const trainings = await readStore<Training>('trainings');
   // New trainings go to the end of the ordering.
   const maxOrder = trainings.reduce(
@@ -259,8 +229,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
     windowAfterMonths: clamp(b.windowAfterMonths, 0, 3, 3),
     order: maxOrder + 1,
-    materialLinks: sanitizeLinks(b.materialLinks),
-    materialFiles: sanitizeFiles(b.materialFiles),
+    materials: sanitizeMaterials(b.materials, materialLocales),
     questions: sanitizeQuestions(b.questions),
     createdAt: new Date().toISOString(),
   };
@@ -290,6 +259,7 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
 // PUT /api/trainings/:id  — admin or owning trainer
 router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
+  const { materialLocales } = await readSettings();
   const trainings = await readStore<Training>('trainings');
   const idx = trainings.findIndex((t) => t.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Not found' });
@@ -314,12 +284,16 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
       b.windowAfterMonths != null
         ? clamp(b.windowAfterMonths, 0, 3, current.windowAfterMonths)
         : current.windowAfterMonths,
-    materialLinks: b.materialLinks != null ? sanitizeLinks(b.materialLinks) : current.materialLinks,
-    materialFiles:
-      b.materialFiles != null ? sanitizeFiles(b.materialFiles) : current.materialFiles ?? [],
+    materials: b.materials != null ? sanitizeMaterials(b.materials, materialLocales) : current.materials ?? [],
     questions: b.questions != null ? sanitizeQuestions(b.questions) : current.questions,
   };
   await writeStore('trainings', trainings);
+  // A variant's file may have been removed or replaced: delete the bytes no longer referenced by
+  // this training so replaced uploads don't accumulate on disk. Best-effort — a failure to unlink
+  // never fails the save.
+  const keptIds = new Set(materialFileIds(trainings[idx]));
+  const droppedIds = materialFileIds(current).filter((id) => !keptIds.has(id));
+  await Promise.allSettled(droppedIds.map((id) => deleteMaterial(id)));
   return res.json(trainings[idx]);
 });
 
@@ -330,7 +304,7 @@ router.delete('/:id', requireAdminOrOwner, async (req, res) => {
   if (!removed) return res.status(404).json({ error: 'Not found' });
   await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
   // Best-effort cleanup of the deleted training's uploaded files so they don't linger on disk.
-  await Promise.all((removed.materialFiles ?? []).map((f) => deleteMaterial(f.id)));
+  await Promise.allSettled(materialFileIds(removed).map((id) => deleteMaterial(id)));
   return res.status(204).end();
 });
 

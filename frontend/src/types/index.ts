@@ -1,8 +1,3 @@
-export interface MaterialLink {
-  label: string;
-  url: string;
-}
-
 // An uploaded learning-material file of any type. Downloaded and opened in the learner's installed
 // apps — never previewed in the app. The bytes live on the server keyed by `id`.
 export interface MaterialFile {
@@ -10,6 +5,23 @@ export interface MaterialFile {
   name: string;
   size: number;
   type: string;
+}
+
+// One locale's version of a learning material: its own label and its own content — a web link or an
+// uploaded file (exactly one; the server keeps the file when both are sent).
+export interface MaterialVariant {
+  locale: string; // code from Settings.materialLocales
+  label: string;
+  url?: string;
+  file?: MaterialFile;
+}
+
+// A learning material is a GROUP of per-locale variants — at least one, at most one per locale.
+// Learners resolve it to their chosen language, falling back to English; when English is missing
+// too, every variant is offered.
+export interface Material {
+  id: string; // server-assigned when saved with an empty id
+  variants: MaterialVariant[];
 }
 
 export interface Question {
@@ -36,8 +48,7 @@ export interface Training {
   windowBeforeMonths: number;
   windowAfterMonths: number;
   order: number;
-  materialLinks: MaterialLink[];
-  materialFiles: MaterialFile[];
+  materials: Material[];
   questions: Question[];
   createdAt: string;
 }
@@ -66,6 +77,9 @@ export interface SafeUser {
   isTrainer: boolean;
   isHead?: boolean; // derived: true when this user heads at least one org unit (drives "My Team")
   isDisabled?: boolean; // true while an imported account is pending activation (cannot sign in)
+  // Persisted profile locale (UI language, en/de); absent until the user first picks a language.
+  // Applied at sign-in and used as the default material language in a training session.
+  locale?: string;
   createdAt: string;
 }
 
@@ -124,6 +138,8 @@ export interface Settings {
   passThreshold: number;
   // When on, a failed attempt's grade response names the wrongly answered questions (default off).
   revealWrongQuestions: boolean;
+  // Languages trainers can provide material in — always contains 'en' (default & fallback).
+  materialLocales: string[];
   companyName: string;
   entra: EntraSsoSettings;
   tls: TlsSettings | null;

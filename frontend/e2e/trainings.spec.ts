@@ -165,7 +165,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     // because the specs share one server and other specs add material to this training.
     await expect(dialog.getByText('Repeat every (years)')).toBeHidden();
     await expect(dialog.getByRole('button', { name: /Schedule/ })).toContainText('Yearly');
-    await expect(dialog.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ link/);
+    await expect(dialog.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ material/);
     const questionsHeader = dialog.getByRole('button', { name: /Quiz questions/ });
     await expect(questionsHeader).toContainText(/\d+ questions/);
 
