@@ -10,6 +10,9 @@ const toast = useToastStore();
 const { t } = useI18n();
 
 const pct = ref(80);
+// Off by default: naming the wrong questions helps honest learners, but with unlimited retries it
+// also helps guessing — so revealing them is the admin's call.
+const revealWrong = ref(false);
 const loading = ref(true);
 const saving = ref(false);
 
@@ -85,6 +88,7 @@ async function load(): Promise<void> {
   try {
     const { data } = await client.get<Settings>('/settings');
     pct.value = Math.round(data.passThreshold * 100);
+    revealWrong.value = data.revealWrongQuestions ?? false;
     companyName.value = data.companyName ?? '';
     const e = data.entra;
     if (e) {
@@ -154,7 +158,7 @@ async function regenerateSelfSigned(): Promise<void> {
 async function save(): Promise<void> {
   saving.value = true;
   try {
-    await client.put('/settings', { passThreshold: pct.value / 100 });
+    await client.put('/settings', { passThreshold: pct.value / 100, revealWrongQuestions: revealWrong.value });
     toast.success(t('settings.toasts.thresholdSaved'));
   } catch {
     toast.error(t('settings.toasts.settingsError'));
@@ -300,6 +304,14 @@ onMounted(load);
           />
           <span class="w-16 text-right font-sans text-2xl font-bold text-accent">{{ pctLabel }}</span>
         </div>
+
+        <label class="mt-5 flex cursor-pointer items-start gap-2 font-mono text-xs text-ink-muted">
+          <input v-model="revealWrong" type="checkbox" class="mt-0.5 accent-accent" />
+          <span>
+            {{ t('settings.revealWrong') }}
+            <span class="block text-[11px] text-ink-light">{{ t('settings.revealWrongHint') }}</span>
+          </span>
+        </label>
 
         <div class="mt-6">
           <button class="btn-primary" :disabled="saving" @click="save">

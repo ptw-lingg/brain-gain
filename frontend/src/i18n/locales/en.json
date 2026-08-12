@@ -104,6 +104,7 @@
     "retry": "Retry test",
     "backToTrainings": "Back to My Trainings",
     "failNote": "Failed attempts aren't recorded — this training stays due until you pass.",
+    "wrongQuestions": "Answered incorrectly",
     "downloadError": "Could not download the file.",
     "selectAllThatApply": "Select all correct answers — there may be more than one.",
     "selectOne": "Select the one correct answer."
@@ -341,6 +342,8 @@
     "saveCompany": "Save company name",
     "thresholdTitle": "Global pass threshold",
     "thresholdDesc": "Minimum score a user must reach to pass any training's test.",
+    "revealWrong": "Show wrongly answered questions after a failed test",
+    "revealWrongHint": "The learner sees which questions were wrong — never the correct answers.",
     "saveChanges": "Save changes",
     "ssoTitle": "Microsoft Entra ID (SSO)",
     "ssoDesc": "Let users sign in with their Microsoft work account.",

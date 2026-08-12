@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import type { Training, TrainingSession } from '../types';
 import { readStore, readSettings, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
-import { gradeAnswers } from '../services/questions';
+import { gradeAnswers, isAnswerCorrect } from '../services/questions';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.post('/grade', async (req: AuthRequest, res) => {
   const correct = gradeAnswers(training.questions, answers);
   const scorePct = total === 0 ? 1 : correct / total;
 
-  const { passThreshold } = await readSettings();
+  const { passThreshold, revealWrongQuestions } = await readSettings();
   const passed = scorePct >= passThreshold;
 
   // Failed attempts are NOT recorded — the training simply stays due.
@@ -42,7 +42,15 @@ router.post('/grade', async (req: AuthRequest, res) => {
     await writeStore('sessions', sessions);
   }
 
-  return res.json({ scorePct, passed, passThreshold, correct, total });
+  const result: Record<string, unknown> = { scorePct, passed, passThreshold, correct, total };
+  // Opt-in (default off): a FAILED attempt names the questions that were answered wrong — indices
+  // only, never the correct answers. A passed attempt never carries it, even when imperfect.
+  if (!passed && revealWrongQuestions) {
+    result.wrongIndices = training.questions
+      .map((q, i) => (isAnswerCorrect(q, answers[i]) ? -1 : i))
+      .filter((i) => i >= 0);
+  }
+  return res.json(result);
 });
 
 // GET /api/sessions/mine  — current user's passing sessions

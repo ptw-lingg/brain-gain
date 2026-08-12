@@ -122,6 +122,8 @@ export interface SmtpSettings {
 
 export interface Settings {
   passThreshold: number;
+  // When on, a failed attempt's grade response names the wrongly answered questions (default off).
+  revealWrongQuestions: boolean;
   companyName: string;
   entra: EntraSsoSettings;
   tls: TlsSettings | null;
@@ -152,6 +154,9 @@ export interface GradeResult {
   passThreshold: number;
   correct: number;
   total: number;
+  // Indices of wrongly answered questions — present only on a FAILED attempt and only when the
+  // admin has enabled revealWrongQuestions in Settings.
+  wrongIndices?: number[];
 }
 
 /** A server-side backup archive of all app data (see backend/src/services/backup.ts). */

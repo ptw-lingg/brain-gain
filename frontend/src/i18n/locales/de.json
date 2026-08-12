@@ -104,6 +104,7 @@
     "retry": "Test wiederholen",
     "backToTrainings": "Zurück zu Meine Schulungen",
     "failNote": "Fehlversuche werden nicht gespeichert – diese Schulung bleibt fällig, bis Sie bestehen.",
+    "wrongQuestions": "Falsch beantwortet",
     "downloadError": "Die Datei konnte nicht heruntergeladen werden.",
     "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein.",
     "selectOne": "Die eine richtige Antwort auswählen."
@@ -341,6 +342,8 @@
     "saveCompany": "Firmennamen speichern",
     "thresholdTitle": "Globale Bestehensgrenze",
     "thresholdDesc": "Mindestpunktzahl, die ein Benutzer erreichen muss, um den Test einer Schulung zu bestehen.",
+    "revealWrong": "Falsch beantwortete Fragen nach einem nicht bestandenen Test anzeigen",
+    "revealWrongHint": "Die Lernenden sehen, welche Fragen falsch waren – niemals die richtigen Antworten.",
     "saveChanges": "Änderungen speichern",
     "ssoTitle": "Microsoft Entra ID (SSO)",
     "ssoDesc": "Benutzer können sich mit ihrem Microsoft-Geschäftskonto anmelden.",

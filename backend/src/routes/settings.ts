@@ -49,6 +49,10 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
     next.passThreshold = Math.min(1, Math.max(0.5, raw));
   }
 
+  if (body.revealWrongQuestions !== undefined) {
+    next.revealWrongQuestions = Boolean(body.revealWrongQuestions);
+  }
+
   // The company name is the root org unit's name — keep the two in sync.
   if (body.companyName !== undefined) {
     if (typeof body.companyName !== 'string' || !body.companyName.trim()) {

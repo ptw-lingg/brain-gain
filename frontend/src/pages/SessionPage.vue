@@ -248,6 +248,25 @@ onMounted(load);
               threshold: thresholdPct,
             }) }}
           </p>
+          <!-- Only present when the admin enabled revealWrongQuestions AND the attempt failed;
+               the server names the question indices, never the correct answers. -->
+          <div
+            v-if="!result.passed && result.wrongIndices?.length && training"
+            class="w-full max-w-md rounded-lg border border-rose-200 bg-white/60 p-4 text-left"
+          >
+            <p class="font-mono text-[11px] uppercase tracking-wide text-rose-600">
+              {{ t('session.wrongQuestions') }}
+            </p>
+            <ul class="mt-2 flex flex-col gap-1">
+              <li
+                v-for="qi in result.wrongIndices"
+                :key="qi"
+                class="font-mono text-xs text-ink-muted"
+              >
+                {{ qi + 1 }}. {{ training.questions[qi]?.text }}
+              </li>
+            </ul>
+          </div>
           <div class="mt-2 flex gap-2">
             <button v-if="!result.passed" class="btn-primary" @click="retry">
               <RefreshCw class="h-4 w-4" /> {{ t('session.retry') }}

@@ -126,6 +126,10 @@ export interface SmtpSettings {
 
 export interface Settings {
   passThreshold: number; // 0–1, default 0.8
+  // When true, the response to a FAILED attempt names the questions that were answered wrong
+  // (indices only — never the correct answers). Off by default: with unlimited retries, telling a
+  // learner which questions were wrong makes brute-forcing the quiz easier, so it is an admin choice.
+  revealWrongQuestions: boolean;
   companyName: string; // names the root org unit; admin-editable in Settings
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
