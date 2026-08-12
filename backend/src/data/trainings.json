@@ -508,7 +508,7 @@
     "id": "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
     "name": "AA Good Documentation Practice: Handschriftliche Aufzeichnungen",
     "description": "",
-    "durationHours": 1,
+    "durationHours": 0.5,
     "category": "General",
     "ownerId": "112d0d01-31ec-4953-9374-534ed8b4324b",
     "cycleYears": 2,
@@ -517,7 +517,18 @@
     "questions": [],
     "createdAt": "2026-06-02T15:02:32.297Z",
     "order": 0,
-    "materials": []
+    "materials": [
+      {
+        "id": "54909c11-334f-4070-befa-f4e7274a1003",
+        "variants": [
+          {
+            "locale": "de",
+            "label": "Arbeitsanweisung",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=120796"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",

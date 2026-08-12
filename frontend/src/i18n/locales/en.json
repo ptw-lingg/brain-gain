@@ -76,8 +76,9 @@
     "startSession": "Start session",
     "notDueYet": "Not due yet — you can still review",
     "start": "Start",
-    "noMaterial": "No material",
-    "noTest": "No test",
+    "metaYearly": "Yearly training",
+    "metaEvery": "Training every {years} years",
+    "metaDuration": "takes {hours} hour | takes {hours} hours",
     "unavailable": "Not available yet — your trainer is still preparing this training"
   },
   "due": {

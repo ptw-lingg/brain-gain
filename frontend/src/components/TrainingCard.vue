@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertTriangle, Clock, Play } from 'lucide-vue-next';
+import { Play } from 'lucide-vue-next';
 import type { DueTraining } from '@/types';
 import {
   dueLabel,
   dueClasses,
   isActionable,
   categoryTint,
-  cycleLabel,
   trainingReadiness,
 } from '@/utils/display';
 
@@ -22,48 +21,57 @@ const actionable = computed(() => isActionable(props.item.status));
 // Without material to study or questions to be tested on, the training can't be started.
 const readiness = computed(() => trainingReadiness(training.value));
 const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate));
+
+// One plain sentence instead of pill badges: "Yearly training, takes 1 hour".
+const meta = computed(() => {
+  const cycle =
+    training.value.cycleYears === 1
+      ? t('trainingCard.metaYearly')
+      : t('trainingCard.metaEvery', { years: training.value.cycleYears });
+  const hours = training.value.durationHours;
+  return `${cycle}, ${t('trainingCard.metaDuration', { hours }, Math.max(1, Math.round(hours)))}`;
+});
 </script>
 
 <template>
   <div
-    class="card flex h-full flex-col gap-2 bg-gradient-to-br to-white p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lift"
+    class="card relative flex h-full flex-col gap-2 bg-gradient-to-br to-white p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lift"
     :class="tint"
   >
-    <h3 class="font-sans text-sm font-bold leading-snug text-ink">{{ training.name }}</h3>
+    <!-- The due status sits FLUSH in the card's top-left corner — the corner itself reads as red or
+         green, the text just sits on it. Same colors/typography as the pill it replaces. -->
+    <span
+      class="absolute left-0 top-0 inline-flex h-6 items-center gap-1 rounded-br-lg rounded-tl-lg px-3 font-mono text-xs font-semibold leading-none"
+      :class="dueClasses(item.status)"
+    >
+      {{ label }}
+    </span>
+
+    <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ training.name }}</h3>
 
     <p class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
       {{ training.description }}
     </p>
 
-    <div class="mt-auto flex flex-col items-start gap-1.5 pt-1">
-      <span class="pill" :class="dueClasses(item.status)">{{ label }}</span>
-      <div class="flex w-full flex-wrap items-center gap-1.5">
-        <span class="pill bg-white/80 text-ink-muted"><Clock class="h-3 w-3" /> {{ t('trainingCard.hours', { hours: training.durationHours }) }}</span>
-        <span class="pill bg-white/80 text-ink-muted">{{ training.category }}</span>
-        <span class="pill bg-white/80 text-ink-light">{{ cycleLabel(t, training.cycleYears) }}</span>
-        <!-- Flag missing content; it explains why Start is disabled below. -->
-        <span v-if="!readiness.hasMaterial" class="pill bg-amber-100 text-amber-700">
-          <AlertTriangle class="h-3 w-3" /> {{ t('trainingCard.noMaterial') }}
-        </span>
-        <span v-if="!readiness.hasQuestions" class="pill bg-amber-100 text-amber-700">
-          <AlertTriangle class="h-3 w-3" /> {{ t('trainingCard.noTest') }}
-        </span>
-        <button
-          class="btn-primary btn-sm ml-auto shrink-0"
-          :class="{ '!bg-ink-light/60': !actionable && readiness.ready }"
-          :disabled="!readiness.ready"
-          :title="
-            !readiness.ready
-              ? t('trainingCard.unavailable')
-              : actionable
-                ? t('trainingCard.startSession')
-                : t('trainingCard.notDueYet')
-          "
-          @click="emit('start', training.id)"
-        >
-          <Play class="h-3.5 w-3.5" /> {{ t('trainingCard.start') }}
-        </button>
-      </div>
+    <!-- Recurrence and duration as one small plain line instead of pill badges. -->
+    <p class="font-mono text-[11px] text-ink-light">{{ meta }}</p>
+
+    <div class="mt-auto flex justify-end pt-1">
+      <button
+        class="btn-primary btn-sm shrink-0"
+        :class="{ '!bg-ink-light/60': !actionable && readiness.ready }"
+        :disabled="!readiness.ready"
+        :title="
+          !readiness.ready
+            ? t('trainingCard.unavailable')
+            : actionable
+              ? t('trainingCard.startSession')
+              : t('trainingCard.notDueYet')
+        "
+        @click="emit('start', training.id)"
+      >
+        <Play class="h-3.5 w-3.5" /> {{ t('trainingCard.start') }}
+      </button>
     </div>
   </div>
 </template>

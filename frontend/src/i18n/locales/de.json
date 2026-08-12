@@ -76,8 +76,9 @@
     "startSession": "Sitzung starten",
     "notDueYet": "Noch nicht fällig – Sie können trotzdem wiederholen",
     "start": "Starten",
-    "noMaterial": "Kein Material",
-    "noTest": "Kein Test",
+    "metaYearly": "Jährliche Schulung",
+    "metaEvery": "Schulung alle {years} Jahre",
+    "metaDuration": "dauert {hours} Stunde | dauert {hours} Stunden",
     "unavailable": "Noch nicht verfügbar – Ihr Trainer bereitet diese Schulung noch vor"
   },
   "due": {
