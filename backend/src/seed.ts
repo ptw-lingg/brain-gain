@@ -39,10 +39,10 @@ export async function seed(): Promise<void> {
 
   const safetyTraining: Training = {
     id: randomUUID(),
-    name: 'Laboratory Safety Basics',
-    description: 'Core safety procedures for working in the dosimetry lab.',
+    name: { en: 'Laboratory Safety Basics' },
+    description: { en: 'Core safety procedures for working in the dosimetry lab.' },
     durationMinutes: 120,
-    category: 'Safety',
+    category: { en: 'Safety' },
     ownerId: trainer.id,
     cycleYears: 1,
     windowBeforeMonths: 2,
@@ -87,10 +87,10 @@ export async function seed(): Promise<void> {
 
   const qualityTraining: Training = {
     id: randomUUID(),
-    name: 'Quality Management Intro',
-    description: 'Introduction to ISO quality processes used across the company.',
+    name: { en: 'Quality Management Intro' },
+    description: { en: 'Introduction to ISO quality processes used across the company.' },
     durationMinutes: 180,
-    category: 'Compliance',
+    category: { en: 'Compliance' },
     ownerId: trainer.id,
     cycleYears: 3,
     windowBeforeMonths: 3,

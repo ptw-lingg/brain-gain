@@ -46,10 +46,12 @@ export interface Question {
 
 export interface Training {
   id: string;
-  name: string;
-  description: string;
+  // Localized training master data — per-language maps like Question.text. The name keeps at least
+  // one language (enforced by the server); description/category may be empty in every language.
+  name: LocalizedText;
+  description: LocalizedText;
   durationMinutes: number;
-  category: string;
+  category: LocalizedText;
   ownerId: string;
   cycleYears: number;
   windowBeforeMonths: number;
@@ -94,7 +96,8 @@ export interface SafeUser {
 export interface TeamMember {
   user: SafeUser;
   orgUnitName: string;
-  trainings: { id: string; name: string; status: DueStatus; dueDate: string | null }[];
+  // `name` is the training's localized name, passed through unchanged — the UI resolves it.
+  trainings: { id: string; name: LocalizedText; status: DueStatus; dueDate: string | null }[];
 }
 
 export interface MyTeam {

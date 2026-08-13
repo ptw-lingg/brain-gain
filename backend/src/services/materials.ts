@@ -105,6 +105,35 @@ export async function migrateDurations(): Promise<void> {
   console.log(`↪  migrated ${migrated} training duration(s) from hours to minutes`);
 }
 
+/**
+ * One-time migration of the training master data to its localized shape: a plain-string
+ * name/description/category becomes the English entry (an empty string becomes an empty map —
+ * "no language filled", the same rule as sanitizeLocalizedText). The live bilingual strings were
+ * separated by hand into proper de/en entries in the data itself; this catches everything else,
+ * e.g. records restored from an old backup. Runs with the other data migrations (boot + after a
+ * backup restore); a no-op once every record carries maps, so it is safe to run repeatedly.
+ */
+export async function migrateTrainingTexts(): Promise<void> {
+  const trainings = await readStore<Training>('trainings');
+  let migrated = 0;
+
+  for (const training of trainings) {
+    // Stored records may still carry the pre-locale plain strings — treat the fields as unknown.
+    const legacy = training as unknown as Record<'name' | 'description' | 'category', unknown>;
+    for (const field of ['name', 'description', 'category'] as const) {
+      const value = legacy[field];
+      if (typeof value !== 'string') continue;
+      legacy[field] = value.trim() ? { en: value.trim() } : {};
+      migrated += 1;
+    }
+  }
+
+  // Only write when something changed, so a normal boot doesn't rewrite the store.
+  if (!migrated) return;
+  await writeStore('trainings', trainings);
+  console.log(`↪  migrated ${migrated} training text field(s) to the localized shape`);
+}
+
 export async function migrateMaterials(): Promise<void> {
   const trainings = await readStore<Training>('trainings');
   let migrated = 0;

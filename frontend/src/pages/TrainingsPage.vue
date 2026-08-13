@@ -6,15 +6,21 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { JobRole, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
+import type { JobRole, LocalizedText, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { cycleLabel, formatDuration, trainingReadiness } from '@/utils/display';
+import { resolveLocalized } from '@/utils/locales';
 
 const auth = useAuthStore();
 const toast = useToastStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+// Localized master data resolved to the UI language (English fallback) for rows and dialog titles;
+// the search box instead matches EVERY language of a field, whatever is currently displayed.
+const resolved = (lt: LocalizedText): string => resolveLocalized(lt, locale.value).value;
+const allTexts = (lt: LocalizedText): string[] => Object.values(lt ?? {});
 
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
@@ -32,7 +38,14 @@ const canPlan = computed(() => (auth.user?.isAdmin ?? false) || (auth.user?.isHe
 
 const filteredTrainings = computed(() =>
   trainings.value.filter((tr) =>
-    matchesQuery(search.value, tr.name, tr.description, tr.category, ownerName(tr.ownerId), cycleLabel(t, tr.cycleYears)),
+    matchesQuery(
+      search.value,
+      ...allTexts(tr.name),
+      ...allTexts(tr.description),
+      ...allTexts(tr.category),
+      ownerName(tr.ownerId),
+      cycleLabel(t, tr.cycleYears),
+    ),
   ),
 );
 
@@ -116,10 +129,10 @@ function onKeydown(e: KeyboardEvent): void {
 function blankTraining(): Training {
   return {
     id: '',
-    name: '',
-    description: '',
+    name: {},
+    description: {},
     durationMinutes: 60,
-    category: 'General',
+    category: { en: 'General' },
     ownerId: auth.user?.id ?? '',
     cycleYears: 1,
     windowBeforeMonths: 3,
@@ -199,7 +212,8 @@ function removeOption(q: Question, oi: number): void {
 async function save(): Promise<void> {
   if (!draft.value) return;
   const body = draft.value;
-  if (!body.name.trim()) {
+  // The server's rule: a training must be nameable in at least one language.
+  if (!Object.values(body.name).some((v) => v.trim())) {
     toast.error(t('trainings.toasts.nameRequired'));
     return;
   }
@@ -336,8 +350,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <GripVertical class="h-4 w-4" />
           </button>
           <div class="min-w-0 flex-1">
-            <div class="font-sans text-sm font-semibold text-ink">{{ tr.name }}</div>
-            <div class="truncate font-mono text-xs text-ink-light" :title="tr.description">{{ tr.description }}</div>
+            <div class="font-sans text-sm font-semibold text-ink">{{ resolved(tr.name) }}</div>
+            <div class="truncate font-mono text-xs text-ink-light" :title="resolved(tr.description)">{{ resolved(tr.description) }}</div>
           </div>
           <!-- Status column: trainees need material to study and questions to be tested. Missing either
                is flagged so trainers see what to finish; a complete training shows a green "Ready". The
@@ -366,7 +380,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
             </span>
           </div>
-          <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
+          <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ resolved(tr.category) }}</span>
           <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ formatDuration(tr.durationMinutes) }}</span>
           <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
           <span v-if="isAdmin" class="pill w-32 shrink-0 truncate bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
@@ -426,11 +440,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           class="relative z-10 flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
           role="dialog"
           aria-modal="true"
-          :aria-label="draft.id ? draft.name || t('trainings.edit') : t('trainings.new')"
+          :aria-label="draft.id ? resolved(draft.name) || t('trainings.edit') : t('trainings.new')"
         >
           <div class="flex items-center justify-between border-b border-line px-5 py-3">
             <h2 class="min-w-0 truncate font-sans text-base font-bold text-ink">
-              {{ draft.id ? draft.name || t('trainings.edit') : t('trainings.new') }}
+              {{ draft.id ? resolved(draft.name) || t('trainings.edit') : t('trainings.new') }}
             </h2>
             <button class="ml-3 shrink-0 text-ink-light hover:text-ink" :title="t('common.close')" :aria-label="t('common.close')" @click="cancel">
               <X class="h-5 w-5" />

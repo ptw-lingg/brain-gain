@@ -6,8 +6,10 @@
 // file name); the page lazy-imports it with pdf.ts/pdfPreview.ts so pdfmake/pdf.js stay out of the
 // initial bundle.
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
-import type { JobRole, SafeUser, Training } from '@/types';
+import type { JobRole, LocalizedText, SafeUser, Training } from '@/types';
+import { i18n } from '@/i18n';
 import { cycleLabel, formatDuration } from './display';
+import { resolveLocalized } from './locales';
 
 type TFn = (key: string, named?: Record<string, unknown>) => string;
 
@@ -168,11 +170,17 @@ export function buildTrainingPlan(
     ];
   }
 
+  // Localized master data resolved to the language the plan is generated in (the current UI locale,
+  // English fallback) — the same values the trainings list shows.
+  const resolved = (lt: LocalizedText): string => resolveLocalized(lt, i18n.global.locale.value).value;
+
   // 1 — Trainings (sorted by display order then name).
-  const trainings = [...data.trainings].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+  const trainings = [...data.trainings].sort(
+    (a, b) => a.order - b.order || resolved(a.name).localeCompare(resolved(b.name)),
+  );
   const trainingRows: TableCell[][] = trainings.map((tr) => [
-    td(tr.name),
-    td(tr.category),
+    td(resolved(tr.name)),
+    td(resolved(tr.category)),
     td(formatDuration(tr.durationMinutes)),
     td(cycleLabel(t, tr.cycleYears)),
   ]);
@@ -200,7 +208,7 @@ export function buildTrainingPlan(
     t('trainingPlan.sectionRoles', { count: roles.length }),
     t('trainingPlan.colRole'),
     roles.map((r) => ({ label: r.name, on: (trainingId: string) => r.trainingIds.includes(trainingId) })),
-    trainings.map((tr) => ({ id: tr.id, name: tr.name })),
+    trainings.map((tr) => ({ id: tr.id, name: resolved(tr.name) })),
     t('trainingPlan.noRoles'),
   );
 

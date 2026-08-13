@@ -295,8 +295,9 @@ test('SYS-TRN-04 / VT-040: an admin can edit any training; order is preserved', 
     body: { name: 'Renamed By Admin', category: 'Updated' },
   });
   assert.equal(res.status, 200);
-  assert.equal(res.body.name, 'Renamed By Admin');
-  assert.equal(res.body.category, 'Updated');
+  // Legacy plain-string fields are accepted and localized as the English entry.
+  assert.deepEqual(res.body.name, { en: 'Renamed By Admin' });
+  assert.deepEqual(res.body.category, { en: 'Updated' });
   assert.equal(res.body.order, originalOrder, 'order is not changed by PUT /:id');
 });
 
@@ -308,7 +309,7 @@ test('SYS-TRN-04 / VT-045 / VT-104: a trainer can edit their OWN training', asyn
     body: { description: 'edited by owner' },
   });
   assert.equal(res.status, 200);
-  assert.equal(res.body.description, 'edited by owner');
+  assert.deepEqual(res.body.description, { en: 'edited by owner' });
 });
 
 test('SYS-TRN-04 / VT-045 / VT-104: a trainer CANNOT edit a training owned by someone else → 403', async () => {

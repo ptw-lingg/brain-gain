@@ -268,7 +268,7 @@ test('SYS-BAK-06 / SR-144 / VT-144: restoring replaces all current data and take
   // Snapshot the current state, then change data in two stores and add a material file.
   const snapshot = await createBackup();
   const trainingsBefore = await srv.request('GET', '/api/trainings', { token: adminToken });
-  const originalName = trainingsBefore.body[0].name;
+  const originalName = trainingsBefore.body[0].name; // localized map — compared with deepEqual below
 
   const renamed = `Renamed before restore ${Date.now()}`;
   const put = await srv.request('PUT', `/api/trainings/${trainingsBefore.body[0].id}`, {
@@ -290,7 +290,7 @@ test('SYS-BAK-06 / SR-144 / VT-144: restoring replaces all current data and take
 
   // Data is back to the snapshot: the rename is undone and the new role is gone.
   const trainingsAfter = await srv.request('GET', '/api/trainings', { token: adminToken });
-  assert.equal(trainingsAfter.body[0].name, originalName, 'the renamed training is back to its old name');
+  assert.deepEqual(trainingsAfter.body[0].name, originalName, 'the renamed training is back to its old name');
   const rolesAfter = await srv.request('GET', '/api/roles', { token: adminToken });
   assert.equal(rolesAfter.body.filter((r) => r.id === newRole.body.id).length, 0, 'the post-snapshot role is gone');
 
@@ -305,7 +305,7 @@ test('SYS-BAK-06 / SR-144 / VT-144: restoring replaces all current data and take
   const undo = await srv.request('POST', `/api/backups/${safety.id}/restore`, { token: adminToken });
   assert.equal(undo.status, 200);
   const undone = await srv.request('GET', '/api/trainings', { token: adminToken });
-  assert.equal(undone.body.find((tr) => tr.name === renamed)?.name, renamed, 'the pre-restore snapshot restored the newer state');
+  assert.equal(undone.body.find((tr) => tr.name.en === renamed)?.name.en, renamed, 'the pre-restore snapshot restored the newer state');
 });
 
 test('SYS-BAK-06 / SR-144 / VT-144: the TLS certificate and the backup list survive a restore', async () => {

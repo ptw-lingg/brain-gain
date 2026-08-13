@@ -74,7 +74,7 @@ test('SYS-ARCH-06 / VT-106: seed creates the Lab Technician role and its two tra
 
   const trainings = await srv.request('GET', '/api/trainings', { token: adminToken });
   assert.equal(trainings.status, 200);
-  const names = trainings.body.map((t) => t.name);
+  const names = trainings.body.map((t) => t.name.en); // localized name — seeded English entry
   assert.ok(names.includes('Laboratory Safety Basics'), 'safety training seeded');
   assert.ok(names.includes('Quality Management Intro'), 'quality training seeded');
 });
@@ -179,7 +179,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   // Admin owns full record (answer key visible) — read back proves persistence.
   const readBack = await srv.request('GET', `/api/trainings/${id}`, { token: adminToken });
   assert.equal(readBack.status, 200);
-  assert.equal(readBack.body.name, 'Data Handling 101');
+  assert.deepEqual(readBack.body.name, { en: 'Data Handling 101' }, 'legacy string name localized as the English entry');
   assert.equal(readBack.body.durationMinutes, 240);
   assert.equal(readBack.body.cycleYears, 2);
   assert.equal(readBack.body.windowBeforeMonths, 1);

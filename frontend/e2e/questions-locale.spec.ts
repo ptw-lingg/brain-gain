@@ -23,7 +23,7 @@ test.describe('Localized quiz questions', () => {
     const name = `E2E localized question ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(name);
+    await dialog.getByPlaceholder('Training name').first().fill(name);
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
 

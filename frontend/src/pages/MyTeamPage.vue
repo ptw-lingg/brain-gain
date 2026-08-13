@@ -6,14 +6,19 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { DueStatus, MyTeam, Settings, TeamMember } from '@/types';
+import type { DueStatus, LocalizedText, MyTeam, Settings, TeamMember } from '@/types';
 import { dueClasses, formatDate } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
+import { resolveLocalized } from '@/utils/locales';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const auth = useAuthStore();
 const toast = useToastStore();
+
+// Training names arrive as localized maps; rows show them resolved to the UI language (English
+// fallback), while the search box matches every language.
+const trainingName = (lt: LocalizedText): string => resolveLocalized(lt, locale.value).value;
 
 const team = ref<MyTeam>({ units: [], members: [] });
 const companyName = ref('');
@@ -53,7 +58,7 @@ const filteredGroups = computed(() =>
     .map((g) => ({
       name: g.name,
       members: g.members.filter((m) =>
-        matchesQuery(search.value, m.user.name, m.user.email, g.name, ...m.trainings.map((tr) => tr.name)),
+        matchesQuery(search.value, m.user.name, m.user.email, g.name, ...m.trainings.flatMap((tr) => Object.values(tr.name ?? {}))),
       ),
     }))
     .filter((g) => g.members.length > 0),
@@ -231,7 +236,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                   :key="tr.id"
                   class="flex items-center gap-3 px-5 py-2.5 even:bg-pastel-sky/10"
                 >
-                  <span class="min-w-0 flex-1 truncate text-sm text-ink">{{ tr.name }}</span>
+                  <span class="min-w-0 flex-1 truncate text-sm text-ink">{{ trainingName(tr.name) }}</span>
                   <span class="pill pill-col shrink-0" :class="dueClasses(tr.status)">
                     {{ statusLabel(tr.status, tr.dueDate) }}
                   </span>

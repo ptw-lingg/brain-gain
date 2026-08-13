@@ -50,11 +50,14 @@ export interface Question {
 
 export interface Training {
   id: string;
-  name: string;
-  description: string;
+  // Localized training master data — per-language maps like Question.text. The name keeps at least
+  // one language (enforced on write); description/category may be empty in every language. Legacy
+  // plain-string records are wrapped as the English entry at boot (migrateTrainingTexts).
+  name: LocalizedText;
+  description: LocalizedText;
   // Duration in MINUTES (legacy records stored hours; migrateDurations converts them ×60 at boot).
   durationMinutes: number;
-  category: string;
+  category: LocalizedText;
   ownerId: string; // trainer (User id) who owns & manages this training
   cycleYears: number; // 1–5: how often a user must repeat the session
   windowBeforeMonths: number; // 0–3: months before the due date the window opens

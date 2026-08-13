@@ -3,8 +3,10 @@
 // file it in a DMS. Pure function (pdfmake document definition + file name); the page lazy-imports it
 // together with pdf.ts/pdfPreview.ts so pdfmake/pdf.js stay out of the initial bundle.
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
-import type { DueStatus, MyTeam } from '@/types';
+import type { DueStatus, LocalizedText, MyTeam } from '@/types';
+import { i18n } from '@/i18n';
 import { formatDate } from './display';
+import { resolveLocalized } from './locales';
 
 type TFn = (key: string, named?: Record<string, unknown>) => string;
 
@@ -46,6 +48,10 @@ export function buildTeamReport(
   const th = (s: string): Content => ({ text: s, bold: true, fontSize: 8, color: ACCENT });
   const td = (s: string): Content => ({ text: s || '—', fontSize: 8, color: INK });
 
+  // Localized training names resolved to the language the report is generated in (the current UI
+  // locale, English fallback) — the same value the My Team page shows.
+  const trainingName = (lt: LocalizedText): string => resolveLocalized(lt, i18n.global.locale.value).value;
+
   // Members sorted by unit then name; one table row per required training (or a single "—" row).
   const members = [...team.members].sort(
     (a, b) => a.orgUnitName.localeCompare(b.orgUnitName) || a.user.name.localeCompare(b.user.name),
@@ -53,7 +59,7 @@ export function buildTeamReport(
   let dueTotal = 0;
   const rows: TableCell[][] = [];
   for (const m of members) {
-    const trainings = [...m.trainings].sort((a, b) => a.name.localeCompare(b.name));
+    const trainings = [...m.trainings].sort((a, b) => trainingName(a.name).localeCompare(trainingName(b.name)));
     if (trainings.length === 0) {
       rows.push([td(m.user.name), td(m.orgUnitName), td('—'), td('—'), td('—')]);
       continue;
@@ -63,7 +69,7 @@ export function buildTeamReport(
       rows.push([
         td(i === 0 ? m.user.name : ''),
         td(i === 0 ? m.orgUnitName : ''),
-        td(tr.name),
+        td(trainingName(tr.name)),
         { text: t(statusKey[tr.status]), fontSize: 8, color: statusColor[tr.status], bold: tr.status !== 'up-to-date' },
         td(tr.dueDate ? formatDate(tr.dueDate) : '—'),
       ]);

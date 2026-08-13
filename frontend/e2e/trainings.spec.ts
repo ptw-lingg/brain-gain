@@ -23,8 +23,8 @@ test.describe('Trainings — create, edit & ownership', () => {
     const name = `E2E Trainer Training ${Date.now()}`;
     const editor = await openCreate(page);
 
-    await editor.getByPlaceholder('Training name').fill(name);
-    await editor.getByPlaceholder('e.g. Safety').fill('E2E');
+    await editor.getByPlaceholder('Training name').first().fill(name);
+    await editor.getByPlaceholder('e.g. Safety').first().fill('E2E');
     await editor.getByRole('button', { name: 'Create' }).click();
 
     // The created training shows up as a row in the list.
@@ -39,14 +39,14 @@ test.describe('Trainings — create, edit & ownership', () => {
     const original = `E2E Editable ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
     const createDialog = page.getByRole('dialog');
-    await createDialog.getByPlaceholder('Training name').fill(original);
+    await createDialog.getByPlaceholder('Training name').first().fill(original);
     await createDialog.getByRole('button', { name: 'Create' }).click();
     await expect(page.getByText(original)).toBeVisible();
 
     // Open it by clicking the row, rename it, and save.
     const renamed = `${original} (edited)`;
     await page.getByText(original).click();
-    const editForm = page.getByPlaceholder('Training name');
+    const editForm = page.getByPlaceholder('Training name').first();
     await expect(editForm).toBeVisible();
     await editForm.fill(renamed);
     await page.getByRole('button', { name: 'Save' }).click();
@@ -76,7 +76,7 @@ test.describe('Trainings — create, edit & ownership', () => {
     const name = `E2E Cycle ${Date.now()}`;
     const editor = await openCreate(page);
 
-    await editor.getByPlaceholder('Training name').fill(name);
+    await editor.getByPlaceholder('Training name').first().fill(name);
     // Cycle and window live in the Schedule section, which starts collapsed (SYS-TRN-13).
     await editor.getByRole('button', { name: /Schedule/ }).click();
     // The form offers Repeat every (years) 1–5 and the two window selects 0–3.
@@ -159,7 +159,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     await expect(dialog).toBeVisible();
 
     // Basics is open on arrival, so a quick rename needs no clicks.
-    await expect(dialog.getByPlaceholder('Training name')).toBeVisible();
+    await expect(dialog.getByPlaceholder('Training name').first()).toBeVisible();
 
     // The other three are collapsed, and each summarises its hidden content. Counts are matched loosely
     // because the specs share one server and other specs add material to this training.
@@ -180,7 +180,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     // Expanding one question shows its options — and only that question's.
     await questionRows.first().click();
     await expect(dialog.getByPlaceholder('Option 1').first()).toBeVisible();
-    // Each option now has one input per language — the next QUESTION's first input is two further on.
+    // Each option has one input per language — the next QUESTION's first input is two further on.
     await expect(dialog.getByPlaceholder('Option 1').nth(2)).toBeHidden();
   });
 
@@ -217,7 +217,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     await expect(dialog).toBeVisible();
 
     // Type into the draft, then Escape — the dialog closes and the edit is discarded, not saved.
-    await dialog.getByPlaceholder('Training name').fill('Discarded Draft Name');
+    await dialog.getByPlaceholder('Training name').first().fill('Discarded Draft Name');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     await expect(page.getByText('Laboratory Safety Basics')).toBeVisible();
@@ -225,7 +225,7 @@ test.describe('Trainings — editor dialog behavior', () => {
 
     // Reopening shows the untouched name.
     await page.getByText('Laboratory Safety Basics').click();
-    await expect(page.getByRole('dialog').getByPlaceholder('Training name')).toHaveValue('Laboratory Safety Basics');
+    await expect(page.getByRole('dialog').getByPlaceholder('Training name').first()).toHaveValue('Laboratory Safety Basics');
   });
 
   test('SYS-TRN-05 / VT-040: deleting from the open dialog asks for confirmation, closes the dialog and removes the row', async ({ page }) => {
@@ -234,7 +234,7 @@ test.describe('Trainings — editor dialog behavior', () => {
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
     const editor = page.getByRole('dialog');
-    await editor.getByPlaceholder('Training name').fill(name);
+    await editor.getByPlaceholder('Training name').first().fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
     await expect(page.getByText(name)).toBeVisible();
 
@@ -262,7 +262,7 @@ test.describe('Trainings — content readiness flags', () => {
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
     const editor = page.getByRole('dialog');
-    await editor.getByPlaceholder('Training name').fill(name);
+    await editor.getByPlaceholder('Training name').first().fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
 
     // Its list row is flagged as missing both material and a test.

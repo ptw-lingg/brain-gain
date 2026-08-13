@@ -8,9 +8,9 @@ import CollapsibleSection from '@/components/CollapsibleSection.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import type { LocalizedText, Material, MaterialFile, MaterialVariant, Question, SafeUser, Training } from '@/types';
 import { formatBytes, formatDuration } from '@/utils/display';
-import { MATERIAL_LOCALES } from '@/utils/locales';
+import { MATERIAL_LOCALES, resolveLocalized } from '@/utils/locales';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const toast = useToastStore();
 
 const props = defineProps<{
@@ -19,7 +19,8 @@ const props = defineProps<{
   owners: SafeUser[];
 }>();
 
-// The fixed content languages — one editable row per language on materials, questions and answers.
+// The fixed content languages — one editable row per language on materials, questions and answers,
+// each prefixed by the language's flag alone (the flag carries the language name for a11y).
 const materialLocales = MATERIAL_LOCALES;
 
 defineEmits<{
@@ -47,7 +48,7 @@ const questionCount = computed(() => props.draft.questions?.length ?? 0);
 // Deliberately not the name — the dialog header already shows it, and repeating it here would put a
 // second copy of the training name on the page.
 const basicsSummary = computed(() =>
-  [props.draft.category?.trim(), formatDuration(props.draft.durationMinutes)]
+  [resolveLocalized(props.draft.category, locale.value).value, formatDuration(props.draft.durationMinutes)]
     .filter(Boolean)
     .join(' · '),
 );
@@ -153,6 +154,13 @@ function normalizeMaterials(): void {
       for (const opt of q.options) opt[locale] ??= '';
     }
   }
+  // The training's own master data (name/category/description) is localized too — seed it the same
+  // way so the Basics per-language inputs can v-model directly.
+  for (const locale of materialLocales) {
+    props.draft.name[locale] ??= '';
+    props.draft.category[locale] ??= '';
+    props.draft.description[locale] ??= '';
+  }
 }
 watch([() => props.draft, () => materialLocales], normalizeMaterials, { immediate: true });
 
@@ -223,18 +231,36 @@ function removeVariantFile(variant: MaterialVariant): void {
     >
       <template #icon><Info class="h-4 w-4 shrink-0 text-accent" /></template>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label class="flex flex-col gap-1">
+        <!-- Name/category/description are localized: one input per configured language, each row
+             prefixed by the language's flag alone (no code label — the flag names the language for
+             assistive tech). Blank languages are dropped on save. -->
+        <div class="flex flex-col gap-1">
           <span class="form-label">{{ t('trainingForm.name') }}</span>
-          <input v-model="draft.name" class="bg-input" :placeholder="t('trainingForm.namePlaceholder')" />
-        </label>
-        <label class="flex flex-col gap-1">
+          <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
+            <span class="flex w-8 shrink-0 items-center">
+              <LocaleFlag :code="loc" />
+            </span>
+            <input v-model="draft.name[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.namePlaceholder')" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
           <span class="form-label">{{ t('trainingForm.category') }}</span>
-          <input v-model="draft.category" class="bg-input" :placeholder="t('trainingForm.categoryPlaceholder')" />
-        </label>
-        <label class="flex flex-col gap-1 sm:col-span-2">
+          <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
+            <span class="flex w-8 shrink-0 items-center">
+              <LocaleFlag :code="loc" />
+            </span>
+            <input v-model="draft.category[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.categoryPlaceholder')" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-1 sm:col-span-2">
           <span class="form-label">{{ t('trainingForm.description') }}</span>
-          <textarea v-model="draft.description" rows="2" class="bg-input resize-none" />
-        </label>
+          <div v-for="loc in materialLocales" :key="loc" class="flex items-start gap-2">
+            <span class="mt-2.5 flex w-8 shrink-0 items-center">
+              <LocaleFlag :code="loc" />
+            </span>
+            <textarea v-model="draft.description[loc]" rows="2" class="bg-input flex-1 resize-none" />
+          </div>
+        </div>
         <label class="flex flex-col gap-1">
           <span class="form-label">{{ t('trainingForm.duration') }}</span>
           <input v-model.number="draft.durationMinutes" type="number" min="0" step="5" class="bg-input" />
@@ -278,7 +304,7 @@ function removeVariantFile(variant: MaterialVariant): void {
       </div>
     </CollapsibleSection>
 
-    <!-- Material: one sub-card per material, one row per configured language inside it -->
+    <!-- Material: one sub-card per material, one flag-prefixed row per configured language inside it -->
     <CollapsibleSection
       :title="t('trainingForm.material')"
       :summary="materialSummary"
@@ -315,9 +341,8 @@ function removeVariantFile(variant: MaterialVariant): void {
           <!-- One row per configured language: flag · label · url-or-file · upload -->
           <div class="flex flex-col gap-1.5">
             <div v-for="v in m.variants" :key="v.locale" class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-              <span class="flex w-14 shrink-0 items-center gap-1.5">
+              <span class="flex w-8 shrink-0 items-center">
                 <LocaleFlag :code="v.locale" />
-                <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ v.locale }}</span>
               </span>
               <input v-model="v.label" class="bg-input min-w-[8rem] flex-1" :placeholder="t('trainingForm.labelPlaceholder')" />
               <span v-if="v.file" class="flex min-w-[12rem] flex-[2] items-center gap-2 rounded-lg border border-line bg-bg-primary px-3 py-2">
@@ -387,11 +412,10 @@ function removeVariantFile(variant: MaterialVariant): void {
 
           <div class="flex flex-col gap-1">
             <span class="form-label">{{ t('trainingForm.questionText') }}</span>
-            <!-- One text input per configured language; blank languages are dropped on save. -->
+            <!-- One flag-prefixed text input per configured language; blank languages are dropped on save. -->
             <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
-              <span class="flex w-14 shrink-0 items-center gap-1.5">
+              <span class="flex w-8 shrink-0 items-center">
                 <LocaleFlag :code="loc" />
-                <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ loc }}</span>
               </span>
               <input v-model="q.text[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.questionPlaceholder', { n: qi + 1 })" />
             </div>
@@ -454,12 +478,12 @@ function removeVariantFile(variant: MaterialVariant): void {
                 class="mt-2.5 accent-accent"
                 @change="toggleCorrect(q, oi)"
               />
-              <!-- One input per configured language; the option itself (and the answer key) is shared. -->
+              <!-- One flag-prefixed input per configured language; the option itself (and the answer
+                   key) is shared across languages. -->
               <div class="flex flex-1 flex-col gap-1">
                 <div v-for="loc in materialLocales" :key="loc" class="flex items-center gap-2">
-                  <span class="flex w-14 shrink-0 items-center gap-1.5">
+                  <span class="flex w-8 shrink-0 items-center">
                     <LocaleFlag :code="loc" />
-                    <span class="font-mono text-[10px] uppercase tracking-wide text-ink-light">{{ loc }}</span>
                   </span>
                   <input v-model="opt[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
                 </div>

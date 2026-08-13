@@ -56,7 +56,7 @@ test('SYS-DSH-01 / VT-060: a member sees exactly their 2 required trainings, in 
   assert.ok(Array.isArray(res.body));
   assert.equal(res.body.length, 2, 'Lab Technician role requires 2 trainings');
 
-  const names = res.body.map((d) => d.training.name);
+  const names = res.body.map((d) => d.training.name.en); // localized name — seeded English entry
   // readOrderedTrainings sorts by `order`: safety (0) before quality (1) — SR-047.
   assert.deepEqual(names, ['Laboratory Safety Basics', 'Quality Management Intro'], 'ordered by training.order');
 });
@@ -68,12 +68,13 @@ test('SYS-DSH-01 / VT-060: each item carries a computed due status + the card fi
     assert.equal(item.status, 'never', 'never-taken trainings report status "never"');
     assert.equal(item.dueDate, null, 'no due date until first pass');
     assert.equal(item.lastPassedAt, null, 'no last-passed timestamp until first pass');
-    // Fields the DashboardPage / TrainingCard read off training.*
+    // Fields the DashboardPage / TrainingCard read off training.* — name/description/category are
+    // localized maps (locale → string); the card resolves them to the UI language.
     const t = item.training;
-    assert.equal(typeof t.name, 'string');
-    assert.equal(typeof t.description, 'string');
+    assert.equal(typeof t.name.en, 'string');
+    assert.equal(typeof t.description.en, 'string');
     assert.equal(typeof t.durationMinutes, 'number');
-    assert.equal(typeof t.category, 'string');
+    assert.equal(typeof t.category.en, 'string');
     assert.equal(typeof t.cycleYears, 'number');
   }
 });
@@ -136,14 +137,14 @@ test('SYS-OVS-01 / VT-070: an admin sees ALL trainings grouped, each with its tr
 
   // Groups are ordered by training.order (SR-047).
   assert.deepEqual(
-    res.body.map((g) => g.training.name),
+    res.body.map((g) => g.training.name.en),
     ['Laboratory Safety Basics', 'Quality Management Intro'],
   );
 
   for (const group of res.body) {
     // The seeded member holds Lab Technician, which demands both trainings → present in each group.
     const trainee = group.trainees.find((t) => t.user.email === 'user@braingain.app');
-    assert.ok(trainee, `member is listed under "${group.training.name}"`);
+    assert.ok(trainee, `member is listed under "${group.training.name.en}"`);
     assert.equal(trainee.status, 'never', 'never-taken → "never" status');
     assert.ok('dueDate' in trainee, 'each trainee carries a dueDate field');
   }
@@ -198,7 +199,7 @@ test('SYS-OVS-01: /trainees requires authentication → 401 without a token', as
 test('SYS-OVS-01 / VT-070: after a member passes a quiz, oversight flips that trainee to "up-to-date"', async () => {
   // Pass the safety quiz as the member (3 questions, correct indices 1,1,2; threshold 0.8 → 100% passes).
   const trainings = await srv.request('GET', '/api/trainings', { token: trainerToken });
-  const safety = trainings.body.find((t) => t.name === 'Laboratory Safety Basics');
+  const safety = trainings.body.find((t) => t.name.en === 'Laboratory Safety Basics');
   assert.ok(safety, 'trainer can read the owned training with the answer key');
   // The key is a set of indices per question (a question may have several correct answers).
   const correctAnswers = safety.questions.map((q) => q.correctIndices);

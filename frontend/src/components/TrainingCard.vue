@@ -11,13 +11,18 @@ import {
   categoryTint,
   trainingReadiness,
 } from '@/utils/display';
+import { resolveLocalized } from '@/utils/locales';
 
 const props = defineProps<{ item: DueTraining }>();
 const emit = defineEmits<{ start: [id: string] }>();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const training = computed(() => props.item.training);
-const tint = computed(() => categoryTint(training.value.category));
+// Localized master data resolved to the UI language (English fallback) — no badge on cards.
+const name = computed(() => resolveLocalized(training.value.name, locale.value).value);
+const category = computed(() => resolveLocalized(training.value.category, locale.value).value);
+const description = computed(() => resolveLocalized(training.value.description, locale.value).value);
+const tint = computed(() => categoryTint(category.value));
 const actionable = computed(() => isActionable(props.item.status));
 // Without material to study or questions to be tested on, the training can't be started.
 const readiness = computed(() => trainingReadiness(training.value));
@@ -47,15 +52,15 @@ const meta = computed(() => {
       {{ label }}
     </span>
 
-    <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ training.name }}</h3>
+    <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ name }}</h3>
 
     <!-- Category on its own line right below the title, per the plate structure. -->
-    <p v-if="training.category?.trim()" class="font-mono text-xs leading-relaxed text-ink-muted">
-      {{ training.category }}
+    <p v-if="category" class="font-mono text-xs leading-relaxed text-ink-muted">
+      {{ category }}
     </p>
 
-    <p v-if="training.description?.trim()" class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
-      {{ training.description }}
+    <p v-if="description" class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
+      {{ description }}
     </p>
 
     <!-- Recurrence and duration as one small plain line instead of pill badges. -->

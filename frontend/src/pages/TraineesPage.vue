@@ -8,9 +8,16 @@ import type { DueStatus, Settings, TraineeGroup } from '@/types';
 import { dueLabel, dueClasses, formatDate } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
+import { resolveLocalized } from '@/utils/locales';
 
 const toast = useToastStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+// A group's display name: the localized training name resolved to the UI language (English
+// fallback). Also used in the reminder mail texts and as the alphabetical sort key.
+const groupName = (g: TraineeGroup): string => resolveLocalized(g.training.name, locale.value).value;
+// The search box matches EVERY language of the training name, whatever is currently displayed.
+const nameTexts = (g: TraineeGroup): string[] => Object.values(g.training.name ?? {});
 
 const groups = ref<TraineeGroup[]>([]);
 const loading = ref(true);
@@ -29,11 +36,11 @@ function visibleTrainees(g: TraineeGroup) {
 // Trainees shown for a group: the onlyDue view, further narrowed by the search box (a match on the
 // training name keeps the whole group, since the name is part of every row's searchable text).
 function shownTrainees(g: TraineeGroup) {
-  return visibleTrainees(g).filter((tr) => matchesQuery(search.value, tr.user.name, tr.user.email, g.training.name));
+  return visibleTrainees(g).filter((tr) => matchesQuery(search.value, tr.user.name, tr.user.email, ...nameTexts(g)));
 }
 
 const filteredGroups = computed(() =>
-  groups.value.filter((g) => shownTrainees(g).length > 0 || matchesQuery(search.value, g.training.name)),
+  groups.value.filter((g) => shownTrainees(g).length > 0 || matchesQuery(search.value, ...nameTexts(g))),
 );
 
 // Expand/collapse every (shown) group at once.
@@ -65,7 +72,7 @@ async function load(): Promise<void> {
     const data = trainees.data;
     // Groups alphabetical by training, trainees alphabetical by name — fast to locate either.
     data.forEach((g) => g.trainees.sort((a, b) => a.user.name.localeCompare(b.user.name)));
-    groups.value = data.sort((a, b) => a.training.name.localeCompare(b.training.name));
+    groups.value = data.sort((a, b) => groupName(a).localeCompare(groupName(b)));
     data.forEach((g) => (open.value[g.training.id] = true));
     company.value = settings.data.companyName ?? '';
   } finally {
@@ -95,8 +102,8 @@ async function sendMail(emails: string[], subject: string, text: string): Promis
 function emailGroup(g: TraineeGroup): void {
   void sendMail(
     shownTrainees(g).map((tr) => tr.user.email),
-    t('trainees.mailSubject', { training: g.training.name }),
-    t('trainees.mailBody', { training: g.training.name, company: company.value || t('common.appName') }),
+    t('trainees.mailSubject', { training: groupName(g) }),
+    t('trainees.mailBody', { training: groupName(g), company: company.value || t('common.appName') }),
   );
 }
 
@@ -164,7 +171,7 @@ onMounted(load);
               :class="open[g.training.id] ? '' : '-rotate-90'"
             />
             <div class="min-w-0">
-              <div class="font-sans text-sm font-semibold text-ink">{{ g.training.name }}</div>
+              <div class="font-sans text-sm font-semibold text-ink">{{ groupName(g) }}</div>
               <div class="font-mono text-xs text-ink-light">
                 {{ t('trainees.assignedDue', { assigned: g.trainees.length, due: dueTotal(g) }) }}
               </div>

@@ -231,7 +231,7 @@ test('SYS-AC-03 / VT-045: the owning trainer may PUT their own training', async 
     body: { description: 'Updated by the owner' },
   });
   assert.equal(res.status, 200);
-  assert.equal(res.body.description, 'Updated by the owner');
+  assert.deepEqual(res.body.description, { en: 'Updated by the owner' });
 });
 
 test('SYS-AC-03 / VT-045: DELETE /api/trainings/:id is admin-or-owner — non-owner trainer → 403', async () => {

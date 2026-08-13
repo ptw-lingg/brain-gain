@@ -4,11 +4,12 @@
 
 import { migrateOrgUnits } from './orgUnits';
 import { migrateQuestions } from './questions';
-import { migrateDurations, migrateMaterials } from './materials';
+import { migrateDurations, migrateMaterials, migrateTrainingTexts } from './materials';
 
 export async function runDataMigrations(): Promise<void> {
   await migrateOrgUnits();
   await migrateQuestions();
   await migrateMaterials();
   await migrateDurations();
+  await migrateTrainingTexts();
 }

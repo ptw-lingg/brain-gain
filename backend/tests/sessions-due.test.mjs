@@ -38,8 +38,8 @@ before(async () => {
   // /trainings/mine gives the learner-facing (public) shape of the two required trainings, in order.
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   assert.equal(mine.status, 200);
-  safety = mine.body.find((d) => d.training.name === 'Laboratory Safety Basics').training;
-  quality = mine.body.find((d) => d.training.name === 'Quality Management Intro').training;
+  safety = mine.body.find((d) => d.training.name.en === 'Laboratory Safety Basics').training;
+  quality = mine.body.find((d) => d.training.name.en === 'Quality Management Intro').training;
   assert.ok(safety && quality, 'both seeded required trainings are present');
 });
 
@@ -60,8 +60,8 @@ test('SYS-DUE-02 / VT-060: /trainings/mine returns the required trainings dedupe
   // Order respected: seeded order is Safety (0) then Quality (1) — must match training.order ascending.
   const orders = mine.body.map((d) => d.training.order);
   assert.deepEqual([...orders].sort((a, b) => a - b), orders, 'returned in ascending admin order');
-  assert.equal(mine.body[0].training.name, 'Laboratory Safety Basics', 'first by order');
-  assert.equal(mine.body[1].training.name, 'Quality Management Intro', 'second by order');
+  assert.equal(mine.body[0].training.name.en, 'Laboratory Safety Basics', 'first by order');
+  assert.equal(mine.body[1].training.name.en, 'Quality Management Intro', 'second by order');
 });
 
 // ───────────────────────── SYS-DUE-01 / SR-053 — "never" before any pass ─────────────────────────
@@ -69,7 +69,7 @@ test('SYS-DUE-02 / VT-060: /trainings/mine returns the required trainings dedupe
 test('SYS-DUE-01 / VT-053: a never-taken training reports status "never" with no due date', async () => {
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   for (const d of mine.body) {
-    assert.equal(d.status, 'never', `${d.training.name} starts as never-taken`);
+    assert.equal(d.status, 'never', `${d.training.name.en} starts as never-taken`);
     assert.equal(d.dueDate, null, 'no due date before any pass');
     assert.equal(d.lastPassedAt, null, 'no last-passed timestamp before any pass');
   }
@@ -219,7 +219,7 @@ test('SYS-DUE-01 / VT-053: a just-passed training is up-to-date (due date in the
   // (~10 months out); Quality cycle = 3y. So immediately after a fresh pass both are up-to-date.
   const mine = await srv.request('GET', '/api/trainings/mine', { token: memberToken });
   for (const d of mine.body) {
-    assert.equal(d.status, 'up-to-date', `${d.training.name} is up-to-date right after passing`);
+    assert.equal(d.status, 'up-to-date', `${d.training.name.en} is up-to-date right after passing`);
     assert.ok(d.lastPassedAt, 'records the last passing timestamp');
     assert.ok(new Date(d.dueDate) > new Date(), 'due date is in the future');
   }

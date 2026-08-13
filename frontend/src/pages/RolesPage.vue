@@ -8,9 +8,10 @@ import type { JobRole, Training } from '@/types';
 import RoleForm from '@/components/RoleForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
+import { resolveLocalized } from '@/utils/locales';
 
 const toast = useToastStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const roles = ref<JobRole[]>([]);
 const trainings = ref<Training[]>([]);
@@ -35,14 +36,20 @@ async function load(): Promise<void> {
     ]);
     // Alphabetical so the roles list and the training checkboxes are fast to scan.
     roles.value = r.data.sort((a, b) => a.name.localeCompare(b.name));
-    trainings.value = t.data.sort((a, b) => a.name.localeCompare(b.name));
+    trainings.value = t.data.sort((a, b) => resolveName(a.name).localeCompare(resolveName(b.name)));
   } finally {
     loading.value = false;
   }
 }
 
+// Localized training names resolved to the UI language (English fallback) for labels and search.
+function resolveName(lt: Training['name']): string {
+  return resolveLocalized(lt, locale.value).value;
+}
+
 function trainingName(id: string): string {
-  return trainings.value.find((tr) => tr.id === id)?.name ?? t('common.none');
+  const tr = trainings.value.find((x) => x.id === id);
+  return tr ? resolveName(tr.name) : t('common.none');
 }
 
 function startCreate(): void {

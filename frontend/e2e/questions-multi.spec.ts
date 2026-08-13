@@ -13,7 +13,7 @@ test.describe('Quiz questions — several correct answers', () => {
     const name = `E2E Multi-answer ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(name);
+    await dialog.getByPlaceholder('Training name').first().fill(name);
 
     // Add a question with four options. Adding one opens the Questions section and the new question
     // itself, so authoring needs no extra clicks (SYS-TRN-13).
@@ -69,7 +69,7 @@ test.describe('Quiz questions — several correct answers', () => {
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(`E2E One-correct ${Date.now()}`);
+    await dialog.getByPlaceholder('Training name').first().fill(`E2E One-correct ${Date.now()}`);
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
     // A new question starts as single choice; this spec pins the multiple-choice key rule.

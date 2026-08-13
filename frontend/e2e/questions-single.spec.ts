@@ -16,7 +16,7 @@ test.describe('Quiz questions — single choice', () => {
     const name = `E2E Single-choice switch ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(name);
+    await dialog.getByPlaceholder('Training name').first().fill(name);
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
     await dialog.getByPlaceholder('Question 1').first().fill('Which SOP covers design outputs?');
@@ -68,7 +68,7 @@ test.describe('Quiz questions — single choice', () => {
     await page.goto('/trainings');
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(`E2E Switch blocked ${Date.now()}`);
+    await dialog.getByPlaceholder('Training name').first().fill(`E2E Switch blocked ${Date.now()}`);
     await dialog.getByRole('button', { name: /Quiz questions/ }).click();
     await dialog.getByRole('button', { name: 'Add question' }).click();
 

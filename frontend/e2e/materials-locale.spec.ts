@@ -26,7 +26,7 @@ test.describe('Localized training material', () => {
     const name = `E2E localized material ${Date.now()}`;
     await page.getByRole('button', { name: 'Add Training' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByPlaceholder('Training name').fill(name);
+    await dialog.getByPlaceholder('Training name').first().fill(name);
 
     // One material, one row per language — each with its own label and link.
     await dialog.getByRole('button', { name: /Learning material/ }).click();

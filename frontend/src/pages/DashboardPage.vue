@@ -5,15 +5,23 @@ import { useI18n } from 'vue-i18n';
 import { Sprout } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
-import type { DueTraining } from '@/types';
+import type { DueTraining, LocalizedText } from '@/types';
 import TrainingCard from '@/components/TrainingCard.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { formatDuration } from '@/utils/display';
+import { resolveLocalized } from '@/utils/locales';
 
 const auth = useAuthStore();
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+// The name shown on the card (UI language, English fallback) — also the sort key, so the grid
+// stays alphabetical in what the user actually reads.
+const shownName = (i: DueTraining): string => resolveLocalized(i.training.name, locale.value).value;
+// Search matches EVERY language of a localized field, so a German query finds a training whose
+// card currently shows the English text (and vice versa).
+const allTexts = (lt: LocalizedText): string[] => Object.values(lt ?? {});
 
 const items = ref<DueTraining[]>([]);
 const loading = ref(true);
@@ -26,7 +34,12 @@ const filteredItems = computed(() =>
   items.value.filter(
     (i) =>
       (!onlyDue.value || i.status !== 'up-to-date') &&
-      matchesQuery(search.value, i.training.name, i.training.description, i.training.category),
+      matchesQuery(
+        search.value,
+        ...allTexts(i.training.name),
+        ...allTexts(i.training.description),
+        ...allTexts(i.training.category),
+      ),
   ),
 );
 
@@ -51,7 +64,7 @@ async function load(): Promise<void> {
   loading.value = true;
   try {
     const { data } = await client.get<DueTraining[]>('/trainings/mine');
-    items.value = data.sort((a, b) => a.training.name.localeCompare(b.training.name)); // alphabetical, easy to find
+    items.value = data.sort((a, b) => shownName(a).localeCompare(shownName(b))); // alphabetical, easy to find
   } finally {
     loading.value = false;
   }

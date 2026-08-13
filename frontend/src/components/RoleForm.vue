@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import type { JobRole, Training } from '@/types';
+import { resolveLocalized } from '@/utils/locales';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 defineProps<{ draft: JobRole; trainings: Training[] }>();
 defineEmits<{ toggle: [id: string] }>();
+
+// Checkbox labels show the localized training name resolved to the UI language (English fallback).
+const trainingLabel = (tr: Training): string => resolveLocalized(tr.name, locale.value).value;
 </script>
 
 <template>
@@ -36,7 +40,7 @@ defineEmits<{ toggle: [id: string] }>();
             :checked="draft.trainingIds.includes(t.id)"
             @change="$emit('toggle', t.id)"
           />
-          {{ t.name }}
+          {{ trainingLabel(t) }}
         </label>
       </div>
       <p v-if="trainings.length === 0" class="mt-2 font-mono text-xs text-ink-light">

@@ -18,7 +18,7 @@ import { useToastStore } from '@/stores/toast';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
-import { FALLBACK_LOCALE, localeName } from '@/utils/locales';
+import { FALLBACK_LOCALE, localeName, resolveLocalized } from '@/utils/locales';
 import type { GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, Training } from '@/types';
 
 const route = useRoute();
@@ -95,16 +95,13 @@ const isAlternative = (v: MaterialVariant): boolean => v.locale !== chosenLocale
 const variantLabel = (v: MaterialVariant): string => v.label || v.url || v.file?.name || '';
 
 /**
- * Resolve a localized question/answer string with the material logic applied per string:
- * chosen language → English → all filled languages joined (so nothing is ever unanswerable).
- * `alternative` marks anything not shown in the chosen language — it drives the badge.
+ * Resolve a localized string (training name/description, question/answer texts) with the material
+ * logic applied per string: chosen language → English → all filled languages joined (so nothing is
+ * ever unanswerable). `alternative` marks anything not shown in the chosen language — it drives the
+ * badge. Thin wrapper over the shared resolver, bound to this session's content language.
  */
 function resolveText(lt: LocalizedText): { value: string; alternative: boolean } {
-  const chosen = lt[chosenLocale.value];
-  if (chosen) return { value: chosen, alternative: false };
-  const fallback = lt[FALLBACK_LOCALE];
-  if (fallback) return { value: fallback, alternative: true };
-  return { value: Object.values(lt).filter(Boolean).join(' / '), alternative: true };
+  return resolveLocalized(lt, chosenLocale.value);
 }
 
 async function load(): Promise<void> {
@@ -164,14 +161,14 @@ onMounted(load);
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
 
     <template v-else-if="training">
-      <h1 class="page-title">{{ training.name }}</h1>
+      <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
       <p class="mt-1 font-mono text-xs text-ink-light">
         {{ t('session.stepOf', { step: step === 'material' ? 1 : step === 'quiz' ? 2 : 3 }) }}
       </p>
 
       <!-- Step 1: Material -->
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
-        <p class="font-mono text-sm text-ink-muted">{{ training.description }}</p>
+        <p class="font-mono text-sm text-ink-muted">{{ resolveText(training.description).value }}</p>
 
         <div class="flex flex-col gap-3">
           <!-- Per material: the chosen language's variant, the English one as fallback, or — when

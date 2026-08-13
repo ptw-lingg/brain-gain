@@ -226,7 +226,10 @@ router.get('/:id', async (req: AuthRequest, res) => {
 // POST /api/trainings  — admin or trainer
 router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
-  if (typeof b.name !== 'string' || !b.name.trim()) {
+  // Name/description/category are localized like question texts (legacy plain strings become the
+  // English entry). A training must be nameable in at least one language.
+  const name = sanitizeLocalizedText(b.name, MATERIAL_LOCALES);
+  if (Object.keys(name).length === 0) {
     return res.status(400).json({ error: 'name is required' });
   }
   // Trainers always own what they create; admins may target any owner.
@@ -239,10 +242,10 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   );
   const training: Training = {
     id: randomUUID(),
-    name: b.name,
-    description: typeof b.description === 'string' ? b.description : '',
+    name,
+    description: sanitizeLocalizedText(b.description, MATERIAL_LOCALES),
     durationMinutes: Math.max(0, Math.round(Number(b.durationMinutes) || 0)),
-    category: typeof b.category === 'string' ? b.category : 'General',
+    category: sanitizeLocalizedText(b.category, MATERIAL_LOCALES),
     ownerId,
     cycleYears: clamp(b.cycleYears, 1, 5, 1),
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
@@ -287,13 +290,16 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : current.ownerId;
   trainings[idx] = {
     ...current,
-    name: typeof b.name === 'string' ? b.name : current.name,
-    description: typeof b.description === 'string' ? b.description : current.description,
+    // Localized fields: a field that arrives is sanitized (legacy plain strings become the English
+    // entry), an absent one keeps its stored value — the same present-or-keep rule as below.
+    name: b.name != null ? sanitizeLocalizedText(b.name, MATERIAL_LOCALES) : current.name,
+    description:
+      b.description != null ? sanitizeLocalizedText(b.description, MATERIAL_LOCALES) : current.description,
     durationMinutes:
       b.durationMinutes != null
         ? Math.max(0, Math.round(Number(b.durationMinutes) || 0))
         : current.durationMinutes,
-    category: typeof b.category === 'string' ? b.category : current.category,
+    category: b.category != null ? sanitizeLocalizedText(b.category, MATERIAL_LOCALES) : current.category,
     ownerId,
     order: typeof current.order === 'number' ? current.order : idx, // managed only via reorder
     cycleYears: b.cycleYears != null ? clamp(b.cycleYears, 1, 5, current.cycleYears) : current.cycleYears,
