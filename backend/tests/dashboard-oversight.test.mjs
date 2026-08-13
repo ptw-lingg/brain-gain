@@ -72,7 +72,7 @@ test('SYS-DSH-01 / VT-060: each item carries a computed due status + the card fi
     const t = item.training;
     assert.equal(typeof t.name, 'string');
     assert.equal(typeof t.description, 'string');
-    assert.equal(typeof t.durationHours, 'number');
+    assert.equal(typeof t.durationMinutes, 'number');
     assert.equal(typeof t.category, 'string');
     assert.equal(typeof t.cycleYears, 'number');
   }

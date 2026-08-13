@@ -52,7 +52,8 @@ export interface Training {
   id: string;
   name: string;
   description: string;
-  durationHours: number;
+  // Duration in MINUTES (legacy records stored hours; migrateDurations converts them ×60 at boot).
+  durationMinutes: number;
   category: string;
   ownerId: string; // trainer (User id) who owns & manages this training
   cycleYears: number; // 1–5: how often a user must repeat the session

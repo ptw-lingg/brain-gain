@@ -3,7 +3,6 @@
     "id": "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
     "name": "SOP-10.00 Product Life Cycle",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
     "cycleYears": 2,
@@ -69,13 +68,13 @@
           }
         ]
       }
-    ]
+    ],
+    "durationMinutes": 70
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
     "name": "SOP-10.01 Design and Development Planning",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "1666fe09-4252-44ef-b5eb-0028c66e5bca",
     "cycleYears": 1,
@@ -105,13 +104,13 @@
           }
         ]
       }
-    ]
+    ],
+    "durationMinutes": 60
   },
   {
     "id": "5c321dd7-d79f-4898-869c-62130f325d27",
     "name": "SOP-10.02 Design Input",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "04f99f92-1208-423d-88d9-ab537ed4cd08",
     "cycleYears": 1,
@@ -186,13 +185,13 @@
           }
         ]
       }
-    ]
+    ],
+    "durationMinutes": 60
   },
   {
     "id": "911c1823-0c2b-40a3-b525-1fe099182273",
     "name": "SOP-10.03 Design Output",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
     "cycleYears": 1,
@@ -292,13 +291,13 @@
           }
         ]
       }
-    ]
+    ],
+    "durationMinutes": 60
   },
   {
     "id": "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
     "name": "SOP-10.04 Design Verification and Validation",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "f9241c53-7a00-47c4-99b5-0df3e89eea44",
     "cycleYears": 1,
@@ -307,13 +306,13 @@
     "questions": [],
     "createdAt": "2026-06-02T14:59:40.488Z",
     "order": 5,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "90d2e37b-b87e-4ea2-8ee4-300b03473403",
     "name": "SOP-10.05 Design Transfer",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "ab3017d7-e544-486b-927b-86112e66fadb",
     "cycleYears": 1,
@@ -322,13 +321,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:03.809Z",
     "order": 6,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
     "name": "SOP-10.06 Post-Market Surveillance",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "9d5b7735-6322-4ff8-8666-71e5a1d6fd16",
     "cycleYears": 1,
@@ -337,13 +336,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:19.047Z",
     "order": 7,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
     "name": "SOP-10.07 Risk Management",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "c6fed36b-67f3-44f6-af67-173498bcca6c",
     "cycleYears": 1,
@@ -352,13 +351,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:30.086Z",
     "order": 8,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
     "name": "SOP-10.08 Usability Engineering",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "ecc3a151-9bfa-46b0-a003-8f4bd25668be",
     "cycleYears": 1,
@@ -367,13 +366,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:37.823Z",
     "order": 9,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "7785e467-1b57-4197-884b-504513e018b1",
     "name": "SOP-10.09 Clinical Evaluation",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "f2b9cb17-5878-4407-bacd-e107f6d4343d",
     "cycleYears": 1,
@@ -382,13 +381,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:44.810Z",
     "order": 10,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
     "name": "SOP-10.10 Document Review and Approval",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "c6fed36b-67f3-44f6-af67-173498bcca6c",
     "cycleYears": 1,
@@ -397,13 +396,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:54.318Z",
     "order": 11,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "efde2ac6-d99d-426b-baea-b340854099c2",
     "name": "SOP-10.11 Software Development Life Cycle",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "b7bb5457-fbfe-426f-aae3-88803ce99e79",
     "cycleYears": 1,
@@ -412,13 +411,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:01:04.539Z",
     "order": 12,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "91e3c885-a123-4ed2-9574-ed5fa35787db",
     "name": "SOP-10.12 Change Management",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "ecc3a151-9bfa-46b0-a003-8f4bd25668be",
     "cycleYears": 1,
@@ -427,13 +426,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:01:13.746Z",
     "order": 13,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
     "name": "SOP-10.13 Product Registration and Change Notification",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "9d5b7735-6322-4ff8-8666-71e5a1d6fd16",
     "cycleYears": 1,
@@ -442,13 +441,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:01:30.301Z",
     "order": 14,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "647aae31-ae8a-4479-9850-d4b182ab4c8c",
     "name": "SOP-10.14 Administration of Standards",
     "description": "",
-    "durationHours": 1,
     "category": "Product Life Cycle",
     "ownerId": "f9241c53-7a00-47c4-99b5-0df3e89eea44",
     "cycleYears": 1,
@@ -457,13 +456,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:01:43.944Z",
     "order": 15,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "e5aeabac-56a6-4b80-ab71-9e770f9df9bd",
     "name": "SOP-20.01 Lieferantenmanagement",
     "description": "",
-    "durationHours": 1,
     "category": "General",
     "ownerId": "7d9f27d6-6f5b-47f8-88ed-88148fefd717",
     "cycleYears": 1,
@@ -472,13 +471,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:01:54.769Z",
     "order": 17,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "1ff7533e-c176-422c-9234-dbdcec2259e6",
     "name": "SOP-21.01 Lenkung von Dokumenten und Aufzeichnungen",
     "description": "",
-    "durationHours": 1,
     "category": "General",
     "ownerId": "112d0d01-31ec-4953-9374-534ed8b4324b",
     "cycleYears": 1,
@@ -487,13 +486,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:02:04.521Z",
     "order": 18,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
     "name": "SOP-21.07 Validierung Qualitätsrelevanter Software",
     "description": "",
-    "durationHours": 1,
     "category": "General",
     "ownerId": "112d0d01-31ec-4953-9374-534ed8b4324b",
     "cycleYears": 1,
@@ -502,13 +501,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:02:15.054Z",
     "order": 19,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
     "name": "AA Good Documentation Practice: Handschriftliche Aufzeichnungen",
     "description": "",
-    "durationHours": 0.5,
     "category": "General",
     "ownerId": "112d0d01-31ec-4953-9374-534ed8b4324b",
     "cycleYears": 2,
@@ -528,13 +527,13 @@
           }
         ]
       }
-    ]
+    ],
+    "durationMinutes": 30
   },
   {
     "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",
     "name": "SOP-22.02 Wartung-, Instandhaltung- und Beauftragung-Prozess",
     "description": "",
-    "durationHours": 1,
     "category": "General",
     "ownerId": "ab3017d7-e544-486b-927b-86112e66fadb",
     "cycleYears": 1,
@@ -543,13 +542,13 @@
     "questions": [],
     "createdAt": "2026-06-02T15:02:46.793Z",
     "order": 20,
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   },
   {
     "id": "ec867de7-dd70-42d2-b156-309041f8fcc1",
     "name": "SOP-20.00 Beschaffung",
     "description": "",
-    "durationHours": 1,
     "category": "General",
     "ownerId": "7d9f27d6-6f5b-47f8-88ed-88148fefd717",
     "cycleYears": 1,
@@ -558,6 +557,7 @@
     "order": 16,
     "questions": [],
     "createdAt": "2026-06-03T12:50:33.144Z",
-    "materials": []
+    "materials": [],
+    "durationMinutes": 60
   }
 ]

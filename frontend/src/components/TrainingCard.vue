@@ -6,6 +6,7 @@ import type { DueTraining } from '@/types';
 import {
   dueLabel,
   dueClasses,
+  formatDuration,
   isActionable,
   categoryTint,
   trainingReadiness,
@@ -22,14 +23,13 @@ const actionable = computed(() => isActionable(props.item.status));
 const readiness = computed(() => trainingReadiness(training.value));
 const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate));
 
-// One plain sentence instead of pill badges: "Yearly training, takes 1 hour".
+// One plain sentence instead of pill badges: "Yearly training, takes 1 h 30 min".
 const meta = computed(() => {
   const cycle =
     training.value.cycleYears === 1
       ? t('trainingCard.metaYearly')
       : t('trainingCard.metaEvery', { years: training.value.cycleYears });
-  const hours = training.value.durationHours;
-  return `${cycle}, ${t('trainingCard.metaDuration', { hours }, Math.max(1, Math.round(hours)))}`;
+  return `${cycle}, ${t('trainingCard.metaDuration', { duration: formatDuration(training.value.durationMinutes) })}`;
 });
 </script>
 
@@ -49,7 +49,12 @@ const meta = computed(() => {
 
     <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ training.name }}</h3>
 
-    <p class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
+    <!-- Category on its own line right below the title, per the plate structure. -->
+    <p v-if="training.category?.trim()" class="font-mono text-xs leading-relaxed text-ink-muted">
+      {{ training.category }}
+    </p>
+
+    <p v-if="training.description?.trim()" class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
       {{ training.description }}
     </p>
 

@@ -7,7 +7,7 @@ import { useToastStore } from '@/stores/toast';
 import CollapsibleSection from '@/components/CollapsibleSection.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import type { LocalizedText, Material, MaterialFile, MaterialVariant, Question, SafeUser, Training } from '@/types';
-import { formatBytes } from '@/utils/display';
+import { formatBytes, formatDuration } from '@/utils/display';
 import { MATERIAL_LOCALES } from '@/utils/locales';
 
 const { t } = useI18n();
@@ -47,7 +47,7 @@ const questionCount = computed(() => props.draft.questions?.length ?? 0);
 // Deliberately not the name — the dialog header already shows it, and repeating it here would put a
 // second copy of the training name on the page.
 const basicsSummary = computed(() =>
-  [props.draft.category?.trim(), t('trainingCard.hours', { hours: props.draft.durationHours })]
+  [props.draft.category?.trim(), formatDuration(props.draft.durationMinutes)]
     .filter(Boolean)
     .join(' · '),
 );
@@ -237,7 +237,7 @@ function removeVariantFile(variant: MaterialVariant): void {
         </label>
         <label class="flex flex-col gap-1">
           <span class="form-label">{{ t('trainingForm.duration') }}</span>
-          <input v-model.number="draft.durationHours" type="number" min="0" step="0.5" class="bg-input" />
+          <input v-model.number="draft.durationMinutes" type="number" min="0" step="5" class="bg-input" />
         </label>
         <label v-if="isAdmin" class="flex flex-col gap-1">
           <span class="form-label">{{ t('trainingForm.owner') }}</span>

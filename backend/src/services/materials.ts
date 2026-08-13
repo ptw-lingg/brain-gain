@@ -81,6 +81,30 @@ export function materialFileIds(t: Pick<Training, 'materials'>): string[] {
  * the other data migrations and again after a backup restore; a no-op once every training carries
  * `materials`, so it is safe to run repeatedly.
  */
+/**
+ * One-time migration of the training duration from HOURS to MINUTES: a record still carrying
+ * `durationHours` gets `durationMinutes = round(hours * 60)` and loses the legacy field. Runs with
+ * the other data migrations (boot + after a backup restore); a no-op once every record is converted.
+ */
+export async function migrateDurations(): Promise<void> {
+  const trainings = await readStore<Training>('trainings');
+  let migrated = 0;
+
+  for (const training of trainings) {
+    const legacy = training as Training & { durationHours?: number };
+    if (typeof legacy.durationMinutes === 'number' && !('durationHours' in legacy)) continue;
+    if (typeof legacy.durationMinutes !== 'number') {
+      legacy.durationMinutes = Math.max(0, Math.round((Number(legacy.durationHours) || 0) * 60));
+    }
+    delete legacy.durationHours;
+    migrated += 1;
+  }
+
+  if (!migrated) return;
+  await writeStore('trainings', trainings);
+  console.log(`↪  migrated ${migrated} training duration(s) from hours to minutes`);
+}
+
 export async function migrateMaterials(): Promise<void> {
   const trainings = await readStore<Training>('trainings');
   let migrated = 0;

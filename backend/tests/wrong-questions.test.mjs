@@ -29,7 +29,7 @@ async function loginToken(email, password) {
 async function createRequiredTraining(name, questions) {
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
-    body: { name, category: 'Test', durationHours: 1, questions },
+    body: { name, category: 'Test', durationMinutes: 60, questions },
   });
   assert.equal(created.status, 201, 'training created');
 

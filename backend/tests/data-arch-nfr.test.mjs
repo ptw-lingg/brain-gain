@@ -160,7 +160,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
     body: {
       name: 'Data Handling 101',
       description: 'How we store things',
-      durationHours: 4,
+      durationMinutes: 240,
       category: 'Compliance',
       cycleYears: 2,
       windowBeforeMonths: 1,
@@ -180,7 +180,7 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   const readBack = await srv.request('GET', `/api/trainings/${id}`, { token: adminToken });
   assert.equal(readBack.status, 200);
   assert.equal(readBack.body.name, 'Data Handling 101');
-  assert.equal(readBack.body.durationHours, 4);
+  assert.equal(readBack.body.durationMinutes, 240);
   assert.equal(readBack.body.cycleYears, 2);
   assert.equal(readBack.body.windowBeforeMonths, 1);
   assert.equal(readBack.body.windowAfterMonths, 2);

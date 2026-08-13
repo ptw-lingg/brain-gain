@@ -9,6 +9,7 @@ import type { DueTraining } from '@/types';
 import TrainingCard from '@/components/TrainingCard.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
+import { formatDuration } from '@/utils/display';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -35,9 +36,16 @@ const greeting = computed(() => {
   return t(`dashboard.${key}`, { name: auth.user?.name ?? '' });
 });
 
-const dueCount = computed(
-  () => items.value.filter((i) => i.status !== 'up-to-date').length,
-);
+const dueItems = computed(() => items.value.filter((i) => i.status !== 'up-to-date'));
+const dueCount = computed(() => dueItems.value.length);
+
+// The subtitle also sums up what the due work amounts to, e.g. "2 assigned · 2 due now · 5 h".
+const subtitle = computed(() => {
+  const base = t('dashboard.subtitle', { assigned: items.value.length, due: dueCount.value });
+  if (dueCount.value === 0) return base;
+  const total = dueItems.value.reduce((sum, i) => sum + (i.training.durationMinutes || 0), 0);
+  return `${base} · ${formatDuration(total)}`;
+});
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -62,7 +70,7 @@ onMounted(load);
       <div>
         <h1 class="page-title">{{ greeting }}</h1>
         <p class="mt-1 font-mono text-xs text-ink-light">
-          {{ t('dashboard.subtitle', { assigned: items.length, due: dueCount }) }}
+          {{ subtitle }}
         </p>
       </div>
     </header>

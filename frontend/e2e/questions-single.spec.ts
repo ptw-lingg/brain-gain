@@ -102,7 +102,7 @@ test.describe('Quiz questions — single choice', () => {
       data: {
         name: `E2E Single-choice quiz ${Date.now()}`,
         category: 'Test',
-        durationHours: 1,
+        durationMinutes: 60,
         questions: [
           { text: 'Which option is correct?', options: ['wrong one', 'right one', 'other wrong'], correctIndices: [1], type: 'single' },
         ],

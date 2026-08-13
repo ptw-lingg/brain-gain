@@ -157,7 +157,7 @@ test('SYS-TRN-03 / VT-040: a trainer can create a training; it is owned by them 
 
   const res = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
-    body: { name: 'Trainer Created', description: 'd', category: 'C', durationHours: 2 },
+    body: { name: 'Trainer Created', description: 'd', category: 'C', durationMinutes: 120 },
   });
   assert.equal(res.status, 201);
   assert.equal(res.body.ownerId, trainerId, 'trainer owns what they create');

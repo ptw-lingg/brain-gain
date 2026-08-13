@@ -7,7 +7,7 @@
 // initial bundle.
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { JobRole, SafeUser, Training } from '@/types';
-import { cycleLabel } from './display';
+import { cycleLabel, formatDuration } from './display';
 
 type TFn = (key: string, named?: Record<string, unknown>) => string;
 
@@ -173,7 +173,7 @@ export function buildTrainingPlan(
   const trainingRows: TableCell[][] = trainings.map((tr) => [
     td(tr.name),
     td(tr.category),
-    td(t('trainingCard.hours', { hours: tr.durationHours })),
+    td(formatDuration(tr.durationMinutes)),
     td(cycleLabel(t, tr.cycleYears)),
   ]);
   const trainingsTitle = t('trainingPlan.sectionTrainings', { count: trainings.length });

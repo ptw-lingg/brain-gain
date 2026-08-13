@@ -10,7 +10,7 @@ import type { JobRole, MyTeam, Question, SafeUser, Settings, Training } from '@/
 import TrainingForm from '@/components/TrainingForm.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
-import { cycleLabel, trainingReadiness } from '@/utils/display';
+import { cycleLabel, formatDuration, trainingReadiness } from '@/utils/display';
 
 const auth = useAuthStore();
 const toast = useToastStore();
@@ -118,7 +118,7 @@ function blankTraining(): Training {
     id: '',
     name: '',
     description: '',
-    durationHours: 1,
+    durationMinutes: 60,
     category: 'General',
     ownerId: auth.user?.id ?? '',
     cycleYears: 1,
@@ -367,7 +367,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             </span>
           </div>
           <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ tr.category }}</span>
-          <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ t('trainingCard.hours', { hours: tr.durationHours }) }}</span>
+          <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ formatDuration(tr.durationMinutes) }}</span>
           <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
           <span v-if="isAdmin" class="pill w-32 shrink-0 truncate bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
           <ChevronRight class="h-4 w-4 shrink-0 text-ink-light" />

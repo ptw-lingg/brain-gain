@@ -73,13 +73,12 @@
     "empty": "No trainings yet. Ask your admin to assign you a role."
   },
   "trainingCard": {
-    "hours": "{hours}h",
     "startSession": "Start session",
     "notDueYet": "Not due yet — you can still review",
     "start": "Start",
     "metaYearly": "Yearly training",
     "metaEvery": "Training every {years} years",
-    "metaDuration": "takes {hours} hour | takes {hours} hours",
+    "metaDuration": "takes {duration}",
     "unavailable": "Not available yet — your trainer is still preparing this training"
   },
   "due": {
@@ -151,7 +150,7 @@
     "category": "Category",
     "categoryPlaceholder": "e.g. Safety",
     "description": "Description",
-    "duration": "Duration (hours)",
+    "duration": "Duration (minutes)",
     "owner": "Owner (trainer)",
     "repeatEvery": "Repeat every (years)",
     "yearsOption": "{n} year | {n} years",

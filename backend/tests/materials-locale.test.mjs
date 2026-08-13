@@ -180,6 +180,9 @@ test('SYS-DATA-11 / SR-152 / VT-155: legacy materialLinks/materialFiles are migr
     { id: '22222222-2222-4222-8222-222222222222', name: 'legacy.pdf', size: 123, type: 'application/pdf' },
   ];
   delete trainings[0].materials;
+  // SYS-DATA-04: a legacy hour-based duration is converted to minutes by the same migration run.
+  trainings[0].durationHours = 1.5;
+  delete trainings[0].durationMinutes;
   writeFileSync(file, JSON.stringify(trainings, null, 2), 'utf-8');
 
   const serverB = await startTestServer({ env: { DATA_DIR: dataDir } });
@@ -203,6 +206,8 @@ test('SYS-DATA-11 / SR-152 / VT-155: legacy materialLinks/materialFiles are migr
     assert.equal('materialLinks' in onDisk, false, 'nothing legacy left on disk');
     assert.equal('materialFiles' in onDisk, false);
     assert.equal(onDisk.materials.length, 2);
+    assert.equal(onDisk.durationMinutes, 90, 'SYS-DATA-04: 1.5 legacy hours became 90 minutes');
+    assert.equal('durationHours' in onDisk, false, 'the legacy duration field is gone');
   } finally {
     await serverB.stop();
   }

@@ -45,7 +45,9 @@ test('SYS-DSH-02 / SR-156 / VT-163: the dashboard shows only due trainings by de
     expect((await graded.json()).passed).toBeTruthy();
 
     // Default: the filter is checked and the up-to-date training is hidden; due ones show.
+    // The header also sums the due work: the two seeded due trainings are 120 + 180 minutes.
     await login(page, 'member');
+    await expect(page.getByText(/2 due now · 5 h/)).toBeVisible();
     const filter = page.getByRole('checkbox', { name: 'Only show due trainings' });
     await expect(filter).toBeChecked();
     await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();

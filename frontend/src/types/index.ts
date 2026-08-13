@@ -48,7 +48,7 @@ export interface Training {
   id: string;
   name: string;
   description: string;
-  durationHours: number;
+  durationMinutes: number;
   category: string;
   ownerId: string;
   cycleYears: number;

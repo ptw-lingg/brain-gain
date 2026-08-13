@@ -73,13 +73,12 @@
     "empty": "Noch keine Schulungen. Bitten Sie Ihren Admin, Ihnen eine Funktion zuzuweisen."
   },
   "trainingCard": {
-    "hours": "{hours} h",
     "startSession": "Sitzung starten",
     "notDueYet": "Noch nicht fällig – Sie können trotzdem wiederholen",
     "start": "Starten",
     "metaYearly": "Jährliche Schulung",
     "metaEvery": "Schulung alle {years} Jahre",
-    "metaDuration": "dauert {hours} Stunde | dauert {hours} Stunden",
+    "metaDuration": "dauert {duration}",
     "unavailable": "Noch nicht verfügbar – Ihr Trainer bereitet diese Schulung noch vor"
   },
   "due": {
@@ -151,7 +150,7 @@
     "category": "Kategorie",
     "categoryPlaceholder": "z. B. Sicherheit",
     "description": "Beschreibung",
-    "duration": "Dauer (Stunden)",
+    "duration": "Dauer (Minuten)",
     "owner": "Verantwortlich (Trainer)",
     "repeatEvery": "Wiederholung (Jahre)",
     "yearsOption": "{n} Jahr | {n} Jahre",

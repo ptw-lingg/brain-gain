@@ -241,7 +241,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     id: randomUUID(),
     name: b.name,
     description: typeof b.description === 'string' ? b.description : '',
-    durationHours: Number(b.durationHours) || 0,
+    durationMinutes: Math.max(0, Math.round(Number(b.durationMinutes) || 0)),
     category: typeof b.category === 'string' ? b.category : 'General',
     ownerId,
     cycleYears: clamp(b.cycleYears, 1, 5, 1),
@@ -289,7 +289,10 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     ...current,
     name: typeof b.name === 'string' ? b.name : current.name,
     description: typeof b.description === 'string' ? b.description : current.description,
-    durationHours: b.durationHours != null ? Number(b.durationHours) || 0 : current.durationHours,
+    durationMinutes:
+      b.durationMinutes != null
+        ? Math.max(0, Math.round(Number(b.durationMinutes) || 0))
+        : current.durationMinutes,
     category: typeof b.category === 'string' ? b.category : current.category,
     ownerId,
     order: typeof current.order === 'number' ? current.order : idx, // managed only via reorder

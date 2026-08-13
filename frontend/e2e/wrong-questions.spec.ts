@@ -31,7 +31,7 @@ test.describe('Failed test — wrongly answered questions', () => {
       data: {
         name: `E2E Wrong questions ${Date.now()}`,
         category: 'Test',
-        durationHours: 1,
+        durationMinutes: 60,
         questions: [
           { text: 'Will be answered wrong', options: ['right', 'wrong'], correctIndices: [0], type: 'single' },
           { text: 'Will be answered right', options: ['right', 'wrong'], correctIndices: [0], type: 'single' },

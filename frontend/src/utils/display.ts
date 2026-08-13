@@ -77,6 +77,16 @@ export function trainingReadiness(
   return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions };
 }
 
+/** Human-readable duration from minutes: 45 → "45 min", 120 → "2 h", 90 → "1 h 30 min". */
+export function formatDuration(minutes: number): string {
+  const m = Math.max(0, Math.round(Number(minutes) || 0));
+  const h = Math.floor(m / 60);
+  const rest = m % 60;
+  if (h && rest) return `${h} h ${rest} min`;
+  if (h) return `${h} h`;
+  return `${rest} min`;
+}
+
 /** Human-readable file size, e.g. 2048 → "2 KB". */
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
