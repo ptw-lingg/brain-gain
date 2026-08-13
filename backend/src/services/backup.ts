@@ -37,7 +37,7 @@ const MANIFEST = 'manifest.json';
 const APP = 'BrainGain';
 const FORMAT_VERSION = 1;
 
-export type BackupSource = 'manual' | 'pre-restore' | 'upload';
+export type BackupSource = 'manual' | 'pre-restore' | 'upload' | 'auto';
 
 export interface BackupMeta {
   id: string;
@@ -195,7 +195,9 @@ async function writeBackup(bytes: Buffer, source: BackupSource, contents: Backup
   const createdAt = new Date().toISOString();
   const meta: BackupMeta = {
     id,
-    fileName: fileName ?? archiveName('backup', createdAt, source === 'pre-restore' ? '-pre-restore' : ''),
+    fileName:
+      fileName ??
+      archiveName('backup', createdAt, source === 'pre-restore' ? '-pre-restore' : source === 'auto' ? '-auto' : ''),
     createdAt,
     size: bytes.length,
     source,

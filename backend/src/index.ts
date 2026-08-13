@@ -15,6 +15,7 @@ import mailRoutes from './routes/mail';
 import backupRoutes from './routes/backups';
 import { seed } from './seed';
 import { runDataMigrations } from './services/migrations';
+import { startAutoBackupScheduler } from './services/autoBackup';
 import { ensureCredentials, registerHttpsServer } from './services/tls';
 
 const app = express();
@@ -91,6 +92,10 @@ function listenWithRetry(
 seed()
   .then(() => runDataMigrations())
   .then(async () => {
+    // After the migrations (an automatic backup must archive normalized data), before listen — the
+    // scheduler is fire-and-forget with its own catch-log, so it never slows or breaks boot.
+    startAutoBackupScheduler();
+
     const creds = await ensureCredentials();
     const httpsServer = https.createServer({ key: creds.key, cert: creds.cert, ca: creds.ca }, app);
     registerHttpsServer(httpsServer);

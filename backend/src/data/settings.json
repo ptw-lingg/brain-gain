@@ -1,11 +1,6 @@
 {
   "passThreshold": 0.8,
   "revealWrongQuestions": true,
-  "materialLocales": [
-    "en",
-    "de",
-    "da"
-  ],
   "companyName": "PTW-Freiburg GmbH",
   "entra": {
     "enabled": false,
@@ -31,5 +26,15 @@
     "password": "",
     "fromName": "",
     "fromAddress": ""
-  }
+  },
+  "autoBackup": {
+    "enabled": true,
+    "intervalDays": 1,
+    "keep": 7
+  },
+  "materialLocales": [
+    "en",
+    "de",
+    "da"
+  ]
 }

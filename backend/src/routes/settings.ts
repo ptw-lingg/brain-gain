@@ -95,6 +95,20 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
     };
   }
 
+  if (body.autoBackup !== undefined) {
+    const a = body.autoBackup ?? {};
+    // Out-of-range numbers are clamped rather than rejected; junk falls back to the default.
+    const clampInt = (v: unknown, min: number, max: number, dflt: number): number => {
+      const n = Math.floor(Number(v));
+      return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : dflt;
+    };
+    next.autoBackup = {
+      enabled: Boolean(a.enabled),
+      intervalDays: clampInt(a.intervalDays, 1, 365, 7),
+      keep: clampInt(a.keep, 1, 100, 5),
+    };
+  }
+
   await writeSettings(next);
   return res.json(publicSettings(next));
 });

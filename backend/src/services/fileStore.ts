@@ -114,6 +114,10 @@ const DEFAULT_SETTINGS: Settings = {
   entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] },
   tls: null,
   smtp: { enabled: false, host: '', port: 587, secure: false, username: '', password: '', fromName: '', fromAddress: '' },
+  // Off by default — an admin opts in. The shallow spread in readSettings backfills the whole
+  // object for a settings.json written before the feature existed; a PARTIAL stored object cannot
+  // occur because routes/settings.ts always writes the complete shape.
+  autoBackup: { enabled: false, intervalDays: 7, keep: 5 },
 };
 
 export async function readSettings(): Promise<Settings> {

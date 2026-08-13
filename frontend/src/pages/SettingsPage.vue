@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Building2, KeyRound, Lock, Mail, Save, Send, SlidersHorizontal } from 'lucide-vue-next';
+import { Building2, DatabaseBackup, KeyRound, Lock, Mail, Save, Send, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { Settings, TlsSettings } from '@/types';
@@ -30,6 +30,12 @@ const clientId = ref('');
 const domains = ref(''); // comma-separated in the input; stored as an array
 const savingSso = ref(false);
 const redirectUri = window.location.origin; // what to register in the Azure app
+
+// Automatic scheduled backups (admin-editable; retention applies to automatic backups only).
+const autoBackupEnabled = ref(false);
+const autoBackupIntervalDays = ref(7);
+const autoBackupKeep = ref(5);
+const savingAutoBackup = ref(false);
 
 // TLS certificate (HTTPS delivery).
 const tls = ref<TlsSettings | null>(null);
@@ -97,6 +103,12 @@ async function load(): Promise<void> {
       tenantId.value = e.tenantId;
       clientId.value = e.clientId;
       domains.value = (e.allowedDomains ?? []).join(', ');
+    }
+    const ab = data.autoBackup;
+    if (ab) {
+      autoBackupEnabled.value = ab.enabled;
+      autoBackupIntervalDays.value = ab.intervalDays;
+      autoBackupKeep.value = ab.keep;
     }
     tls.value = data.tls ?? null;
     const m = data.smtp;
@@ -203,6 +215,28 @@ async function saveSso(): Promise<void> {
     toast.error(t('settings.toasts.ssoError'));
   } finally {
     savingSso.value = false;
+  }
+}
+
+async function saveAutoBackup(): Promise<void> {
+  savingAutoBackup.value = true;
+  try {
+    // The server clamps out-of-range values (interval 1..365, keep 1..100) — reflect what it kept.
+    const { data } = await client.put<Settings>('/settings', {
+      autoBackup: {
+        enabled: autoBackupEnabled.value,
+        intervalDays: autoBackupIntervalDays.value,
+        keep: autoBackupKeep.value,
+      },
+    });
+    autoBackupEnabled.value = data.autoBackup.enabled;
+    autoBackupIntervalDays.value = data.autoBackup.intervalDays;
+    autoBackupKeep.value = data.autoBackup.keep;
+    toast.success(t('settings.toasts.autoBackupSaved'));
+  } catch {
+    toast.error(t('settings.toasts.settingsError'));
+  } finally {
+    savingAutoBackup.value = false;
   }
 }
 
@@ -438,6 +472,41 @@ onMounted(load);
           </button>
           <button class="btn-ghost" :disabled="testingSmtp" @click="sendTestEmail">
             <Send class="h-4 w-4" /> {{ testingSmtp ? t('settings.sendingTest') : t('settings.sendTest') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Automatic scheduled backups -->
+      <div class="card p-6">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+            <DatabaseBackup class="h-5 w-5 text-accent" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.autoBackupTitle') }}</h2>
+            <p class="font-mono text-xs text-ink-light">{{ t('settings.autoBackupDesc') }}</p>
+          </div>
+          <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
+            <input v-model="autoBackupEnabled" type="checkbox" class="accent-accent" />
+            {{ t('settings.enabled') }}
+          </label>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.autoBackupInterval') }}</span>
+            <input v-model.number="autoBackupIntervalDays" type="number" min="1" max="365" class="bg-input" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.autoBackupKeep') }}</span>
+            <input v-model.number="autoBackupKeep" type="number" min="1" max="100" class="bg-input" />
+          </label>
+        </div>
+        <p class="mt-2 font-mono text-[11px] text-ink-light">{{ t('settings.autoBackupRetentionHint') }}</p>
+
+        <div class="mt-6">
+          <button class="btn-primary" :disabled="savingAutoBackup" @click="saveAutoBackup">
+            <Save class="h-4 w-4" /> {{ savingAutoBackup ? t('common.saving') : t('settings.saveAutoBackup') }}
           </button>
         </div>
       </div>

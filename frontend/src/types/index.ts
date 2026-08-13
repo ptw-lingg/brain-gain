@@ -144,6 +144,14 @@ export interface SmtpSettings {
   fromAddress: string;
 }
 
+// Automatic scheduled backups: when enabled the server snapshots all data every `intervalDays`
+// days and keeps only the newest `keep` automatic backups (other backup sources are never pruned).
+export interface AutoBackupSettings {
+  enabled: boolean;
+  intervalDays: number;
+  keep: number;
+}
+
 export interface Settings {
   passThreshold: number;
   // When on, a failed attempt's grade response names the wrongly answered questions (default off).
@@ -152,6 +160,7 @@ export interface Settings {
   entra: EntraSsoSettings;
   tls: TlsSettings | null;
   smtp: SmtpSettings;
+  autoBackup: AutoBackupSettings;
 }
 
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
@@ -189,6 +198,6 @@ export interface BackupMeta {
   fileName: string;
   createdAt: string;
   size: number;
-  source: 'manual' | 'pre-restore' | 'upload';
+  source: 'manual' | 'pre-restore' | 'upload' | 'auto';
   contents: { users: number; trainings: number; materials: number };
 }

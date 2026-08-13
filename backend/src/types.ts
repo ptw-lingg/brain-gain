@@ -138,6 +138,16 @@ export interface TlsSettings {
   updatedAt: string;
 }
 
+// Automatic scheduled backups — admin-editable via Settings. When enabled, the server creates a
+// backup whenever the newest AUTOMATIC backup is older than `intervalDays` (checked hourly and at
+// boot, so a missed run is caught up), and keeps only the newest `keep` automatic backups. Manual,
+// uploaded and pre-restore backups are never touched by that retention (see services/autoBackup.ts).
+export interface AutoBackupSettings {
+  enabled: boolean; // off by default — automatic snapshots are the admin's choice
+  intervalDays: number; // days between automatic backups (integer, clamped 1..365)
+  keep: number; // how many automatic backups to retain (integer, clamped 1..100)
+}
+
 // Outbound email (SMTP) configuration — admin-editable via Settings. `password` is a secret and is
 // NEVER returned by the API (GET /settings redacts it to '' and exposes only `passwordSet`).
 export interface SmtpSettings {
@@ -161,6 +171,7 @@ export interface Settings {
   entra: EntraSsoSettings;
   tls: TlsSettings | null; // metadata for the active TLS certificate (managed via /settings/certificate)
   smtp: SmtpSettings; // outbound email configuration
+  autoBackup: AutoBackupSettings; // automatic scheduled backups
 }
 
 export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken'>;
