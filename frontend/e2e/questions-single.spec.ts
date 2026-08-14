@@ -124,6 +124,7 @@ test.describe('Quiz questions — single choice', () => {
       await login(page, 'member');
       await page.goto(`/session/${training.id}`);
       await page.getByRole('button', { name: 'Start test' }).click();
+      await page.getByTestId('confirm-materials-ok').click();
       await expect(page.getByText('Select the one correct answer.')).toBeVisible();
       const radios = page.locator('input[type="radio"]');
       await expect(radios).toHaveCount(3);

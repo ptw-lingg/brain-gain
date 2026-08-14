@@ -89,6 +89,7 @@ test.describe('Localized quiz questions', () => {
       await login(page, 'member');
       await page.goto(`/session/${trainingId}`);
       await page.getByRole('button', { name: /Test starten/ }).click(); // profile de → German UI
+      await page.getByTestId('confirm-materials-ok').click(); // materials confirmation (SR-162)
 
       // The DE+EN question renders in German; the EN-only one falls back with the badge.
       await expect(page.getByText('Deutsche Frage?')).toBeVisible();

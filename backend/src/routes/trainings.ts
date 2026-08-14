@@ -4,6 +4,7 @@ import type {
   DueTraining,
   JobRole,
   MaterialFile,
+  OrgUnit,
   PublicTraining,
   Question,
   Training,
@@ -216,6 +217,22 @@ router.get('/materials/:fileId', async (req: AuthRequest, res) => {
   const file = await readMaterial(fileId);
   if (!file) return res.status(404).json({ error: 'Not found' });
   return sendAttachment(res, file.bytes, file.meta.name, file.meta.type);
+});
+
+// GET /api/trainings/:id/trainer — the owning trainer's contact card for any authenticated user.
+// The session page shows it so a trainee with questions can reach the right person; name, org unit
+// and email are exactly what identifies the trainer in the company address list (SR-163). Only these
+// three fields leave the server — never the full user record.
+router.get('/:id/trainer', async (req: AuthRequest, res) => {
+  const trainings = await readStore<Training>('trainings');
+  const training = trainings.find((t) => t.id === req.params.id);
+  if (!training) return res.status(404).json({ error: 'Not found' });
+  const users = await readStore<User>('users');
+  const owner = users.find((u) => u.id === training.ownerId);
+  if (!owner) return res.status(404).json({ error: 'Trainer not found' }); // owner account was deleted
+  const orgUnits = await readStore<OrgUnit>('orgUnits');
+  const orgUnitName = orgUnits.find((o) => o.id === owner.orgUnitId)?.name ?? '';
+  return res.json({ name: owner.name, email: owner.email, orgUnitName });
 });
 
 // GET /api/trainings/:id  — single training, answer key stripped for non-owners

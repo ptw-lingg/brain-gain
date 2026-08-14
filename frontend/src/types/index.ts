@@ -219,6 +219,7 @@ export type AuditAction =
   | 'backup-delete'
   | 'backup-restore'
   | 'backup-restore-failed'
+  | 'materials-confirmed'
   | 'training-completed';
 
 export type AuditEntityType =
@@ -260,4 +261,15 @@ export interface AuditEntry {
 export interface AuditListResponse {
   total: number;
   entries: AuditEntry[];
+}
+
+/**
+ * GET /api/trainings/:id/trainer — the owning trainer's contact card, shown to trainees so
+ * questions reach the right person. Name, org unit and email identify the trainer in the company
+ * address list.
+ */
+export interface TrainerContact {
+  name: string;
+  email: string;
+  orgUnitName: string;
 }

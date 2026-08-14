@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   Loader2,
+  Mail,
   PartyPopper,
   RefreshCw,
   XCircle,
@@ -19,7 +20,7 @@ import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
 import { FALLBACK_LOCALE, localeName, resolveLocalized } from '@/utils/locales';
-import type { GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, Training } from '@/types';
+import type { GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, TrainerContact, Training } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -66,8 +67,29 @@ const thresholdPct = computed(() =>
   result.value ? Math.round(result.value.passThreshold * 100) : 80,
 );
 
-// No questions means there is no test to take — the training can't be completed.
+// Whether a test follows the material. Without questions the training is still completable: the
+// learner's audited materials confirmation plus an empty grading run (which always passes) are the
+// evidence the training was done.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
+
+// The materials-awareness confirmation dialog shown before any test starts (SR-162).
+const confirmOpen = ref(false);
+const confirming = ref(false);
+
+// The owning trainer's contact card (SR-163) — shown in the confirmation dialog and on the result
+// screen so a trainee with questions knows exactly whom to ask. null while loading or when the
+// owner account no longer exists; the card simply stays hidden then.
+const trainer = ref<TrainerContact | null>(null);
+
+// Avatar initials from the trainer's name, e.g. "Tom Trainer" → "TT".
+const trainerInitials = computed(() =>
+  (trainer.value?.name ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]!.toUpperCase())
+    .join(''),
+);
 
 // ── content language ──────────────────────────────────────────────────────────────────────────────
 // The session content follows the UI language — the language switch in the user menu is the ONE
@@ -113,10 +135,36 @@ async function load(): Promise<void> {
   } finally {
     loading.value = false;
   }
+  // Best-effort: a missing trainer (deleted account) just hides the contact hint.
+  try {
+    trainer.value = (await client.get<TrainerContact>(`/trainings/${trainingId}/trainer`)).data;
+  } catch {
+    trainer.value = null;
+  }
 }
 
 function startTest(): void {
-  step.value = 'quiz';
+  confirmOpen.value = true;
+}
+
+// The learner confirmed awareness of all provided materials: record it in the audit trail, then
+// start the test — or, when the training has no questions, complete it right away via an empty
+// grading run (total 0 → passed), so the confirmation + persisted session are the evidence.
+async function confirmMaterials(): Promise<void> {
+  confirming.value = true;
+  try {
+    await client.post('/sessions/confirm-materials', { trainingId });
+    confirmOpen.value = false;
+    if (hasQuestions.value) {
+      step.value = 'quiz';
+    } else {
+      await submit();
+    }
+  } catch {
+    toast.error(t('session.confirmError'));
+  } finally {
+    confirming.value = false;
+  }
 }
 
 // Material files are download-only (no in-app preview). Fetch the bytes with the auth header, then
@@ -222,14 +270,56 @@ onMounted(load);
           </p>
         </div>
         <p v-if="!hasQuestions" class="font-mono text-xs text-amber-600">{{ t('session.noQuestions') }}</p>
-        <button
-          class="btn-primary self-start"
-          :disabled="!hasQuestions"
-          :title="hasQuestions ? '' : t('session.testUnavailable')"
-          @click="startTest"
-        >
-          {{ t('session.startTest') }}
+        <button class="btn-primary self-start" data-testid="session-start" @click="startTest">
+          {{ hasQuestions ? t('session.startTest') : t('session.completeTraining') }}
         </button>
+
+        <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
+             without questions this confirmation is the only evidence the training was done, so it is
+             recorded in the audit trail before anything else happens. -->
+        <div
+          v-if="confirmOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          data-testid="confirm-materials-dialog"
+        >
+          <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
+            <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.confirmTitle') }}</h2>
+            <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.confirmText') }}</p>
+            <p v-if="!hasQuestions" class="mt-2 font-mono text-xs text-amber-600">
+              {{ t('session.confirmNoQuizNote') }}
+            </p>
+            <!-- Trainer contact (SR-163): who to ask before committing to the confirmation. -->
+            <div
+              v-if="trainer"
+              class="mt-4 flex items-start gap-3 rounded-lg border border-petrol-200 bg-gradient-to-br from-pastel-cyan/50 to-white p-4"
+              data-testid="trainer-contact"
+            >
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
+                {{ trainerInitials }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
+                <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>
+                <p v-if="trainer.orgUnitName" class="font-mono text-xs text-ink-muted">{{ trainer.orgUnitName }}</p>
+                <a
+                  :href="`mailto:${trainer.email}`"
+                  class="mt-1.5 inline-flex items-center gap-1.5 break-all font-mono text-xs font-semibold text-accent hover:underline"
+                >
+                  <Mail class="h-3.5 w-3.5 shrink-0" /> {{ trainer.email }}
+                </a>
+              </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+              <button class="btn-ghost" :disabled="confirming" @click="confirmOpen = false">
+                {{ t('common.cancel') }}
+              </button>
+              <button class="btn-primary" :disabled="confirming" data-testid="confirm-materials-ok" @click="confirmMaterials">
+                <Loader2 v-if="confirming" class="h-4 w-4 animate-spin" />
+                {{ t('session.confirmOk') }}
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Step 2: Quiz -->
@@ -296,7 +386,12 @@ onMounted(load);
           <h2 class="font-sans text-xl font-bold text-ink">
             {{ result.passed ? t('session.passed') : t('session.notPassed') }}
           </h2>
-          <p class="font-mono text-sm text-ink-muted">
+          <!-- A question-less training passes via the materials confirmation — a "0 of 0 correct"
+               score line would be nonsense, so name the confirmation as what completed it. -->
+          <p v-if="result.total === 0" class="font-mono text-sm text-ink-muted">
+            {{ t('session.completedByConfirmation') }}
+          </p>
+          <p v-else class="font-mono text-sm text-ink-muted">
             {{ t('session.score', {
               pct: Math.round(result.scorePct * 100),
               correct: result.correct,
@@ -322,6 +417,27 @@ onMounted(load);
                 {{ qi + 1 }}. {{ training.questions[qi] ? resolveText(training.questions[qi].text).value : '' }}
               </li>
             </ul>
+          </div>
+          <!-- Trainer contact (SR-163): on pass AND fail — questions can follow either outcome. -->
+          <div
+            v-if="trainer"
+            class="flex w-full max-w-md items-start gap-3 rounded-lg border border-petrol-200 bg-white/80 p-4 text-left shadow-soft"
+            data-testid="trainer-contact"
+          >
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
+              {{ trainerInitials }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
+              <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>
+              <p v-if="trainer.orgUnitName" class="font-mono text-xs text-ink-muted">{{ trainer.orgUnitName }}</p>
+              <a
+                :href="`mailto:${trainer.email}`"
+                class="mt-1.5 inline-flex items-center gap-1.5 break-all font-mono text-xs font-semibold text-accent hover:underline"
+              >
+                <Mail class="h-3.5 w-3.5 shrink-0" /> {{ trainer.email }}
+              </a>
+            </div>
           </div>
           <div class="mt-2 flex gap-2">
             <button v-if="!result.passed" class="btn-primary" @click="retry">

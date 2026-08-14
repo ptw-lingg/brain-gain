@@ -35,8 +35,9 @@ test.describe('Training sessions & due status', () => {
     await expect(materialLink).toBeVisible();
     await expect(materialLink).toHaveAttribute('rel', /noopener/);
 
-    // Advance to the quiz (step 2 of 3).
+    // Advance to the quiz (step 2 of 3) — through the materials confirmation (SR-162).
     await page.getByRole('button', { name: 'Start test' }).click();
+    await page.getByTestId('confirm-materials-ok').click();
     await expect(page.getByText('step 2 of 3')).toBeVisible();
 
     // The quiz must NOT visually mark a correct answer (answer key hidden) — just selectable options.
@@ -77,6 +78,7 @@ test.describe('Training sessions & due status', () => {
     await page.getByRole('button', { name: /Start/ }).first().click();
     await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
     await page.getByRole('button', { name: 'Start test' }).click();
+    await page.getByTestId('confirm-materials-ok').click();
 
     const cards = await page.locator('section >> .card').all();
     for (const card of cards) {

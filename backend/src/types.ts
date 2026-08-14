@@ -221,6 +221,7 @@ export type AuditAction =
   | 'backup-delete'
   | 'backup-restore'
   | 'backup-restore-failed'
+  | 'materials-confirmed'
   | 'training-completed';
 
 export type AuditEntityType =

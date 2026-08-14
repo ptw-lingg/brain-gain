@@ -32,7 +32,7 @@ const ACTIONS: AuditAction[] = [
   'create', 'update', 'delete', 'import',
   'login', 'login-failed', 'sso-login', 'activate', 'impersonate',
   'backup-create', 'backup-upload', 'backup-delete', 'backup-restore', 'backup-restore-failed',
-  'training-completed',
+  'materials-confirmed', 'training-completed',
 ];
 const ENTITY_TYPES: AuditEntityType[] = ['user', 'role', 'training', 'material', 'orgUnit', 'settings', 'backup', 'auth', 'session'];
 
@@ -52,6 +52,7 @@ const ACTION_CLS: Partial<Record<AuditAction, string>> = {
   'backup-delete': 'bg-rose-100 text-rose-700',
   'backup-restore': 'bg-amber-100 text-amber-700',
   'backup-restore-failed': 'bg-rose-100 text-rose-700',
+  'materials-confirmed': 'bg-pastel-mint/60 text-emerald-700',
   'training-completed': 'bg-pastel-mint/60 text-emerald-700',
 };
 

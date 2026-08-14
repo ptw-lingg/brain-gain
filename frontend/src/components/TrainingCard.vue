@@ -24,7 +24,8 @@ const category = computed(() => resolveLocalized(training.value.category, locale
 const description = computed(() => resolveLocalized(training.value.description, locale.value).value);
 const tint = computed(() => categoryTint(category.value));
 const actionable = computed(() => isActionable(props.item.status));
-// Without material to study or questions to be tested on, the training can't be started.
+// Without material to study the training can't be started; a missing test is fine — completion then
+// happens through the audited materials confirmation on the session page.
 const readiness = computed(() => trainingReadiness(training.value));
 const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate));
 
@@ -69,10 +70,10 @@ const meta = computed(() => {
     <div class="mt-auto flex justify-end pt-1">
       <button
         class="btn-primary btn-sm shrink-0"
-        :class="{ '!bg-ink-light/60': !actionable && readiness.ready }"
-        :disabled="!readiness.ready"
+        :class="{ '!bg-ink-light/60': !actionable && readiness.startable }"
+        :disabled="!readiness.startable"
         :title="
-          !readiness.ready
+          !readiness.startable
             ? t('trainingCard.unavailable')
             : actionable
               ? t('trainingCard.startSession')

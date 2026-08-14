@@ -54,6 +54,7 @@ test.describe('Failed test — wrongly answered questions', () => {
       await login(page, 'member');
       await page.goto(`/session/${training.id}`);
       await page.getByRole('button', { name: 'Start test' }).click();
+      await page.getByTestId('confirm-materials-ok').click();
       await page.locator('input[name="q-0"]').nth(1).check(); // 'wrong'
       await page.locator('input[name="q-1"]').nth(0).check(); // 'right'
       await page.getByRole('button', { name: 'Submit test' }).click();

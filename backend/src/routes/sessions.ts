@@ -10,6 +10,28 @@ const router = Router();
 
 router.use(authenticate);
 
+// POST /api/sessions/confirm-materials — the learner confirms, before the test starts, having
+// reviewed all provided material. The confirmation exists ONLY as an audit entry: for a training
+// without test questions it is the evidence (together with the persisted session from the empty
+// grading that follows) that the learner actually did the training.
+router.post('/confirm-materials', async (req: AuthRequest, res) => {
+  const { trainingId } = req.body ?? {};
+  if (typeof trainingId !== 'string') {
+    return res.status(400).json({ error: 'trainingId is required' });
+  }
+  const trainings = await readStore<Training>('trainings');
+  const training = trainings.find((t) => t.id === trainingId);
+  if (!training) return res.status(404).json({ error: 'Training not found' });
+  const materials = Array.isArray(training.materials) ? training.materials.length : 0;
+  await auditEvent(
+    req.user ?? null,
+    'materials-confirmed',
+    { type: 'training', id: training.id, name: training.name.en ?? Object.values(training.name)[0] ?? '' },
+    { details: `confirmed ${materials} material(s)` },
+  );
+  return res.status(204).end();
+});
+
 // POST /api/sessions/grade  — grade an attempt server-side; persist ONLY if passed.
 router.post('/grade', async (req: AuthRequest, res) => {
   const { trainingId, answers } = req.body ?? {};

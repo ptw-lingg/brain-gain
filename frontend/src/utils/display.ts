@@ -68,16 +68,19 @@ export function cycleLabel(t: TFn, years: number): string {
 }
 
 /**
- * What a training is missing before trainees can use it. A training needs material to study and
- * questions to be tested on; without material there is nothing to do, without questions there is no
- * test to pass — either gap makes it un-launchable. Used to flag trainings in the trainer list and to
- * gate the Start/test actions.
+ * What a training is missing before trainees can use it. A training needs material to study;
+ * without material there is nothing to do. Questions are optional for the learner: a training
+ * without a test is completed by confirming the materials instead (the confirmation is audited and
+ * the empty grading persists the session as evidence). The trainer list still flags a missing test
+ * via `ready`/`hasQuestions`.
  */
 export interface TrainingReadiness {
   hasMaterial: boolean;
   hasQuestions: boolean;
-  /** Both present — the training can be started and completed. */
+  /** Material AND a test present — fully prepared from the trainer's point of view. */
   ready: boolean;
+  /** Material present — learners can start; without questions the confirmation completes it. */
+  startable: boolean;
 }
 
 export function trainingReadiness(
@@ -87,7 +90,7 @@ export function trainingReadiness(
   // file in some language), so one material is enough to have something to study.
   const hasMaterial = (training.materials?.length ?? 0) > 0;
   const hasQuestions = training.questions.length > 0;
-  return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions };
+  return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions, startable: hasMaterial };
 }
 
 /** Human-readable duration from minutes: 45 → "45 min", 120 → "2 h", 90 → "1 h 30 min". */
