@@ -49,6 +49,8 @@ test.describe('Audit trail — admin page', () => {
     await expect(entryRow).toBeVisible();
     await expect(entryRow).toContainText('admin@braingain.app');
     await expect(entryRow).toContainText(renamed);
+    // The Time column shows the wall-clock time of the entry, not just the day.
+    await expect(entryRow).toContainText(/\d{1,2}:\d{2}:\d{2}/);
 
     await entryRow.getByRole('button').click();
     const changes = page.getByTestId('audit-changes');

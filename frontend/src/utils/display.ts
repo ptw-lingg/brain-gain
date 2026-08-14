@@ -38,6 +38,19 @@ export function formatDate(iso: string): string {
   return d.toLocaleDateString(i18n.global.locale.value, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+/** Date plus wall-clock time (with seconds) — for point-in-time records like audit entries. */
+export function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString(i18n.global.locale.value, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
 const CATEGORY_TINTS: Record<string, string> = {
   Safety: 'from-pastel-cyan/60',
   Compliance: 'from-pastel-mint/60',

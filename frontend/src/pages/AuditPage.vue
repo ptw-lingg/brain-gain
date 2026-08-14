@@ -7,7 +7,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Download, ScrollText } from 'lu
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { AuditAction, AuditEntityType, AuditEntry, AuditListResponse } from '@/types';
-import { formatDate } from '@/utils/display';
+import { formatDateTime } from '@/utils/display';
 import { apiErrorMessage, downloadFile } from '@/utils/download';
 
 const { t } = useI18n();
@@ -187,7 +187,7 @@ onMounted(load);
         <tbody>
           <template v-for="e in entries" :key="e.id">
             <tr class="border-b border-line/60 last:border-0" :data-testid="`audit-row-${e.action}`">
-              <td class="whitespace-nowrap px-5 py-3 font-mono text-xs text-ink-muted">{{ formatDate(e.timestamp) }}</td>
+              <td class="whitespace-nowrap px-5 py-3 font-mono text-xs text-ink-muted">{{ formatDateTime(e.timestamp) }}</td>
               <td class="px-5 py-3">
                 <span class="font-mono text-xs font-semibold text-ink">{{ actorLabel(e) }}</span>
                 <span v-if="e.actor?.impersonatorEmail" class="pill ml-2 bg-amber-100 text-amber-700">
