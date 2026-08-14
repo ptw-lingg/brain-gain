@@ -31,10 +31,14 @@ import {
 import { computeDue, sessionsFor } from '../services/due';
 import { normalizeCorrectIndices, questionType, sanitizeLocalizedText } from '../services/questions';
 import { requiredTrainingIds } from '../services/training';
+import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
 
 const router = Router();
+
+// Human-readable audit label for a training: English name, else the first filled language.
+const trainingLabel = (t: Training): string => t.name.en ?? Object.values(t.name)[0] ?? '';
 
 router.use(authenticate);
 
@@ -199,6 +203,7 @@ router.post(
     const type = typeof req.query.type === 'string' ? req.query.type.slice(0, 255) : '';
     await saveMaterial(id, bytes, { name, size: bytes.length, type });
     const file: MaterialFile = { id, name, size: bytes.length, type };
+    await auditEvent(req.user ?? null, 'create', { type: 'material', id, name });
     return res.status(201).json(file);
   },
 );
@@ -257,6 +262,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   };
   trainings.push(training);
   await writeStore('trainings', trainings);
+  await auditEvent(req.user ?? null, 'create', { type: 'training', id: training.id, name: trainingLabel(training) });
   return res.status(201).json(training);
 });
 
@@ -275,6 +281,7 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
     order: position.has(t.id) ? (position.get(t.id) as number) : tail++,
   }));
   await writeStore('trainings', reordered);
+  await auditEvent(req.user ?? null, 'update', { type: 'training' }, { details: `reordered ${ids.length} trainings` });
   return res.json([...reordered].sort((a, b) => a.order - b.order));
 });
 
@@ -321,17 +328,24 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const keptIds = new Set(materialFileIds(trainings[idx]));
   const droppedIds = materialFileIds(current).filter((id) => !keptIds.has(id));
   await Promise.allSettled(droppedIds.map((id) => deleteMaterial(id)));
+  await auditEvent(
+    req.user ?? null,
+    'update',
+    { type: 'training', id: trainings[idx].id, name: trainingLabel(trainings[idx]) },
+    { changes: diffEntities(current, trainings[idx]) },
+  );
   return res.json(trainings[idx]);
 });
 
 // DELETE /api/trainings/:id  — admin or owning trainer
-router.delete('/:id', requireAdminOrOwner, async (req, res) => {
+router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
   const removed = trainings.find((t) => t.id === req.params.id);
   if (!removed) return res.status(404).json({ error: 'Not found' });
   await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
   // Best-effort cleanup of the deleted training's uploaded files so they don't linger on disk.
   await Promise.allSettled(materialFileIds(removed).map((id) => deleteMaterial(id)));
+  await auditEvent(req.user ?? null, 'delete', { type: 'training', id: removed.id, name: trainingLabel(removed) });
   return res.status(204).end();
 });
 

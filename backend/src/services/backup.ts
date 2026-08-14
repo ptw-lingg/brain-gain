@@ -10,6 +10,12 @@
 // STORE_FILES is also the source of the ArrayFile type, so a new store cannot be added without
 // appearing in backups.
 //
+// The audit log (data/audit.ndjson) is a deliberate one-way passenger: every archive CARRIES a copy
+// as evidence, but it is recorded in the manifest's separate `audit` field — never in `files` — so a
+// restore (which stages and swaps only `files` stores) can never overwrite the local audit history.
+// The archived copy is never imported anywhere, including on a fresh install; each installation's
+// local log is the sole authoritative record of what happened on that installation.
+//
 // Archives are stored server-side as DATA_DIR/backups/<uuid>.zip with a sibling <uuid>.meta.json,
 // the same id + sidecar scheme fileStore.ts uses for materials: the id in a URL path is a UUID, so it
 // cannot traverse, and the human-readable download name lives in the sidecar.
@@ -29,6 +35,7 @@ import {
   storeFilePath,
   type StoreFile,
 } from './fileStore';
+import { auditFilePath } from './audit';
 
 const BACKUPS_DIR_NAME = 'backups';
 const STAGING_DIR_NAME = '.restore-staging';
@@ -174,6 +181,17 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
     zip.file(`${MATERIALS_PREFIX}${entry}`, await fs.readFile(materialFilePath(entry)), { compression: 'STORE' });
   }
 
+  // The audit log rides along as evidence. It goes into the manifest's own `audit` field, NOT into
+  // `files`: validateArchive maps every `files` entry against STORE_FILES (and would reject this
+  // one), and restoreBackup swaps only `files` stores — so the copy is archived but never restored.
+  let audit: string | undefined;
+  try {
+    zip.file(`data/${path.basename(auditFilePath())}`, await fs.readFile(auditFilePath(), 'utf-8'));
+    audit = path.basename(auditFilePath());
+  } catch {
+    // no audit log yet — simply absent from the archive
+  }
+
   const contents = {
     users: countOf(raw.users),
     trainings: countOf(raw.trainings),
@@ -182,7 +200,11 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
 
   zip.file(
     MANIFEST,
-    JSON.stringify({ app: APP, formatVersion: FORMAT_VERSION, createdAt: new Date().toISOString(), files, materials: contents.materials }, null, 2),
+    JSON.stringify(
+      { app: APP, formatVersion: FORMAT_VERSION, createdAt: new Date().toISOString(), files, materials: contents.materials, ...(audit ? { audit } : {}) },
+      null,
+      2,
+    ),
   );
 
   const bytes = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
@@ -370,7 +392,9 @@ export function restoreBackup(id: string): Promise<{ meta: BackupMeta; safetyBac
       await fs.rm(staging, { recursive: true, force: true });
       await fs.mkdir(staging, { recursive: true });
 
-      // 1. Stage every store from the text validation already decompressed.
+      // 1. Stage every store from the text validation already decompressed. Only `stores` (the
+      //    manifest's `files`) are staged and swapped — data/audit.ndjson in the archive is
+      //    INTENTIONALLY never extracted; the local audit trail survives every restore.
       for (const { name, text } of stores) {
         await fs.writeFile(path.join(staging, name), text, 'utf-8');
       }

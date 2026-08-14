@@ -14,6 +14,7 @@ import {
   storeUploadedBackup,
 } from '../services/backup';
 import { runDataMigrations } from '../services/migrations';
+import { auditEvent } from '../services/audit';
 
 const router = Router();
 
@@ -44,9 +45,11 @@ router.get('/', async (_req: AuthRequest, res) => {
 });
 
 // POST /api/backups — snapshot all app data into a new backup.
-router.post('/', async (_req: AuthRequest, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   try {
-    return res.status(201).json(await createBackup('manual'));
+    const meta = await createBackup('manual');
+    await auditEvent(req.user ?? null, 'backup-create', { type: 'backup', id: meta.id, name: meta.fileName });
+    return res.status(201).json(meta);
   } catch (err) {
     console.error('Backup create error:', err);
     return res.status(500).json({ error: 'Could not create the backup' });
@@ -75,6 +78,7 @@ router.post('/upload', raw({ type: '*/*', limit: '200mb' }), async (req: AuthReq
   }
   try {
     const meta = await storeUploadedBackup(bytes, sanitizeFileName(req.query.name, 'backup.zip'));
+    await auditEvent(req.user ?? null, 'backup-upload', { type: 'backup', id: meta.id, name: meta.fileName });
     return res.status(201).json(meta);
   } catch (err) {
     if (err instanceof BackupError) return res.status(400).json({ error: err.message });
@@ -102,6 +106,14 @@ router.post('/:id/restore', async (req: AuthRequest, res) => {
     // An archive may carry records in any historical shape — normalize them right away rather
     // than waiting for the next boot (which is when the migrations otherwise run).
     await runDataMigrations();
+    // The restore itself becomes audit history — the log SURVIVED the restore (it is outside the
+    // swap set), so this entry appends to everything recorded before it.
+    await auditEvent(
+      req.user ?? null,
+      'backup-restore',
+      { type: 'backup', id: req.params.id, name: result.meta.fileName },
+      { details: `safety backup ${result.safetyBackupId}` },
+    );
     return res.json({
       restored: true,
       fileName: result.meta.fileName,
@@ -116,6 +128,12 @@ router.post('/:id/restore', async (req: AuthRequest, res) => {
     // Failed mid-restore: the data may be partially updated, so hand back the recovery point.
     if (err instanceof RestoreFailed) {
       console.error('Backup restore failed after the safety snapshot:', err.cause);
+      await auditEvent(
+        req.user ?? null,
+        'backup-restore-failed',
+        { type: 'backup', id: req.params.id },
+        { details: `safety backup ${err.safetyBackupId}` },
+      );
       return res.status(500).json({ error: err.message, safetyBackupId: err.safetyBackupId });
     }
     console.error('Backup restore error:', err);
@@ -128,6 +146,7 @@ router.delete('/:id', async (req: AuthRequest, res) => {
   try {
     const removed = await deleteBackup(req.params.id);
     if (!removed) return res.status(404).json({ error: 'Not found' });
+    await auditEvent(req.user ?? null, 'backup-delete', { type: 'backup', id: req.params.id });
     return res.json({ deleted: true });
   } catch (err) {
     console.error('Backup delete error:', err);

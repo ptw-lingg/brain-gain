@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import type { OrgUnit, Settings, Training } from '../types';
 import { readSettings, readStore, writeSettings, writeStore } from '../services/fileStore';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
+import { auditEvent, diffSettings } from '../services/audit';
 import {
   TlsError,
   applyCredentials,
@@ -37,9 +38,10 @@ router.get('/', authenticate, async (_req, res) => {
 
 // PUT /api/settings  — admin only. Partial merge so saving SSO config and the pass threshold are
 // independent: only the fields present in the body are updated.
-router.put('/', authenticate, requireAdmin, async (req, res) => {
+router.put('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   const body = req.body ?? {};
-  const next: Settings = { ...(await readSettings()) };
+  const before = await readSettings();
+  const next: Settings = { ...before };
 
   if (body.passThreshold !== undefined) {
     const raw = Number(body.passThreshold);
@@ -110,6 +112,7 @@ router.put('/', authenticate, requireAdmin, async (req, res) => {
   }
 
   await writeSettings(next);
+  await auditEvent(req.user ?? null, 'update', { type: 'settings', name: 'Settings' }, { changes: diffSettings(before, next) });
   return res.json(publicSettings(next));
 });
 
@@ -120,7 +123,7 @@ router.get('/certificate', authenticate, requireAdmin, async (_req, res) => {
 
 // POST /api/settings/certificate — admin only; upload/replace the TLS certificate (PEM strings).
 // Validates the cert+key, hot-swaps the running HTTPS server, and stores only non-secret metadata.
-router.post('/certificate', authenticate, requireAdmin, async (req, res) => {
+router.post('/certificate', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
   if (typeof b.cert !== 'string' || !b.cert.trim() || typeof b.key !== 'string' || !b.key.trim()) {
     return res.status(400).json({ error: 'cert and key (PEM) are required' });
@@ -136,6 +139,12 @@ router.post('/certificate', authenticate, requireAdmin, async (req, res) => {
     const settings = await readSettings();
     settings.tls = meta;
     await writeSettings(settings);
+    await auditEvent(
+      req.user ?? null,
+      'update',
+      { type: 'settings', name: 'TLS certificate' },
+      { details: `uploaded certificate ${meta.subject} (${meta.fingerprint})` },
+    );
     return res.json(meta);
   } catch (err) {
     if (err instanceof TlsError) return res.status(400).json({ error: err.message });
@@ -145,7 +154,7 @@ router.post('/certificate', authenticate, requireAdmin, async (req, res) => {
 });
 
 // POST /api/settings/certificate/self-signed — admin only; revert to a fresh self-signed certificate
-router.post('/certificate/self-signed', authenticate, requireAdmin, async (_req, res) => {
+router.post('/certificate/self-signed', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   try {
     const creds = await generateSelfSigned();
     applyCredentials(creds);
@@ -153,6 +162,12 @@ router.post('/certificate/self-signed', authenticate, requireAdmin, async (_req,
     const settings = await readSettings();
     settings.tls = meta;
     await writeSettings(settings);
+    await auditEvent(
+      req.user ?? null,
+      'update',
+      { type: 'settings', name: 'TLS certificate' },
+      { details: `regenerated self-signed certificate ${meta.subject} (${meta.fingerprint})` },
+    );
     return res.json(meta);
   } catch (err) {
     console.error('Self-signed regeneration error:', err);

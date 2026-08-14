@@ -15,6 +15,7 @@ import UsersPage from '@/pages/UsersPage.vue';
 import UsersImportPage from '@/pages/UsersImportPage.vue';
 import SettingsPage from '@/pages/SettingsPage.vue';
 import BackupsPage from '@/pages/BackupsPage.vue';
+import AuditPage from '@/pages/AuditPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -38,6 +39,7 @@ const router = createRouter({
         { path: 'users/import', component: UsersImportPage, meta: { requiresAdmin: true } },
         { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
         { path: 'backups', component: BackupsPage, meta: { requiresAdmin: true } },
+        { path: 'audit', component: AuditPage, meta: { requiresAdmin: true } },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },

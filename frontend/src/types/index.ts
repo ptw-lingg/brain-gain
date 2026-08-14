@@ -201,3 +201,63 @@ export interface BackupMeta {
   source: 'manual' | 'pre-restore' | 'upload' | 'auto';
   contents: { users: number; trainings: number; materials: number };
 }
+
+// ── Audit trail (see backend/src/services/audit.ts) ──────────────────────────────────────────────
+
+export type AuditAction =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'import'
+  | 'login'
+  | 'login-failed'
+  | 'sso-login'
+  | 'activate'
+  | 'impersonate'
+  | 'backup-create'
+  | 'backup-upload'
+  | 'backup-delete'
+  | 'backup-restore'
+  | 'backup-restore-failed'
+  | 'training-completed';
+
+export type AuditEntityType =
+  | 'user'
+  | 'role'
+  | 'training'
+  | 'material'
+  | 'orgUnit'
+  | 'settings'
+  | 'backup'
+  | 'auth'
+  | 'session';
+
+/** One changed field on an update; secret values arrive masked as '***'. */
+export interface AuditChange {
+  field: string;
+  from: unknown;
+  to: unknown;
+}
+
+export interface AuditEntry {
+  id: string;
+  timestamp: string;
+  actor: {
+    id: string;
+    email: string;
+    impersonatorId?: string;
+    impersonatorEmail?: string;
+  } | null;
+  action: AuditAction;
+  entityType: AuditEntityType;
+  entityId: string;
+  entityName: string;
+  changes?: AuditChange[];
+  details?: string;
+}
+
+/** GET /api/audit response: one filtered page, newest first, plus the filtered total for paging. */
+export interface AuditListResponse {
+  total: number;
+  entries: AuditEntry[];
+}

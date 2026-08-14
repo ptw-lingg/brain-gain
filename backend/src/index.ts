@@ -13,6 +13,7 @@ import sessionRoutes from './routes/sessions';
 import settingsRoutes from './routes/settings';
 import mailRoutes from './routes/mail';
 import backupRoutes from './routes/backups';
+import auditRoutes from './routes/audit';
 import { seed } from './seed';
 import { runDataMigrations } from './services/migrations';
 import { startAutoBackupScheduler } from './services/autoBackup';
@@ -43,6 +44,7 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/backups', backupRoutes);
+app.use('/api/audit', auditRoutes);
 
 // Serve the built SPA from the same HTTPS origin (production). In dev the SPA is served by Vite,
 // and `frontend/dist` may not exist — so only mount this when a build is present.

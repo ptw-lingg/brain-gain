@@ -15,6 +15,9 @@ export function dataDir(): string {
 // allowlist backup.ts archives and restores, and ArrayFile is derived FROM it rather than declared
 // beside it: a new store can only be added by extending this list, so it cannot be introduced through
 // readStore/writeStore and then be silently missing from backups.
+// Deliberate exception: the audit log (audit.ndjson) is NOT a store — it is archived by backup.ts
+// as evidence but must never be restored (restoring old data may not erase newer audit history).
+// See services/audit.ts.
 export const ARRAY_FILES = ['users', 'roles', 'trainings', 'sessions', 'orgUnits'] as const;
 export type ArrayFile = (typeof ARRAY_FILES)[number];
 export const STORE_FILES = [...ARRAY_FILES, 'settings'] as const;

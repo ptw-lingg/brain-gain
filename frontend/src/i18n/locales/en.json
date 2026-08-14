@@ -33,6 +33,7 @@
     "users": "Users",
     "settings": "Settings",
     "backups": "Backups",
+    "audit": "Audit trail",
     "logout": "Log out",
     "userMenu": "User menu",
     "roleAdmin": "admin",
@@ -570,6 +571,67 @@
       "reloginNeeded": "Restored — your account is not in the restored data, please sign in again",
       "deleted": "Backup deleted",
       "deleteError": "Could not delete the backup"
+    }
+  },
+  "audit": {
+    "title": "Audit trail",
+    "subtitle": "{total} matching entr(ies) · newest first",
+    "exportCsv": "Export CSV",
+    "filterAction": "Action",
+    "filterEntityType": "Entity",
+    "filterText": "Search",
+    "filterTextPlaceholder": "User, entity, details…",
+    "filterFrom": "From",
+    "filterTo": "To",
+    "filterAll": "All",
+    "thTime": "Time",
+    "thActor": "Actor",
+    "thAction": "Action",
+    "thEntity": "Entity",
+    "thDetails": "Details",
+    "empty": "No audit entries match the current filter.",
+    "system": "System",
+    "viaImpersonator": "via {email}",
+    "range": "{first}–{last} of {total}",
+    "prev": "Previous",
+    "next": "Next",
+    "changesTitle": "Changed fields",
+    "changes": {
+      "field": "Field",
+      "before": "Before",
+      "after": "After"
+    },
+    "actions": {
+      "create": "Created",
+      "update": "Updated",
+      "delete": "Deleted",
+      "import": "Imported",
+      "login": "Sign-in",
+      "login-failed": "Failed sign-in",
+      "sso-login": "SSO sign-in",
+      "activate": "Account activated",
+      "impersonate": "Impersonation",
+      "backup-create": "Backup created",
+      "backup-upload": "Backup uploaded",
+      "backup-delete": "Backup deleted",
+      "backup-restore": "Backup restored",
+      "backup-restore-failed": "Restore failed",
+      "training-completed": "Training completed"
+    },
+    "entities": {
+      "user": "User",
+      "role": "Job role",
+      "training": "Training",
+      "material": "Material",
+      "orgUnit": "Org unit",
+      "settings": "Settings",
+      "backup": "Backup",
+      "auth": "Sign-in",
+      "session": "Session"
+    },
+    "toasts": {
+      "loadError": "Could not load the audit trail",
+      "exportError": "Could not export the audit trail"
     }
   }
 }

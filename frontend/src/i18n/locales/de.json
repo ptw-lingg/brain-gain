@@ -33,6 +33,7 @@
     "users": "Benutzer",
     "settings": "Einstellungen",
     "backups": "Backups",
+    "audit": "Audit-Trail",
     "logout": "Abmelden",
     "userMenu": "Benutzermenü",
     "roleAdmin": "Admin",
@@ -570,6 +571,67 @@
       "reloginNeeded": "Wiederhergestellt — Ihr Konto ist in den wiederhergestellten Daten nicht enthalten, bitte melden Sie sich erneut an",
       "deleted": "Backup gelöscht",
       "deleteError": "Backup konnte nicht gelöscht werden"
+    }
+  },
+  "audit": {
+    "title": "Audit-Trail",
+    "subtitle": "{total} passende Einträge · neueste zuerst",
+    "exportCsv": "CSV exportieren",
+    "filterAction": "Aktion",
+    "filterEntityType": "Objekt",
+    "filterText": "Suche",
+    "filterTextPlaceholder": "Benutzer, Objekt, Details…",
+    "filterFrom": "Von",
+    "filterTo": "Bis",
+    "filterAll": "Alle",
+    "thTime": "Zeitpunkt",
+    "thActor": "Akteur",
+    "thAction": "Aktion",
+    "thEntity": "Objekt",
+    "thDetails": "Details",
+    "empty": "Keine Audit-Einträge entsprechen dem aktuellen Filter.",
+    "system": "System",
+    "viaImpersonator": "über {email}",
+    "range": "{first}–{last} von {total}",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "changesTitle": "Geänderte Felder",
+    "changes": {
+      "field": "Feld",
+      "before": "Vorher",
+      "after": "Nachher"
+    },
+    "actions": {
+      "create": "Erstellt",
+      "update": "Geändert",
+      "delete": "Gelöscht",
+      "import": "Importiert",
+      "login": "Anmeldung",
+      "login-failed": "Fehlgeschlagene Anmeldung",
+      "sso-login": "SSO-Anmeldung",
+      "activate": "Konto aktiviert",
+      "impersonate": "Impersonierung",
+      "backup-create": "Backup erstellt",
+      "backup-upload": "Backup hochgeladen",
+      "backup-delete": "Backup gelöscht",
+      "backup-restore": "Backup wiederhergestellt",
+      "backup-restore-failed": "Wiederherstellung fehlgeschlagen",
+      "training-completed": "Schulung abgeschlossen"
+    },
+    "entities": {
+      "user": "Benutzer",
+      "role": "Funktion",
+      "training": "Schulung",
+      "material": "Material",
+      "orgUnit": "Organisationseinheit",
+      "settings": "Einstellungen",
+      "backup": "Backup",
+      "auth": "Anmeldung",
+      "session": "Sitzung"
+    },
+    "toasts": {
+      "loadError": "Audit-Trail konnte nicht geladen werden",
+      "exportError": "Audit-Trail konnte nicht exportiert werden"
     }
   }
 }

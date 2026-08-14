@@ -3,8 +3,9 @@ import bcrypt from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import type { JobRole, OrgUnit, User } from '../types';
 import { readStore, writeStore } from '../services/fileStore';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { rootOrgUnitId } from '../services/orgUnits';
+import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,7 +41,7 @@ router.get('/:id/activation', async (req, res) => {
 });
 
 // POST /api/users  — admin creates a user
-router.post('/', async (req, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   const { name, email, password, roleIds, isAdmin, isTrainer, orgUnitId } = req.body ?? {};
   if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'name, email, password are required' });
@@ -69,6 +70,7 @@ router.post('/', async (req, res) => {
   };
   users.push(user);
   await writeStore('users', users);
+  await auditEvent(req.user ?? null, 'create', { type: 'user', id: user.id, name: user.email });
   return res.status(201).json(toSafeUser(user));
 });
 
@@ -86,7 +88,7 @@ router.post('/', async (req, res) => {
 //     with the row's matched roles. Access flags, password and disabled state are left untouched.
 // A row is an error (never applied) when the name/email is missing or invalid, the email is duplicated
 // earlier in the paste, or any role name matches no existing role — so a typo can't mis-assign roles.
-router.post('/import', async (req, res) => {
+router.post('/import', async (req: AuthRequest, res) => {
   const rawRows = (req.body ?? {}).rows;
   const commit = (req.body ?? {}).commit === true;
   if (!Array.isArray(rawRows)) {
@@ -196,7 +198,7 @@ router.post('/import', async (req, res) => {
     for (const row of plan) {
       if (row.action === 'create') {
         const token = randomBytes(32).toString('base64url');
-        users.push({
+        const created: User = {
           id: randomUUID(),
           email: row.email,
           name: row.name,
@@ -207,16 +209,25 @@ router.post('/import', async (req, res) => {
           isDisabled: true,
           activationToken: token,
           createdAt: now,
-        });
+        };
+        users.push(created);
         row.activationToken = token; // returned once, to the admin who imported
         dirty = true;
+        await auditEvent(req.user ?? null, 'create', { type: 'user', id: created.id, name: created.email }, { details: 'imported' });
       } else if (row.action === 'update') {
         const u = users.find((x) => x.email.toLowerCase() === row.email.toLowerCase());
         if (u) {
+          const before = { ...u };
           u.name = row.name;
           u.roleIds = row.matchedRoleIds;
           if (row.matchedOrgUnitId) u.orgUnitId = row.matchedOrgUnitId; // only when provided
           dirty = true;
+          await auditEvent(
+            req.user ?? null,
+            'update',
+            { type: 'user', id: u.id, name: u.email },
+            { changes: diffEntities(before, u), details: 'imported' },
+          );
         }
       }
     }
@@ -233,7 +244,7 @@ router.post('/import', async (req, res) => {
 });
 
 // PUT /api/users/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', async (req: AuthRequest, res) => {
   const { name, email, roleIds, isAdmin, isTrainer, password, orgUnitId } = req.body ?? {};
   const users = await readStore<User>('users');
   const idx = users.findIndex((u) => u.id === req.params.id);
@@ -260,15 +271,17 @@ router.put('/:id', async (req, res) => {
   };
   users[idx] = updated;
   await writeStore('users', users);
+  await auditEvent(req.user ?? null, 'update', { type: 'user', id: updated.id, name: updated.email }, { changes: diffEntities(current, updated) });
   return res.json(toSafeUser(updated));
 });
 
 // DELETE /api/users/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: AuthRequest, res) => {
   const users = await readStore<User>('users');
-  const next = users.filter((u) => u.id !== req.params.id);
-  if (next.length === users.length) return res.status(404).json({ error: 'Not found' });
-  await writeStore('users', next);
+  const removed = users.find((u) => u.id === req.params.id);
+  if (!removed) return res.status(404).json({ error: 'Not found' });
+  await writeStore('users', users.filter((u) => u.id !== req.params.id));
+  await auditEvent(req.user ?? null, 'delete', { type: 'user', id: removed.id, name: removed.email });
   return res.status(204).end();
 });
 

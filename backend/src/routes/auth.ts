@@ -6,12 +6,17 @@ import { readSettings, readStore, writeStore } from '../services/fileStore';
 import { UI_LOCALES } from '../services/locales';
 import { rootOrgUnitId } from '../services/orgUnits';
 import { authenticate, requireAdmin, signToken, type AuthRequest } from '../middleware/auth';
+import { auditEvent } from '../services/audit';
 import {
   EntraAuthError,
   authority,
   isEntraConfigured,
   verifyEntraIdToken,
 } from '../services/entra';
+
+// The AuthUser shape for a user acting on their own behalf — what auditEvent records as the actor
+// for auth events that happen outside an authenticated request (login, activation, SSO).
+const asActor = (u: User) => ({ id: u.id, email: u.email, isAdmin: u.isAdmin, isTrainer: u.isTrainer });
 
 const router = Router();
 
@@ -47,6 +52,9 @@ router.post('/login', async (req, res) => {
     !user.passwordHash ||
     !(await bcrypt.compare(password, user.passwordHash))
   ) {
+    // Actor-less on purpose: the attempt did NOT authenticate, so no identity is asserted — only
+    // the attempted email is recorded, and the generic reason avoids user enumeration in the log too.
+    await auditEvent(null, 'login-failed', { type: 'auth', name: email }, { details: 'invalid credentials or disabled account' });
     return res.status(401).json({ error: 'Invalid email or password' });
   }
   const token = signToken({
@@ -55,6 +63,7 @@ router.post('/login', async (req, res) => {
     isAdmin: user.isAdmin,
     isTrainer: user.isTrainer,
   });
+  await auditEvent(asActor(user), 'login', { type: 'auth', id: user.id, name: user.email });
   return res.json({ token, user: await identityUser(user) });
 });
 
@@ -91,6 +100,7 @@ router.post('/activate', async (req, res) => {
   delete user.activationToken;
   users[idx] = user;
   await writeStore('users', users);
+  await auditEvent(asActor(user), 'activate', { type: 'auth', id: user.id, name: user.email });
 
   const jwt = signToken({
     id: user.id,
@@ -146,9 +156,7 @@ router.post('/impersonate/:userId', authenticate, requireAdmin, async (req: Auth
   const target = users.find((u) => u.id === req.params.userId);
   if (!target) return res.status(404).json({ error: 'User not found' });
 
-  console.log(
-    `[impersonate] ${req.user?.email} (${req.user?.id}) → ${target.email} (${target.id})`,
-  );
+  await auditEvent(req.user ?? null, 'impersonate', { type: 'user', id: target.id, name: target.email });
   const token = signToken({
     id: target.id,
     email: target.email,
@@ -209,6 +217,7 @@ router.post('/sso/entra', async (req, res) => {
       byEmail.entraOid = claims.oid;
       await writeStore('users', users);
       user = byEmail;
+      await auditEvent(asActor(user), 'update', { type: 'user', id: user.id, name: user.email }, { details: 'linked Microsoft account' });
     } else {
       // Domain-restricted auto-provision: only emails in the allow-list may create a new member.
       const domain = claims.email.split('@')[1]?.toLowerCase() ?? '';
@@ -229,6 +238,7 @@ router.post('/sso/entra', async (req, res) => {
       };
       users.push(user);
       await writeStore('users', users);
+      await auditEvent(asActor(user), 'create', { type: 'user', id: user.id, name: user.email }, { details: 'auto-provisioned via SSO' });
     }
   }
 
@@ -243,6 +253,7 @@ router.post('/sso/entra', async (req, res) => {
     isAdmin: user.isAdmin,
     isTrainer: user.isTrainer,
   });
+  await auditEvent(asActor(user), 'sso-login', { type: 'auth', id: user.id, name: user.email });
   return res.json({ token, user: await identityUser(user) });
 });
 

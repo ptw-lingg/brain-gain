@@ -12,6 +12,7 @@
 
 import { readSettings } from './fileStore';
 import { createBackup, deleteBackup, listBackups } from './backup';
+import { auditEvent } from './audit';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -37,6 +38,8 @@ export async function runAutoBackupIfDue(): Promise<void> {
 
     const meta = await createBackup('auto');
     console.log(`↪  automatic backup created: ${meta.fileName} (${meta.size} bytes)`);
+    // Actor-less: the scheduler acted, not a user.
+    await auditEvent(null, 'backup-create', { type: 'backup', id: meta.id, name: meta.fileName }, { details: 'automatic' });
 
     // Retention: keep the newest `keep` automatic backups, delete the older surplus. Filtering on
     // source==='auto' is what keeps every other source out of reach.

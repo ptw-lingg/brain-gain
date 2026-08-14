@@ -6,6 +6,7 @@ import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth
 import { computeDue, sessionsFor } from '../services/due';
 import { requiredTrainingIdsFor } from '../services/training';
 import { subtreeUnitIds, wouldCreateCycle } from '../services/orgUnits';
+import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 
 const router = Router();
@@ -61,7 +62,7 @@ router.get('/my-team', async (req: AuthRequest, res) => {
 });
 
 // POST /api/org-units — admin only.
-router.post('/', requireAdmin, async (req, res) => {
+router.post('/', requireAdmin, async (req: AuthRequest, res) => {
   const { name, parentId, headUserId } = req.body ?? {};
   if (typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ error: 'name is required' });
@@ -78,11 +79,12 @@ router.post('/', requireAdmin, async (req, res) => {
   };
   orgUnits.push(unit);
   await writeStore('orgUnits', orgUnits);
+  await auditEvent(req.user ?? null, 'create', { type: 'orgUnit', id: unit.id, name: unit.name });
   return res.status(201).json(unit);
 });
 
 // PUT /api/org-units/:id — admin only. Rejects parent changes that would create a cycle.
-router.put('/:id', requireAdmin, async (req, res) => {
+router.put('/:id', requireAdmin, async (req: AuthRequest, res) => {
   const { name, parentId, headUserId } = req.body ?? {};
   const orgUnits = await readStore<OrgUnit>('orgUnits');
   const idx = orgUnits.findIndex((o) => o.id === req.params.id);
@@ -107,12 +109,13 @@ router.put('/:id', requireAdmin, async (req, res) => {
     headUserId: typeof headUserId === 'string' ? headUserId : current.headUserId,
   };
   await writeStore('orgUnits', orgUnits);
+  await auditEvent(req.user ?? null, 'update', { type: 'orgUnit', id: orgUnits[idx].id, name: orgUnits[idx].name }, { changes: diffEntities(current, orgUnits[idx]) });
   return res.json(orgUnits[idx]);
 });
 
 // POST /api/org-units/:id/members — admin: move several users into this unit at once.
 // Body: { userIds: string[] }. Unknown ids are ignored; returns how many users actually moved.
-router.post('/:id/members', requireAdmin, async (req, res) => {
+router.post('/:id/members', requireAdmin, async (req: AuthRequest, res) => {
   const orgUnits = await readStore<OrgUnit>('orgUnits');
   const unit = orgUnits.find((o) => o.id === req.params.id);
   if (!unit) return res.status(404).json({ error: 'Not found' });
@@ -129,12 +132,15 @@ router.post('/:id/members', requireAdmin, async (req, res) => {
       moved++;
     }
   }
-  if (moved) await writeStore('users', users);
+  if (moved) {
+    await writeStore('users', users);
+    await auditEvent(req.user ?? null, 'update', { type: 'orgUnit', id: unit.id, name: unit.name }, { details: `moved ${moved} member(s)` });
+  }
   return res.json({ moved });
 });
 
 // DELETE /api/org-units/:id — admin only. Blocked while the unit has sub-units or member users.
-router.delete('/:id', requireAdmin, async (req, res) => {
+router.delete('/:id', requireAdmin, async (req: AuthRequest, res) => {
   const orgUnits = await readStore<OrgUnit>('orgUnits');
   const unit = orgUnits.find((o) => o.id === req.params.id);
   if (!unit) return res.status(404).json({ error: 'Not found' });
@@ -149,6 +155,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     'orgUnits',
     orgUnits.filter((o) => o.id !== unit.id),
   );
+  await auditEvent(req.user ?? null, 'delete', { type: 'orgUnit', id: unit.id, name: unit.name });
   return res.status(204).end();
 });
 

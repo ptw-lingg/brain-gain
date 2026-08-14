@@ -4,6 +4,7 @@ import type { Training, TrainingSession } from '../types';
 import { readStore, readSettings, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { gradeAnswers, isAnswerCorrect } from '../services/questions';
+import { auditEvent } from '../services/audit';
 
 const router = Router();
 
@@ -40,6 +41,12 @@ router.post('/grade', async (req: AuthRequest, res) => {
     };
     sessions.push(session);
     await writeStore('sessions', sessions);
+    await auditEvent(
+      req.user ?? null,
+      'training-completed',
+      { type: 'training', id: trainingId, name: training.name.en ?? Object.values(training.name)[0] ?? '' },
+      { details: `score ${Math.round(scorePct * 100)}%` },
+    );
   }
 
   const result: Record<string, unknown> = { scorePct, passed, passThreshold, correct, total };

@@ -202,6 +202,67 @@ export interface TraineeGroup {
   }[];
 }
 
+// ── Audit trail ──────────────────────────────────────────────────────────────────────────────────
+
+// Every kind of event the audit trail records. Reads are never audited; see services/audit.ts for
+// the full scope (and the deliberate exclusions).
+export type AuditAction =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'import'
+  | 'login'
+  | 'login-failed'
+  | 'sso-login'
+  | 'activate'
+  | 'impersonate'
+  | 'backup-create'
+  | 'backup-upload'
+  | 'backup-delete'
+  | 'backup-restore'
+  | 'backup-restore-failed'
+  | 'training-completed';
+
+export type AuditEntityType =
+  | 'user'
+  | 'role'
+  | 'training'
+  | 'material'
+  | 'orgUnit'
+  | 'settings'
+  | 'backup'
+  | 'auth'
+  | 'session';
+
+// One changed field on an update. Secret fields are recorded as '***' → '***' — the CHANGE is
+// visible, the values never are (see REDACT_FIELDS in services/audit.ts).
+export interface AuditChange {
+  field: string; // top-level field name, or a dot-path for nested settings (e.g. 'smtp.host')
+  from: unknown;
+  to: unknown;
+}
+
+// One line of the append-only audit log (data/audit.ndjson). Entries are written once and never
+// rewritten or pruned.
+export interface AuditEntry {
+  id: string; // UUID
+  timestamp: string; // ISO 8601
+  // Who acted. null = no authenticated actor (failed sign-in, account activation, automatic backup).
+  // Carries the impersonator when the action happened inside an impersonation session.
+  actor: {
+    id: string;
+    email: string;
+    impersonatorId?: string;
+    impersonatorEmail?: string;
+  } | null;
+  action: AuditAction;
+  entityType: AuditEntityType;
+  entityId: string; // '' when no single entity applies (e.g. a reorder)
+  entityName: string; // human-readable label captured at event time
+  changes?: AuditChange[]; // field-level diffs on updates (redacted)
+  details?: string; // free text: score, counts, failure reason, safety backup id…
+}
+
 // JWT payload attached to authenticated requests.
 export interface AuthUser {
   id: string;
