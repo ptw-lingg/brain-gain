@@ -48,9 +48,17 @@ const meta = computed(() => {
          green, the text just sits on it. Same colors/typography as the pill it replaces. -->
     <span
       class="absolute left-0 top-0 inline-flex h-6 items-center gap-1 rounded-br-lg rounded-tl-lg px-3 font-mono text-xs font-semibold leading-none"
-      :class="dueClasses(item.status)"
+      :class="dueClasses(item.status, item.dueDate)"
     >
       {{ label }}
+    </span>
+
+    <!-- Content version, flush in the opposite corner — bumped whenever an update is published. -->
+    <span
+      class="absolute right-0 top-0 inline-flex h-6 items-center rounded-bl-lg rounded-tr-lg bg-white/60 px-2.5 font-mono text-[11px] font-semibold leading-none text-ink-light"
+      :title="t('trainings.versionTitle')"
+    >
+      {{ t('trainings.version', { version: training.version ?? 1 }) }}
     </span>
 
     <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ name }}</h3>
@@ -62,6 +70,11 @@ const meta = computed(() => {
 
     <p v-if="description" class="line-clamp-2 font-mono text-xs leading-relaxed text-ink-muted">
       {{ description }}
+    </p>
+
+    <!-- The editor's note on a pending update — why this training came back onto the list. -->
+    <p v-if="item.pendingUpdate?.note" class="line-clamp-2 font-mono text-xs italic leading-relaxed text-blue-700">
+      {{ item.pendingUpdate.note }}
     </p>
 
     <!-- Recurrence and duration as one small plain line instead of pill badges. -->

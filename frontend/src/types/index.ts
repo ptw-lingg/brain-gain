@@ -44,6 +44,19 @@ export interface Question {
   type?: 'single' | 'multiple';
 }
 
+// One published content update of a training (see backend TrainingUpdate): the editor changed
+// materials and/or the quiz and decided that prior completers must act on it.
+export interface TrainingUpdate {
+  id: string;
+  publishedAt: string;
+  deadline: string; // end-of-day UTC of the chosen day
+  // 'retake' = a new passing session is required; 'confirm' = reviewing + confirming suffices.
+  mode: 'retake' | 'confirm';
+  note?: string;
+  publishedBy: string;
+  version: number; // the training version this publish created (2, 3, 4, …)
+}
+
 export interface Training {
   id: string;
   // Localized training master data — per-language maps like Question.text. The name keeps at least
@@ -59,6 +72,9 @@ export interface Training {
   order: number;
   materials: Material[];
   questions: Question[];
+  // Content version shown on the card: starts at 1, bumped by every published update. Server-managed.
+  version: number;
+  updates?: TrainingUpdate[]; // published updates, append-only, server-managed
   createdAt: string;
 }
 
@@ -163,13 +179,17 @@ export interface Settings {
   autoBackup: AutoBackupSettings;
 }
 
-export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
+// 'updated' = the cycle is satisfied but a published training update is pending for this user —
+// a different sort of due, caused by a content update rather than the recurrence cycle.
+export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue' | 'updated';
 
 export interface DueTraining {
   training: Training;
   status: DueStatus;
   dueDate: string | null;
   lastPassedAt: string | null;
+  // Non-null exactly when status === 'updated': the pending update the learner must act on.
+  pendingUpdate: TrainingUpdate | null;
 }
 
 export interface TraineeGroup {
@@ -179,6 +199,14 @@ export interface TraineeGroup {
     status: DueStatus;
     dueDate: string | null;
   }[];
+}
+
+/** POST /api/trainings/:id/publish-update response. */
+export interface PublishUpdateResponse {
+  update: TrainingUpdate;
+  version: number;
+  affected: number;
+  email: { sent: number } | { skipped: 'not-configured' | 'no-recipients' } | { failed: true };
 }
 
 export interface GradeResult {
@@ -220,7 +248,10 @@ export type AuditAction =
   | 'backup-restore'
   | 'backup-restore-failed'
   | 'materials-confirmed'
-  | 'training-completed';
+  | 'training-completed'
+  | 'training-update-published'
+  | 'training-update-confirmed'
+  | 'training-update-cancelled';
 
 export type AuditEntityType =
   | 'user'

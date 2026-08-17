@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertTriangle, CheckCircle2, ChevronRight, Download, FileText, GripVertical, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle2, ChevronRight, Download, FileText, GripVertical, History, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import type { JobRole, LocalizedText, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
+import PublishUpdateDialog from '@/components/PublishUpdateDialog.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { cycleLabel, formatDuration, trainingReadiness } from '@/utils/display';
@@ -122,7 +123,8 @@ function closeTrainingPlan(): void {
 
 function onKeydown(e: KeyboardEvent): void {
   if (e.key !== 'Escape') return;
-  if (planOpen.value) closeTrainingPlan();
+  if (publishTarget.value) publishTarget.value = null;
+  else if (planOpen.value) closeTrainingPlan();
   else if (draft.value) cancel();
 }
 
@@ -140,6 +142,7 @@ function blankTraining(): Training {
     order: 0,
     materials: [],
     questions: [],
+    version: 1,
     createdAt: '',
   };
 }
@@ -209,6 +212,10 @@ function removeOption(q: Question, oi: number): void {
   q.correctIndices = key.length ? key : [0];
 }
 
+// The publish-update dialog's target (non-null = open): offered after a save that changed the
+// training's CONTENT (materials/questions), and openable from the editor to manage pending updates.
+const publishTarget = ref<Training | null>(null);
+
 async function save(): Promise<void> {
   if (!draft.value) return;
   const body = draft.value;
@@ -219,16 +226,45 @@ async function save(): Promise<void> {
   }
   try {
     if (body.id) {
-      await client.put(`/trainings/${body.id}`, body);
+      const before = trainings.value.find((x) => x.id === body.id);
+      const { data: after } = await client.put<Training>(`/trainings/${body.id}`, body);
       toast.success(t('trainings.toasts.updated'));
+      cancel();
+      await load();
+      // Content change = a materials/questions value diff, compared on SERVER-SHAPED records on
+      // both sides so sanitization and server-assigned ids can't false-positive. When content
+      // changed, the editor decides explicitly whether this is a publishable update (a typo fix
+      // is skipped with one click) — the save itself never notifies anyone.
+      const contentChanged =
+        before != null &&
+        (JSON.stringify(before.materials) !== JSON.stringify(after.materials) ||
+          JSON.stringify(before.questions) !== JSON.stringify(after.questions));
+      if (contentChanged) {
+        publishTarget.value = trainings.value.find((x) => x.id === body.id) ?? after;
+      }
     } else {
       await client.post('/trainings', body);
       toast.success(t('trainings.toasts.created'));
+      cancel();
+      await load();
     }
-    cancel();
-    await load();
   } catch {
     toast.error(t('trainings.toasts.saveError'));
+  }
+}
+
+// Open the publish dialog on the saved (server-shaped) training to review/cancel pending updates.
+function openUpdates(): void {
+  if (!draft.value?.id) return;
+  publishTarget.value = trainings.value.find((x) => x.id === draft.value!.id) ?? null;
+}
+
+// After a publish or cancel inside the dialog: refresh the list and re-point the dialog at the
+// reloaded record so its version/pending list is current.
+async function onPublishChanged(): Promise<void> {
+  await load();
+  if (publishTarget.value) {
+    publishTarget.value = trainings.value.find((x) => x.id === publishTarget.value!.id) ?? null;
   }
 }
 
@@ -469,6 +505,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               <Save class="h-4 w-4" /> {{ draft.id ? t('trainings.save') : t('trainings.create') }}
             </button>
             <button class="btn-ghost" @click="cancel"><X class="h-4 w-4" /> {{ t('common.cancel') }}</button>
+            <!-- Version management: review/withdraw published versions and publish manually.
+                 Editor-side language is "versions" (the learner receives them as "updates"). -->
+            <button v-if="draft.id" class="btn-ghost" data-testid="manage-updates" @click="openUpdates">
+              <History class="h-4 w-4" />
+              {{ t('trainings.publish.manage', { version: draft.version ?? 1 }) }}
+            </button>
             <div class="flex-1" />
             <template v-if="draft.id">
               <template v-if="confirmDeleteId === draft.id">
@@ -483,6 +525,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           </div>
         </div>
       </div>
+    </Transition>
+
+    <!-- Publish-update step: offered after a content-changing save; also opened via "Updates". -->
+    <Transition name="fade-slide">
+      <PublishUpdateDialog
+        v-if="publishTarget"
+        :training="publishTarget"
+        @close="publishTarget = null"
+        @changed="onPublishChanged"
+      />
     </Transition>
   </div>
 </template>

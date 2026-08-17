@@ -5,6 +5,7 @@
 import { migrateOrgUnits } from './orgUnits';
 import { migrateQuestions } from './questions';
 import { migrateDurations, migrateMaterials, migrateTrainingTexts } from './materials';
+import { migrateTrainingVersions, pruneUpdateAcks } from './updates';
 
 export async function runDataMigrations(): Promise<void> {
   await migrateOrgUnits();
@@ -12,4 +13,6 @@ export async function runDataMigrations(): Promise<void> {
   await migrateMaterials();
   await migrateDurations();
   await migrateTrainingTexts();
+  await migrateTrainingVersions();
+  await pruneUpdateAcks();
 }

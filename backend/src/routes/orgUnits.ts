@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
-import type { JobRole, OrgUnit, TrainingSession, Training, User } from '../types';
+import type { JobRole, OrgUnit, TrainingSession, Training, UpdateAck, User } from '../types';
 import { readStore, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
-import { computeDue, sessionsFor } from '../services/due';
+import { acksFor, computeDue, sessionsFor } from '../services/due';
 import { requiredTrainingIdsFor } from '../services/training';
 import { subtreeUnitIds, wouldCreateCycle } from '../services/orgUnits';
 import { auditEvent, diffEntities } from '../services/audit';
@@ -22,12 +22,13 @@ router.get('/', async (_req, res) => {
 // all sub-units, with each member's required trainings and due status. Empty if the caller heads none.
 // Registered before '/:id' so "my-team" is never captured as an id.
 router.get('/my-team', async (req: AuthRequest, res) => {
-  const [orgUnits, users, roles, trainings, sessions] = await Promise.all([
+  const [orgUnits, users, roles, trainings, sessions, acks] = await Promise.all([
     readStore<OrgUnit>('orgUnits'),
     readStore<User>('users'),
     readStore<JobRole>('roles'),
     readStore<Training>('trainings'),
     readStore<TrainingSession>('sessions'),
+    readStore<UpdateAck>('updateAcks'),
   ]);
 
   const headedIds = orgUnits.filter((o) => o.headUserId === req.user!.id).map((o) => o.id);
@@ -45,7 +46,7 @@ router.get('/my-team', async (req: AuthRequest, res) => {
         .map((id) => trainingById.get(id))
         .filter((t): t is Training => Boolean(t))
         .map((t) => {
-          const due = computeDue(t, sessionsFor(sessions, u.id, t.id));
+          const due = computeDue(t, sessionsFor(sessions, u.id, t.id), acksFor(acks, u.id, t.id));
           return { id: t.id, name: t.name, status: due.status, dueDate: due.dueDate };
         });
       return {

@@ -31,7 +31,12 @@ test.describe('Trainings — material files end to end', () => {
     // The uploaded file lands on the row (and names the material, since the label was empty).
     await expect(dialog.getByText(FILE_NAME).first()).toBeVisible();
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect(dialog).toBeHidden();
+    // Uploading a file changed the training's CONTENT, so the save offers the explicit
+    // publish-update step (SR-164). This spec is about file persistence — skip the publish.
+    const publish = page.getByTestId('publish-update-dialog');
+    await expect(publish).toBeVisible();
+    await publish.getByTestId('publish-update-skip').click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // Persistence: reload and reopen — the saved training still carries the file. The section starts
     // collapsed, and its summary badge reports the materials before it is opened.

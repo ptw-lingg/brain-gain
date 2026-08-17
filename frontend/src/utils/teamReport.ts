@@ -23,12 +23,14 @@ const LINE = '#D8E0E0';
 const GREEN = '#047857';
 const RED = '#B91C1C';
 const AMBER = '#B45309';
+const BLUE = '#1D4ED8';
 
 const statusColor: Record<DueStatus, string> = {
   overdue: RED,
   never: RED,
   due: AMBER,
   'up-to-date': GREEN,
+  updated: BLUE,
 };
 
 const statusKey: Record<DueStatus, string> = {
@@ -36,9 +38,10 @@ const statusKey: Record<DueStatus, string> = {
   never: 'teamReport.statusNever',
   due: 'teamReport.statusDue',
   'up-to-date': 'teamReport.statusUpToDate',
+  updated: 'teamReport.statusUpdated',
 };
 
-const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue'];
+const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue', 'updated'];
 
 export function buildTeamReport(
   team: MyTeam,

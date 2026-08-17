@@ -88,6 +88,9 @@
     "upToDateUntil": "Next due {date}",
     "dueBy": "Due now · by {date}",
     "overdue": "Overdue",
+    "updated": "Updated · by {date}",
+    "updatedNoDate": "Updated",
+    "updatedOverdue": "Update overdue",
     "cycleYearly": "Yearly",
     "cycleEvery": "Every {years} years"
   },
@@ -118,7 +121,14 @@
     "downloadError": "Could not download the file.",
     "selectAllThatApply": "Select all correct answers — there may be more than one.",
     "selectOne": "Select the one correct answer.",
-    "altLanguage": "Alternative language"
+    "altLanguage": "Alternative language",
+    "update": {
+      "retakeBanner": "This training was updated to version {version} — please retake it (materials and test) by {date}.",
+      "confirmBanner": "This training was updated to version {version} — please review the materials and confirm by {date}.",
+      "confirmCta": "Confirm updated materials →",
+      "confirmedTitle": "Update confirmed",
+      "confirmedText": "Your confirmation has been recorded — this training is up to date again. Your regular training cycle is unchanged."
+    }
   },
   "trainings": {
     "title": "Trainings",
@@ -151,6 +161,40 @@
       "deleteError": "Could not delete training",
       "orderSaved": "Order saved",
       "orderError": "Could not save order"
+    },
+    "version": "v{version}",
+    "versionTitle": "Content version — increases whenever an update is published",
+    "publish": {
+      "title": "Publish a new version?",
+      "intro": "The materials or the test of this training changed. Publish a new version to put the training back on the list of everyone who already completed it — or skip if this was only a minor fix.",
+      "nextVersion": "publishing creates version {version}",
+      "modeLabel": "What must trainees do?",
+      "modeRetake": "Retake the training",
+      "modeRetakeHint": "Materials and test again — the passing result also restarts the regular cycle.",
+      "modeConfirm": "Review and confirm the materials",
+      "modeConfirmHint": "No test — a recorded confirmation suffices; the regular cycle is unchanged.",
+      "deadline": "Due by",
+      "note": "Note to trainees (optional)",
+      "notePlaceholder": "What changed and why it matters",
+      "emailPreview": "Notification email",
+      "emailSubject": "Email subject",
+      "emailBody": "Email text",
+      "publish": "Publish new version",
+      "skip": "Skip — no new version",
+      "manage": "Versions (v{version})",
+      "pendingTitle": "Published versions",
+      "pendingBy": "due by {date}",
+      "cancelUpdate": "Withdraw",
+      "mailSubject": "Training \"{training}\" was updated (v{version})",
+      "mailBodyRetake": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease retake the training (materials and test) in {company} by {date}.\n\n{note}\n\nThis is an automated message.",
+      "mailBodyConfirm": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease review the updated materials in {company} and confirm by {date}.\n\n{note}\n\nThis is an automated message.",
+      "toasts": {
+        "published": "Version {version} published — no one to notify | Version {version} published — {count} trainee notified by email | Version {version} published — {count} trainees notified by email",
+        "publishedNoMail": "Version {version} published — email notification was not sent (SMTP unavailable or nobody affected)",
+        "publishError": "Could not publish the new version",
+        "cancelled": "Version withdrawn",
+        "cancelError": "Could not withdraw the version"
+      }
     }
   },
   "trainingForm": {
@@ -499,6 +543,7 @@
     "statusDue": "Due",
     "statusNever": "Not taken",
     "statusUpToDate": "Up to date",
+    "statusUpdated": "Updated",
     "noData": "No members to report.",
     "footer": "Training status report — verify before filing."
   },
@@ -625,7 +670,10 @@
       "backup-restore": "Backup restored",
       "backup-restore-failed": "Restore failed",
       "materials-confirmed": "Materials confirmed",
-      "training-completed": "Training completed"
+      "training-completed": "Training completed",
+      "training-update-published": "Training update published",
+      "training-update-confirmed": "Training update confirmed",
+      "training-update-cancelled": "Training update withdrawn"
     },
     "entities": {
       "user": "User",

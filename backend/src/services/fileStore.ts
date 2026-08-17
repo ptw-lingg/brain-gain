@@ -18,7 +18,7 @@ export function dataDir(): string {
 // Deliberate exception: the audit log (audit.ndjson) is NOT a store — it is archived by backup.ts
 // as evidence but must never be restored (restoring old data may not erase newer audit history).
 // See services/audit.ts.
-export const ARRAY_FILES = ['users', 'roles', 'trainings', 'sessions', 'orgUnits'] as const;
+export const ARRAY_FILES = ['users', 'roles', 'trainings', 'sessions', 'orgUnits', 'updateAcks'] as const;
 export type ArrayFile = (typeof ARRAY_FILES)[number];
 export const STORE_FILES = [...ARRAY_FILES, 'settings'] as const;
 export type StoreFile = (typeof STORE_FILES)[number];

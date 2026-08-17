@@ -48,6 +48,22 @@ export interface Question {
   type?: 'single' | 'multiple';
 }
 
+// One published content update of a training: the editor changed materials and/or the quiz and
+// explicitly decided that assignees who already completed the training must act on it. Appended by
+// POST /trainings/:id/publish-update only — never written from a client-supplied training body.
+export interface TrainingUpdate {
+  id: string; // server-assigned UUID
+  publishedAt: string; // ISO 8601, server clock at publish time
+  // ISO 8601, normalized to end-of-day UTC of the chosen day, so "due by Aug 31" includes Aug 31.
+  deadline: string;
+  // 'retake' = a new passing session is required (materials + quiz); 'confirm' = reviewing the
+  // updated materials and confirming suffices — the regular cycle clock is not touched.
+  mode: 'retake' | 'confirm';
+  note?: string; // optional editor note shown to learners
+  publishedBy: string; // User id; the audit log is the authoritative record of who published
+  version: number; // the training version this publish created (2, 3, 4, …)
+}
+
 export interface Training {
   id: string;
   // Localized training master data — per-language maps like Question.text. The name keeps at least
@@ -65,7 +81,25 @@ export interface Training {
   order: number; // admin-defined display order across all views (ascending)
   materials: Material[]; // localized learning material (replaces the legacy materialLinks/materialFiles)
   questions: Question[];
+  // Simple content version shown on the card: starts at 1, incremented ONLY by publish-update.
+  // Monotonic — cancelling an update never decrements it (numbers are never reused). Legacy records
+  // are backfilled to 1 at boot (migrateTrainingVersions).
+  version: number;
+  // Published content updates, append-only and SERVER-MANAGED like `order`: PUT /trainings/:id
+  // never reads this from the body. Optional because legacy records lack it; readers use `?? []`.
+  updates?: TrainingUpdate[];
   createdAt: string;
+}
+
+// A learner's persisted acknowledgement of a confirm-mode training update — the evidence that the
+// updated materials were reviewed. Retake-mode updates are satisfied by a new passing session
+// instead and never produce an ack.
+export interface UpdateAck {
+  id: string;
+  userId: string;
+  trainingId: string; // denormalized so pruning/filtering never needs to resolve updateId → training
+  updateId: string;
+  confirmedAt: string; // ISO 8601
 }
 
 export interface JobRole {
@@ -176,7 +210,9 @@ export interface Settings {
 
 export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken'>;
 
-export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue';
+// 'updated' = the cycle is satisfied but a published training update is pending for this user —
+// a different sort of due, caused by a content update rather than the recurrence cycle.
+export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue' | 'updated';
 
 // Training with the answer key stripped — what a learner is allowed to see. The question `type`
 // stays in (the learner UI needs it to pick radio vs checkbox controls); for multiple-choice
@@ -191,6 +227,8 @@ export interface DueTraining {
   status: DueStatus;
   dueDate: string | null;
   lastPassedAt: string | null;
+  // Non-null exactly when status === 'updated': the pending update the learner must act on.
+  pendingUpdate: TrainingUpdate | null;
 }
 
 export interface TraineeGroup {
@@ -222,7 +260,10 @@ export type AuditAction =
   | 'backup-restore'
   | 'backup-restore-failed'
   | 'materials-confirmed'
-  | 'training-completed';
+  | 'training-completed'
+  | 'training-update-published'
+  | 'training-update-confirmed'
+  | 'training-update-cancelled';
 
 export type AuditEntityType =
   | 'user'

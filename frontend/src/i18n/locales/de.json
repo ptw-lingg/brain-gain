@@ -88,6 +88,9 @@
     "upToDateUntil": "Fällig am {date}",
     "dueBy": "Jetzt fällig · bis {date}",
     "overdue": "Überfällig",
+    "updated": "Aktualisiert · bis {date}",
+    "updatedNoDate": "Aktualisiert",
+    "updatedOverdue": "Aktualisierung überfällig",
     "cycleYearly": "Jährlich",
     "cycleEvery": "Alle {years} Jahre"
   },
@@ -118,7 +121,14 @@
     "downloadError": "Die Datei konnte nicht heruntergeladen werden.",
     "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein.",
     "selectOne": "Die eine richtige Antwort auswählen.",
-    "altLanguage": "Alternative Sprache"
+    "altLanguage": "Alternative Sprache",
+    "update": {
+      "retakeBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte absolvieren Sie sie bis {date} erneut (Material und Test).",
+      "confirmBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte sichten Sie das Material und bestätigen Sie bis {date}.",
+      "confirmCta": "Aktualisiertes Material bestätigen →",
+      "confirmedTitle": "Aktualisierung bestätigt",
+      "confirmedText": "Ihre Bestätigung wurde aufgezeichnet — diese Schulung ist wieder aktuell. Ihr regulärer Schulungszyklus bleibt unverändert."
+    }
   },
   "trainings": {
     "title": "Schulungen",
@@ -151,6 +161,40 @@
       "deleteError": "Schulung konnte nicht gelöscht werden",
       "orderSaved": "Reihenfolge gespeichert",
       "orderError": "Reihenfolge konnte nicht gespeichert werden"
+    },
+    "version": "v{version}",
+    "versionTitle": "Inhaltsversion — erhöht sich mit jeder veröffentlichten Aktualisierung",
+    "publish": {
+      "title": "Neue Version veröffentlichen?",
+      "intro": "Das Material oder der Test dieser Schulung wurde geändert. Veröffentlichen Sie eine neue Version, damit die Schulung bei allen, die sie bereits absolviert haben, wieder auf der Liste erscheint — oder überspringen Sie diesen Schritt bei einer rein redaktionellen Korrektur.",
+      "nextVersion": "Veröffentlichen erzeugt Version {version}",
+      "modeLabel": "Was müssen die Teilnehmer tun?",
+      "modeRetake": "Schulung erneut absolvieren",
+      "modeRetakeHint": "Material und Test erneut — das Bestehen startet auch den regulären Zyklus neu.",
+      "modeConfirm": "Material sichten und bestätigen",
+      "modeConfirmHint": "Kein Test — eine aufgezeichnete Bestätigung genügt; der reguläre Zyklus bleibt unverändert.",
+      "deadline": "Fällig bis",
+      "note": "Hinweis an die Teilnehmer (optional)",
+      "notePlaceholder": "Was hat sich geändert und warum ist es wichtig",
+      "emailPreview": "Benachrichtigungs-E-Mail",
+      "emailSubject": "E-Mail-Betreff",
+      "emailBody": "E-Mail-Text",
+      "publish": "Neue Version veröffentlichen",
+      "skip": "Überspringen — keine neue Version",
+      "manage": "Versionen (v{version})",
+      "pendingTitle": "Veröffentlichte Versionen",
+      "pendingBy": "fällig bis {date}",
+      "cancelUpdate": "Zurückziehen",
+      "mailSubject": "Schulung \"{training}\" wurde aktualisiert (v{version})",
+      "mailBodyRetake": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte absolvieren Sie die Schulung (Material und Test) in {company} erneut bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
+      "mailBodyConfirm": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte sichten Sie das aktualisierte Material in {company} und bestätigen Sie bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
+      "toasts": {
+        "published": "Version {version} veröffentlicht — niemand zu benachrichtigen | Version {version} veröffentlicht — {count} Teilnehmer per E-Mail benachrichtigt | Version {version} veröffentlicht — {count} Teilnehmer per E-Mail benachrichtigt",
+        "publishedNoMail": "Version {version} veröffentlicht — E-Mail-Benachrichtigung wurde nicht versendet (SMTP nicht verfügbar oder niemand betroffen)",
+        "publishError": "Neue Version konnte nicht veröffentlicht werden",
+        "cancelled": "Version zurückgezogen",
+        "cancelError": "Version konnte nicht zurückgezogen werden"
+      }
     }
   },
   "trainingForm": {
@@ -499,6 +543,7 @@
     "statusDue": "Fällig",
     "statusNever": "Nicht absolviert",
     "statusUpToDate": "Aktuell",
+    "statusUpdated": "Aktualisiert",
     "noData": "Keine Mitglieder für den Bericht.",
     "footer": "Schulungsstatus-Bericht — vor der Ablage prüfen."
   },
@@ -625,7 +670,10 @@
       "backup-restore": "Backup wiederhergestellt",
       "backup-restore-failed": "Wiederherstellung fehlgeschlagen",
       "materials-confirmed": "Material bestätigt",
-      "training-completed": "Schulung abgeschlossen"
+      "training-completed": "Schulung abgeschlossen",
+      "training-update-published": "Schulungs-Aktualisierung veröffentlicht",
+      "training-update-confirmed": "Schulungs-Aktualisierung bestätigt",
+      "training-update-cancelled": "Schulungs-Aktualisierung zurückgezogen"
     },
     "entities": {
       "user": "Benutzer",

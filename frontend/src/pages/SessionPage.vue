@@ -19,8 +19,9 @@ import { useToastStore } from '@/stores/toast';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
+import { formatDate } from '@/utils/display';
 import { FALLBACK_LOCALE, localeName, resolveLocalized } from '@/utils/locales';
-import type { GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, TrainerContact, Training } from '@/types';
+import type { DueTraining, GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, TrainerContact, Training, TrainingUpdate } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -31,7 +32,9 @@ const trainingId = route.params.trainingId as string;
 
 const training = ref<Training | null>(null);
 const loading = ref(true);
-const step = ref<'material' | 'quiz' | 'result'>('material');
+// 'confirmed' is the closing screen of the confirm-only path: a pending confirm-mode update was
+// acknowledged — no quiz, no new session, the regular cycle clock deliberately untouched.
+const step = ref<'material' | 'quiz' | 'result' | 'confirmed'>('material');
 // One selection set per question — a question may have several correct options, so the answer is a set
 // of option indices rather than a single index.
 const answers = ref<number[][]>([]);
@@ -80,6 +83,17 @@ const confirming = ref(false);
 // screen so a trainee with questions knows exactly whom to ask. null while loading or when the
 // owner account no longer exists; the card simply stays hidden then.
 const trainer = ref<TrainerContact | null>(null);
+
+// This training's entry from the canonical due view (/trainings/mine) — carries the pending
+// training update, if any. null when the training isn't required of this user.
+const myDue = ref<DueTraining | null>(null);
+// The pending update the learner must act on (status 'updated' only).
+const pendingUpdate = computed<TrainingUpdate | null>(() =>
+  myDue.value?.status === 'updated' ? myDue.value.pendingUpdate : null,
+);
+// Confirm-mode: reviewing + confirming the materials clears the update — the quiz is skipped.
+// Retake-mode: the normal full flow runs; the new passing session clears the update.
+const confirmOnly = computed(() => pendingUpdate.value?.mode === 'confirm');
 
 // Avatar initials from the trainer's name, e.g. "Tom Trainer" → "TT".
 const trainerInitials = computed(() =>
@@ -141,6 +155,14 @@ async function load(): Promise<void> {
   } catch {
     trainer.value = null;
   }
+  // Best-effort: /mine tells whether a published update is pending for this user. When the call
+  // fails (or the training isn't required), the session just runs as a normal full pass.
+  try {
+    const { data } = await client.get<DueTraining[]>('/trainings/mine');
+    myDue.value = data.find((d) => d.training.id === trainingId) ?? null;
+  } catch {
+    myDue.value = null;
+  }
 }
 
 function startTest(): void {
@@ -150,12 +172,18 @@ function startTest(): void {
 // The learner confirmed awareness of all provided materials: record it in the audit trail, then
 // start the test — or, when the training has no questions, complete it right away via an empty
 // grading run (total 0 → passed), so the confirmation + persisted session are the evidence.
+// For a pending confirm-mode update the confirmation instead carries the updateId: the server
+// persists the acknowledgement (clearing the update) and the session ends here — no quiz, no new
+// session record, the regular cycle clock untouched.
 async function confirmMaterials(): Promise<void> {
   confirming.value = true;
   try {
-    await client.post('/sessions/confirm-materials', { trainingId });
+    const updateId = confirmOnly.value ? pendingUpdate.value!.id : undefined;
+    await client.post('/sessions/confirm-materials', { trainingId, ...(updateId ? { updateId } : {}) });
     confirmOpen.value = false;
-    if (hasQuestions.value) {
+    if (updateId) {
+      step.value = 'confirmed';
+    } else if (hasQuestions.value) {
       step.value = 'quiz';
     } else {
       await submit();
@@ -216,6 +244,22 @@ onMounted(load);
 
       <!-- Step 1: Material -->
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
+        <!-- Pending training update: why this training is back on the list and what clears it. -->
+        <div
+          v-if="pendingUpdate"
+          class="rounded-lg border border-blue-200 bg-pastel-blue/30 p-4"
+          data-testid="update-banner"
+        >
+          <p class="font-sans text-sm font-semibold text-blue-800">
+            {{ confirmOnly
+              ? t('session.update.confirmBanner', { version: pendingUpdate.version, date: formatDate(pendingUpdate.deadline) })
+              : t('session.update.retakeBanner', { version: pendingUpdate.version, date: formatDate(pendingUpdate.deadline) }) }}
+          </p>
+          <p v-if="pendingUpdate.note" class="mt-1 font-mono text-xs italic text-ink-muted">
+            {{ pendingUpdate.note }}
+          </p>
+        </div>
+
         <p class="font-mono text-sm text-ink-muted">{{ resolveText(training.description).value }}</p>
 
         <div class="flex flex-col gap-3">
@@ -269,9 +313,13 @@ onMounted(load);
             {{ t('session.noMaterial') }}
           </p>
         </div>
-        <p v-if="!hasQuestions" class="font-mono text-xs text-amber-600">{{ t('session.noQuestions') }}</p>
+        <p v-if="!hasQuestions && !confirmOnly" class="font-mono text-xs text-amber-600">{{ t('session.noQuestions') }}</p>
         <button class="btn-primary self-start" data-testid="session-start" @click="startTest">
-          {{ hasQuestions ? t('session.startTest') : t('session.completeTraining') }}
+          {{ confirmOnly
+            ? t('session.update.confirmCta')
+            : hasQuestions
+              ? t('session.startTest')
+              : t('session.completeTraining') }}
         </button>
 
         <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
@@ -285,7 +333,7 @@ onMounted(load);
           <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
             <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.confirmTitle') }}</h2>
             <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.confirmText') }}</p>
-            <p v-if="!hasQuestions" class="mt-2 font-mono text-xs text-amber-600">
+            <p v-if="!hasQuestions && !confirmOnly" class="mt-2 font-mono text-xs text-amber-600">
               {{ t('session.confirmNoQuizNote') }}
             </p>
             <!-- Trainer contact (SR-163): who to ask before committing to the confirmation. -->
@@ -319,6 +367,18 @@ onMounted(load);
               </button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Confirm-only closing screen: the acknowledgement is recorded, nothing else to do. -->
+      <section v-else-if="step === 'confirmed'" class="mt-6">
+        <div class="card flex flex-col items-center gap-3 bg-pastel-mint/30 p-8 text-center" data-testid="update-confirmed">
+          <PartyPopper class="h-12 w-12 text-emerald-500" />
+          <h2 class="font-sans text-xl font-bold text-ink">{{ t('session.update.confirmedTitle') }}</h2>
+          <p class="font-mono text-sm text-ink-muted">{{ t('session.update.confirmedText') }}</p>
+          <button class="btn-ghost mt-2" @click="router.push('/dashboard')">
+            {{ t('session.backToTrainings') }}
+          </button>
         </div>
       </section>
 

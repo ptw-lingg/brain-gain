@@ -10,6 +10,8 @@ import type {
   Training,
   TraineeGroup,
   TrainingSession,
+  TrainingUpdate,
+  UpdateAck,
   User,
 } from '../types';
 import {
@@ -29,9 +31,11 @@ import {
   requireTrainerOrAdmin,
   type AuthRequest,
 } from '../middleware/auth';
-import { computeDue, sessionsFor } from '../services/due';
+import { acksFor, computeDue, sessionsFor } from '../services/due';
 import { normalizeCorrectIndices, questionType, sanitizeLocalizedText } from '../services/questions';
 import { requiredTrainingIds } from '../services/training';
+import { affectedUsers, normalizeDeadline } from '../services/updates';
+import { isSmtpConfigured, sendMail } from '../services/mail';
 import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
@@ -142,15 +146,20 @@ router.get('/', async (req: AuthRequest, res) => {
 
 // GET /api/trainings/mine  — current user's required trainings + due status
 router.get('/mine', async (req: AuthRequest, res) => {
-  const [trainings, sessions] = await Promise.all([
+  const [trainings, sessions, acks] = await Promise.all([
     readOrderedTrainings(),
     readStore<TrainingSession>('sessions'),
+    readStore<UpdateAck>('updateAcks'),
   ]);
   const required = await requiredTrainingIds(req.user!.id);
   const result: DueTraining[] = trainings
     .filter((t) => required.has(t.id))
     .map((t) => {
-      const due = computeDue(t, sessionsFor(sessions, req.user!.id, t.id));
+      const due = computeDue(
+        t,
+        sessionsFor(sessions, req.user!.id, t.id),
+        acksFor(acks, req.user!.id, t.id),
+      );
       return { training: toPublic(t), ...due };
     });
   res.json(result);
@@ -158,11 +167,12 @@ router.get('/mine', async (req: AuthRequest, res) => {
 
 // GET /api/trainings/trainees  — who must do my (or all) trainings, grouped
 router.get('/trainees', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
-  const [trainings, roles, users, sessions] = await Promise.all([
+  const [trainings, roles, users, sessions, acks] = await Promise.all([
     readOrderedTrainings(),
     readStore<JobRole>('roles'),
     readStore<User>('users'),
     readStore<TrainingSession>('sessions'),
+    readStore<UpdateAck>('updateAcks'),
   ]);
 
   const owned = req.user?.isAdmin
@@ -177,7 +187,11 @@ router.get('/trainees', requireTrainerOrAdmin, async (req: AuthRequest, res) => 
     const trainees = users
       .filter((u) => u.roleIds.some((rid) => demandingRoleIds.includes(rid)))
       .map((u) => {
-        const due = computeDue(training, sessionsFor(sessions, u.id, training.id));
+        const due = computeDue(
+          training,
+          sessionsFor(sessions, u.id, training.id),
+          acksFor(acks, u.id, training.id),
+        );
         return { user: toSafeUser(u), status: due.status, dueDate: due.dueDate };
       });
     return { training, trainees };
@@ -275,6 +289,8 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     order: maxOrder + 1,
     materials: sanitizeMaterials(b.materials, MATERIAL_LOCALES),
     questions: sanitizeQuestions(b.questions, MATERIAL_LOCALES),
+    version: 1,
+    updates: [],
     createdAt: new Date().toISOString(),
   };
   trainings.push(training);
@@ -326,6 +342,8 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     category: b.category != null ? sanitizeLocalizedText(b.category, MATERIAL_LOCALES) : current.category,
     ownerId,
     order: typeof current.order === 'number' ? current.order : idx, // managed only via reorder
+    // `version` and `updates` are server-managed like `order`: never read from the body, they ride
+    // along from `current` via the spread above and change only through publish-update / cancel.
     cycleYears: b.cycleYears != null ? clamp(b.cycleYears, 1, 5, current.cycleYears) : current.cycleYears,
     windowBeforeMonths:
       b.windowBeforeMonths != null
@@ -354,6 +372,106 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   return res.json(trainings[idx]);
 });
 
+// POST /api/trainings/:id/publish-update  — admin or owning trainer. The explicit step after a
+// content edit: bumps the training version, appends the update, and emails the affected users.
+// Email subject/text are composed by the client (i18n lives there — the same split as the
+// TraineesPage reminders); an unconfigured or failing SMTP NEVER fails the publish.
+router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest, res) => {
+  const b = req.body ?? {};
+  if (b.mode !== 'retake' && b.mode !== 'confirm') {
+    return res.status(400).json({ error: "mode must be 'retake' or 'confirm'" });
+  }
+  const deadline = normalizeDeadline(b.deadline);
+  if (!deadline) {
+    return res.status(400).json({ error: 'deadline must be a calendar day, today or later' });
+  }
+  const emailSubject = typeof b.emailSubject === 'string' ? b.emailSubject.trim() : '';
+  const emailText = typeof b.emailText === 'string' ? b.emailText.trim() : '';
+  if (!emailSubject || !emailText) {
+    return res.status(400).json({ error: 'emailSubject and emailText are required' });
+  }
+
+  const trainings = await readStore<Training>('trainings');
+  const training = trainings.find((t) => t.id === req.params.id);
+  if (!training) return res.status(404).json({ error: 'Not found' });
+
+  const note = typeof b.note === 'string' && b.note.trim() ? b.note.trim().slice(0, 2000) : undefined;
+  const version = (typeof training.version === 'number' ? training.version : 1) + 1;
+  const update: TrainingUpdate = {
+    id: randomUUID(),
+    publishedAt: new Date().toISOString(),
+    deadline,
+    mode: b.mode,
+    ...(note ? { note } : {}),
+    publishedBy: req.user!.id,
+    version,
+  };
+  training.version = version;
+  training.updates = [...(training.updates ?? []), update];
+  await writeStore('trainings', trainings);
+
+  // Affected = assigned via roles AND passed before this publish; disabled accounts can't sign in,
+  // so they are not emailed (their obligation surfaces on reactivation through the due list).
+  const [users, roles, sessions, settings] = await Promise.all([
+    readStore<User>('users'),
+    readStore<JobRole>('roles'),
+    readStore<TrainingSession>('sessions'),
+    readSettings(),
+  ]);
+  const affected = affectedUsers(training, users, roles, sessions);
+  const recipients = affected.filter((u) => !u.isDisabled).map((u) => u.email);
+
+  let email: { sent: number } | { skipped: 'not-configured' | 'no-recipients' } | { failed: true };
+  if (!isSmtpConfigured(settings)) {
+    email = { skipped: 'not-configured' };
+  } else if (recipients.length === 0) {
+    email = { skipped: 'no-recipients' };
+  } else {
+    try {
+      await sendMail(settings, { to: recipients, subject: emailSubject, text: emailText });
+      email = { sent: recipients.length };
+    } catch {
+      email = { failed: true };
+    }
+  }
+
+  await auditEvent(
+    req.user ?? null,
+    'training-update-published',
+    { type: 'training', id: training.id, name: trainingLabel(training) },
+    {
+      details:
+        `version=${version} mode=${update.mode} deadline=${deadline.slice(0, 10)} ` +
+        `affected=${affected.length} notified=${'sent' in email ? email.sent : 0}`,
+    },
+  );
+
+  return res.status(201).json({ update, version, affected: affected.length, email });
+});
+
+// DELETE /api/trainings/:id/updates/:updateId  — admin or owning trainer withdraws a published
+// update: the pending obligation disappears for everyone (its acks are pruned), but the training
+// version deliberately stays — version numbers are never reused.
+router.delete('/:id/updates/:updateId', requireAdminOrOwner, async (req: AuthRequest, res) => {
+  const trainings = await readStore<Training>('trainings');
+  const training = trainings.find((t) => t.id === req.params.id);
+  if (!training) return res.status(404).json({ error: 'Not found' });
+  const update = (training.updates ?? []).find((u) => u.id === req.params.updateId);
+  if (!update) return res.status(404).json({ error: 'Not found' });
+  training.updates = (training.updates ?? []).filter((u) => u.id !== update.id);
+  await writeStore('trainings', trainings);
+  const acks = await readStore<UpdateAck>('updateAcks');
+  const kept = acks.filter((a) => a.updateId !== update.id);
+  if (kept.length !== acks.length) await writeStore('updateAcks', kept);
+  await auditEvent(
+    req.user ?? null,
+    'training-update-cancelled',
+    { type: 'training', id: training.id, name: trainingLabel(training) },
+    { details: `v${update.version} (${update.mode}), deadline ${update.deadline.slice(0, 10)}` },
+  );
+  return res.status(204).end();
+});
+
 // DELETE /api/trainings/:id  — admin or owning trainer
 router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
@@ -362,6 +480,10 @@ router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
   // Best-effort cleanup of the deleted training's uploaded files so they don't linger on disk.
   await Promise.allSettled(materialFileIds(removed).map((id) => deleteMaterial(id)));
+  // Drop the training's update acknowledgements too (the prune migration is the safety net).
+  const acks = await readStore<UpdateAck>('updateAcks');
+  const keptAcks = acks.filter((a) => a.trainingId !== removed.id);
+  if (keptAcks.length !== acks.length) await writeStore('updateAcks', keptAcks);
   await auditEvent(req.user ?? null, 'delete', { type: 'training', id: removed.id, name: trainingLabel(removed) });
   return res.status(204).end();
 });

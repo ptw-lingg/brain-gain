@@ -7,7 +7,7 @@ import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import type { DueStatus, LocalizedText, MyTeam, Settings, TeamMember } from '@/types';
-import { dueClasses, formatDate } from '@/utils/display';
+import { dueClasses, dueLabel } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { resolveLocalized } from '@/utils/locales';
@@ -34,7 +34,7 @@ const onlyDue = ref(false);
 const open = ref<Record<string, boolean>>({});
 const search = ref('');
 
-const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue'];
+const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue', 'updated'];
 
 /** Members grouped by their org unit name, so the view reads unit-by-unit. */
 const groups = computed(() => {
@@ -78,14 +78,6 @@ function toggleAll(): void {
 
 function visibleTrainings(m: TeamMember) {
   return onlyDue.value ? m.trainings.filter((tr) => ACTIONABLE.includes(tr.status)) : m.trainings;
-}
-
-/** A short due label for one training row (status word + optional date). */
-function statusLabel(status: DueStatus, dueDate: string | null): string {
-  if (status === 'overdue') return t('due.overdue');
-  if (status === 'never') return t('due.now');
-  if (status === 'due') return dueDate ? t('due.dueBy', { date: formatDate(dueDate) }) : t('due.now');
-  return dueDate ? t('due.upToDateUntil', { date: formatDate(dueDate) }) : t('due.upToDate');
 }
 
 function dueCount(m: TeamMember): number {
@@ -237,8 +229,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                   class="flex items-center gap-3 px-5 py-2.5 even:bg-pastel-sky/10"
                 >
                   <span class="min-w-0 flex-1 truncate text-sm text-ink">{{ trainingName(tr.name) }}</span>
-                  <span class="pill pill-col shrink-0" :class="dueClasses(tr.status)">
-                    {{ statusLabel(tr.status, tr.dueDate) }}
+                  <span class="pill pill-col shrink-0" :class="dueClasses(tr.status, tr.dueDate)">
+                    {{ dueLabel(t, tr.status, tr.dueDate) }}
                   </span>
                 </div>
                 <p

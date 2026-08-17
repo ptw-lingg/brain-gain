@@ -33,6 +33,7 @@ const ACTIONS: AuditAction[] = [
   'login', 'login-failed', 'sso-login', 'activate', 'impersonate',
   'backup-create', 'backup-upload', 'backup-delete', 'backup-restore', 'backup-restore-failed',
   'materials-confirmed', 'training-completed',
+  'training-update-published', 'training-update-confirmed', 'training-update-cancelled',
 ];
 const ENTITY_TYPES: AuditEntityType[] = ['user', 'role', 'training', 'material', 'orgUnit', 'settings', 'backup', 'auth', 'session'];
 
@@ -54,6 +55,9 @@ const ACTION_CLS: Partial<Record<AuditAction, string>> = {
   'backup-restore-failed': 'bg-rose-100 text-rose-700',
   'materials-confirmed': 'bg-pastel-mint/60 text-emerald-700',
   'training-completed': 'bg-pastel-mint/60 text-emerald-700',
+  'training-update-published': 'bg-pastel-blue/50 text-ink',
+  'training-update-confirmed': 'bg-pastel-mint/60 text-emerald-700',
+  'training-update-cancelled': 'bg-amber-100 text-amber-700',
 };
 
 function filterParams(): Record<string, string> {

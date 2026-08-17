@@ -14,10 +14,18 @@ export function dueLabel(t: TFn, status: DueStatus, dueDate: string | null): str
       return dueDate ? t('due.dueBy', { date: formatDate(dueDate) }) : t('due.now');
     case 'overdue':
       return t('due.overdue');
+    case 'updated':
+      // Past-deadline stays status 'updated' (its satisfaction rules differ from cycle overdue);
+      // only the wording and styling flip — a pure display decision, like formatDate.
+      return dueDate && new Date(dueDate).getTime() < Date.now()
+        ? t('due.updatedOverdue')
+        : dueDate
+          ? t('due.updated', { date: formatDate(dueDate) })
+          : t('due.updatedNoDate');
   }
 }
 
-export function dueClasses(status: DueStatus): string {
+export function dueClasses(status: DueStatus, dueDate: string | null = null): string {
   switch (status) {
     case 'up-to-date':
       return 'bg-pastel-mint/50 text-emerald-700';
@@ -26,6 +34,11 @@ export function dueClasses(status: DueStatus): string {
     case 'never':
     case 'overdue':
       return 'bg-rose-100 text-rose-600';
+    case 'updated':
+      // Distinct badge for the update-triggered due; rose once its deadline has passed.
+      return dueDate && new Date(dueDate).getTime() < Date.now()
+        ? 'bg-rose-100 text-rose-600'
+        : 'bg-pastel-blue/60 text-blue-700';
   }
 }
 

@@ -73,7 +73,19 @@
         ]
       }
     ],
-    "durationMinutes": 70
+    "durationMinutes": 70,
+    "version": 2,
+    "updates": [
+      {
+        "id": "38eecca8-d1c3-4579-b8b9-66075e9f14c0",
+        "publishedAt": "2026-08-17T08:20:54.544Z",
+        "deadline": "2026-08-31T23:59:59.999Z",
+        "mode": "retake",
+        "note": "You have to do it again",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 2
+      }
+    ]
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
@@ -113,7 +125,19 @@
         ]
       }
     ],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 2,
+    "updates": [
+      {
+        "id": "bd011abe-5d5c-4615-9b44-d42f65dcb065",
+        "publishedAt": "2026-08-17T08:21:56.409Z",
+        "deadline": "2026-08-31T23:59:59.999Z",
+        "mode": "confirm",
+        "note": "Just confirm it",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 2
+      }
+    ]
   },
   {
     "id": "5c321dd7-d79f-4898-869c-62130f325d27",
@@ -198,7 +222,8 @@
         ]
       }
     ],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "911c1823-0c2b-40a3-b525-1fe099182273",
@@ -308,7 +333,8 @@
         ]
       }
     ],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "959344db-b24d-4d11-8cd4-c14cc2ba0dba",
@@ -327,7 +353,8 @@
     "createdAt": "2026-06-02T14:59:40.488Z",
     "order": 5,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "90d2e37b-b87e-4ea2-8ee4-300b03473403",
@@ -336,7 +363,7 @@
     },
     "description": {},
     "category": {
-      "en": "Product Life Cycle"
+      "en": "Product Life Cycle5"
     },
     "ownerId": "ab3017d7-e544-486b-927b-86112e66fadb",
     "cycleYears": 1,
@@ -346,7 +373,8 @@
     "createdAt": "2026-06-02T15:00:03.809Z",
     "order": 6,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
@@ -365,7 +393,8 @@
     "createdAt": "2026-06-02T15:00:19.047Z",
     "order": 7,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "9eaa98dc-bb47-454f-8b40-2ff86f4af263",
@@ -384,7 +413,8 @@
     "createdAt": "2026-06-02T15:00:30.086Z",
     "order": 8,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "ce1768d2-f93c-42dd-8955-2ed1e9081cd4",
@@ -403,7 +433,8 @@
     "createdAt": "2026-06-02T15:00:37.823Z",
     "order": 9,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "7785e467-1b57-4197-884b-504513e018b1",
@@ -422,7 +453,8 @@
     "createdAt": "2026-06-02T15:00:44.810Z",
     "order": 10,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "c9cc7f9f-8bca-4c8e-9f66-893de865d968",
@@ -441,7 +473,8 @@
     "createdAt": "2026-06-02T15:00:54.318Z",
     "order": 11,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "efde2ac6-d99d-426b-baea-b340854099c2",
@@ -460,7 +493,8 @@
     "createdAt": "2026-06-02T15:01:04.539Z",
     "order": 12,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "91e3c885-a123-4ed2-9574-ed5fa35787db",
@@ -479,7 +513,8 @@
     "createdAt": "2026-06-02T15:01:13.746Z",
     "order": 13,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "c45b0b11-4d88-40d6-91f0-d0e859ec2596",
@@ -498,7 +533,8 @@
     "createdAt": "2026-06-02T15:01:30.301Z",
     "order": 14,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "647aae31-ae8a-4479-9850-d4b182ab4c8c",
@@ -517,7 +553,8 @@
     "createdAt": "2026-06-02T15:01:43.944Z",
     "order": 15,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "e5aeabac-56a6-4b80-ab71-9e770f9df9bd",
@@ -536,7 +573,8 @@
     "createdAt": "2026-06-02T15:01:54.769Z",
     "order": 17,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "1ff7533e-c176-422c-9234-dbdcec2259e6",
@@ -555,7 +593,8 @@
     "createdAt": "2026-06-02T15:02:04.521Z",
     "order": 18,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "b6d07e12-fcf4-4353-b828-1f26afa36f7b",
@@ -574,7 +613,8 @@
     "createdAt": "2026-06-02T15:02:15.054Z",
     "order": 19,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "f039fa8a-2a02-4d1b-8481-1cab4d544e61",
@@ -605,7 +645,8 @@
         ]
       }
     ],
-    "durationMinutes": 30
+    "durationMinutes": 30,
+    "version": 1
   },
   {
     "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",
@@ -624,7 +665,8 @@
     "createdAt": "2026-06-02T15:02:46.793Z",
     "order": 20,
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   },
   {
     "id": "ec867de7-dd70-42d2-b156-309041f8fcc1",
@@ -643,6 +685,7 @@
     "questions": [],
     "createdAt": "2026-06-03T12:50:33.144Z",
     "materials": [],
-    "durationMinutes": 60
+    "durationMinutes": 60,
+    "version": 1
   }
 ]

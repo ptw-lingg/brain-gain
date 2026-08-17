@@ -27,7 +27,7 @@ const search = ref('');
 const company = ref('');
 const sending = ref(false);
 
-const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue'];
+const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue', 'updated'];
 
 function visibleTrainees(g: TraineeGroup) {
   return onlyDue.value ? g.trainees.filter((t) => ACTIONABLE.includes(t.status)) : g.trainees;
@@ -197,7 +197,7 @@ onMounted(load);
               <span v-if="tr.dueDate" class="hidden font-mono text-[11px] text-ink-light sm:inline">
                 {{ t('trainees.dueOn', { date: formatDate(tr.dueDate) }) }}
               </span>
-              <span class="pill pill-col shrink-0" :class="dueClasses(tr.status)">
+              <span class="pill pill-col shrink-0" :class="dueClasses(tr.status, tr.dueDate)">
                 {{ dueLabel(t, tr.status, tr.dueDate) }}
               </span>
             </div>

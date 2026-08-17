@@ -82,6 +82,8 @@ export async function seed(): Promise<void> {
         correctIndices: [2],
       },
     ],
+    version: 1,
+    updates: [],
     createdAt: now,
   };
 
@@ -116,6 +118,8 @@ export async function seed(): Promise<void> {
         correctIndices: [2],
       },
     ],
+    version: 1,
+    updates: [],
     createdAt: now,
   };
 

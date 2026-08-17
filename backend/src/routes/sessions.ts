@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
-import type { Training, TrainingSession } from '../types';
+import type { Training, TrainingSession, UpdateAck } from '../types';
 import { readStore, readSettings, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { gradeAnswers, isAnswerCorrect } from '../services/questions';
@@ -14,8 +14,11 @@ router.use(authenticate);
 // reviewed all provided material. The confirmation exists ONLY as an audit entry: for a training
 // without test questions it is the evidence (together with the persisted session from the empty
 // grading that follows) that the learner actually did the training.
+// With an `updateId` in the body, the confirmation additionally PERSISTS an UpdateAck: it is then
+// the evidence that a confirm-mode training update was reviewed, and clears that pending update.
+// Only confirm-mode updates are ackable — a retake obligation is cleared by a new passing session.
 router.post('/confirm-materials', async (req: AuthRequest, res) => {
-  const { trainingId } = req.body ?? {};
+  const { trainingId, updateId } = req.body ?? {};
   if (typeof trainingId !== 'string') {
     return res.status(400).json({ error: 'trainingId is required' });
   }
@@ -29,6 +32,34 @@ router.post('/confirm-materials', async (req: AuthRequest, res) => {
     { type: 'training', id: training.id, name: training.name.en ?? Object.values(training.name)[0] ?? '' },
     { details: `confirmed ${materials} material(s)` },
   );
+
+  if (updateId !== undefined) {
+    if (typeof updateId !== 'string') return res.status(400).json({ error: 'updateId must be a string' });
+    const update = (training.updates ?? []).find((u) => u.id === updateId);
+    if (!update) return res.status(404).json({ error: 'Update not found' });
+    if (update.mode !== 'confirm') {
+      return res.status(400).json({ error: 'This update requires a full retake, not a confirmation' });
+    }
+    const acks = await readStore<UpdateAck>('updateAcks');
+    // Idempotent: confirming the same update twice is fine and records nothing new.
+    if (!acks.some((a) => a.userId === req.user!.id && a.updateId === updateId)) {
+      acks.push({
+        id: randomUUID(),
+        userId: req.user!.id,
+        trainingId: training.id,
+        updateId,
+        confirmedAt: new Date().toISOString(),
+      });
+      await writeStore('updateAcks', acks);
+      await auditEvent(
+        req.user ?? null,
+        'training-update-confirmed',
+        { type: 'training', id: training.id, name: training.name.en ?? Object.values(training.name)[0] ?? '' },
+        { details: `update v${update.version}` },
+      );
+    }
+  }
+
   return res.status(204).end();
 });
 
