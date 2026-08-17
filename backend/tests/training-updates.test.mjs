@@ -128,14 +128,16 @@ test('SYS-UPD-02 / VT-176: publish-update validates mode, deadline and email fie
 
 // ───────────────────────── SYS-UPD-01 / SYS-UPD-06 — server-managed model ─────────────────────────
 
-test('SYS-UPD-01 / SYS-UPD-06 / VT-182: a new training starts at version 1 and PUT cannot inject updates or alter the version', async () => {
+test('SYS-UPD-01 / SYS-UPD-06 / VT-182: a new training starts at version 0 (unpublished) and PUT cannot inject updates, the version or a draft', async () => {
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: { name: { en: 'Version Probe' }, durationMinutes: 5 },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.version, 1, 'a new training starts at version 1');
+  assert.equal(created.body.version, 0, 'a new training starts unpublished (version 0)');
   assert.deepEqual(created.body.updates, [], 'a new training starts with no updates');
+  assert.deepEqual(created.body.materials, [], 'no published content yet');
+  assert.ok(!('draft' in created.body), 'no content in the body → no draft either');
 
   const fakeUpdate = {
     id: randomUUID(),
@@ -145,13 +147,19 @@ test('SYS-UPD-01 / SYS-UPD-06 / VT-182: a new training starts at version 1 and P
     publishedBy: 'attacker',
     version: 99,
   };
+  const fakeDraft = {
+    materials: [{ id: randomUUID(), variants: [{ locale: 'en', label: 'X', url: 'https://x.test' }] }],
+    questions: [],
+    savedAt: new Date().toISOString(),
+  };
   const put = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
     token: trainerToken,
-    body: { ...created.body, version: 99, updates: [fakeUpdate] },
+    body: { ...created.body, version: 99, updates: [fakeUpdate], draft: fakeDraft },
   });
   assert.equal(put.status, 200);
-  assert.equal(put.body.version, 1, 'version is server-managed — the body value is ignored');
+  assert.equal(put.body.version, 0, 'version is server-managed — the body value is ignored');
   assert.deepEqual(put.body.updates, [], 'updates are server-managed — the body value is ignored');
+  assert.ok(!('draft' in put.body), 'a client-supplied draft object is ignored — only body materials/questions are read');
 
   await srv.request('DELETE', `/api/trainings/${created.body.id}`, { token: trainerToken });
 });
@@ -428,8 +436,8 @@ test('SYS-AUD-02 / SYS-UPD-02 / SYS-UPD-05 / VT-176 / VT-181: publish and cancel
   assert.equal(published.status, 200);
   assert.ok(published.body.total >= 5, 'every publish was audited');
   assert.ok(
-    published.body.entries.every((e) => /version=\d+ mode=(retake|confirm)/.test(e.details)),
-    'publish details carry version and mode',
+    published.body.entries.every((e) => /version=\d+ kind=(notify|silent)/.test(e.details)),
+    'publish details carry version and kind',
   );
 
   const cancelled = await srv.request('GET', '/api/audit?action=training-update-cancelled', { token: adminToken });

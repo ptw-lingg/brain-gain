@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let trainerToken;
@@ -78,7 +78,7 @@ test('SYS-DATA-11 / SR-152 / VT-154: a material round-trips with per-locale vari
     },
   });
   assert.equal(created.status, 201);
-  const material = created.body.materials[0];
+  const material = created.body.draft.materials[0]; // content is staged until published
   assert.ok(material.id, 'the material got a stable server-assigned id');
   // Variants come back ordered by the settings list (en before de by default catalog order).
   assert.deepEqual(material.variants, [
@@ -86,13 +86,13 @@ test('SYS-DATA-11 / SR-152 / VT-154: a material round-trips with per-locale vari
     { locale: 'de', label: 'Sicherheitshandbuch', url: 'https://docs.example.com/handbuch' },
   ]);
 
-  // A PUT that does not touch materials keeps them; one that does replaces them wholesale.
+  // A PUT that re-sends the staged content keeps it (the draft survives the round-trip).
   const updated = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
     token: trainerToken,
-    body: { ...created.body },
+    body: { ...created.body, materials: created.body.draft.materials, questions: created.body.draft.questions },
   });
   assert.equal(updated.status, 200);
-  assert.deepEqual(updated.body.materials, created.body.materials, 'the material survives an update round-trip');
+  assert.deepEqual(updated.body.draft.materials, created.body.draft.materials, 'the material survives an update round-trip');
 });
 
 test('SYS-DATA-11 / VT-154: a variant holds exactly one content — an uploaded file wins over a url', async () => {
@@ -107,7 +107,7 @@ test('SYS-DATA-11 / VT-154: a variant holds exactly one content — an uploaded 
     },
   });
   assert.equal(created.status, 201);
-  const variant = created.body.materials[0].variants[0];
+  const variant = created.body.draft.materials[0].variants[0];
   assert.equal(variant.file.id, up.body.id, 'the file is kept');
   assert.equal('url' in variant, false, 'the url is dropped — one content per variant');
 });
@@ -130,32 +130,48 @@ test('SYS-DATA-11 / VT-154: unknown-locale variants are dropped and duplicate lo
     },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.materials.length, 1, 'the material with no configured-locale variant is dropped');
-  assert.deepEqual(created.body.materials[0].variants, [
+  assert.equal(created.body.draft.materials.length, 1, 'the material with no configured-locale variant is dropped');
+  assert.deepEqual(created.body.draft.materials[0].variants, [
     { locale: 'en', label: 'First', url: 'https://example.com/first' },
   ]);
 });
 
-// ───────────────────────── byte cleanup on save ─────────────────────────
+// ───────────────────────── byte cleanup: draft replacement + publish promotion ─────────────────────────
 
-test('SYS-TRN-11 / SYS-DATA-11: replacing a file variant deletes the replaced upload from disk', async () => {
-  const first = await upload(Buffer.from('v1'), { name: 'v1.bin', token: trainerToken });
-  const second = await upload(Buffer.from('v2'), { name: 'v2.bin', token: trainerToken });
+test('SYS-TRN-11 / SYS-DATA-11 / VT-186: replacing a draft file deletes the replaced upload; publishing deletes the superseded published one', async () => {
+  const fileA = await upload(Buffer.from('vA'), { name: 'vA.bin', token: trainerToken });
+  const fileB = await upload(Buffer.from('vB'), { name: 'vB.bin', token: trainerToken });
+  const fileC = await upload(Buffer.from('vC'), { name: 'vC.bin', token: trainerToken });
 
+  // A is published as v1; B becomes a draft on top of it — both referenced, both kept on disk.
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
-    body: { name: 'Replace file', materials: [{ variants: [{ locale: 'en', file: first.body }] }] },
+    body: { name: 'Replace file', materials: [{ variants: [{ locale: 'en', file: fileA.body }] }] },
   });
   assert.equal(created.status, 201);
-  assert.equal(await downloadStatus(first.body.id, trainerToken), 200);
-
-  const updated = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
+  await publishSilent(srv, created.body.id, trainerToken);
+  const materialId = created.body.draft.materials[0].id;
+  const putB = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
     token: trainerToken,
-    body: { materials: [{ id: created.body.materials[0].id, variants: [{ locale: 'en', file: second.body }] }] },
+    body: { materials: [{ id: materialId, variants: [{ locale: 'en', file: fileB.body }] }] },
   });
-  assert.equal(updated.status, 200);
-  assert.equal(await downloadStatus(second.body.id, trainerToken), 200, 'the new upload is served');
-  assert.equal(await downloadStatus(first.body.id, trainerToken), 404, 'the replaced upload is gone from disk');
+  assert.equal(putB.status, 200);
+  assert.equal(await downloadStatus(fileA.body.id, trainerToken), 200, 'the published upload stays');
+  assert.equal(await downloadStatus(fileB.body.id, trainerToken), 200, 'the draft upload is served');
+
+  // Replacing the DRAFT file drops only the old draft bytes — the published file is untouched.
+  const putC = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
+    token: trainerToken,
+    body: { materials: [{ id: materialId, variants: [{ locale: 'en', file: fileC.body }] }] },
+  });
+  assert.equal(putC.status, 200);
+  assert.equal(await downloadStatus(fileB.body.id, trainerToken), 404, 'the replaced draft upload is gone from disk');
+  assert.equal(await downloadStatus(fileA.body.id, trainerToken), 200, 'the published upload still stays');
+
+  // Publishing promotes the draft; only then is the superseded published file deleted.
+  await publishSilent(srv, created.body.id, trainerToken);
+  assert.equal(await downloadStatus(fileA.body.id, trainerToken), 404, 'the superseded published upload is gone');
+  assert.equal(await downloadStatus(fileC.body.id, trainerToken), 200, 'the newly published upload is served');
 });
 
 // ───────────────────────── legacy migration ─────────────────────────

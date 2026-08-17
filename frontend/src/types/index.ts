@@ -44,6 +44,15 @@ export interface Question {
   type?: 'single' | 'multiple';
 }
 
+// The work-in-progress content of a training (see backend TrainingDraft): a complete snapshot of
+// the materials/questions the editor is preparing. Present only on editor-facing payloads —
+// learners never receive it; they see the published content until the draft is published.
+export interface TrainingDraft {
+  materials: Material[];
+  questions: Question[];
+  savedAt: string;
+}
+
 // One published content update of a training (see backend TrainingUpdate): the editor changed
 // materials and/or the quiz and decided that prior completers must act on it.
 export interface TrainingUpdate {
@@ -70,11 +79,14 @@ export interface Training {
   windowBeforeMonths: number;
   windowAfterMonths: number;
   order: number;
+  // PUBLISHED learning content — what trainees see and are graded against.
   materials: Material[];
   questions: Question[];
-  // Content version shown on the card: starts at 1, bumped by every published update. Server-managed.
+  // Content version shown on the card: 0 = never published ("in preparation"), the first publish
+  // creates 1, every further publish increments. Server-managed.
   version: number;
   updates?: TrainingUpdate[]; // published updates, append-only, server-managed
+  draft?: TrainingDraft; // WIP content — editor-facing payloads only, never sent to learners
   createdAt: string;
 }
 
@@ -201,12 +213,12 @@ export interface TraineeGroup {
   }[];
 }
 
-/** POST /api/trainings/:id/publish-update response. */
+/** POST /api/trainings/:id/publish-update response — a silent publish carries only the version. */
 export interface PublishUpdateResponse {
-  update: TrainingUpdate;
   version: number;
-  affected: number;
-  email: { sent: number } | { skipped: 'not-configured' | 'no-recipients' } | { failed: true };
+  update?: TrainingUpdate;
+  affected?: number;
+  email?: { sent: number } | { skipped: 'not-configured' | 'no-recipients' } | { failed: true };
 }
 
 export interface GradeResult {
@@ -251,7 +263,8 @@ export type AuditAction =
   | 'training-completed'
   | 'training-update-published'
   | 'training-update-confirmed'
-  | 'training-update-cancelled';
+  | 'training-update-cancelled'
+  | 'training-draft-discarded';
 
 export type AuditEntityType =
   | 'user'

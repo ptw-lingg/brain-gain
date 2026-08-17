@@ -73,6 +73,14 @@ router.post('/grade', async (req: AuthRequest, res) => {
   const training = trainings.find((t) => t.id === trainingId);
   if (!training) return res.status(404).json({ error: 'Training not found' });
 
+  // An unpublished training (version 0) has no content to complete — without this guard, the
+  // zero-questions auto-pass below (scorePct = 1) would let a learner "complete" it via the API
+  // even though the UI never offers it. Legacy records without a version read as published v1.
+  const version = typeof training.version === 'number' ? training.version : 1;
+  if (version < 1) {
+    return res.status(409).json({ error: 'This training has no published version yet' });
+  }
+
   // answers[i] is the learner's selected option index/indices for question i. A question with several
   // correct answers counts only when the selection matches the key exactly — no partial credit.
   const total = training.questions.length;

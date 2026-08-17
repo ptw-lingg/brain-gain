@@ -80,7 +80,8 @@
     "metaYearly": "Jährliche Schulung",
     "metaEvery": "Schulung alle {years} Jahre",
     "metaDuration": "dauert {duration}",
-    "unavailable": "Noch nicht verfügbar – Ihr Trainer bereitet diese Schulung noch vor"
+    "unavailable": "Noch nicht verfügbar – Ihr Trainer bereitet diese Schulung noch vor",
+    "inPreparation": "In Vorbereitung"
   },
   "due": {
     "now": "Jetzt fällig",
@@ -122,6 +123,7 @@
     "selectAllThatApply": "Alle richtigen Antworten auswählen — es können mehrere sein.",
     "selectOne": "Die eine richtige Antwort auswählen.",
     "altLanguage": "Alternative Sprache",
+    "inPreparation": "Diese Schulung ist noch nicht verfügbar — ihre erste Version wurde noch nicht veröffentlicht.",
     "update": {
       "retakeBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte absolvieren Sie sie bis {date} erneut (Material und Test).",
       "confirmBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte sichten Sie das Material und bestätigen Sie bis {date}.",
@@ -164,10 +166,22 @@
     },
     "version": "v{version}",
     "versionTitle": "Inhaltsversion — erhöht sich mit jeder veröffentlichten Aktualisierung",
+    "notPublished": "Unveröffentlicht",
+    "notPublishedTitle": "Teilnehmer können diese Schulung erst sehen und starten, wenn Version 1 veröffentlicht ist",
+    "draftPill": "Entwurf",
+    "draftPillTitle": "Unveröffentlichte Inhaltsänderungen — Teilnehmer sehen weiterhin die zuletzt veröffentlichte Version",
     "publish": {
       "title": "Neue Version veröffentlichen?",
-      "intro": "Das Material oder der Test dieser Schulung wurde geändert. Veröffentlichen Sie eine neue Version, damit die Schulung bei allen, die sie bereits absolviert haben, wieder auf der Liste erscheint — oder überspringen Sie diesen Schritt bei einer rein redaktionellen Korrektur.",
+      "intro": "Das Material oder der Test dieser Schulung wurde geändert. Teilnehmer sehen weiterhin die zuletzt veröffentlichte Version, bis Sie veröffentlichen — als angekündigte Aktualisierung oder still bei kleinen Korrekturen.",
       "nextVersion": "Veröffentlichen erzeugt Version {version}",
+      "draftInfo": "Veröffentlicht wird der Entwurf vom {date}.",
+      "noDraftInfo": "Keine unveröffentlichten Änderungen — die aktuelle Version wird erneut angekündigt.",
+      "kindLabel": "Wie soll die Version live gehen?",
+      "kindNotify": "Veröffentlichen und benachrichtigen",
+      "kindNotifyHint": "Alle, die die Schulung bereits absolviert haben, erhalten eine Verpflichtung mit Frist und eine E-Mail.",
+      "kindSilent": "Still veröffentlichen",
+      "kindSilentHint": "Der Entwurf geht als nächste Version live — niemand wird benachrichtigt, nichts wird fällig.",
+      "notifyUnavailable": "Diese Schulung wurde noch von niemandem absolviert — die erste Version wird still veröffentlicht.",
       "modeLabel": "Was müssen die Teilnehmer tun?",
       "modeRetake": "Schulung erneut absolvieren",
       "modeRetakeHint": "Material und Test erneut — das Bestehen startet auch den regulären Zyklus neu.",
@@ -180,20 +194,24 @@
       "emailSubject": "E-Mail-Betreff",
       "emailBody": "E-Mail-Text",
       "publish": "Neue Version veröffentlichen",
-      "skip": "Überspringen — keine neue Version",
+      "skip": "Überspringen — als Entwurf behalten",
       "manage": "Versionen (v{version})",
       "pendingTitle": "Veröffentlichte Versionen",
       "pendingBy": "fällig bis {date}",
       "cancelUpdate": "Zurückziehen",
+      "discard": "Entwurf verwerfen",
       "mailSubject": "Schulung \"{training}\" wurde aktualisiert (v{version})",
       "mailBodyRetake": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte absolvieren Sie die Schulung (Material und Test) in {company} erneut bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
       "mailBodyConfirm": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte sichten Sie das aktualisierte Material in {company} und bestätigen Sie bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
       "toasts": {
         "published": "Version {version} veröffentlicht — niemand zu benachrichtigen | Version {version} veröffentlicht — {count} Teilnehmer per E-Mail benachrichtigt | Version {version} veröffentlicht — {count} Teilnehmer per E-Mail benachrichtigt",
         "publishedNoMail": "Version {version} veröffentlicht — E-Mail-Benachrichtigung wurde nicht versendet (SMTP nicht verfügbar oder niemand betroffen)",
+        "publishedSilent": "Version {version} still veröffentlicht",
         "publishError": "Neue Version konnte nicht veröffentlicht werden",
         "cancelled": "Version zurückgezogen",
-        "cancelError": "Version konnte nicht zurückgezogen werden"
+        "cancelError": "Version konnte nicht zurückgezogen werden",
+        "discarded": "Entwurf verworfen — die veröffentlichte Version bleibt bestehen",
+        "discardError": "Entwurf konnte nicht verworfen werden"
       }
     }
   },
@@ -673,7 +691,8 @@
       "training-completed": "Schulung abgeschlossen",
       "training-update-published": "Schulungs-Aktualisierung veröffentlicht",
       "training-update-confirmed": "Schulungs-Aktualisierung bestätigt",
-      "training-update-cancelled": "Schulungs-Aktualisierung zurückgezogen"
+      "training-update-cancelled": "Schulungs-Aktualisierung zurückgezogen",
+      "training-draft-discarded": "Schulungs-Entwurf verworfen"
     },
     "entities": {
       "user": "Benutzer",

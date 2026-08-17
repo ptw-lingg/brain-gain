@@ -48,6 +48,17 @@ export interface Question {
   type?: 'single' | 'multiple';
 }
 
+// The work-in-progress content of a training: a complete SNAPSHOT (never a delta) of the
+// materials/questions the editor is preparing. Staged by PUT /trainings/:id whenever the saved
+// content differs from the published content, promoted into the published fields by
+// publish-update, discarded via DELETE /trainings/:id/draft — and stripped from every learner
+// payload (toPublic), so trainees only ever see the last published version.
+export interface TrainingDraft {
+  materials: Material[];
+  questions: Question[];
+  savedAt: string; // ISO 8601 — the last content-bearing save
+}
+
 // One published content update of a training: the editor changed materials and/or the quiz and
 // explicitly decided that assignees who already completed the training must act on it. Appended by
 // POST /trainings/:id/publish-update only — never written from a client-supplied training body.
@@ -79,15 +90,22 @@ export interface Training {
   windowBeforeMonths: number; // 0–3: months before the due date the window opens
   windowAfterMonths: number; // 0–3: grace months after the due date before overdue
   order: number; // admin-defined display order across all views (ascending)
-  materials: Material[]; // localized learning material (replaces the legacy materialLinks/materialFiles)
+  // PUBLISHED learning content — what trainees see and are graded against. Written ONLY by
+  // publish-update (which promotes the draft); PUT stages content edits into `draft` instead.
+  materials: Material[];
   questions: Question[];
-  // Simple content version shown on the card: starts at 1, incremented ONLY by publish-update.
-  // Monotonic — cancelling an update never decrements it (numbers are never reused). Legacy records
-  // are backfilled to 1 at boot (migrateTrainingVersions).
+  // Simple content version shown on the card: 0 = never published ("in preparation" — not
+  // startable or completable by trainees), the first publish creates 1, each further publish
+  // increments. Monotonic — cancelling an update never decrements it (numbers are never reused).
+  // Legacy records WITHOUT the field read as published v1 (backfilled by migrateTrainingVersions,
+  // which deliberately never coerces an explicit 0 upward).
   version: number;
   // Published content updates, append-only and SERVER-MANAGED like `order`: PUT /trainings/:id
   // never reads this from the body. Optional because legacy records lack it; readers use `?? []`.
   updates?: TrainingUpdate[];
+  // Work-in-progress content, invisible to learners (stripped by toPublic; masked in audit diffs
+  // because it carries the answer key). Absent = no unpublished changes.
+  draft?: TrainingDraft;
   createdAt: string;
 }
 
@@ -214,11 +232,11 @@ export type SafeUser = Omit<User, 'passwordHash' | 'entraOid' | 'activationToken
 // a different sort of due, caused by a content update rather than the recurrence cycle.
 export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue' | 'updated';
 
-// Training with the answer key stripped — what a learner is allowed to see. The question `type`
-// stays in (the learner UI needs it to pick radio vs checkbox controls); for multiple-choice
-// questions the COUNT of correct answers is still withheld, not just which ones. A single-choice
-// question discloses "exactly one" by design.
-export type PublicTraining = Omit<Training, 'questions'> & {
+// Training with the answer key AND the work-in-progress draft stripped — what a learner is
+// allowed to see. The question `type` stays in (the learner UI needs it to pick radio vs checkbox
+// controls); for multiple-choice questions the COUNT of correct answers is still withheld, not
+// just which ones. A single-choice question discloses "exactly one" by design.
+export type PublicTraining = Omit<Training, 'questions' | 'draft'> & {
   questions: Omit<Question, 'correctIndices'>[];
 };
 
@@ -263,7 +281,8 @@ export type AuditAction =
   | 'training-completed'
   | 'training-update-published'
   | 'training-update-confirmed'
-  | 'training-update-cancelled';
+  | 'training-update-cancelled'
+  | 'training-draft-discarded';
 
 export type AuditEntityType =
   | 'user'

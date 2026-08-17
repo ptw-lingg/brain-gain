@@ -44,13 +44,20 @@ export function affectedUsers(
   );
 }
 
-/** Backfill `version: 1` on trainings written before content versions existed. Idempotent. */
+/**
+ * Backfill `version: 1` on trainings written before content versions existed (their live content
+ * IS the published content). Deliberately never coerces an explicit 0 upward: 0 means "never
+ * published" — promoting it would expose an empty training as completable. Idempotent.
+ */
 export async function migrateTrainingVersions(): Promise<void> {
   const trainings = await readStore<Training>('trainings');
   let changed = false;
   for (const t of trainings) {
-    if (typeof t.version !== 'number' || !Number.isFinite(t.version) || t.version < 1) {
+    if (typeof t.version !== 'number' || !Number.isFinite(t.version)) {
       t.version = 1;
+      changed = true;
+    } else if (t.version < 0 || !Number.isInteger(t.version)) {
+      t.version = Math.max(0, Math.round(t.version));
       changed = true;
     }
   }

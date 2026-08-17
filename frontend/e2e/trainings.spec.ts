@@ -265,11 +265,13 @@ test.describe('Trainings — content readiness flags', () => {
     await editor.getByPlaceholder('Training name').first().fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
 
-    // Its list row is flagged as missing both material and a test.
+    // Its list row is flagged as missing both material and a test — and as never published,
+    // since a new training stays invisible to trainees until version 1 is published (SR-170).
     const row = page.locator('.card', { hasText: name });
     await expect(row).toBeVisible();
     await expect(row).toContainText('No material');
     await expect(row).toContainText('No test');
+    await expect(row).toContainText('Not published');
   });
 
   test('SYS-TRN-10 / SR-041 / SR-042: a complete (seeded) training is flagged "Ready"', async ({ page }) => {

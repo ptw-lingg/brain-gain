@@ -23,7 +23,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let adminToken;
@@ -175,6 +175,11 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   const id = create.body.id;
   assert.ok(id);
   assert.equal(typeof create.body.order, 'number', 'order assigned (max+1)');
+  assert.equal(create.body.version, 0, 'a new training starts unpublished');
+  assert.equal(create.body.draft.materials.length, 1, 'content is staged in the draft');
+
+  // Publishing promotes the staged content into the published fields.
+  await publishSilent(srv, id, adminToken);
 
   // Admin owns full record (answer key visible) — read back proves persistence.
   const readBack = await srv.request('GET', `/api/trainings/${id}`, { token: adminToken });
@@ -184,8 +189,9 @@ test('SYS-DATA-04 / VT-103: a created training round-trips with its full field s
   assert.equal(readBack.body.cycleYears, 2);
   assert.equal(readBack.body.windowBeforeMonths, 1);
   assert.equal(readBack.body.windowAfterMonths, 2);
-  assert.equal(readBack.body.materials.length, 1, 'materials persisted');
-  assert.equal(readBack.body.questions.length, 1, 'questions persisted');
+  assert.equal(readBack.body.version, 1, 'the publish created version 1');
+  assert.equal(readBack.body.materials.length, 1, 'materials published');
+  assert.equal(readBack.body.questions.length, 1, 'questions published');
   assert.deepEqual(readBack.body.questions[0].correctIndices, [1], 'admin (owner-level) sees the answer key');
 });
 
@@ -196,6 +202,7 @@ test('SYS-DATA-05 / VT-105: correctIndices is stripped from the learner training
   assert.equal(mine.status, 200);
   assert.equal(mine.body.length, 2, 'member has 2 required trainings');
   for (const dt of mine.body) {
+    assert.ok(!('draft' in dt.training), 'the WIP draft never reaches a learner payload');
     for (const q of dt.training.questions) {
       assert.ok(!('correctIndices' in q), `correctIndices stripped from question "${q.text}"`);
       assert.ok(Array.isArray(q.options) && q.options.length > 0, 'options still present');

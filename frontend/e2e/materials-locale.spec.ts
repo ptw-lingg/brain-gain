@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for localized training material (SR-152/154): per-language authoring in the editor
 // (SYS-TRN-15), the learner's material resolving to the UI language — the ONE language switch —
@@ -38,6 +38,8 @@ test.describe('Localized training material', () => {
     await labels.nth(1).fill('Sicherheitshandbuch');
     await urls.nth(1).fill('https://docs.example.com/handbuch-de');
     await dialog.getByRole('button', { name: 'Create' }).click();
+    // The created content is staged as a draft — the publish step is offered; keep it a draft here.
+    await page.getByTestId('publish-update-skip').click();
     await expect(page.getByText(name)).toBeVisible();
 
     // Round-trip: the collapsed section summary reports the material and both languages.
@@ -80,6 +82,7 @@ test.describe('Localized training material', () => {
       });
       expect(created.status()).toBe(201);
       trainingId = (await created.json()).id;
+      await publishSilent(request, trainingId!, trainerToken); // learners see published content only
 
       const roles = await request.get('/api/roles', { headers: auth(adminToken) });
       lab = (await roles.json()).find((r: { name: string }) => r.name === 'Lab Technician');

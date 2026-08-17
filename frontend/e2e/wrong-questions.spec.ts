@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for the reveal-wrong-questions option (SYS-SET-04 toggle in Settings, SYS-SES-07 on the result
 // screen; traced to SR-151 / VT-153). Default-off behavior, exact indices and the passed-attempt
@@ -40,6 +40,7 @@ test.describe('Failed test — wrongly answered questions', () => {
     });
     expect(created.status()).toBe(201);
     const training = await created.json();
+    await publishSilent(request, training.id, trainerToken); // learners see published content only
 
     const roles = await request.get('/api/roles', { headers: { Authorization: `Bearer ${adminToken}` } });
     const lab = (await roles.json()).find((r: { name: string }) => r.name === 'Lab Technician');

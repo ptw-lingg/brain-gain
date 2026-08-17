@@ -31,14 +31,15 @@ test.describe('Trainings — material files end to end', () => {
     // The uploaded file lands on the row (and names the material, since the label was empty).
     await expect(dialog.getByText(FILE_NAME).first()).toBeVisible();
     await dialog.getByRole('button', { name: 'Save' }).click();
-    // Uploading a file changed the training's CONTENT, so the save offers the explicit
-    // publish-update step (SR-164). This spec is about file persistence — skip the publish.
+    // Uploading a file changed the training's CONTENT, so it is STAGED as a draft and the save
+    // offers the explicit publish step (SR-164/SR-170). Skip first — the draft must persist.
     const publish = page.getByTestId('publish-update-dialog');
     await expect(publish).toBeVisible();
     await publish.getByTestId('publish-update-skip').click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    // Persistence: reload and reopen — the saved training still carries the file. The section starts
+    // Persistence: reload and reopen — the editor shows the DRAFT content on reopen, so the
+    // uploaded file is still there even though nothing is published yet. The section starts
     // collapsed, and its summary badge reports the materials before it is opened.
     await page.reload();
     await page.getByText('Laboratory Safety Basics').click();
@@ -46,6 +47,14 @@ test.describe('Trainings — material files end to end', () => {
     await expect(reopened.getByRole('button', { name: /Learning material/ })).toContainText(/\d+ materials/);
     await reopened.getByRole('button', { name: /Learning material/ }).click();
     await expect(reopened.getByText(FILE_NAME).first()).toBeVisible();
+
+    // Publish the draft silently so the next test's learner actually receives the new file.
+    await reopened.getByTestId('manage-updates').click();
+    const versions = page.getByTestId('publish-update-dialog');
+    await expect(versions).toBeVisible();
+    await versions.getByTestId('publish-kind-silent').check();
+    await versions.getByTestId('publish-update-ok').click();
+    await expect(page.getByText(/Version 2 published silently/)).toBeVisible();
     await page.keyboard.press('Escape');
   });
 

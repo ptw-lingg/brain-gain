@@ -75,6 +75,11 @@ const thresholdPct = computed(() =>
 // evidence the training was done.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
 
+// Version 0 = no published version yet: the flow is replaced by an "in preparation" notice.
+// Learners normally never get here (the dashboard card is not startable); this guards deep links
+// and owners previewing their own unpublished training.
+const unpublished = computed(() => training.value != null && (training.value.version ?? 1) === 0);
+
 // The materials-awareness confirmation dialog shown before any test starts (SR-162).
 const confirmOpen = ref(false);
 const confirming = ref(false);
@@ -235,6 +240,14 @@ onMounted(load);
     </button>
 
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
+
+    <template v-else-if="training && unpublished">
+      <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
+      <div class="card mt-6 flex flex-col items-center gap-3 bg-pastel-slate/20 p-8 text-center" data-testid="session-unpublished">
+        <p class="font-mono text-sm text-ink-muted">{{ t('session.inPreparation') }}</p>
+        <button class="btn-ghost" @click="router.push('/dashboard')">{{ t('session.backToTrainings') }}</button>
+      </div>
+    </template>
 
     <template v-else-if="training">
       <h1 class="page-title">{{ resolveText(training.name).value }}</h1>

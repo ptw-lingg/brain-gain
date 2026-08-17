@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for published training updates (SYS-UPD-02/03/04, traced to SR-164/SR-165/SR-167 and
 // VT-176/VT-177/VT-178): a content-changing save offers the explicit publish step (a metadata-only
@@ -43,6 +43,7 @@ test.describe('Trainings — published updates end to end', () => {
     });
     expect(created.status()).toBe(201);
     trainingId = (await created.json()).id;
+    await publishSilent(request, trainingId, trainerToken); // v1 — learners see published content only
 
     const roles = await (await request.get('/api/roles', { headers: auth(adminToken) })).json();
     lab = roles.find((r: { name: string }) => r.name === 'Lab Technician');
@@ -84,7 +85,8 @@ test.describe('Trainings — published updates end to end', () => {
     await editor.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByTestId('publish-update-dialog')).toHaveCount(0);
 
-    // Content change: edit the material URL → the publish dialog is offered; Skip publishes nothing.
+    // Content change: edit the material URL → the change is STAGED and the publish dialog is
+    // offered; Skip keeps it as a draft — trainees still see the published v1 content (SR-170).
     await page.getByText(`${NAME} renamed`).click();
     await editor.getByRole('button', { name: /Learning material/ }).click();
     await editor.getByPlaceholder('https://…').first().fill('https://example.com/guide-v2');
@@ -97,11 +99,15 @@ test.describe('Trainings — published updates end to end', () => {
     const afterSkip = await (await request.get(`/api/trainings/${trainingId}`, { headers: auth(trainerToken) })).json();
     expect(afterSkip.version ?? 1).toBe(1);
     expect(afterSkip.updates ?? []).toHaveLength(0);
+    expect(afterSkip.draft.materials[0].variants[0].url).toBe('https://example.com/guide-v2');
+    expect(afterSkip.materials[0].variants[0].url, 'the published content is untouched').toBe('https://example.com/guide-v1');
 
-    // Another content change → publish as a confirm-mode update. SMTP is unconfigured in e2e, so
-    // the toast reports the publish succeeded without the email — graceful degradation (SR-166).
+    // Reopen (the editor shows the draft), refine it once more → publish as a confirm-mode update.
+    // SMTP is unconfigured in e2e, so the toast reports the publish succeeded without the email —
+    // graceful degradation (SR-166).
     await page.getByText(`${NAME} renamed`).click();
     await editor.getByRole('button', { name: /Learning material/ }).click();
+    await expect(editor.getByPlaceholder('https://…').first()).toHaveValue('https://example.com/guide-v2');
     await editor.getByPlaceholder('https://…').first().fill('https://example.com/guide-v3');
     await editor.getByRole('button', { name: 'Save' }).click();
     await expect(publishDialog).toBeVisible();
@@ -114,6 +120,8 @@ test.describe('Trainings — published updates end to end', () => {
     expect(afterPublish.version).toBe(2);
     expect(afterPublish.updates).toHaveLength(1);
     expect(afterPublish.updates[0].mode).toBe('confirm');
+    expect(afterPublish.materials[0].variants[0].url, 'the draft was promoted').toBe('https://example.com/guide-v3');
+    expect(afterPublish.draft).toBeUndefined();
   });
 
   test('SYS-UPD-03 / SR-165 / VT-177: the learner dashboard shows the distinct Updated badge and the bumped version chip, included by the due filter', async ({ page }) => {

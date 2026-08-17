@@ -52,17 +52,28 @@ router.use(authenticate);
  * count. The question type is emitted (computed, so legacy records without one read as 'multiple');
  * the learner UI needs it to render radio buttons vs checkboxes, and a single-choice question
  * disclosing "exactly one correct answer" is the point of the type, not a leak.
+ * The work-in-progress `draft` is stripped too: learners see and use ONLY the published content —
+ * the top-level materials/questions, which publish-update alone writes.
  */
 function toPublic(t: Training): PublicTraining {
+  const { draft, ...rest } = t;
+  void draft;
   return {
-    ...t,
+    ...rest,
     questions: t.questions.map((q) => {
-      const { correctIndices, ...rest } = q;
+      const { correctIndices, ...stripped } = q;
       void correctIndices;
-      return { ...rest, type: questionType(q) };
+      return { ...stripped, type: questionType(q) };
     }),
   };
 }
+
+/** File ids referenced by a training's WIP draft ([] when none). */
+const draftFileIds = (t: Training): string[] =>
+  t.draft ? materialFileIds({ materials: t.draft.materials }) : [];
+
+/** The training's published version; legacy records without the field read as published v1. */
+const versionOf = (t: Training): number => (typeof t.version === 'number' ? t.version : 1);
 
 function sanitizeQuestions(input: unknown, allowedLocales: readonly string[]): Question[] {
   if (!Array.isArray(input)) return [];
@@ -276,6 +287,10 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     (max, t) => (typeof t.order === 'number' && t.order > max ? t.order : max),
     -1,
   );
+  // A new training starts UNPUBLISHED (version 0): any initial content goes into the draft, and
+  // learners see nothing until version 1 is explicitly published.
+  const draftMaterials = sanitizeMaterials(b.materials, MATERIAL_LOCALES);
+  const draftQuestions = sanitizeQuestions(b.questions, MATERIAL_LOCALES);
   const training: Training = {
     id: randomUUID(),
     name,
@@ -287,10 +302,13 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
     windowAfterMonths: clamp(b.windowAfterMonths, 0, 3, 3),
     order: maxOrder + 1,
-    materials: sanitizeMaterials(b.materials, MATERIAL_LOCALES),
-    questions: sanitizeQuestions(b.questions, MATERIAL_LOCALES),
-    version: 1,
+    materials: [],
+    questions: [],
+    version: 0,
     updates: [],
+    ...(draftMaterials.length || draftQuestions.length
+      ? { draft: { materials: draftMaterials, questions: draftQuestions, savedAt: new Date().toISOString() } }
+      : {}),
     createdAt: new Date().toISOString(),
   };
   trainings.push(training);
@@ -318,7 +336,10 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
   return res.json([...reordered].sort((a, b) => a.order - b.order));
 });
 
-// PUT /api/trainings/:id  — admin or owning trainer
+// PUT /api/trainings/:id  — admin or owning trainer. Metadata is applied immediately; CONTENT
+// (materials/questions) is STAGED: it lands in the draft when it differs from the published
+// content and never touches the published fields — trainees keep seeing the last published
+// version until the editor publishes (SR-170).
 router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
   const trainings = await readStore<Training>('trainings');
@@ -328,6 +349,23 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   // Only admins may reassign ownership.
   const ownerId =
     req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : current.ownerId;
+
+  // Candidate content: present-or-keep against the WIP (the draft when one exists) — an absent
+  // field keeps what the editor was working on, not the published copy.
+  const candMaterials =
+    b.materials != null
+      ? sanitizeMaterials(b.materials, MATERIAL_LOCALES)
+      : current.draft?.materials ?? current.materials ?? [];
+  const candQuestions =
+    b.questions != null
+      ? sanitizeQuestions(b.questions, MATERIAL_LOCALES)
+      : current.draft?.questions ?? current.questions;
+  const publishedJson = JSON.stringify([current.materials ?? [], current.questions]);
+  const candidateJson = JSON.stringify([candMaterials, candQuestions]);
+  const oldDraftJson = current.draft
+    ? JSON.stringify([current.draft.materials, current.draft.questions])
+    : null;
+
   trainings[idx] = {
     ...current,
     // Localized fields: a field that arrives is sanitized (legacy plain strings become the English
@@ -342,8 +380,6 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     category: b.category != null ? sanitizeLocalizedText(b.category, MATERIAL_LOCALES) : current.category,
     ownerId,
     order: typeof current.order === 'number' ? current.order : idx, // managed only via reorder
-    // `version` and `updates` are server-managed like `order`: never read from the body, they ride
-    // along from `current` via the spread above and change only through publish-update / cancel.
     cycleYears: b.cycleYears != null ? clamp(b.cycleYears, 1, 5, current.cycleYears) : current.cycleYears,
     windowBeforeMonths:
       b.windowBeforeMonths != null
@@ -353,15 +389,29 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
       b.windowAfterMonths != null
         ? clamp(b.windowAfterMonths, 0, 3, current.windowAfterMonths)
         : current.windowAfterMonths,
-    materials: b.materials != null ? sanitizeMaterials(b.materials, MATERIAL_LOCALES) : current.materials ?? [],
-    questions: b.questions != null ? sanitizeQuestions(b.questions, MATERIAL_LOCALES) : current.questions,
+    // `version` and `updates` are server-managed like `order`: never read from the body, they ride
+    // along from `current` via the spread above and change only through publish-update / cancel.
+    // The PUBLISHED content is server-managed too — written exclusively by publish-update:
+    materials: current.materials ?? [],
+    questions: current.questions,
+    // Content equal to the published version needs no draft (deleted below — the spread would keep
+    // it); an unchanged draft keeps its object (and savedAt), so a metadata-only save stays silent.
+    ...(candidateJson === publishedJson
+      ? {}
+      : {
+          draft:
+            candidateJson === oldDraftJson
+              ? current.draft
+              : { materials: candMaterials, questions: candQuestions, savedAt: new Date().toISOString() },
+        }),
   };
+  if (candidateJson === publishedJson) delete trainings[idx].draft;
   await writeStore('trainings', trainings);
-  // A variant's file may have been removed or replaced: delete the bytes no longer referenced by
-  // this training so replaced uploads don't accumulate on disk. Best-effort — a failure to unlink
-  // never fails the save.
-  const keptIds = new Set(materialFileIds(trainings[idx]));
-  const droppedIds = materialFileIds(current).filter((id) => !keptIds.has(id));
+  // A draft's file may have been removed or replaced: delete bytes referenced by the OLD draft
+  // that neither the new draft nor the published content still uses. Published bytes are never
+  // deleted here — PUT cannot change the published content. Best-effort, as before.
+  const keptIds = new Set([...materialFileIds(trainings[idx]), ...draftFileIds(trainings[idx])]);
+  const droppedIds = draftFileIds(current).filter((id) => !keptIds.has(id));
   await Promise.allSettled(droppedIds.map((id) => deleteMaterial(id)));
   await auditEvent(
     req.user ?? null,
@@ -372,43 +422,93 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   return res.json(trainings[idx]);
 });
 
-// POST /api/trainings/:id/publish-update  — admin or owning trainer. The explicit step after a
-// content edit: bumps the training version, appends the update, and emails the affected users.
+// POST /api/trainings/:id/publish-update  — admin or owning trainer. The explicit step that makes
+// content live: promotes the draft (when one exists) into the published fields and bumps the
+// version. kind 'notify' (the default) additionally records the obligation and emails the
+// affected users; kind 'silent' publishes without notifying anyone (typo fixes, first versions).
 // Email subject/text are composed by the client (i18n lives there — the same split as the
 // TraineesPage reminders); an unconfigured or failing SMTP NEVER fails the publish.
 router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
-  if (b.mode !== 'retake' && b.mode !== 'confirm') {
-    return res.status(400).json({ error: "mode must be 'retake' or 'confirm'" });
+  const kind: 'notify' | 'silent' = b.kind == null ? 'notify' : b.kind;
+  if (kind !== 'notify' && kind !== 'silent') {
+    return res.status(400).json({ error: "kind must be 'notify' or 'silent'" });
   }
-  const deadline = normalizeDeadline(b.deadline);
-  if (!deadline) {
-    return res.status(400).json({ error: 'deadline must be a calendar day, today or later' });
-  }
-  const emailSubject = typeof b.emailSubject === 'string' ? b.emailSubject.trim() : '';
-  const emailText = typeof b.emailText === 'string' ? b.emailText.trim() : '';
-  if (!emailSubject || !emailText) {
-    return res.status(400).json({ error: 'emailSubject and emailText are required' });
+  let deadline = '';
+  let emailSubject = '';
+  let emailText = '';
+  if (kind === 'notify') {
+    if (b.mode !== 'retake' && b.mode !== 'confirm') {
+      return res.status(400).json({ error: "mode must be 'retake' or 'confirm'" });
+    }
+    deadline = normalizeDeadline(b.deadline) ?? '';
+    if (!deadline) {
+      return res.status(400).json({ error: 'deadline must be a calendar day, today or later' });
+    }
+    emailSubject = typeof b.emailSubject === 'string' ? b.emailSubject.trim() : '';
+    emailText = typeof b.emailText === 'string' ? b.emailText.trim() : '';
+    if (!emailSubject || !emailText) {
+      return res.status(400).json({ error: 'emailSubject and emailText are required' });
+    }
   }
 
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
   if (!training) return res.status(404).json({ error: 'Not found' });
 
-  const note = typeof b.note === 'string' && b.note.trim() ? b.note.trim().slice(0, 2000) : undefined;
-  const version = (typeof training.version === 'number' ? training.version : 1) + 1;
-  const update: TrainingUpdate = {
-    id: randomUUID(),
-    publishedAt: new Date().toISOString(),
-    deadline,
-    mode: b.mode,
-    ...(note ? { note } : {}),
-    publishedBy: req.user!.id,
-    version,
-  };
+  const currentVersion = versionOf(training);
+  // Nobody can have passed an unpublished training (grading is refused at version 0), so an
+  // obligation would reach no one — and its update record would claim version 1, breaking the
+  // invariant that update records are v2+. The first version is published silently.
+  if (kind === 'notify' && currentVersion === 0) {
+    return res.status(400).json({ error: 'not published yet — publish the first version silently' });
+  }
+  // A silent publish exists to make a draft live; without one there is nothing it could do.
+  if (kind === 'silent' && !training.draft) {
+    return res.status(400).json({ error: 'nothing to publish — no draft' });
+  }
+
+  // Promote the draft: it becomes the published content; bytes only the old published version
+  // referenced are deleted after the store write. (A notify publish WITHOUT a draft is allowed —
+  // it re-announces the current content.)
+  const oldPublishedIds = materialFileIds(training);
+  if (training.draft) {
+    training.materials = training.draft.materials;
+    training.questions = training.draft.questions;
+    delete training.draft;
+  }
+  const version = currentVersion + 1;
   training.version = version;
-  training.updates = [...(training.updates ?? []), update];
+
+  let update: TrainingUpdate | null = null;
+  if (kind === 'notify') {
+    const note = typeof b.note === 'string' && b.note.trim() ? b.note.trim().slice(0, 2000) : undefined;
+    update = {
+      id: randomUUID(),
+      publishedAt: new Date().toISOString(),
+      deadline,
+      mode: b.mode,
+      ...(note ? { note } : {}),
+      publishedBy: req.user!.id,
+      version,
+    };
+    training.updates = [...(training.updates ?? []), update];
+  }
   await writeStore('trainings', trainings);
+  const newPublishedIds = new Set(materialFileIds(training));
+  await Promise.allSettled(
+    oldPublishedIds.filter((id) => !newPublishedIds.has(id)).map((id) => deleteMaterial(id)),
+  );
+
+  if (kind === 'silent') {
+    await auditEvent(
+      req.user ?? null,
+      'training-update-published',
+      { type: 'training', id: training.id, name: trainingLabel(training) },
+      { details: `version=${version} kind=silent` },
+    );
+    return res.status(201).json({ version });
+  }
 
   // Affected = assigned via roles AND passed before this publish; disabled accounts can't sign in,
   // so they are not emailed (their obligation surfaces on reactivation through the due list).
@@ -441,12 +541,37 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     { type: 'training', id: training.id, name: trainingLabel(training) },
     {
       details:
-        `version=${version} mode=${update.mode} deadline=${deadline.slice(0, 10)} ` +
+        `version=${version} kind=notify mode=${update!.mode} deadline=${deadline.slice(0, 10)} ` +
         `affected=${affected.length} notified=${'sent' in email ? email.sent : 0}`,
     },
   );
 
   return res.status(201).json({ update, version, affected: affected.length, email });
+});
+
+// DELETE /api/trainings/:id/draft  — admin or owning trainer discards the work-in-progress
+// content: the training reverts to its published state. Bytes only the draft referenced are
+// deleted; the fact (not the content) of the discard is audited.
+router.delete('/:id/draft', requireAdminOrOwner, async (req: AuthRequest, res) => {
+  const trainings = await readStore<Training>('trainings');
+  const training = trainings.find((t) => t.id === req.params.id);
+  if (!training) return res.status(404).json({ error: 'Not found' });
+  if (!training.draft) return res.status(404).json({ error: 'No draft to discard' });
+  const savedAt = training.draft.savedAt;
+  const droppedCandidates = draftFileIds(training);
+  delete training.draft;
+  await writeStore('trainings', trainings);
+  const publishedIds = new Set(materialFileIds(training));
+  await Promise.allSettled(
+    droppedCandidates.filter((id) => !publishedIds.has(id)).map((id) => deleteMaterial(id)),
+  );
+  await auditEvent(
+    req.user ?? null,
+    'training-draft-discarded',
+    { type: 'training', id: training.id, name: trainingLabel(training) },
+    { details: `discarded draft from ${savedAt}` },
+  );
+  return res.status(204).end();
 });
 
 // DELETE /api/trainings/:id/updates/:updateId  — admin or owning trainer withdraws a published
@@ -478,8 +603,9 @@ router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const removed = trainings.find((t) => t.id === req.params.id);
   if (!removed) return res.status(404).json({ error: 'Not found' });
   await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
-  // Best-effort cleanup of the deleted training's uploaded files so they don't linger on disk.
-  await Promise.allSettled(materialFileIds(removed).map((id) => deleteMaterial(id)));
+  // Best-effort cleanup of the deleted training's uploaded files — published AND draft bytes.
+  const removedIds = new Set([...materialFileIds(removed), ...draftFileIds(removed)]);
+  await Promise.allSettled([...removedIds].map((id) => deleteMaterial(id)));
   // Drop the training's update acknowledgements too (the prune migration is the safety net).
   const acks = await readStore<UpdateAck>('updateAcks');
   const keptAcks = acks.filter((a) => a.trainingId !== removed.id);

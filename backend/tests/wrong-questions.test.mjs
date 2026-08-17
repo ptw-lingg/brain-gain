@@ -11,7 +11,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let trainerToken;
@@ -25,13 +25,15 @@ async function loginToken(email, password) {
   return res.body.token;
 }
 
-/** Create a trainer-owned training the seeded member is required to take. */
+/** Create a trainer-owned training the seeded member is required to take (published as v1). */
 async function createRequiredTraining(name, questions) {
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: { name, category: 'Test', durationMinutes: 60, questions },
   });
   assert.equal(created.status, 201, 'training created');
+  // Content lands in the draft — publish it so the member actually sees and can take it.
+  await publishSilent(srv, created.body.id, trainerToken);
 
   const roles = await srv.request('GET', '/api/roles', { token: adminToken });
   const lab = roles.body.find((r) => r.id === labRoleId);

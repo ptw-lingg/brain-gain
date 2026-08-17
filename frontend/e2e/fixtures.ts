@@ -1,4 +1,4 @@
-import { type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
 // Seed credentials created by backend/src/seed.ts on a fresh data dir (see global-setup).
 //   admin   → full admin
@@ -20,4 +20,17 @@ export async function login(page: Page, role: Role): Promise<void> {
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   await page.waitForURL('**/dashboard');
+}
+
+/**
+ * Publish a training's staged draft silently (v0 → v1, vN → vN+1) via the API. A created
+ * training's content lives in its draft until published — learner-flow specs call this so the
+ * member actually sees the content.
+ */
+export async function publishSilent(request: APIRequestContext, trainingId: string, token: string): Promise<void> {
+  const res = await request.post(`/api/trainings/${trainingId}/publish-update`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { kind: 'silent' },
+  });
+  expect(res.status(), `publishSilent(${trainingId})`).toBe(201);
 }

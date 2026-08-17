@@ -80,7 +80,8 @@
     "metaYearly": "Yearly training",
     "metaEvery": "Training every {years} years",
     "metaDuration": "takes {duration}",
-    "unavailable": "Not available yet — your trainer is still preparing this training"
+    "unavailable": "Not available yet — your trainer is still preparing this training",
+    "inPreparation": "In preparation"
   },
   "due": {
     "now": "Due now",
@@ -122,6 +123,7 @@
     "selectAllThatApply": "Select all correct answers — there may be more than one.",
     "selectOne": "Select the one correct answer.",
     "altLanguage": "Alternative language",
+    "inPreparation": "This training is not available yet — its first version has not been published.",
     "update": {
       "retakeBanner": "This training was updated to version {version} — please retake it (materials and test) by {date}.",
       "confirmBanner": "This training was updated to version {version} — please review the materials and confirm by {date}.",
@@ -164,10 +166,22 @@
     },
     "version": "v{version}",
     "versionTitle": "Content version — increases whenever an update is published",
+    "notPublished": "Not published",
+    "notPublishedTitle": "Trainees cannot see or start this training until version 1 is published",
+    "draftPill": "Draft",
+    "draftPillTitle": "Unpublished content changes — trainees still see the last published version",
     "publish": {
       "title": "Publish a new version?",
-      "intro": "The materials or the test of this training changed. Publish a new version to put the training back on the list of everyone who already completed it — or skip if this was only a minor fix.",
+      "intro": "The materials or the test of this training changed. Trainees keep seeing the last published version until you publish — as a notified update, or silently for minor fixes.",
       "nextVersion": "publishing creates version {version}",
+      "draftInfo": "Publishing the draft saved {date}.",
+      "noDraftInfo": "No unpublished changes — publishing re-announces the current content.",
+      "kindLabel": "How should this go live?",
+      "kindNotify": "Publish and notify",
+      "kindNotifyHint": "Everyone who already completed the training gets an obligation with a deadline and an email.",
+      "kindSilent": "Publish silently",
+      "kindSilentHint": "The draft goes live as the next version — nobody is notified, nothing becomes due.",
+      "notifyUnavailable": "Nobody has taken this training yet — the first version is published silently.",
       "modeLabel": "What must trainees do?",
       "modeRetake": "Retake the training",
       "modeRetakeHint": "Materials and test again — the passing result also restarts the regular cycle.",
@@ -180,20 +194,24 @@
       "emailSubject": "Email subject",
       "emailBody": "Email text",
       "publish": "Publish new version",
-      "skip": "Skip — no new version",
+      "skip": "Skip — keep as draft",
       "manage": "Versions (v{version})",
       "pendingTitle": "Published versions",
       "pendingBy": "due by {date}",
       "cancelUpdate": "Withdraw",
+      "discard": "Discard draft",
       "mailSubject": "Training \"{training}\" was updated (v{version})",
       "mailBodyRetake": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease retake the training (materials and test) in {company} by {date}.\n\n{note}\n\nThis is an automated message.",
       "mailBodyConfirm": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease review the updated materials in {company} and confirm by {date}.\n\n{note}\n\nThis is an automated message.",
       "toasts": {
         "published": "Version {version} published — no one to notify | Version {version} published — {count} trainee notified by email | Version {version} published — {count} trainees notified by email",
         "publishedNoMail": "Version {version} published — email notification was not sent (SMTP unavailable or nobody affected)",
+        "publishedSilent": "Version {version} published silently",
         "publishError": "Could not publish the new version",
         "cancelled": "Version withdrawn",
-        "cancelError": "Could not withdraw the version"
+        "cancelError": "Could not withdraw the version",
+        "discarded": "Draft discarded — the published content stands",
+        "discardError": "Could not discard the draft"
       }
     }
   },
@@ -673,7 +691,8 @@
       "training-completed": "Training completed",
       "training-update-published": "Training update published",
       "training-update-confirmed": "Training update confirmed",
-      "training-update-cancelled": "Training update withdrawn"
+      "training-update-cancelled": "Training update withdrawn",
+      "training-draft-discarded": "Training draft discarded"
     },
     "entities": {
       "user": "User",

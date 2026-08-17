@@ -10,7 +10,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let trainerToken;
@@ -24,13 +24,15 @@ async function loginToken(email, password) {
   return res.body.token;
 }
 
-/** Create a trainer-owned training the seeded member is required to take. */
+/** Create a trainer-owned training the seeded member is required to take (published as v1). */
 async function createRequiredTraining(name, questions) {
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: { name, category: 'Test', durationMinutes: 60, questions },
   });
   assert.equal(created.status, 201, 'training created');
+  // Content lands in the draft — publish it so the member actually sees and can take it.
+  await publishSilent(srv, created.body.id, trainerToken);
 
   // Assign it to the member's job role so they may take it.
   const roles = await srv.request('GET', '/api/roles', { token: adminToken });
@@ -168,12 +170,13 @@ test('SYS-DATA-10 / VT-148: a legacy single-answer question is accepted and norm
     },
   });
   assert.equal(created.status, 201);
-  assert.deepEqual(created.body.questions[0].correctIndices, [2], 'scalar became a one-element key');
-  assert.equal(created.body.questions[0].correctIndex, undefined, 'the legacy field is dropped');
+  const staged = created.body.draft.questions; // content is staged until published
+  assert.deepEqual(staged[0].correctIndices, [2], 'scalar became a one-element key');
+  assert.equal(staged[0].correctIndex, undefined, 'the legacy field is dropped');
 
   const onDisk = JSON.parse(
     (await import('node:fs')).readFileSync(`${srv.dataDir}/trainings.json`, 'utf-8'),
   ).find((t) => t.id === created.body.id);
-  assert.deepEqual(onDisk.questions[0].correctIndices, [2], 'persisted in the new shape');
-  assert.equal('correctIndex' in onDisk.questions[0], false, 'nothing legacy left on disk');
+  assert.deepEqual(onDisk.draft.questions[0].correctIndices, [2], 'persisted in the new shape');
+  assert.equal('correctIndex' in onDisk.draft.questions[0], false, 'nothing legacy left on disk');
 });

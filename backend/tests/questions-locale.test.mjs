@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let trainerToken;
@@ -48,7 +48,7 @@ test('SYS-DATA-12 / SR-155 / VT-161: a question round-trips with per-language te
     },
   });
   assert.equal(created.status, 201);
-  const q = created.body.questions[0];
+  const q = created.body.draft.questions[0]; // content is staged until published
   assert.deepEqual(q.text, { de: 'Wozu dient der Prozess?', en: 'What is the purpose of the process?' });
   assert.deepEqual(q.options[0], { de: 'Anforderungen festlegen', en: 'To define requirements' });
   assert.deepEqual(q.correctIndices, [0], 'the answer key is language-independent');
@@ -74,8 +74,8 @@ test('SYS-DATA-12 / VT-161: unknown languages are dropped, empty options are rem
     },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.questions.length, 1, 'the textless question is dropped');
-  const q = created.body.questions[0];
+  assert.equal(created.body.draft.questions.length, 1, 'the textless question is dropped');
+  const q = created.body.draft.questions[0];
   assert.deepEqual(q.text, { en: 'Keep me' }, 'the unconfigured language is dropped');
   assert.deepEqual(q.options, [{ en: 'right answer' }, { en: 'wrong answer' }], 'the all-empty option is gone');
   assert.deepEqual(q.correctIndices, [0], 'the answer key was remapped to the surviving option');
@@ -97,6 +97,7 @@ test('SYS-DATA-12 / SR-155 / VT-161: grading is unaffected by the display langua
     },
   });
   assert.equal(created.status, 201);
+  await publishSilent(srv, created.body.id, trainerToken); // grading works on published content
   // The trainer grades their own quiz — grade only needs the training id and index answers.
   const right = await srv.request('POST', '/api/sessions/grade', {
     token: trainerToken,

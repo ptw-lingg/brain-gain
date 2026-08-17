@@ -18,6 +18,22 @@ export function decodeJwt(token) {
 }
 
 /**
+ * Publish a training's staged draft silently (v0 → v1, vN → vN+1) as the given owner/admin.
+ * Content lives in the draft until published — learner-flow tests call this after creating a
+ * training so the member actually sees the content. Throws on any non-201.
+ */
+export async function publishSilent(srv, trainingId, token) {
+  const res = await srv.request('POST', `/api/trainings/${trainingId}/publish-update`, {
+    token,
+    body: { kind: 'silent' },
+  });
+  if (res.status !== 201) {
+    throw new Error(`publishSilent(${trainingId}) failed: ${res.status} ${JSON.stringify(res.body)}`);
+  }
+  return res.body;
+}
+
+/**
  * Boot a fresh backend with a temp data dir on a random free-ish port (so multiple test files —
  * and parallel agents — never collide). Pass an explicit httpsPort to pin it; pass `env` to add
  * process env vars for the backend (e.g. ENTRA_AUTHORITY_BASE for the SSO stub IdP). Retries on a

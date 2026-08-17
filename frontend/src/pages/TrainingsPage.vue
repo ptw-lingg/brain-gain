@@ -6,7 +6,7 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { JobRole, LocalizedText, MyTeam, Question, SafeUser, Settings, Training } from '@/types';
+import type { JobRole, LocalizedText, MyTeam, Question, SafeUser, Settings, Training, TrainingDraft } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
 import PublishUpdateDialog from '@/components/PublishUpdateDialog.vue';
 import ListControls from '@/components/ListControls.vue';
@@ -142,7 +142,7 @@ function blankTraining(): Training {
     order: 0,
     materials: [],
     questions: [],
-    version: 1,
+    version: 0,
     createdAt: '',
   };
 }
@@ -175,9 +175,15 @@ function startCreate(): void {
 }
 
 // Open the dialog on a training to view its details / edit it (works on a deep clone so edits only
-// take effect on save).
+// take effect on save). The clone's content is the WORK-IN-PROGRESS: the server draft when one
+// exists, else the published content — and the server's `draft` field itself is dropped so the
+// local editing copy (also named `draft`) never carries the staging field along.
 function openTraining(t: Training): void {
-  draft.value = JSON.parse(JSON.stringify(t));
+  const clone: Training = JSON.parse(JSON.stringify(t));
+  clone.materials = JSON.parse(JSON.stringify(t.draft?.materials ?? t.materials));
+  clone.questions = JSON.parse(JSON.stringify(t.draft?.questions ?? t.questions));
+  delete clone.draft;
+  draft.value = clone;
 }
 
 function cancel(): void {
@@ -224,6 +230,11 @@ async function save(): Promise<void> {
     toast.error(t('trainings.toasts.nameRequired'));
     return;
   }
+  // The publish dialog is offered when a save STAGED new content: the server response carries a
+  // draft whose content differs from the record's previous draft. Saving never publishes anything
+  // by itself — trainees keep seeing the last published version until the editor publishes.
+  const contentOf = (d?: TrainingDraft | null): string | null =>
+    d ? JSON.stringify([d.materials, d.questions]) : null;
   try {
     if (body.id) {
       const before = trainings.value.find((x) => x.id === body.id);
@@ -231,22 +242,20 @@ async function save(): Promise<void> {
       toast.success(t('trainings.toasts.updated'));
       cancel();
       await load();
-      // Content change = a materials/questions value diff, compared on SERVER-SHAPED records on
-      // both sides so sanitization and server-assigned ids can't false-positive. When content
-      // changed, the editor decides explicitly whether this is a publishable update (a typo fix
-      // is skipped with one click) — the save itself never notifies anyone.
-      const contentChanged =
-        before != null &&
-        (JSON.stringify(before.materials) !== JSON.stringify(after.materials) ||
-          JSON.stringify(before.questions) !== JSON.stringify(after.questions));
-      if (contentChanged) {
+      const draftChanged =
+        after.draft != null && contentOf(after.draft) !== contentOf(before?.draft ?? null);
+      if (draftChanged) {
         publishTarget.value = trainings.value.find((x) => x.id === body.id) ?? after;
       }
     } else {
-      await client.post('/trainings', body);
+      const { data: created } = await client.post<Training>('/trainings', body);
       toast.success(t('trainings.toasts.created'));
       cancel();
       await load();
+      // A new training starts unpublished; content it already carries can be published right away.
+      if (created.draft != null) {
+        publishTarget.value = trainings.value.find((x) => x.id === created.id) ?? created;
+      }
     }
   } catch {
     toast.error(t('trainings.toasts.saveError'));
@@ -391,25 +400,41 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           </div>
           <!-- Status column: trainees need material to study and questions to be tested. Missing either
                is flagged so trainers see what to finish; a complete training shows a green "Ready". The
-               flags stack within a fixed-width cell; every badge below fills its column so that all
-               badges in a given column are the same size and the row reads like a table. -->
+               readiness is judged on the WORK-IN-PROGRESS content (the draft when one exists) — that is
+               what the editor is preparing to publish. Publication state gets its own pills: amber
+               "Not published yet" (version 0) and blue "Draft" (unpublished changes). The flags stack
+               within a fixed-width cell so the row reads like a table. -->
           <div class="flex w-[8.5rem] shrink-0 flex-col justify-center gap-1">
             <span
-              v-if="!trainingReadiness(tr).hasMaterial"
+              v-if="(tr.version ?? 1) === 0"
+              class="pill w-full bg-amber-100 text-amber-700"
+              :title="t('trainings.notPublishedTitle')"
+            >
+              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.notPublished') }}
+            </span>
+            <span
+              v-else-if="tr.draft"
+              class="pill w-full bg-pastel-blue/60 text-blue-700"
+              :title="t('trainings.draftPillTitle')"
+            >
+              {{ t('trainings.draftPill') }}
+            </span>
+            <span
+              v-if="!trainingReadiness(tr.draft ?? tr).hasMaterial"
               class="pill w-full bg-amber-100 text-amber-700"
               :title="t('trainings.noMaterialTitle')"
             >
               <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
             </span>
             <span
-              v-if="!trainingReadiness(tr).hasQuestions"
+              v-if="!trainingReadiness(tr.draft ?? tr).hasQuestions"
               class="pill w-full bg-amber-100 text-amber-700"
               :title="t('trainings.noQuestionsTitle')"
             >
               <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
             </span>
             <span
-              v-if="trainingReadiness(tr).ready"
+              v-if="trainingReadiness(tr.draft ?? tr).ready"
               class="pill w-full bg-pastel-mint/50 text-emerald-700"
               :title="t('trainings.readyTitle')"
             >
@@ -527,14 +552,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
       </div>
     </Transition>
 
-    <!-- Publish-update step: offered after a content-changing save; also opened via "Updates". -->
-    <Transition name="fade-slide">
-      <PublishUpdateDialog
-        v-if="publishTarget"
-        :training="publishTarget"
-        @close="publishTarget = null"
-        @changed="onPublishChanged"
-      />
-    </Transition>
+    <!-- Publish/versions step: offered after a content-staging save; also opened via "Versions".
+         Deliberately NOT animated: it often opens the instant the editor dialog closes, and a
+         moving mount makes clicks racy (buttons shift under the pointer during the transition). -->
+    <PublishUpdateDialog
+      v-if="publishTarget"
+      :training="publishTarget"
+      @close="publishTarget = null"
+      @changed="onPublishChanged"
+    />
   </div>
 </template>

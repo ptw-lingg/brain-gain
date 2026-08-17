@@ -11,7 +11,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let trainerToken;
@@ -25,13 +25,15 @@ async function loginToken(email, password) {
   return res.body.token;
 }
 
-/** Create a trainer-owned training the seeded member is required to take. */
+/** Create a trainer-owned training the seeded member is required to take (published as v1). */
 async function createRequiredTraining(name, questions) {
   const created = await srv.request('POST', '/api/trainings', {
     token: trainerToken,
     body: { name, category: 'Test', durationMinutes: 60, questions },
   });
   assert.equal(created.status, 201, 'training created');
+  // Content lands in the draft — publish it so the member actually sees and can take it.
+  await publishSilent(srv, created.body.id, trainerToken);
 
   // Assign it to the member's job role so they may take it.
   const roles = await srv.request('GET', '/api/roles', { token: adminToken });
@@ -72,22 +74,23 @@ test('SYS-TRN-14 / SR-149 / VT-151: a question round-trips its type, and one sav
     },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.questions[0].type, 'single', 'single survives the write path');
-  assert.equal(created.body.questions[1].type, 'multiple', 'no type defaults to multiple and is persisted explicitly');
+  const staged = created.body.draft.questions; // content is staged until published
+  assert.equal(staged[0].type, 'single', 'single survives the write path');
+  assert.equal(staged[1].type, 'multiple', 'no type defaults to multiple and is persisted explicitly');
 
   // The type survives an update untouched.
   const updated = await srv.request('PUT', `/api/trainings/${created.body.id}`, {
     token: trainerToken,
-    body: { ...created.body },
+    body: { ...created.body, materials: created.body.draft.materials, questions: staged },
   });
   assert.equal(updated.status, 200);
-  assert.equal(updated.body.questions[0].type, 'single', 'PUT keeps the type');
+  assert.equal(updated.body.draft.questions[0].type, 'single', 'PUT keeps the type');
 
   const onDisk = JSON.parse(
     (await import('node:fs')).readFileSync(`${srv.dataDir}/trainings.json`, 'utf-8'),
   ).find((t) => t.id === created.body.id);
-  assert.equal(onDisk.questions[0].type, 'single', 'persisted on disk');
-  assert.equal(onDisk.questions[1].type, 'multiple', 'the default is stored, not left absent');
+  assert.equal(onDisk.draft.questions[0].type, 'single', 'persisted on disk');
+  assert.equal(onDisk.draft.questions[1].type, 'multiple', 'the default is stored, not left absent');
 });
 
 test('SYS-TRN-14 / VT-151: a single-choice question with several correct answers is coerced back to multiple-choice', async () => {
@@ -99,8 +102,8 @@ test('SYS-TRN-14 / VT-151: a single-choice question with several correct answers
     },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.questions[0].type, 'multiple', 'single with several correct answers is a contradiction → multiple');
-  assert.deepEqual(created.body.questions[0].correctIndices, [0, 2], 'the answer key is kept intact');
+  assert.equal(created.body.draft.questions[0].type, 'multiple', 'single with several correct answers is a contradiction → multiple');
+  assert.deepEqual(created.body.draft.questions[0].correctIndices, [0, 2], 'the answer key is kept intact');
 });
 
 test('SYS-TRN-14 / VT-151: an existing question without a type keeps behaving as multiple-choice', async () => {

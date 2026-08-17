@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for the materials confirmation before a test (SYS-SES-10 / SYS-AUD-09, traced to SR-162 /
 // VT-173): starting a test first shows a dialog in which the learner confirms awareness of all
@@ -60,6 +60,7 @@ test.describe('Session start — materials confirmation', () => {
       });
       expect(created.status()).toBe(201);
       trainingId = (await created.json()).id;
+      await publishSilent(request, trainingId!, adminToken); // learners see published content only
       const roles = await (await request.get('/api/roles', { headers: auth(adminToken) })).json();
       lab = roles.find((r: { name: string }) => r.name === 'Lab Technician');
       await request.put(`/api/roles/${lab!.id}`, {

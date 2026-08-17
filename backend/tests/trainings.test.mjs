@@ -232,8 +232,9 @@ test('SYS-DATA-11: link variants are sanitized — junk coerced, empty and unkno
     },
   });
   assert.equal(res.status, 201);
-  assert.equal(res.body.materials.length, 1, 'only the well-formed material survives');
-  const material = res.body.materials[0];
+  // A new training's content is STAGED: it lands in the draft until version 1 is published.
+  assert.equal(res.body.draft.materials.length, 1, 'only the well-formed material survives');
+  const material = res.body.draft.materials[0];
   assert.ok(material.id, 'the material got a server-assigned id');
   assert.deepEqual(material.variants, [{ locale: 'en', label: 'Good', url: 'https://example.com/doc' }],
     'extra keys dropped; content-less and unknown-locale variants are gone');
@@ -255,15 +256,16 @@ test('SYS-DATA-05 / SYS-TRN-12: questions are sanitized — id assigned, legacy 
     },
   });
   assert.equal(res.status, 201);
-  assert.equal(res.body.questions.length, 4);
-  assert.ok(res.body.questions[0].id, 'a question id was generated');
-  assert.deepEqual(res.body.questions[0].correctIndices, [2]);
-  assert.deepEqual(res.body.questions[0].text, { en: 'Q1' }, 'a legacy plain-string text becomes the English entry');
-  assert.deepEqual(res.body.questions[0].options, [{ en: 'a' }, { en: 'b' }, { en: 'c' }], 'legacy string options localize too');
-  assert.deepEqual(res.body.questions[1].correctIndices, [0], 'an unusable answer key falls back to [0]');
-  assert.deepEqual(res.body.questions[2].correctIndices, [1], 'a legacy scalar correctIndex is accepted');
-  assert.deepEqual(res.body.questions[3].correctIndices, [0, 2], 'deduped, in-bounds and ascending');
-  assert.equal(res.body.questions[3].correctIndex, undefined, 'the legacy field is never stored');
+  const staged = res.body.draft.questions; // content is staged in the draft until published
+  assert.equal(staged.length, 4);
+  assert.ok(staged[0].id, 'a question id was generated');
+  assert.deepEqual(staged[0].correctIndices, [2]);
+  assert.deepEqual(staged[0].text, { en: 'Q1' }, 'a legacy plain-string text becomes the English entry');
+  assert.deepEqual(staged[0].options, [{ en: 'a' }, { en: 'b' }, { en: 'c' }], 'legacy string options localize too');
+  assert.deepEqual(staged[1].correctIndices, [0], 'an unusable answer key falls back to [0]');
+  assert.deepEqual(staged[2].correctIndices, [1], 'a legacy scalar correctIndex is accepted');
+  assert.deepEqual(staged[3].correctIndices, [0, 2], 'deduped, in-bounds and ascending');
+  assert.equal(staged[3].correctIndex, undefined, 'the legacy field is never stored');
 });
 
 test('SYS-TRN-12 / SR-146 / VT-146: a question may carry several correct answers, stored as given', async () => {
@@ -277,10 +279,10 @@ test('SYS-TRN-12 / SR-146 / VT-146: a question may carry several correct answers
     },
   });
   assert.equal(res.status, 201);
-  assert.deepEqual(res.body.questions[0].correctIndices, [0, 1, 2], 'all three correct answers persist');
+  assert.deepEqual(res.body.draft.questions[0].correctIndices, [0, 1, 2], 'all three correct answers persist');
 
   const readBack = await srv.request('GET', `/api/trainings/${res.body.id}`, { token: trainerToken });
-  assert.deepEqual(readBack.body.questions[0].correctIndices, [0, 1, 2], 'and survive a round-trip');
+  assert.deepEqual(readBack.body.draft.questions[0].correctIndices, [0, 1, 2], 'and survive a round-trip');
 });
 
 // ───────────────────────── SYS-TRN-04 — PUT /:id (update) ─────────────────────────

@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for localized quiz questions and answers (SR-155): per-language authoring in the editor
 // (SYS-TRN-16) and the learner's quiz resolving to their chosen language with the material fallback
@@ -35,6 +35,8 @@ test.describe('Localized quiz questions', () => {
     await dialog.getByPlaceholder('Option 2').nth(0).fill('To create marketing');
     await dialog.getByPlaceholder('Option 2').nth(1).fill('Werbung erstellen');
     await dialog.getByRole('button', { name: 'Create' }).click();
+    // The created content is staged as a draft — the publish step is offered; keep it a draft here.
+    await page.getByTestId('publish-update-skip').click();
     await expect(page.getByText(name)).toBeVisible();
 
     // Round-trip: both languages come back into their rows.
@@ -78,6 +80,7 @@ test.describe('Localized quiz questions', () => {
       });
       expect(created.status()).toBe(201);
       trainingId = (await created.json()).id;
+      await publishSilent(request, trainingId!, trainerToken); // learners see published content only
 
       const roles = await request.get('/api/roles', { headers: auth(adminToken) });
       lab = (await roles.json()).find((r: { name: string }) => r.name === 'Lab Technician');

@@ -27,7 +27,12 @@ const actionable = computed(() => isActionable(props.item.status));
 // Without material to study the training can't be started; a missing test is fine — completion then
 // happens through the audited materials confirmation on the session page.
 const readiness = computed(() => trainingReadiness(training.value));
-const label = computed(() => dueLabel(t, props.item.status, props.item.dueDate));
+// Version 0 = the trainer has not published the first version yet: the card is visible (the
+// learner knows it is coming) but shows a neutral "in preparation" state and cannot be started.
+const unpublished = computed(() => (training.value.version ?? 1) === 0);
+const label = computed(() =>
+  unpublished.value ? t('trainingCard.inPreparation') : dueLabel(t, props.item.status, props.item.dueDate),
+);
 
 // One plain sentence instead of pill badges: "Yearly training, takes 1 h 30 min".
 const meta = computed(() => {
@@ -48,13 +53,15 @@ const meta = computed(() => {
          green, the text just sits on it. Same colors/typography as the pill it replaces. -->
     <span
       class="absolute left-0 top-0 inline-flex h-6 items-center gap-1 rounded-br-lg rounded-tl-lg px-3 font-mono text-xs font-semibold leading-none"
-      :class="dueClasses(item.status, item.dueDate)"
+      :class="unpublished ? 'bg-pastel-slate/60 text-ink-muted' : dueClasses(item.status, item.dueDate)"
     >
       {{ label }}
     </span>
 
-    <!-- Content version, flush in the opposite corner — bumped whenever an update is published. -->
+    <!-- Content version, flush in the opposite corner — bumped whenever an update is published.
+         Hidden while nothing has been published yet (the corner badge says "in preparation"). -->
     <span
+      v-if="!unpublished"
       class="absolute right-0 top-0 inline-flex h-6 items-center rounded-bl-lg rounded-tr-lg bg-white/60 px-2.5 font-mono text-[11px] font-semibold leading-none text-ink-light"
       :title="t('trainings.versionTitle')"
     >
@@ -83,14 +90,16 @@ const meta = computed(() => {
     <div class="mt-auto flex justify-end pt-1">
       <button
         class="btn-primary btn-sm shrink-0"
-        :class="{ '!bg-ink-light/60': !actionable && readiness.startable }"
-        :disabled="!readiness.startable"
+        :class="{ '!bg-ink-light/60': !actionable && readiness.startable && !unpublished }"
+        :disabled="!readiness.startable || unpublished"
         :title="
-          !readiness.startable
-            ? t('trainingCard.unavailable')
-            : actionable
-              ? t('trainingCard.startSession')
-              : t('trainingCard.notDueYet')
+          unpublished
+            ? t('trainingCard.inPreparation')
+            : !readiness.startable
+              ? t('trainingCard.unavailable')
+              : actionable
+                ? t('trainingCard.startSession')
+                : t('trainingCard.notDueYet')
         "
         @click="emit('start', training.id)"
       >

@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for the dashboard due-only filter (SYS-DSH-02, traced to SR-156 / VT-163): "Only show due
 // trainings" is checked by default so the dashboard reads as a work list; unchecking it reveals the
@@ -31,6 +31,7 @@ test('SYS-DSH-02 / SR-156 / VT-163: the dashboard shows only due trainings by de
     });
     expect(created.status()).toBe(201);
     trainingId = (await created.json()).id;
+    await publishSilent(request, trainingId!, trainerToken); // learners see published content only
 
     const roles = await request.get('/api/roles', { headers: auth(adminToken) });
     lab = (await roles.json()).find((r: { name: string }) => r.name === 'Lab Technician');

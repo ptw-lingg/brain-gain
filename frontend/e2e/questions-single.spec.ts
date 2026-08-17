@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CREDS, login } from './fixtures';
+import { CREDS, login, publishSilent } from './fixtures';
 
 // E2E for single-choice quiz questions (SYS-TRN-14 in the trainer editor, SYS-SES-06 in the learner
 // quiz; traced to SR-149 / SR-150 / VT-149 / VT-150). Write-path coercion and grading semantics are
@@ -26,6 +26,8 @@ test.describe('Quiz questions — single choice', () => {
     }
     await dialog.getByRole('radio', { name: 'Multiple choice' }).check();
     await dialog.getByRole('button', { name: 'Create' }).click();
+    // The created content is staged as a draft — the publish step is offered; keep it a draft here.
+    await page.getByTestId('publish-update-skip').click();
     await expect(page.getByText(name)).toBeVisible();
 
     // Reopen the saved training and switch the question to single choice — allowed, because it has
@@ -49,8 +51,10 @@ test.describe('Quiz questions — single choice', () => {
     await key.nth(1).check();
     await expect(key.nth(0)).not.toBeChecked();
     await reopened.getByRole('button', { name: 'Save' }).click();
+    // The content change re-offers the publish step — keep the draft (the editor sees it on reopen).
+    await page.getByTestId('publish-update-skip').click();
 
-    // The type and the moved answer key both round-tripped through the server.
+    // The type and the moved answer key both round-tripped through the server (as the draft).
     await page.reload();
     await page.getByText(name).click();
     const third = page.getByRole('dialog');
@@ -110,6 +114,7 @@ test.describe('Quiz questions — single choice', () => {
     });
     expect(created.status()).toBe(201);
     const training = await created.json();
+    await publishSilent(request, training.id, trainerToken); // learners see published content only
 
     const roles = await request.get('/api/roles', { headers: { Authorization: `Bearer ${adminToken}` } });
     const lab = (await roles.json()).find((r: { name: string }) => r.name === 'Lab Technician');

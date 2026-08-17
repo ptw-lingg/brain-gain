@@ -14,7 +14,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let adminToken;
@@ -145,8 +145,11 @@ test('SYS-TRN-11 / SR-041: an uploaded file attached to a training is visible & 
     },
   });
   assert.equal(created.status, 201);
-  assert.equal(created.body.materials.length, 1, 'the material is stored on the training');
-  assert.equal(created.body.materials[0].variants[0].file.id, up.body.id);
+  assert.equal(created.body.draft.materials.length, 1, 'the material is staged on the training');
+  assert.equal(created.body.draft.materials[0].variants[0].file.id, up.body.id);
+
+  // The content reaches learners once the first version is published…
+  await publishSilent(srv, created.body.id, trainerToken);
 
   // A member fetching the training sees the file descriptor (carried by the public shape)…
   const asMember = await srv.request('GET', `/api/trainings/${created.body.id}`, { token: memberToken });
@@ -177,7 +180,7 @@ test('SYS-DATA-11: file variants are sanitized — forged/non-UUID descriptors a
     },
   });
   assert.equal(res.status, 201);
-  const materials = res.body.materials;
+  const materials = res.body.draft.materials; // staged until published
   assert.equal(materials.length, 2, 'only materials with a surviving UUID-id descriptor remain');
   assert.equal(materials[0].variants[0].file.id, up.body.id);
   assert.deepEqual(

@@ -111,7 +111,8 @@ test('SYS-AUD-02 / SR-159 / VT-168: a settings save diffs dot-path fields and ne
   assert.deepEqual({ from: pw.from, to: pw.to }, { from: '***', to: '***' }, 'the SMTP password change is masked');
   assert.ok(!rawLog().includes('supersecret-smtp'), 'no plaintext SMTP password on disk');
 
-  // Edit a training's quiz — the questions field (which contains the answer key) is masked wholesale.
+  // Edit a training's quiz — the content is STAGED as a draft, and the draft field (which carries
+  // a full questions snapshot including the answer key) is masked wholesale in the diff.
   const trainings = await srv.request('GET', '/api/trainings', { token: adminToken });
   const t = trainings.body[0];
   const questions = t.questions.map((q, i) => (i === 0 ? { ...q, text: { ...q.text, en: 'Audit-changed question' } } : q));
@@ -119,8 +120,8 @@ test('SYS-AUD-02 / SR-159 / VT-168: a settings save diffs dot-path fields and ne
   assert.equal(put.status, 200);
 
   const audit = await listAudit('entityType=training&action=update');
-  const qChange = audit.body.entries[0].changes.find((c) => c.field === 'questions');
-  assert.deepEqual({ from: qChange.from, to: qChange.to }, { from: '***', to: '***' }, 'the quiz change is recorded masked');
+  const qChange = audit.body.entries[0].changes.find((c) => c.field === 'draft');
+  assert.deepEqual({ from: qChange.from, to: qChange.to }, { from: '***', to: '***' }, 'the staged quiz change is recorded masked');
   assert.ok(!rawLog().includes('correctIndices'), 'no answer key on disk');
 });
 

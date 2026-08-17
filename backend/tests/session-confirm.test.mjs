@@ -12,7 +12,7 @@
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { startTestServer } from './helpers/server.mjs';
+import { startTestServer, publishSilent } from './helpers/server.mjs';
 
 let srv;
 let adminToken;
@@ -42,6 +42,8 @@ before(async () => {
   });
   assert.equal(created.status, 201, 'a training with material but no questions exists');
   noQuizTraining = created.body;
+  // Content lands in the draft — publish v1 so the material count and the empty grading apply.
+  await publishSilent(srv, noQuizTraining.id, adminToken);
 });
 
 after(async () => { await srv?.stop(); });

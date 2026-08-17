@@ -44,6 +44,8 @@ test.describe('Quiz questions — several correct answers', () => {
     await expect(keyBoxes.nth(3)).not.toBeChecked();
 
     await dialog.getByRole('button', { name: 'Create' }).click();
+    // The created content is staged as a draft — the publish step is offered; keep it a draft here.
+    await page.getByTestId('publish-update-skip').click();
     await expect(page.getByText(name)).toBeVisible();
 
     // Reopen after a reload: the full answer key came back from the server. Questions start collapsed,

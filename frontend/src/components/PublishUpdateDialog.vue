@@ -10,11 +10,11 @@ import { Loader2, Send, Trash2, X } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import type { PublishUpdateResponse, Settings, Training, TrainingUpdate } from '@/types';
-import { formatDate } from '@/utils/display';
+import { formatDate, formatDateTime } from '@/utils/display';
 import { resolveLocalized } from '@/utils/locales';
 
 const props = defineProps<{ training: Training }>();
-// `changed` = something was published or cancelled — the parent must reload its training list.
+// `changed` = something was published, discarded or cancelled — the parent must reload its list.
 const emit = defineEmits<{ close: []; changed: [] }>();
 
 const { t, locale } = useI18n();
@@ -23,6 +23,11 @@ const toast = useToastStore();
 const name = computed(() => resolveLocalized(props.training.name, locale.value).value);
 const nextVersion = computed(() => (props.training.version ?? 1) + 1);
 const pending = computed<TrainingUpdate[]>(() => props.training.updates ?? []);
+// The server's staged WIP content (this component only ever sees server-shaped records).
+const serverDraft = computed(() => props.training.draft ?? null);
+// Version 0 = never published: nobody can have completed it, so there is no one to notify —
+// the first version goes live silently.
+const isUnpublished = computed(() => (props.training.version ?? 1) === 0);
 
 function defaultDeadline(): string {
   const d = new Date();
@@ -31,10 +36,12 @@ function defaultDeadline(): string {
 }
 const todayStr = new Date().toISOString().slice(0, 10);
 
+const kind = ref<'notify' | 'silent'>(isUnpublished.value ? 'silent' : 'notify');
 const mode = ref<'retake' | 'confirm'>('retake');
 const deadline = ref(defaultDeadline());
 const note = ref('');
 const publishing = ref(false);
+const discarding = ref(false);
 const cancellingId = ref<string | null>(null);
 
 // Company name for the mail templates — same source as the TraineesPage reminders.
@@ -81,21 +88,28 @@ watch(
 async function publish(): Promise<void> {
   publishing.value = true;
   try {
+    const body =
+      kind.value === 'silent'
+        ? { kind: 'silent' }
+        : {
+            kind: 'notify',
+            mode: mode.value,
+            deadline: deadline.value,
+            note: note.value.trim() || undefined,
+            emailSubject: emailSubject.value.trim(),
+            emailText: emailText.value.trim(),
+          };
     const { data } = await client.post<PublishUpdateResponse>(
       `/trainings/${props.training.id}/publish-update`,
-      {
-        mode: mode.value,
-        deadline: deadline.value,
-        note: note.value.trim() || undefined,
-        emailSubject: emailSubject.value.trim(),
-        emailText: emailText.value.trim(),
-      },
+      body,
     );
-    // The publish itself succeeded either way; the toast tells whether the email went out.
-    if ('sent' in data.email) {
+    // The publish itself succeeded either way; the toast tells whether an email went out.
+    if (data.email && 'sent' in data.email) {
       toast.success(t('trainings.publish.toasts.published', { version: data.version, count: data.email.sent }, data.email.sent));
-    } else {
+    } else if (data.email) {
       toast.success(t('trainings.publish.toasts.publishedNoMail', { version: data.version }));
+    } else {
+      toast.success(t('trainings.publish.toasts.publishedSilent', { version: data.version }));
     }
     emit('changed');
     emit('close');
@@ -103,6 +117,21 @@ async function publish(): Promise<void> {
     toast.error(t('trainings.publish.toasts.publishError'));
   } finally {
     publishing.value = false;
+  }
+}
+
+// Discard the WIP: the training reverts to its published state (audited server-side).
+async function discardDraft(): Promise<void> {
+  discarding.value = true;
+  try {
+    await client.delete(`/trainings/${props.training.id}/draft`);
+    toast.success(t('trainings.publish.toasts.discarded'));
+    emit('changed');
+    emit('close');
+  } catch {
+    toast.error(t('trainings.publish.toasts.discardError'));
+  } finally {
+    discarding.value = false;
   }
 }
 
@@ -146,8 +175,39 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
       <div class="flex-1 overflow-y-auto p-5">
         <p class="font-mono text-xs text-ink-muted">{{ t('trainings.publish.intro') }}</p>
 
-        <!-- What must trainees do? -->
+        <!-- What gets published: the staged draft, or a re-announcement of the current content. -->
+        <p class="mt-2 font-mono text-xs font-semibold" :class="serverDraft ? 'text-blue-700' : 'text-ink-light'">
+          {{ serverDraft
+            ? t('trainings.publish.draftInfo', { date: formatDateTime(serverDraft.savedAt) })
+            : t('trainings.publish.noDraftInfo') }}
+        </p>
+
+        <!-- Notify or silent? A never-published training (v0) has nobody to notify. -->
         <fieldset class="mt-4">
+          <legend class="form-label">{{ t('trainings.publish.kindLabel') }}</legend>
+          <label
+            class="check-card mt-2"
+            :class="[kind === 'notify' ? 'border-accent bg-accent-light/30' : '', isUnpublished ? 'cursor-not-allowed opacity-50' : '']"
+          >
+            <input v-model="kind" type="radio" value="notify" class="mt-0.5 accent-accent" :disabled="isUnpublished" data-testid="publish-kind-notify" />
+            <span>
+              <span class="block text-sm font-semibold text-ink">{{ t('trainings.publish.kindNotify') }}</span>
+              <span class="block font-mono text-[11px] text-ink-light">
+                {{ isUnpublished ? t('trainings.publish.notifyUnavailable') : t('trainings.publish.kindNotifyHint') }}
+              </span>
+            </span>
+          </label>
+          <label class="check-card mt-2" :class="kind === 'silent' ? 'border-accent bg-accent-light/30' : ''">
+            <input v-model="kind" type="radio" value="silent" class="mt-0.5 accent-accent" data-testid="publish-kind-silent" />
+            <span>
+              <span class="block text-sm font-semibold text-ink">{{ t('trainings.publish.kindSilent') }}</span>
+              <span class="block font-mono text-[11px] text-ink-light">{{ t('trainings.publish.kindSilentHint') }}</span>
+            </span>
+          </label>
+        </fieldset>
+
+        <!-- What must trainees do? (notify only) -->
+        <fieldset v-if="kind === 'notify'" class="mt-4">
           <legend class="form-label">{{ t('trainings.publish.modeLabel') }}</legend>
           <label class="check-card mt-2" :class="mode === 'retake' ? 'border-accent bg-accent-light/30' : ''">
             <input v-model="mode" type="radio" value="retake" class="mt-0.5 accent-accent" />
@@ -165,36 +225,38 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
           </label>
         </fieldset>
 
-        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <label class="block">
-            <span class="form-label">{{ t('trainings.publish.deadline') }}</span>
-            <input v-model="deadline" type="date" :min="todayStr" class="bg-input mt-1" data-testid="publish-deadline" />
+        <template v-if="kind === 'notify'">
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <label class="block">
+              <span class="form-label">{{ t('trainings.publish.deadline') }}</span>
+              <input v-model="deadline" type="date" :min="todayStr" class="bg-input mt-1" data-testid="publish-deadline" />
+            </label>
+          </div>
+
+          <label class="mt-4 block">
+            <span class="form-label">{{ t('trainings.publish.note') }}</span>
+            <textarea v-model="note" rows="2" class="bg-input mt-1" :placeholder="t('trainings.publish.notePlaceholder')" />
           </label>
-        </div>
 
-        <label class="mt-4 block">
-          <span class="form-label">{{ t('trainings.publish.note') }}</span>
-          <textarea v-model="note" rows="2" class="bg-input mt-1" :placeholder="t('trainings.publish.notePlaceholder')" />
-        </label>
-
-        <!-- Notification email, prefilled — editable until sent. -->
-        <div class="mt-4 rounded-lg border border-line bg-pastel-slate/20 p-4">
-          <p class="form-label">{{ t('trainings.publish.emailPreview') }}</p>
-          <input
-            v-model="emailSubject"
-            type="text"
-            class="bg-input mt-2"
-            :aria-label="t('trainings.publish.emailSubject')"
-            @input="subjectDirty = true"
-          />
-          <textarea
-            v-model="emailText"
-            rows="6"
-            class="bg-input mt-2 font-mono text-xs"
-            :aria-label="t('trainings.publish.emailBody')"
-            @input="textDirty = true"
-          />
-        </div>
+          <!-- Notification email, prefilled — editable until sent. -->
+          <div class="mt-4 rounded-lg border border-line bg-pastel-slate/20 p-4">
+            <p class="form-label">{{ t('trainings.publish.emailPreview') }}</p>
+            <input
+              v-model="emailSubject"
+              type="text"
+              class="bg-input mt-2"
+              :aria-label="t('trainings.publish.emailSubject')"
+              @input="subjectDirty = true"
+            />
+            <textarea
+              v-model="emailText"
+              rows="6"
+              class="bg-input mt-2 font-mono text-xs"
+              :aria-label="t('trainings.publish.emailBody')"
+              @input="textDirty = true"
+            />
+          </div>
+        </template>
 
         <!-- Already-published updates: cancellable; the version never rolls back. -->
         <div v-if="pending.length" class="mt-5">
@@ -221,13 +283,30 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
         </div>
       </div>
 
-      <div class="flex items-center gap-2 border-t border-line px-5 py-3">
-        <button class="btn-primary" :disabled="publishing || !deadline" data-testid="publish-update-ok" @click="publish">
+      <div class="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
+        <button
+          class="btn-primary"
+          :disabled="publishing || discarding || (kind === 'notify' && !deadline) || (kind === 'silent' && !serverDraft)"
+          data-testid="publish-update-ok"
+          @click="publish"
+        >
           <Loader2 v-if="publishing" class="h-4 w-4 animate-spin" />
           <Send v-else class="h-4 w-4" /> {{ t('trainings.publish.publish') }}
         </button>
-        <button class="btn-ghost" :disabled="publishing" data-testid="publish-update-skip" @click="emit('close')">
+        <button class="btn-ghost" :disabled="publishing || discarding" data-testid="publish-update-skip" @click="emit('close')">
           {{ t('trainings.publish.skip') }}
+        </button>
+        <div class="flex-1" />
+        <!-- Revert the WIP to the published state — only offered while a draft exists. -->
+        <button
+          v-if="serverDraft"
+          class="btn-danger btn-sm"
+          :disabled="publishing || discarding"
+          data-testid="discard-draft"
+          @click="discardDraft"
+        >
+          <Loader2 v-if="discarding" class="h-3.5 w-3.5 animate-spin" />
+          <Trash2 v-else class="h-3.5 w-3.5" /> {{ t('trainings.publish.discard') }}
         </button>
       </div>
     </div>
