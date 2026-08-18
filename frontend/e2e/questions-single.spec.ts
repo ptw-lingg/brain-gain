@@ -146,7 +146,7 @@ test.describe('Quiz questions — single choice', () => {
       await expect(submit).toBeEnabled();
       await submit.click();
       await signSubmission(page, CREDS.member.password); // the completion signature (SR-173)
-      await expect(page.getByText('step 3 of 3')).toBeVisible();
+      await expect(page.getByTestId('session-result')).toBeVisible();
       await expect(page.getByRole('heading', { name: /^Passed/ })).toBeVisible();
     } finally {
       // The specs share one seeded server — put the role back so this training does not appear on

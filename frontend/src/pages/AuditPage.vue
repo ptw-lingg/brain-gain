@@ -80,7 +80,9 @@ async function load(): Promise<void> {
     });
     entries.value = data.entries;
     total.value = data.total;
-    expandedId.value = null;
+    // Keep the expanded row open across reloads (debounced filter refreshes race the user's
+    // expand click); collapse only when the entry left the current page of results.
+    if (!data.entries.some((e) => e.id === expandedId.value)) expandedId.value = null;
   } catch {
     toast.error(t('audit.toasts.loadError'));
   } finally {

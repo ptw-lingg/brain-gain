@@ -96,8 +96,6 @@
     "cycleEvery": "Every {years} years"
   },
   "session": {
-    "back": "My Trainings",
-    "stepOf": "step {step} of 3",
     "startTest": "Start test →",
     "completeTraining": "Complete training →",
     "noMaterial": "No material attached for this training.",

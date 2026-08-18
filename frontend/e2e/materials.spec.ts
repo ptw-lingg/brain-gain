@@ -63,7 +63,7 @@ test.describe('Trainings — material files end to end', () => {
     // The first Start opens Laboratory Safety Basics (the seeded required training edited above).
     await page.getByRole('button', { name: /Start/ }).first().click();
     await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
-    await expect(page.getByText('step 1 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-material')).toBeVisible();
 
     // The file appears alongside the link material, named, with a download affordance.
     const fileCard = page.getByRole('button', { name: new RegExp(FILE_NAME) });

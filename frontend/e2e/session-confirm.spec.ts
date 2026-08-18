@@ -25,7 +25,7 @@ test.describe('Session start — materials confirmation', () => {
 
     await login(page, 'member');
     await page.goto(`/session/${training.id}`);
-    await expect(page.getByText('step 1 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-material')).toBeVisible();
 
     // Cancelling the dialog starts nothing.
     await page.getByTestId('session-start').click();
@@ -34,12 +34,12 @@ test.describe('Session start — materials confirmation', () => {
     await expect(dialog).toContainText('I confirm that I am aware of all the materials provided');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.getByText('step 1 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-material')).toBeVisible();
 
     // Confirming records the confirmation and opens the quiz.
     await page.getByTestId('session-start').click();
     await page.getByTestId('confirm-materials-ok').click();
-    await expect(page.getByText('step 2 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-quiz')).toBeVisible();
   });
 
   test('SYS-SES-10 / SR-162 / VT-173: a training without questions is startable and completes through the confirmation', async ({ page, request }) => {
@@ -139,7 +139,7 @@ test.describe('Session start — materials confirmation', () => {
     await page.getByTestId('confirm-materials-ok').click();
     // Wait for the quiz step before collecting the cards — querying mid-transition can capture the
     // closing confirmation dialog (also a .card) as a stale handle.
-    await expect(page.getByText('step 2 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-quiz')).toBeVisible();
     for (const quizCard of await page.locator('section >> .card').all()) {
       await quizCard.locator('input[type="checkbox"]').first().check();
     }

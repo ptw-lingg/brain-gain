@@ -943,7 +943,7 @@
     {"id":"TC-ffd55f864f","name":"SYS-SSO-03 / VT-007: POST /api/auth/sso/entra returns 503 when SSO is unconfigured","kind":"backend","file":"backend/tests/sso.test.mjs","covers":["SYS-SSO-03","VT-007"]}
   ],
   "testRun": {
-    "ranAt": "2026-08-18T07:36:06.123Z",
+    "ranAt": "2026-08-18T10:52:22.663Z",
     "summary": {
       "total": 427,
       "passed": 427,

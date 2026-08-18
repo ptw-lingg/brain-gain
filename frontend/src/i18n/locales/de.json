@@ -96,8 +96,6 @@
     "cycleEvery": "Alle {years} Jahre"
   },
   "session": {
-    "back": "Meine Schulungen",
-    "stepOf": "Schritt {step} von 3",
     "startTest": "Test starten →",
     "completeTraining": "Schulung abschließen →",
     "noMaterial": "Für diese Schulung ist kein Material hinterlegt.",

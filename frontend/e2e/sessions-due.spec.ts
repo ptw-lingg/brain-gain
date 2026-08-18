@@ -28,7 +28,7 @@ test.describe('Training sessions & due status', () => {
     // Start a session from the dashboard → routes to /session/:trainingId (step 1 of 3: material).
     await page.getByRole('button', { name: /Start/ }).first().click();
     await expect(page).toHaveURL(/\/session\//);
-    await expect(page.getByText('step 1 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-material')).toBeVisible();
 
     // Step 1 — material: a learning-material link is shown and opens in a new tab (target=_blank).
     const materialLink = page.locator('a[target="_blank"]').first();
@@ -38,7 +38,7 @@ test.describe('Training sessions & due status', () => {
     // Advance to the quiz (step 2 of 3) — through the materials confirmation (SR-162).
     await page.getByRole('button', { name: 'Start test' }).click();
     await page.getByTestId('confirm-materials-ok').click();
-    await expect(page.getByText('step 2 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-quiz')).toBeVisible();
 
     // The quiz must NOT visually mark a correct answer (answer key hidden) — just selectable options.
     const questionCards = page.locator('section >> .card');
@@ -65,7 +65,7 @@ test.describe('Training sessions & due status', () => {
     await signSubmission(page, CREDS.member.password);
 
     // Step 3 — result: a pass/fail result screen with the score is shown (server-graded).
-    await expect(page.getByText('step 3 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-result')).toBeVisible();
     await expect(page.getByText(/You scored \d+%/)).toBeVisible();
     await expect(
       page.getByRole('heading', { name: /Passed|Not passed/ }),
@@ -96,6 +96,6 @@ test.describe('Training sessions & due status', () => {
 
     // Retry returns to the quiz step (unlimited retries).
     await page.getByRole('button', { name: /Retry test/ }).click();
-    await expect(page.getByText('step 2 of 3')).toBeVisible();
+    await expect(page.getByTestId('session-quiz')).toBeVisible();
   });
 });

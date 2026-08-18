@@ -33,8 +33,9 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
 
     await drawer.getByRole('button', { name: 'Save' }).click();
 
-    // Drawer closes and the new user appears in the table.
-    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0);
+    // Drawer closes and the new user appears in the table. The close waits get extra headroom:
+    // save = POST + list reload, which can exceed the 8s expect default under full-suite load.
+    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     const row = page.locator('tr', { hasText: email });
     await expect(row).toBeVisible();
     // Admin flag wins the access pill.
@@ -59,7 +60,7 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     await nameInput.fill(newName);
     await drawer.getByRole('button', { name: 'Save' }).click();
 
-    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0);
+    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.locator('tr', { hasText: 'user@braingain.app' })).toContainText(newName);
   });
 
@@ -80,7 +81,7 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     await roleChecks.check();
 
     await drawer.getByRole('button', { name: 'Save' }).click();
-    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0);
+    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
 
     // Reopen and confirm the assignment persisted (checkbox stays checked).
     await page.locator('tr', { hasText: email }).click();
@@ -103,14 +104,14 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     await drawer.locator('input[type="email"]').fill(email);
     await drawer.locator('input[type="password"]').fill('secret123');
     await drawer.getByRole('button', { name: 'Save' }).click();
-    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0);
+    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
 
     await page.locator('tr', { hasText: email }).click();
     drawer = page.locator('.fixed.inset-0.z-40');
     await drawer.getByRole('button', { name: 'Delete' }).click();
     await drawer.getByRole('button', { name: 'Yes' }).click();
 
-    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0);
+    await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.locator('tr', { hasText: email })).toHaveCount(0);
   });
 });

@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
-  ArrowLeft,
   Download,
   ExternalLink,
   FileText,
@@ -311,10 +310,6 @@ onMounted(() => {
 
 <template>
   <div class="mx-auto max-w-2xl">
-    <button class="btn-ghost btn-sm mb-4" @click="router.push('/dashboard')">
-      <ArrowLeft class="h-3.5 w-3.5" /> {{ t('session.back') }}
-    </button>
-
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
 
     <template v-else-if="training && unpublished">
@@ -327,12 +322,9 @@ onMounted(() => {
 
     <template v-else-if="training">
       <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
-      <p class="mt-1 font-mono text-xs text-ink-light">
-        {{ t('session.stepOf', { step: step === 'material' ? 1 : step === 'quiz' ? 2 : 3 }) }}
-      </p>
 
       <!-- Step 1: Material -->
-      <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4">
+      <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4" data-testid="session-material">
         <!-- Pending training update: why this training is back on the list and what clears it. -->
         <div
           v-if="pendingUpdate"
@@ -402,7 +394,6 @@ onMounted(() => {
             {{ t('session.noMaterial') }}
           </p>
         </div>
-        <p v-if="!hasQuestions && !confirmOnly" class="font-mono text-xs text-amber-600">{{ t('session.noQuestions') }}</p>
         <button class="btn-primary self-start" data-testid="session-start" @click="startTest">
           {{ confirmOnly
             ? t('session.update.confirmCta')
@@ -410,6 +401,7 @@ onMounted(() => {
               ? t('session.startTest')
               : t('session.completeTraining') }}
         </button>
+        <p v-if="!hasQuestions && !confirmOnly" class="font-mono text-xs text-ink-light">{{ t('session.noQuestions') }}</p>
 
         <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
              without questions this confirmation is the only evidence the training was done, so it is
@@ -508,7 +500,7 @@ onMounted(() => {
       </section>
 
       <!-- Step 2: Quiz -->
-      <section v-else-if="step === 'quiz'" class="mt-6 flex flex-col gap-5">
+      <section v-else-if="step === 'quiz'" class="mt-6 flex flex-col gap-5" data-testid="session-quiz">
         <div
           v-for="(q, qi) in training.questions"
           :key="q.id"
@@ -612,7 +604,7 @@ onMounted(() => {
       </section>
 
       <!-- Step 3: Result -->
-      <section v-else-if="step === 'result' && result" class="mt-6">
+      <section v-else-if="step === 'result' && result" class="mt-6" data-testid="session-result">
         <div
           class="card flex flex-col items-center gap-3 p-8 text-center"
           :class="result.passed ? 'bg-pastel-mint/30' : 'bg-rose-50'"
