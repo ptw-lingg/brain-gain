@@ -39,7 +39,8 @@ const router = createRouter({
         { path: 'users/import', component: UsersImportPage, meta: { requiresAdmin: true } },
         { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
         { path: 'backups', component: BackupsPage, meta: { requiresAdmin: true } },
-        { path: 'audit', component: AuditPage, meta: { requiresAdmin: true } },
+        // fullWidth: the entries table and diff view profit from every pixel (AppLayout opt-out).
+        { path: 'audit', component: AuditPage, meta: { requiresAdmin: true, fullWidth: true } },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },

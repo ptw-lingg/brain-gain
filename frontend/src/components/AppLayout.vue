@@ -186,7 +186,9 @@ function logout(): void {
     <div class="flex flex-1 overflow-hidden">
       <AppSidebar />
       <main class="flex-1 overflow-y-auto">
-        <div class="mx-auto max-w-6xl px-8 py-8">
+        <!-- Data-dense pages (route meta fullWidth, e.g. the audit trail) use the whole window;
+             everything else keeps the comfortable shared measure. -->
+        <div class="mx-auto px-8 py-8" :class="route.meta.fullWidth ? 'max-w-none' : 'max-w-6xl'">
           <RouterView v-slot="{ Component }">
             <Transition name="fade-slide" mode="out-in">
               <component :is="Component" />

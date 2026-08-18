@@ -286,7 +286,7 @@ onMounted(load);
 </script>
 
 <template>
-  <div class="mx-auto max-w-xl">
+  <div>
     <header>
       <h1 class="page-title">{{ t('settings.title') }}</h1>
       <p class="mt-1 font-mono text-xs text-ink-light">{{ t('settings.subtitle') }}</p>
@@ -294,7 +294,9 @@ onMounted(load);
 
     <div v-if="loading" class="mt-6 card h-40 animate-pulse bg-pastel-slate/30" />
 
-    <div v-else class="mt-6 flex flex-col gap-6">
+    <!-- The setting cards flow into two columns on large screens (items-start keeps each card at
+         its natural height instead of stretching to its row partner). -->
+    <div v-else class="mt-6 grid items-start gap-6 lg:grid-cols-2">
       <!-- Company name (names the root org unit) -->
       <div class="card p-6">
         <div class="flex items-center gap-3">

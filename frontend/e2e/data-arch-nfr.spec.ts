@@ -7,11 +7,11 @@ import { login } from './fixtures';
 // covered by backend/tests/data-arch-nfr.test.mjs; here we only prove the editors are reachable
 // through the real UI. Follows the pattern of auth.spec.ts (login() + page.goto).
 test.describe('Data/Arch/NFR — all entities editable via UI (SR-103 / VT-103)', () => {
-  test('SYS-DATA-02 / VT-103: admin can open the Users editor (drawer)', async ({ page }) => {
+  test('SYS-DATA-02 / VT-103: admin can open the Users editor (dialog)', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/users');
     await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
-    // The seeded admin row is listed; opening it reveals the edit drawer with the field set.
+    // The seeded admin row is listed; opening it reveals the edit dialog with the field set.
     await page.getByRole('button', { name: 'Add User' }).click();
     await expect(page.getByRole('heading', { name: 'New user' })).toBeVisible();
     // Editable fields exist: email + password inputs and the admin/trainer toggle labels.
@@ -24,10 +24,11 @@ test.describe('Data/Arch/NFR — all entities editable via UI (SR-103 / VT-103)'
   test('SYS-DATA-02 / VT-103: admin can open an existing user to edit it', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/users');
-    // Clicking a user row opens the "Edit user" drawer (the JSON record is editable in the UI).
+    // Clicking a user row opens the edit dialog, titled with the user's name (the JSON record is
+    // editable in the UI).
     await page.getByText('user@braingain.app').click();
-    await expect(page.getByRole('heading', { name: 'Edit user' })).toBeVisible();
-    // exact: the drawer label is "Job roles"; without it, getByText also matches the sidebar "Job Roles".
+    await expect(page.getByRole('heading', { name: 'Uma User' })).toBeVisible();
+    // exact: the dialog label is "Job roles"; without it, getByText also matches the sidebar "Job Roles".
     await expect(page.getByText('Job roles', { exact: true })).toBeVisible();
   });
 

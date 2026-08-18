@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login } from './fixtures';
 
 // E2e specs for the users-roles area (UI/end-to-end behaviour).
-//   SYS-USR-02 (SR-020/SR-021/SR-022) — Users page: list + slide-out drawer with role
+//   SYS-USR-02 (SR-020/SR-021/SR-022) — Users page: list + modal editor dialog with role
 //     multi-select and isAdmin/isTrainer toggles. VT-020 (create/edit/delete a user), VT-021.
 //   SYS-ROL-02 (SR-030/SR-031) — Roles page: create/edit/delete a job role with a training
 //     multi-select. VT-030 (manage roles), VT-031 (role requires trainings).
@@ -12,7 +12,7 @@ import { login } from './fixtures';
 // server never collide on the duplicate-email guard.
 const STAMP = Date.now();
 
-test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
+test.describe('Users page — admin CRUD via the dialog (SYS-USR-02)', () => {
   test('SYS-USR-02 / VT-020 (SR-020, SR-022): admin creates a user with admin & trainer toggles', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/users');
@@ -21,19 +21,19 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     const email = `e2e.create.${STAMP}@test.local`;
     await page.getByRole('button', { name: 'Add User' }).click();
 
-    const drawer = page.locator('.fixed.inset-0.z-40');
-    await expect(drawer).toContainText('New user');
-    await drawer.locator('input[type="email"]').fill(email);
-    await drawer.locator('input').first().fill('E2E Created'); // Name is the first text input
-    await drawer.locator('input[type="password"]').fill('secret123');
+    const dialog = page.locator('.fixed.inset-0.z-40');
+    await expect(dialog).toContainText('New user');
+    await dialog.locator('input[type="email"]').fill(email);
+    await dialog.locator('input').first().fill('E2E Created'); // Name is the first text input
+    await dialog.locator('input[type="password"]').fill('secret123');
 
     // Toggle Admin + Trainer (the two checkboxes in the access row).
-    await drawer.getByText('Admin', { exact: true }).click();
-    await drawer.getByText('Trainer', { exact: true }).click();
+    await dialog.getByText('Admin', { exact: true }).click();
+    await dialog.getByText('Trainer', { exact: true }).click();
 
-    await drawer.getByRole('button', { name: 'Save' }).click();
+    await dialog.getByRole('button', { name: 'Save' }).click();
 
-    // Drawer closes and the new user appears in the table. The close waits get extra headroom:
+    // Dialog closes and the new user appears in the table. The close waits get extra headroom:
     // save = POST + list reload, which can exceed the 8s expect default under full-suite load.
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     const row = page.locator('tr', { hasText: email });
@@ -50,19 +50,19 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     const row = page.locator('tr', { hasText: 'user@braingain.app' });
     await row.click();
 
-    const drawer = page.locator('.fixed.inset-0.z-40');
-    await expect(drawer).toContainText('Edit user');
+    const dialog = page.locator('.fixed.inset-0.z-40');
+    await expect(dialog).toContainText('Uma User'); // the title names who is being edited
     // Password field is pre-cleared (blank = keep current) per UsersPage behaviour.
-    await expect(drawer.locator('input[type="password"]')).toHaveValue('');
+    await expect(dialog.locator('input[type="password"]')).toHaveValue('');
 
     const newName = `Renamed Member ${STAMP}`;
-    const nameInput = drawer.locator('input').first();
+    const nameInput = dialog.locator('input').first();
     await nameInput.fill(newName);
-    await drawer.getByRole('button', { name: 'Save' }).click();
+    await dialog.getByRole('button', { name: 'Save' }).click();
 
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.locator('tr', { hasText: 'user@braingain.app' })).toContainText(newName);
-    // The table marks the row whose drawer was opened last, so the user sees where they were.
+    // The table marks the row whose dialog was opened last, so the user sees where they were.
     await expect(page.locator('tr', { hasText: 'user@braingain.app' })).toHaveAttribute('data-selected', 'true');
   });
 
@@ -72,23 +72,23 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
 
     const email = `e2e.roles.${STAMP}@test.local`;
     await page.getByRole('button', { name: 'Add User' }).click();
-    const drawer = page.locator('.fixed.inset-0.z-40');
-    await drawer.locator('input').first().fill('E2E Multi Role');
-    await drawer.locator('input[type="email"]').fill(email);
-    await drawer.locator('input[type="password"]').fill('secret123');
+    const dialog = page.locator('.fixed.inset-0.z-40');
+    await dialog.locator('input').first().fill('E2E Multi Role');
+    await dialog.locator('input[type="email"]').fill(email);
+    await dialog.locator('input[type="password"]').fill('secret123');
 
     // Tick every job-role checkbox under the "Job roles" section.
-    const roleChecks = drawer.locator('label:has(input[type="checkbox"]) input[type="checkbox"]').nth(2);
+    const roleChecks = dialog.locator('label:has(input[type="checkbox"]) input[type="checkbox"]').nth(2);
     // The first two checkboxes are Admin/Trainer; role checkboxes follow. Tick the first role.
     await roleChecks.check();
 
-    await drawer.getByRole('button', { name: 'Save' }).click();
+    await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
 
     // Reopen and confirm the assignment persisted (checkbox stays checked).
     await page.locator('tr', { hasText: email }).click();
     const reopened = page.locator('.fixed.inset-0.z-40');
-    await expect(reopened).toContainText('Edit user');
+    await expect(reopened).toContainText('E2E Multi Role'); // the title names who is being edited
     await expect(
       reopened.locator('label:has(input[type="checkbox"]) input[type="checkbox"]').nth(2),
     ).toBeChecked();
@@ -98,20 +98,20 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
     await login(page, 'admin');
     await page.goto('/users');
 
-    // Create a throwaway user, then delete it via the drawer's confirm flow.
+    // Create a throwaway user, then delete it via the dialog's confirm flow.
     const email = `e2e.delete.${STAMP}@test.local`;
     await page.getByRole('button', { name: 'Add User' }).click();
-    let drawer = page.locator('.fixed.inset-0.z-40');
-    await drawer.locator('input').first().fill('E2E Delete Me');
-    await drawer.locator('input[type="email"]').fill(email);
-    await drawer.locator('input[type="password"]').fill('secret123');
-    await drawer.getByRole('button', { name: 'Save' }).click();
+    let dialog = page.locator('.fixed.inset-0.z-40');
+    await dialog.locator('input').first().fill('E2E Delete Me');
+    await dialog.locator('input[type="email"]').fill(email);
+    await dialog.locator('input[type="password"]').fill('secret123');
+    await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
 
     await page.locator('tr', { hasText: email }).click();
-    drawer = page.locator('.fixed.inset-0.z-40');
-    await drawer.getByRole('button', { name: 'Delete' }).click();
-    await drawer.getByRole('button', { name: 'Yes' }).click();
+    dialog = page.locator('.fixed.inset-0.z-40');
+    await dialog.getByRole('button', { name: 'Delete' }).click();
+    await dialog.getByRole('button', { name: 'Yes' }).click();
 
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.locator('tr', { hasText: email })).toHaveCount(0);

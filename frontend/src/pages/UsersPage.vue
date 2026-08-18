@@ -92,7 +92,7 @@ function openNew(): void {
   isNew.value = true;
   confirmDelete.value = false;
 }
-// The row whose drawer was opened last — kept marked in the table after the drawer closes, so the
+// The row whose dialog was opened last — kept marked in the table after the dialog closes, so the
 // user sees where they were when they come back.
 const lastOpenedId = ref<string | null>(null);
 
@@ -106,7 +106,7 @@ function close(): void {
   draft.value = null;
 }
 
-// Close the edit drawer on Escape (the drawer has no always-focused element to bind to).
+// Close the edit dialog on Escape (the dialog has no always-focused element to bind to).
 function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && draft.value) close();
 }
@@ -247,21 +247,28 @@ onMounted(load);
       </div>
     </div>
 
-    <!-- Drawer -->
-    <Transition name="fade-slide">
-      <div v-if="draft" class="fixed inset-0 z-40 flex justify-end" @click.self="close">
-        <div class="absolute inset-0 bg-ink/20" @click="close" />
+    <!-- Editor dialog (a plain centered modal, like the training editor; no slide-in transition,
+         so tests and users get a deterministic mount). -->
+      <div v-if="draft" class="fixed inset-0 z-40 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-ink/40" @click="close" />
         <div
-          class="relative z-10 flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto bg-white p-6 shadow-lift"
+          class="relative z-10 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
           role="dialog"
           aria-modal="true"
           :aria-label="isNew ? t('users.new') : t('users.edit')"
         >
-          <div class="flex items-center justify-between">
-            <h2 class="font-sans text-lg font-bold text-ink">{{ isNew ? t('users.new') : t('users.edit') }}</h2>
-            <button class="text-ink-light hover:text-ink" :aria-label="t('common.close')" @click="close"><X class="h-5 w-5" /></button>
+          <div class="flex items-center justify-between border-b border-line px-5 py-3">
+            <!-- The title names WHO is being edited (live while typing); "Edit user" only covers a
+                 blank name. New accounts keep the generic "New user". -->
+            <h2 class="min-w-0 truncate font-sans text-base font-bold text-ink">
+              {{ isNew ? t('users.new') : draft.name || t('users.edit') }}
+            </h2>
+            <button class="ml-3 shrink-0 text-ink-light hover:text-ink" :aria-label="t('common.close')" @click="close"><X class="h-5 w-5" /></button>
           </div>
 
+          <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
+          <!-- Identity fields in a two-column grid — the wide dialog keeps the form flat. -->
+          <div class="grid gap-4 sm:grid-cols-2">
           <label class="flex flex-col gap-1">
             <span class="form-label">{{ t('common.name') }}</span>
             <input v-model="draft.name" class="bg-input" />
@@ -281,6 +288,7 @@ onMounted(load);
               <option v-for="o in orgUnits" :key="o.id" :value="o.id">{{ o.name }}</option>
             </select>
           </label>
+          </div>
 
           <div class="flex gap-4">
             <label class="flex items-center gap-2 font-mono text-sm text-ink-muted">
@@ -293,7 +301,8 @@ onMounted(load);
 
           <div>
             <span class="form-label">{{ t('users.jobRoles') }}</span>
-            <div class="mt-2 flex flex-col gap-2">
+            <!-- Roles as a checkbox grid — many roles stay scannable without scrolling. -->
+            <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               <label
                 v-for="r in roles"
                 :key="r.id"
@@ -311,8 +320,9 @@ onMounted(load);
               <p v-if="roles.length === 0" class="font-mono text-xs text-ink-light">{{ t('users.noRoles') }}</p>
             </div>
           </div>
+          </div>
 
-          <div class="mt-auto flex items-center gap-2 pt-4">
+          <div class="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
             <button class="btn-primary" @click="save"><Save class="h-4 w-4" /> {{ t('users.save') }}</button>
             <button
               v-if="!isNew && draft.id !== auth.user?.id"
@@ -336,6 +346,5 @@ onMounted(load);
           </div>
         </div>
       </div>
-    </Transition>
   </div>
 </template>
