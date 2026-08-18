@@ -58,7 +58,17 @@ test('SYS-DSH-02 / SR-156 / VT-163: the dashboard shows only due trainings by de
     await filter.uncheck();
     await expect(page.getByRole('heading', { name })).toBeVisible();
     await expect(page.getByText(/Next due/)).toBeVisible();
+
+    // The choice is persisted to the profile and restored on the next visit (SR-156).
+    await page.reload();
+    await expect(page.getByRole('checkbox', { name: 'Only show due trainings' })).not.toBeChecked();
+    await expect(page.getByRole('heading', { name })).toBeVisible();
   } finally {
+    // The flag persists per profile now — restore the default for the specs that follow.
+    await request.put('/api/auth/me', {
+      headers: auth(memberToken),
+      data: { prefs: { dashboardOnlyDue: true } },
+    });
     if (lab) {
       await request.put(`/api/roles/${lab.id}`, {
         headers: auth(adminToken),

@@ -161,8 +161,15 @@ export interface User {
   // (PUT /api/auth/me); absent until then, the client falls back to its own detection. Also the
   // default material language in a training session.
   locale?: string;
+  // Persisted per-user UI preferences — the "show only due" filter flags. Whitelisted keys only
+  // (UI_PREF_KEYS); merged per-key by PUT /api/auth/me so each view updates just its own flag.
+  prefs?: Partial<Record<UiPrefKey, boolean>>;
   createdAt: string;
 }
+
+/** Keys of persisted per-user UI preferences — the "show only due" filter flags per view. */
+export const UI_PREF_KEYS = ['dashboardOnlyDue', 'myTeamOnlyDue', 'traineesOnlyDue'] as const;
+export type UiPrefKey = (typeof UI_PREF_KEYS)[number];
 
 // Only PASSED attempts are persisted.
 export interface TrainingSession {

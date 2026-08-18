@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
-import type { OrgUnit, SafeUser, User } from '../types';
+import { UI_PREF_KEYS, type OrgUnit, type SafeUser, type User } from '../types';
 import { readSettings, readStore, writeStore } from '../services/fileStore';
 import { UI_LOCALES } from '../services/locales';
 import { rootOrgUnitId } from '../services/orgUnits';
@@ -125,23 +125,35 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   return res.json(await identityUser(user));
 });
 
-// PUT /api/auth/me  { locale }  — the only self-service profile write: persist the user's language.
-// The profile locale doubles as the UI language, and the UI exists only in en/de — material
-// languages are a separate, wider list governed by Settings.materialLocales. Refused while
-// impersonating: the token carries the TARGET's identity, so a write would silently edit the
-// impersonated user's profile, not the admin's.
+// PUT /api/auth/me  { locale?, prefs? }  — the only self-service profile write: persist the user's
+// language and/or UI preferences (the "show only due" filter flags). The profile locale doubles as
+// the UI language, and the UI exists only in en/de — material languages are a separate, wider list
+// governed by Settings.materialLocales. `prefs` accepts only whitelisted boolean flags and is merged
+// per key, so each view updates just its own flag. Refused while impersonating: the token carries
+// the TARGET's identity, so a write would silently edit the impersonated user's profile, not the
+// admin's.
 router.put('/me', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.impersonatorId) {
     return res.status(403).json({ error: 'The profile cannot be changed while impersonating' });
   }
-  const { locale } = req.body ?? {};
-  if (typeof locale !== 'string' || !(UI_LOCALES as readonly string[]).includes(locale)) {
+  const { locale, prefs } = req.body ?? {};
+  if (locale === undefined && prefs === undefined) {
+    return res.status(400).json({ error: 'locale or prefs is required' });
+  }
+  if (locale !== undefined && (typeof locale !== 'string' || !(UI_LOCALES as readonly string[]).includes(locale))) {
     return res.status(400).json({ error: `locale must be one of: ${UI_LOCALES.join(', ')}` });
+  }
+  if (prefs !== undefined) {
+    const entries = typeof prefs === 'object' && prefs !== null && !Array.isArray(prefs) ? Object.entries(prefs) : null;
+    if (!entries || entries.some(([k, v]) => !(UI_PREF_KEYS as readonly string[]).includes(k) || typeof v !== 'boolean')) {
+      return res.status(400).json({ error: `prefs accepts boolean flags: ${UI_PREF_KEYS.join(', ')}` });
+    }
   }
   const users = await readStore<User>('users');
   const user = users.find((u) => u.id === req.user?.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  user.locale = locale;
+  if (locale !== undefined) user.locale = locale;
+  if (prefs !== undefined) user.prefs = { ...user.prefs, ...prefs };
   await writeStore('users', users);
   return res.json(await identityUser(user));
 });

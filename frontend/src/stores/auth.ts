@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import client from '@/api/client';
 import { setLocale, SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
-import type { SafeUser } from '@/types';
+import type { SafeUser, UiPrefKey } from '@/types';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<SafeUser | null>(null);
@@ -86,6 +86,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // The user flipped a persisted UI preference (a "show only due" filter): the view has already
+  // switched locally, so the profile write only has to catch up. Never persisted while
+  // impersonating — the active token belongs to the TARGET user (the server refuses it with 403).
+  async function savePref(key: UiPrefKey, value: boolean): Promise<void> {
+    if (isImpersonating.value) return;
+    try {
+      const { data } = await client.put<SafeUser>('/auth/me', { prefs: { [key]: value } });
+      user.value = data;
+    } catch {
+      // The view already reflects the toggle; the profile write can catch up next time.
+    }
+  }
+
   // Admin → "view as" a user. The admin token (currently active) is parked, and the
   // server-issued impersonation token takes over, so the whole app renders as the target user.
   // Deliberately NOT applyUser: the target's locale must not switch the admin's UI language.
@@ -130,6 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
     activate,
     fetchMe,
     saveLocale,
+    savePref,
     startImpersonation,
     stopImpersonation,
     logout,

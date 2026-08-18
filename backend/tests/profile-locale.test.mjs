@@ -1,10 +1,12 @@
-// Automated API tests for the persisted per-user profile locale (SYS-AUTH-10).
+// Automated API tests for the persisted per-user profile: locale and UI prefs (SYS-AUTH-10).
 //
 // Covers the system requirements / validation tests:
-//   SYS-AUTH-10 / SR-154 / VT-159  PUT /api/auth/me { locale } — the only self-service profile write.
-//                                  Persists the user's language (UI locales en/de only), which every
-//                                  identity payload (login, /me) then carries; refused with 403 during
-//                                  impersonation because the token belongs to the target user.
+//   SYS-AUTH-10 / SR-154 / VT-159  PUT /api/auth/me { locale?, prefs? } — the only self-service
+//                                  profile write. Persists the user's language (UI locales en/de
+//                                  only) and the whitelisted boolean UI preference flags (the
+//                                  "show only due" filters), which every identity payload (login,
+//                                  /me) then carries; refused with 403 during impersonation
+//                                  because the token belongs to the target user.
 
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -58,6 +60,61 @@ test('SYS-AUTH-10 / VT-159: locales outside the UI set are rejected (400); unaut
 
   const anonymous = await srv.request('PUT', '/api/auth/me', { body: { locale: 'de' } });
   assert.equal(anonymous.status, 401);
+});
+
+test('SYS-AUTH-10 / SR-095 / VT-U12: PUT /api/auth/me persists the only-due preference flags, merged per key', async () => {
+  // No prefs until a filter is first toggled.
+  const before = await srv.request('GET', '/api/auth/me', { token: memberToken });
+  assert.equal(before.body.prefs, undefined, 'no prefs until the user flips a filter');
+
+  const put = await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: { dashboardOnlyDue: false } },
+  });
+  assert.equal(put.status, 200);
+  assert.equal(put.body.prefs.dashboardOnlyDue, false, 'the response is the fresh identity payload');
+
+  // A second write to a DIFFERENT key merges — the first flag survives.
+  const merge = await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: { traineesOnlyDue: false } },
+  });
+  assert.equal(merge.status, 200);
+  assert.deepEqual(merge.body.prefs, { dashboardOnlyDue: false, traineesOnlyDue: false });
+
+  const relogin = await login('user@braingain.app', 'user123');
+  assert.deepEqual(
+    relogin.user.prefs,
+    { dashboardOnlyDue: false, traineesOnlyDue: false },
+    'the login payload carries the stored prefs — the UI restores the filters at sign-in',
+  );
+
+  // Restore for the tests below / test isolation.
+  await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: { dashboardOnlyDue: true, traineesOnlyDue: true } },
+  });
+});
+
+test('SYS-AUTH-10 / VT-U12: unknown pref keys and non-boolean values are rejected (400) without writing', async () => {
+  const unknown = await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: { somethingElse: true } },
+  });
+  assert.equal(unknown.status, 400);
+  assert.match(unknown.body.error, /dashboardOnlyDue/, 'the refusal lists the allowed flags');
+
+  const nonBool = await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: { dashboardOnlyDue: 'yes' } },
+  });
+  assert.equal(nonBool.status, 400);
+
+  const notObject = await srv.request('PUT', '/api/auth/me', {
+    token: memberToken,
+    body: { prefs: ['dashboardOnlyDue'] },
+  });
+  assert.equal(notObject.status, 400);
 });
 
 test('SYS-AUTH-10 / SR-154 / VT-159: the profile cannot be changed while impersonating (403)', async () => {

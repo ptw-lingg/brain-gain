@@ -119,8 +119,14 @@ export interface SafeUser {
   // Persisted profile locale (UI language, en/de); absent until the user first picks a language.
   // Applied at sign-in and used as the default material language in a training session.
   locale?: string;
+  // Persisted per-user UI preferences — the "show only due" filter flags per view.
+  prefs?: Partial<Record<UiPrefKey, boolean>>;
   createdAt: string;
 }
+
+/** Keys of persisted per-user UI preferences — the "show only due" filter flags per view. */
+export const UI_PREF_KEYS = ['dashboardOnlyDue', 'myTeamOnlyDue', 'traineesOnlyDue'] as const;
+export type UiPrefKey = (typeof UI_PREF_KEYS)[number];
 
 // Head oversight payload from GET /api/org-units/my-team.
 export interface TeamMember {

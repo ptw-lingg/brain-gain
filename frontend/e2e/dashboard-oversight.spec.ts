@@ -54,7 +54,8 @@ test.describe('Trainee oversight (SYS-OVS-02)', () => {
     await expect(page.getByText('Laboratory Safety Basics')).toBeVisible();
     await expect(page.getByText('Quality Management Intro')).toBeVisible();
 
-    // The seeded member appears as a trainee under the groups (name + email shown).
+    // Groups start collapsed — opening one shows the seeded member as a trainee (name + email).
+    await page.getByRole('button', { name: /Laboratory Safety Basics/ }).click();
     await expect(page.getByText('Uma User').first()).toBeVisible();
     await expect(page.getByText('user@braingain.app').first()).toBeVisible();
   });
@@ -64,6 +65,7 @@ test.describe('Trainee oversight (SYS-OVS-02)', () => {
     await page.goto('/trainees');
     await expect(page.getByText('Laboratory Safety Basics')).toBeVisible();
     await expect(page.getByText('Quality Management Intro')).toBeVisible();
+    await page.getByRole('button', { name: /Quality Management Intro/ }).click();
     await expect(page.getByText('Uma User').first()).toBeVisible();
   });
 
@@ -73,14 +75,23 @@ test.describe('Trainee oversight (SYS-OVS-02)', () => {
 
     const onlyDue = page.getByRole('checkbox');
     // Default: only actionable (never/due/overdue) trainees are shown. The seeded member is never-taken,
-    // so they are visible under the default filter.
+    // so they are visible under the default filter (groups start collapsed — open one first).
     await expect(onlyDue).toBeChecked();
+    await page.getByRole('button', { name: /Laboratory Safety Basics/ }).click();
     await expect(page.getByText('Uma User').first()).toBeVisible();
 
     // Turning the filter OFF shows everyone assigned (the member is still present).
     await onlyDue.uncheck();
     await expect(onlyDue).not.toBeChecked();
     await expect(page.getByText('Uma User').first()).toBeVisible();
+
+    // The choice is remembered in the trainer's profile and restored on the next visit (SR-095).
+    await page.reload();
+    await expect(page.getByRole('checkbox')).not.toBeChecked();
+
+    // Restore the default — the flag persists per profile now, so later specs rely on this.
+    await page.getByRole('checkbox').check();
+    await expect(page.getByRole('checkbox')).toBeChecked();
   });
 
   test('SYS-OVS-02 / VT-071: per-group "Email trainees" reaches the mail service (Settings hint while SMTP is unset)', async ({ page }) => {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronDown, Mail, Users } from 'lucide-vue-next';
 import client from '@/api/client';
+import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import type { DueStatus, Settings, TraineeGroup } from '@/types';
 import { dueLabel, dueClasses, formatDate } from '@/utils/display';
@@ -10,6 +11,7 @@ import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { resolveLocalized } from '@/utils/locales';
 
+const auth = useAuthStore();
 const toast = useToastStore();
 const { t, locale } = useI18n();
 
@@ -21,8 +23,11 @@ const nameTexts = (g: TraineeGroup): string[] => Object.values(g.training.name ?
 
 const groups = ref<TraineeGroup[]>([]);
 const loading = ref(true);
-const onlyDue = ref(true);
-const open = ref<Record<string, boolean>>({});
+// Remembered in the user's profile, so the filter choice follows them to any browser.
+const onlyDue = ref(auth.user?.prefs?.traineesOnlyDue ?? true);
+watch(onlyDue, (v) => void auth.savePref('traineesOnlyDue', v));
+// Accordion: at most one group is open, and the list starts fully collapsed.
+const openId = ref<string | null>(null);
 const search = ref('');
 const company = ref('');
 const sending = ref(false);
@@ -42,15 +47,6 @@ function shownTrainees(g: TraineeGroup) {
 const filteredGroups = computed(() =>
   groups.value.filter((g) => shownTrainees(g).length > 0 || matchesQuery(search.value, ...nameTexts(g))),
 );
-
-// Expand/collapse every (shown) group at once.
-const allExpanded = computed(
-  () => filteredGroups.value.length > 0 && filteredGroups.value.every((g) => open.value[g.training.id]),
-);
-function toggleAll(): void {
-  const next = !allExpanded.value;
-  for (const g of filteredGroups.value) open.value[g.training.id] = next;
-}
 
 function dueTotal(g: TraineeGroup): number {
   return g.trainees.filter((t) => ACTIONABLE.includes(t.status)).length;
@@ -73,7 +69,6 @@ async function load(): Promise<void> {
     // Groups alphabetical by training, trainees alphabetical by name — fast to locate either.
     data.forEach((g) => g.trainees.sort((a, b) => a.user.name.localeCompare(b.user.name)));
     groups.value = data.sort((a, b) => groupName(a).localeCompare(groupName(b)));
-    data.forEach((g) => (open.value[g.training.id] = true));
     company.value = settings.data.companyName ?? '';
   } finally {
     loading.value = false;
@@ -154,9 +149,6 @@ onMounted(load);
         v-model:query="search"
         :count="filteredGroups.length"
         :total="groups.length"
-        expandable
-        :all-expanded="allExpanded"
-        @toggle-all="toggleAll"
       />
       <div class="flex flex-col gap-3">
       <div v-for="g in filteredGroups" :key="g.training.id" class="card overflow-hidden">
@@ -164,11 +156,11 @@ onMounted(load);
         <div class="flex items-center gap-3 px-5 py-4">
           <button
             class="flex min-w-0 flex-1 items-center gap-3 text-left"
-            @click="open[g.training.id] = !open[g.training.id]"
+            @click="openId = openId === g.training.id ? null : g.training.id"
           >
             <ChevronDown
               class="h-4 w-4 shrink-0 text-ink-light transition"
-              :class="open[g.training.id] ? '' : '-rotate-90'"
+              :class="openId === g.training.id ? '' : '-rotate-90'"
             />
             <div class="min-w-0">
               <div class="font-sans text-sm font-semibold text-ink">{{ groupName(g) }}</div>
@@ -184,7 +176,7 @@ onMounted(load);
 
         <!-- Trainees -->
         <Transition name="list">
-          <div v-if="open[g.training.id]" class="border-t border-line">
+          <div v-if="openId === g.training.id" class="border-t border-line">
             <div
               v-for="tr in shownTrainees(g)"
               :key="tr.user.id"

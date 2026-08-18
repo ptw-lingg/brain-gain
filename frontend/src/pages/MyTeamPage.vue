@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronDown, Download, FileText, UsersRound, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
@@ -30,8 +30,11 @@ const previewPages = ref<string[]>([]);
 const reportOpen = ref(false);
 let currentPdf: TCreatedPdf | null = null;
 let reportFileName = '';
-const onlyDue = ref(false);
-const open = ref<Record<string, boolean>>({});
+// Remembered in the user's profile, so the filter choice follows them to any browser.
+const onlyDue = ref(auth.user?.prefs?.myTeamOnlyDue ?? false);
+watch(onlyDue, (v) => void auth.savePref('myTeamOnlyDue', v));
+// Accordion: at most one member card is open, and the list starts fully collapsed.
+const openId = ref<string | null>(null);
 const search = ref('');
 
 const ACTIONABLE: DueStatus[] = ['never', 'due', 'overdue', 'updated'];
@@ -66,16 +69,6 @@ const filteredGroups = computed(() =>
 
 const shownMemberCount = computed(() => filteredGroups.value.reduce((n, g) => n + g.members.length, 0));
 
-// Expand/collapse every (shown) member card at once.
-const shownMembers = computed(() => filteredGroups.value.flatMap((g) => g.members));
-const allExpanded = computed(
-  () => shownMembers.value.length > 0 && shownMembers.value.every((m) => open.value[m.user.id]),
-);
-function toggleAll(): void {
-  const next = !allExpanded.value;
-  for (const m of shownMembers.value) open.value[m.user.id] = next;
-}
-
 function visibleTrainings(m: TeamMember) {
   return onlyDue.value ? m.trainings.filter((tr) => ACTIONABLE.includes(tr.status)) : m.trainings;
 }
@@ -93,7 +86,6 @@ async function load(): Promise<void> {
     ]);
     team.value = teamRes.data;
     companyName.value = settingsRes.data.companyName ?? '';
-    teamRes.data.members.forEach((m) => (open.value[m.user.id] = true));
   } finally {
     loading.value = false;
   }
@@ -190,9 +182,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
         v-model:query="search"
         :count="shownMemberCount"
         :total="team.members.length"
-        expandable
-        :all-expanded="allExpanded"
-        @toggle-all="toggleAll"
       />
       <div class="flex flex-col gap-5">
       <section v-for="g in filteredGroups" :key="g.name">
@@ -203,11 +192,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           <div v-for="m in g.members" :key="m.user.id" class="card overflow-hidden">
             <button
               class="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-pastel-sky/20"
-              @click="open[m.user.id] = !open[m.user.id]"
+              @click="openId = openId === m.user.id ? null : m.user.id"
             >
               <ChevronDown
                 class="h-4 w-4 shrink-0 text-ink-light transition"
-                :class="open[m.user.id] ? '' : '-rotate-90'"
+                :class="openId === m.user.id ? '' : '-rotate-90'"
               />
               <div class="min-w-0 flex-1">
                 <div class="text-sm font-semibold text-ink">{{ m.user.name }}</div>
@@ -222,7 +211,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             </button>
 
             <Transition name="list">
-              <div v-if="open[m.user.id]" class="border-t border-line">
+              <div v-if="openId === m.user.id" class="border-t border-line">
                 <div
                   v-for="tr in visibleTrainings(m)"
                   :key="tr.id"

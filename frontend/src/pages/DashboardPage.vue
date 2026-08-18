@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Sprout } from 'lucide-vue-next';
@@ -27,8 +27,10 @@ const items = ref<DueTraining[]>([]);
 const loading = ref(true);
 const search = ref('');
 // On by default: the dashboard is a work list — what still has to be done. Unchecking shows the
-// up-to-date trainings too (e.g. to review one that isn't due yet).
-const onlyDue = ref(true);
+// up-to-date trainings too (e.g. to review one that isn't due yet). The choice is remembered in
+// the user's profile, so it follows them to any browser.
+const onlyDue = ref(auth.user?.prefs?.dashboardOnlyDue ?? true);
+watch(onlyDue, (v) => void auth.savePref('dashboardOnlyDue', v));
 
 const filteredItems = computed(() =>
   items.value.filter(
