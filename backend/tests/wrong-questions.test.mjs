@@ -46,7 +46,7 @@ async function createRequiredTraining(name, questions) {
 }
 
 const grade = (trainingId, answers) =>
-  srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId, answers } });
+  srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId, answers, reauth: { password: 'user123' } } });
 
 const setReveal = async (on) => {
   const res = await srv.request('PUT', '/api/settings', {

@@ -206,7 +206,7 @@ test('SYS-OVS-01 / VT-070: after a member passes a quiz, oversight flips that tr
 
   const grade = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers: correctAnswers },
+    body: { trainingId: safety.id, answers: correctAnswers, reauth: { password: 'user123' } },
   });
   assert.equal(grade.status, 200);
   assert.equal(grade.body.passed, true, 'all-correct answers pass the 0.8 threshold');

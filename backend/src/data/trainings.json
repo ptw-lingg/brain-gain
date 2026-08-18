@@ -242,7 +242,7 @@
         ]
       }
     ],
-    "durationMinutes": 60,
+    "durationMinutes": 25,
     "version": 2,
     "updates": [
       {
@@ -376,7 +376,7 @@
         ]
       }
     ],
-    "durationMinutes": 60,
+    "durationMinutes": 20,
     "version": 2,
     "updates": [
       {
@@ -437,7 +437,7 @@
         ]
       }
     ],
-    "durationMinutes": 60,
+    "durationMinutes": 30,
     "version": 2,
     "updates": [
       {
@@ -457,7 +457,7 @@
     },
     "description": {},
     "category": {
-      "en": "Product Life Cycle5"
+      "en": "Product Life Cycle"
     },
     "ownerId": "ab3017d7-e544-486b-927b-86112e66fadb",
     "cycleYears": 1,
@@ -466,9 +466,50 @@
     "questions": [],
     "createdAt": "2026-06-02T15:00:03.809Z",
     "order": 6,
-    "materials": [],
-    "durationMinutes": 60,
-    "version": 1
+    "materials": [
+      {
+        "id": "5c1e6d36-4c79-4eb0-8b8c-95ce4186576b",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Presentation",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.05%20Design%20Transfer.pdf?d=w72ebe54a212448ca9965d0070eccf9e5&csf=1&web=1&e=EPdf9G"
+          }
+        ]
+      },
+      {
+        "id": "01cb1b11-b8d8-4180-819a-6bc7b700a12c",
+        "variants": [
+          {
+            "locale": "de",
+            "label": "Video",
+            "url": "https://ptwfreiburg.sharepoint.com/:v:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/Recording%20-%20Schulung%20SOP%2010.05%20Design%20Transfer-20240313_100156-Besprechungsaufzeichnung.mp4?d=wb4d00c24cf1b42d9927dde3a93939bf1&csf=1&web=1&e=8xtJnM"
+          }
+        ]
+      },
+      {
+        "id": "785fd817-3a41-4684-a987-3711734536c4",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=49039"
+          }
+        ]
+      }
+    ],
+    "durationMinutes": 30,
+    "version": 2,
+    "updates": [
+      {
+        "id": "a14cb5b8-e813-4885-9fdb-00a7c9ac12d7",
+        "publishedAt": "2026-08-17T15:16:43.754Z",
+        "deadline": "2026-08-31T23:59:59.999Z",
+        "mode": "retake",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 2
+      }
+    ]
   },
   {
     "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",

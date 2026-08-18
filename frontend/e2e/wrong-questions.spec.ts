@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CREDS, login, publishSilent } from './fixtures';
+import { CREDS, login, publishSilent, signSubmission } from './fixtures';
 
 // E2E for the reveal-wrong-questions option (SYS-SET-04 toggle in Settings, SYS-SES-07 on the result
 // screen; traced to SR-151 / VT-153). Default-off behavior, exact indices and the passed-attempt
@@ -59,6 +59,7 @@ test.describe('Failed test — wrongly answered questions', () => {
       await page.locator('input[name="q-0"]').nth(1).check(); // 'wrong'
       await page.locator('input[name="q-1"]').nth(0).check(); // 'right'
       await page.getByRole('button', { name: 'Submit test' }).click();
+      await signSubmission(page, CREDS.member.password); // the completion signature (SR-173)
 
       // The failed result names the wrongly answered question — and only that one.
       await expect(page.getByRole('heading', { name: 'Not passed' })).toBeVisible();

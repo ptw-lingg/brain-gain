@@ -43,6 +43,17 @@ export async function signInWithEntra(config: EntraConfig): Promise<string> {
   return result.idToken;
 }
 
+/**
+ * Re-authenticate for a completion signature: FORCE a fresh interactive Microsoft sign-in
+ * (prompt: 'login' — no cached session counts) and return the new ID token. The backend verifies
+ * it, checks it belongs to the acting account, and refuses stale tokens.
+ */
+export async function reauthWithEntra(config: EntraConfig): Promise<string> {
+  const msal = await getMsal(config);
+  const result = await msal.loginPopup({ scopes: ['openid', 'profile', 'email'], prompt: 'login' });
+  return result.idToken;
+}
+
 /** Best-effort local cache clear (no full Microsoft sign-out). Safe to call when SSO was never used. */
 export async function signOutEntra(): Promise<void> {
   if (!msalPromise) return;

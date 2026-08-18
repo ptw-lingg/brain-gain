@@ -101,7 +101,7 @@ test('SYS-DATA-12 / SR-155 / VT-161: grading is unaffected by the display langua
   // The trainer grades their own quiz — grade only needs the training id and index answers.
   const right = await srv.request('POST', '/api/sessions/grade', {
     token: trainerToken,
-    body: { trainingId: created.body.id, answers: [[0]] },
+    body: { trainingId: created.body.id, answers: [[0]], reauth: { password: 'trainer123' } },
   });
   assert.equal(right.body.correct, 1, 'index answers grade identically whatever language was displayed');
 });

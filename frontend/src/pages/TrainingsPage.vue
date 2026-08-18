@@ -235,13 +235,16 @@ async function save(): Promise<void> {
   // by itself — trainees keep seeing the last published version until the editor publishes.
   const contentOf = (d?: TrainingDraft | null): string | null =>
     d ? JSON.stringify([d.materials, d.questions]) : null;
+  // The editor dialog stays open (its overlay blocking further interaction) until the save has
+  // FULLY finished, list reload included — closing it earlier lets a fast next click race the
+  // reload and interact with a dialog that is about to be re-rendered under it.
   try {
     if (body.id) {
       const before = trainings.value.find((x) => x.id === body.id);
       const { data: after } = await client.put<Training>(`/trainings/${body.id}`, body);
       toast.success(t('trainings.toasts.updated'));
-      cancel();
       await load();
+      cancel();
       const draftChanged =
         after.draft != null && contentOf(after.draft) !== contentOf(before?.draft ?? null);
       if (draftChanged) {
@@ -250,8 +253,8 @@ async function save(): Promise<void> {
     } else {
       const { data: created } = await client.post<Training>('/trainings', body);
       toast.success(t('trainings.toasts.created'));
-      cancel();
       await load();
+      cancel();
       // A new training starts unpublished; content it already carries can be published right away.
       if (created.draft != null) {
         publishTarget.value = trainings.value.find((x) => x.id === created.id) ?? created;
@@ -494,9 +497,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     </Transition>
 
     <!-- Training detail / editor dialog (create when draft has no id, edit otherwise) -->
-    <Transition name="fade-slide">
-      <div v-if="draft" class="fixed inset-0 z-40 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-ink/40" @click="cancel" />
+    <!-- Deliberately NOT animated: closing and immediately reopening this dialog (save → reopen
+         the row) races Vue's Transition enter/leave handling — an interrupted transition can tear
+         down the freshly entered dialog's DOM node while v-if stays true. A plain mount is
+         deterministic, like the publish dialog below. -->
+    <div v-if="draft" class="fixed inset-0 z-40 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-ink/40" @click="cancel" />
         <div
           class="relative z-10 flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
           role="dialog"
@@ -550,7 +556,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           </div>
         </div>
       </div>
-    </Transition>
 
     <!-- Publish/versions step: offered after a content-staging save; also opened via "Versions".
          Deliberately NOT animated: it often opens the instant the editor dialog closes, and a

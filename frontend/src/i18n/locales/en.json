@@ -124,6 +124,16 @@
     "selectOne": "Select the one correct answer.",
     "altLanguage": "Alternative language",
     "inPreparation": "This training is not available yet — its first version has not been published.",
+    "signature": {
+      "title": "Confirm your identity",
+      "text": "Completing this training is recorded in your name. Please confirm it is you.",
+      "password": "Your password",
+      "submit": "Confirm & submit",
+      "microsoft": "Confirm with Microsoft",
+      "failed": "Identity confirmation failed — please check your credentials.",
+      "error": "The test could not be submitted — please try again.",
+      "unavailable": "Your account has no password and Microsoft sign-in is not available — contact your administrator."
+    },
     "update": {
       "retakeBanner": "This training was updated to version {version} — please retake it (materials and test) by {date}.",
       "confirmBanner": "This training was updated to version {version} — please review the materials and confirm by {date}.",

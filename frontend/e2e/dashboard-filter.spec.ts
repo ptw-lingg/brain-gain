@@ -41,7 +41,7 @@ test('SYS-DSH-02 / SR-156 / VT-163: the dashboard shows only due trainings by de
     });
     const graded = await request.post('/api/sessions/grade', {
       headers: auth(memberToken),
-      data: { trainingId, answers: [[0]] },
+      data: { trainingId, answers: [[0]], reauth: { password: CREDS.member.password } },
     });
     expect((await graded.json()).passed).toBeTruthy();
 

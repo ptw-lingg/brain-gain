@@ -173,7 +173,7 @@ test('SYS-UPD-02 / SYS-UPD-06 / VT-176 / VT-182: publishing bumps the version, r
   safetyAnswers = await solve(safety);
   const pass = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers: safetyAnswers },
+    body: { trainingId: safety.id, answers: safetyAnswers, reauth: { password: 'user123' } },
   });
   assert.equal(pass.body.passed, true, 'member passed Safety');
 
@@ -271,7 +271,7 @@ test('SYS-UPD-04 / VT-178: an acknowledgement against a retake-mode update is re
 test('SYS-UPD-03 / VT-179: a new passing session clears the retake update and restarts the regular cycle', async () => {
   const pass = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers: safetyAnswers },
+    body: { trainingId: safety.id, answers: safetyAnswers, reauth: { password: 'user123' } },
   });
   assert.equal(pass.body.passed, true, 'member retook and passed Safety');
 
@@ -461,7 +461,7 @@ async function solve(training) {
       trial[q] = opt;
       const res = await srv.request('POST', '/api/sessions/grade', {
         token: memberToken,
-        body: { trainingId: training.id, answers: trial },
+        body: { trainingId: training.id, answers: trial, reauth: { password: 'user123' } },
       });
       if (res.body.correct === 1) { answers[q] = opt; break; }
     }

@@ -23,6 +23,17 @@ export async function login(page: Page, role: Role): Promise<void> {
 }
 
 /**
+ * Complete the completion-signature dialog (SR-173) that gates every quiz submission: fill the
+ * password and confirm. Call right after clicking "Submit test".
+ */
+export async function signSubmission(page: Page, password: string): Promise<void> {
+  const dialog = page.getByTestId('signature-dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByTestId('signature-password').fill(password);
+  await dialog.getByTestId('signature-ok').click();
+}
+
+/**
  * Publish a training's staged draft silently (v0 → v1, vN → vN+1) via the API. A created
  * training's content lives in its draft until published — learner-flow specs call this so the
  * member actually sees the content.

@@ -13,9 +13,11 @@ import {
   RefreshCw,
   XCircle,
 } from 'lucide-vue-next';
+import axios from 'axios';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import { reauthWithEntra, type EntraConfig } from '@/auth/msal';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
@@ -83,6 +85,35 @@ const unpublished = computed(() => training.value != null && (training.value.ver
 // The materials-awareness confirmation dialog shown before any test starts (SR-162).
 const confirmOpen = ref(false);
 const confirming = ref(false);
+
+// ── Completion signature (SR-173) ─────────────────────────────────────────────────────────────────
+// Completing a training — submitting the test, or confirming a test-less one — requires the learner
+// to re-confirm their identity at that moment: their password, or a fresh Microsoft sign-in for
+// SSO-linked accounts. The server verifies it against the ACTING account and records the method in
+// the audit trail with the completion.
+type Reauth = { password: string } | { entraIdToken: string };
+const ssoConfig = ref<EntraConfig | null>(null);
+const signatureOpen = ref(false); // the quiz path's signature dialog (test-less path signs inline)
+const signaturePassword = ref('');
+const signing = ref(false); // a Microsoft re-login popup is in flight
+const hasPassword = computed(() => auth.user?.hasPassword ?? true);
+// A test-less training (outside the confirm-only update path) is COMPLETED by the confirmation,
+// so the confirmation dialog itself carries the signature fields.
+const completesByConfirmation = computed(() => !hasQuestions.value && !confirmOnly.value);
+
+async function fetchSsoConfig(): Promise<void> {
+  try {
+    const { data } = await client.get<{ enabled: boolean; clientId?: string; authority?: string }>(
+      '/auth/sso/config',
+    );
+    ssoConfig.value =
+      data.enabled && data.clientId && data.authority
+        ? { clientId: data.clientId, authority: data.authority }
+        : null;
+  } catch {
+    ssoConfig.value = null;
+  }
+}
 
 // The owning trainer's contact card (SR-163) — shown in the confirmation dialog and on the result
 // screen so a trainee with questions knows exactly whom to ask. null while loading or when the
@@ -176,27 +207,45 @@ function startTest(): void {
 
 // The learner confirmed awareness of all provided materials: record it in the audit trail, then
 // start the test — or, when the training has no questions, complete it right away via an empty
-// grading run (total 0 → passed), so the confirmation + persisted session are the evidence.
+// grading run (total 0 → passed), so the confirmation + persisted session are the evidence. That
+// completion path requires the completion signature (SR-173), collected inside this dialog.
 // For a pending confirm-mode update the confirmation instead carries the updateId: the server
 // persists the acknowledgement (clearing the update) and the session ends here — no quiz, no new
 // session record, the regular cycle clock untouched.
-async function confirmMaterials(): Promise<void> {
+async function confirmMaterials(reauth?: Reauth): Promise<void> {
   confirming.value = true;
   try {
     const updateId = confirmOnly.value ? pendingUpdate.value!.id : undefined;
     await client.post('/sessions/confirm-materials', { trainingId, ...(updateId ? { updateId } : {}) });
-    confirmOpen.value = false;
     if (updateId) {
+      confirmOpen.value = false;
       step.value = 'confirmed';
     } else if (hasQuestions.value) {
+      confirmOpen.value = false;
       step.value = 'quiz';
-    } else {
-      await submit();
+    } else if (reauth) {
+      // The dialog stays open on a rejected signature so the learner can correct the password.
+      await submit(reauth);
+      if (step.value === 'result') confirmOpen.value = false;
     }
   } catch {
     toast.error(t('session.confirmError'));
   } finally {
     confirming.value = false;
+  }
+}
+
+// Test-less completion signed via a fresh Microsoft re-login instead of a password.
+async function confirmWithMicrosoft(): Promise<void> {
+  if (!ssoConfig.value) return;
+  signing.value = true;
+  try {
+    const idToken = await reauthWithEntra(ssoConfig.value);
+    await confirmMaterials({ entraIdToken: idToken });
+  } catch {
+    toast.error(t('session.signature.failed'));
+  } finally {
+    signing.value = false;
   }
 }
 
@@ -210,27 +259,54 @@ async function downloadFile(file: MaterialFile): Promise<void> {
   }
 }
 
-async function submit(): Promise<void> {
+// Grade the attempt. Every submission carries the completion signature; a rejected signature (401)
+// keeps the signature UI open so the learner can correct their credentials and try again.
+async function submit(reauth: Reauth): Promise<void> {
   submitting.value = true;
   try {
     const { data } = await client.post<GradeResult>('/sessions/grade', {
       trainingId,
       answers: answers.value,
+      reauth,
     });
+    signatureOpen.value = false;
+    signaturePassword.value = '';
     result.value = data;
     step.value = 'result';
+  } catch (err: unknown) {
+    // 403 = the step-up identity confirmation failed (the session itself is fine).
+    const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+    toast.error(status === 403 ? t('session.signature.failed') : t('session.signature.error'));
   } finally {
     submitting.value = false;
+  }
+}
+
+// Quiz submission signed via a fresh Microsoft re-login instead of a password.
+async function submitWithMicrosoft(): Promise<void> {
+  if (!ssoConfig.value) return;
+  signing.value = true;
+  try {
+    const idToken = await reauthWithEntra(ssoConfig.value);
+    await submit({ entraIdToken: idToken });
+  } catch {
+    toast.error(t('session.signature.failed'));
+  } finally {
+    signing.value = false;
   }
 }
 
 function retry(): void {
   if (training.value) answers.value = Array.from({ length: training.value.questions.length }, () => []);
   result.value = null;
+  signaturePassword.value = '';
   step.value = 'quiz';
 }
 
-onMounted(load);
+onMounted(() => {
+  void load();
+  void fetchSsoConfig();
+});
 </script>
 
 <template>
@@ -349,6 +425,37 @@ onMounted(load);
             <p v-if="!hasQuestions && !confirmOnly" class="mt-2 font-mono text-xs text-amber-600">
               {{ t('session.confirmNoQuizNote') }}
             </p>
+            <!-- Completion signature (SR-173): a test-less training is COMPLETED by this
+                 confirmation, so the identity re-confirmation happens right here. -->
+            <div
+              v-if="completesByConfirmation"
+              class="mt-4 rounded-lg border border-line bg-pastel-slate/20 p-4"
+              data-testid="signature-fields"
+            >
+              <p class="font-mono text-xs text-ink-muted">{{ t('session.signature.text') }}</p>
+              <p class="mt-2 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
+              <input
+                v-if="hasPassword"
+                v-model="signaturePassword"
+                type="password"
+                class="bg-input mt-2"
+                :placeholder="t('session.signature.password')"
+                data-testid="signature-password"
+              />
+              <button
+                v-if="ssoConfig"
+                class="btn-ghost btn-sm mt-2"
+                :disabled="confirming || signing"
+                data-testid="signature-microsoft"
+                @click="confirmWithMicrosoft"
+              >
+                <Loader2 v-if="signing" class="h-3.5 w-3.5 animate-spin" />
+                {{ t('session.signature.microsoft') }}
+              </button>
+              <p v-if="!hasPassword && !ssoConfig" class="mt-2 font-mono text-xs text-rose-600">
+                {{ t('session.signature.unavailable') }}
+              </p>
+            </div>
             <!-- Trainer contact (SR-163): who to ask before committing to the confirmation. -->
             <div
               v-if="trainer"
@@ -374,7 +481,12 @@ onMounted(load);
               <button class="btn-ghost" :disabled="confirming" @click="confirmOpen = false">
                 {{ t('common.cancel') }}
               </button>
-              <button class="btn-primary" :disabled="confirming" data-testid="confirm-materials-ok" @click="confirmMaterials">
+              <button
+                class="btn-primary"
+                :disabled="confirming || signing || (completesByConfirmation && (!hasPassword || !signaturePassword))"
+                data-testid="confirm-materials-ok"
+                @click="confirmMaterials(completesByConfirmation ? { password: signaturePassword } : undefined)"
+              >
                 <Loader2 v-if="confirming" class="h-4 w-4 animate-spin" />
                 {{ t('session.confirmOk') }}
               </button>
@@ -442,10 +554,61 @@ onMounted(load);
           </div>
         </div>
 
-        <button class="btn-primary self-start" :disabled="!allAnswered || submitting" @click="submit">
+        <!-- Submitting requires the completion signature — the button opens the identity dialog. -->
+        <button class="btn-primary self-start" :disabled="!allAnswered || submitting" @click="signatureOpen = true">
           <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
           {{ submitting ? t('session.grading') : t('session.submitTest') }}
         </button>
+
+        <!-- Completion signature (SR-173): identity re-confirmation gates every submission. -->
+        <div
+          v-if="signatureOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          data-testid="signature-dialog"
+        >
+          <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
+            <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.signature.title') }}</h2>
+            <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.signature.text') }}</p>
+            <p class="mt-3 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
+            <input
+              v-if="hasPassword"
+              v-model="signaturePassword"
+              type="password"
+              class="bg-input mt-2"
+              :placeholder="t('session.signature.password')"
+              data-testid="signature-password"
+              @keydown.enter="signaturePassword && submit({ password: signaturePassword })"
+            />
+            <p v-if="!hasPassword && !ssoConfig" class="mt-2 font-mono text-xs text-rose-600">
+              {{ t('session.signature.unavailable') }}
+            </p>
+            <div class="mt-5 flex flex-wrap justify-end gap-2">
+              <button
+                v-if="ssoConfig"
+                class="btn-ghost"
+                :disabled="submitting || signing"
+                data-testid="signature-microsoft"
+                @click="submitWithMicrosoft"
+              >
+                <Loader2 v-if="signing" class="h-4 w-4 animate-spin" />
+                {{ t('session.signature.microsoft') }}
+              </button>
+              <button class="btn-ghost" :disabled="submitting || signing" @click="signatureOpen = false">
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                v-if="hasPassword"
+                class="btn-primary"
+                :disabled="submitting || signing || !signaturePassword"
+                data-testid="signature-ok"
+                @click="submit({ password: signaturePassword })"
+              >
+                <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
+                {{ t('session.signature.submit') }}
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Step 3: Result -->

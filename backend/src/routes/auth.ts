@@ -29,10 +29,16 @@ export function toSafeUser(user: User): SafeUser {
 }
 
 // The identity payload the frontend signs in with — SafeUser plus the derived `isHead` flag (true
-// when this user heads at least one org unit), which drives the "My Team" nav entry and route guard.
-async function identityUser(user: User): Promise<SafeUser & { isHead: boolean }> {
+// when this user heads at least one org unit), which drives the "My Team" nav entry and route
+// guard, and `hasPassword` (whether a local password exists), which tells the completion-signature
+// dialog whether to offer the password field or only the Microsoft re-login.
+async function identityUser(user: User): Promise<SafeUser & { isHead: boolean; hasPassword: boolean }> {
   const orgUnits = await readStore<OrgUnit>('orgUnits');
-  return { ...toSafeUser(user), isHead: orgUnits.some((o) => o.headUserId === user.id) };
+  return {
+    ...toSafeUser(user),
+    isHead: orgUnits.some((o) => o.headUserId === user.id),
+    hasPassword: Boolean(user.passwordHash),
+  };
 }
 
 // POST /api/auth/login

@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login, publishSilent } from './fixtures';
+import { CREDS, login, publishSilent, signSubmission } from './fixtures';
 
 // E2E for localized quiz questions and answers (SR-155): per-language authoring in the editor
 // (SYS-TRN-16) and the learner's quiz resolving to their chosen language with the material fallback
@@ -104,6 +104,7 @@ test.describe('Localized quiz questions', () => {
       await page.locator('input[name="q-0"]').nth(0).check();
       await page.locator('input[name="q-1"]').nth(0).check();
       await page.getByRole('button', { name: 'Test abgeben' }).click();
+      await signSubmission(page, CREDS.member.password); // the completion signature (SR-173), German UI
       await expect(page.getByRole('heading', { name: /^Bestanden/ })).toBeVisible();
     } finally {
       if (lab) {

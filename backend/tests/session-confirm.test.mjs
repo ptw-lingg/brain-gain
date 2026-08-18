@@ -84,7 +84,7 @@ test('SYS-AUD-09 / SR-162 / VT-172: an unknown training is a 404 and an anonymou
 test('SYS-SES-10 / SR-162 / VT-172: grading a question-less training passes at 100%, persists the session and is audited', async () => {
   const graded = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: noQuizTraining.id, answers: [] },
+    body: { trainingId: noQuizTraining.id, answers: [], reauth: { password: 'user123' } },
   });
   assert.equal(graded.status, 200);
   assert.equal(graded.body.passed, true, 'zero questions → nothing to fail');
@@ -99,7 +99,7 @@ test('SYS-SES-10 / SR-162 / VT-172: grading a question-less training passes at 1
 
   const audit = await listAudit(`action=training-completed&q=${encodeURIComponent('Confirmation Only Training')}`);
   assert.equal(audit.body.total, 1, 'the completion is audited');
-  assert.equal(audit.body.entries[0].details, 'score 100%');
+  assert.equal(audit.body.entries[0].details, 'score 100% · signed: password', 'the completion carries the signature method');
 });
 
 test('SYS-SES-11 / SR-163 / VT-174: the trainer contact card carries exactly name, email and org unit', async () => {

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CREDS, login, publishSilent } from './fixtures';
+import { CREDS, login, publishSilent, signSubmission } from './fixtures';
 
 // E2E for single-choice quiz questions (SYS-TRN-14 in the trainer editor, SYS-SES-06 in the learner
 // quiz; traced to SR-149 / SR-150 / VT-149 / VT-150). Write-path coercion and grading semantics are
@@ -145,6 +145,7 @@ test.describe('Quiz questions — single choice', () => {
       const submit = page.getByRole('button', { name: 'Submit test' });
       await expect(submit).toBeEnabled();
       await submit.click();
+      await signSubmission(page, CREDS.member.password); // the completion signature (SR-173)
       await expect(page.getByText('step 3 of 3')).toBeVisible();
       await expect(page.getByRole('heading', { name: /^Passed/ })).toBeVisible();
     } finally {

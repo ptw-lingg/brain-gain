@@ -56,7 +56,7 @@ test.describe('Trainings — published updates end to end', () => {
     await request.post('/api/sessions/confirm-materials', { headers: auth(memberToken), data: { trainingId } });
     const graded = await request.post('/api/sessions/grade', {
       headers: auth(memberToken),
-      data: { trainingId, answers: [] },
+      data: { trainingId, answers: [], reauth: { password: CREDS.member.password } },
     });
     expect((await graded.json()).passed).toBeTruthy();
   });

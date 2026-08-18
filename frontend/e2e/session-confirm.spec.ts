@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { CREDS, login, publishSilent } from './fixtures';
+import { CREDS, login, publishSilent, signSubmission } from './fixtures';
 
 // E2E for the materials confirmation before a test (SYS-SES-10 / SYS-AUD-09, traced to SR-162 /
 // VT-173): starting a test first shows a dialog in which the learner confirms awareness of all
@@ -82,6 +82,10 @@ test.describe('Session start — materials confirmation', () => {
       await page.getByTestId('session-start').click();
       const dialog = page.getByTestId('confirm-materials-dialog');
       await expect(dialog).toContainText('this confirmation is recorded as the evidence');
+      // This confirmation COMPLETES the training, so it carries the completion signature (SR-173):
+      // the confirm button stays disabled until the learner re-enters their password.
+      await expect(page.getByTestId('confirm-materials-ok')).toBeDisabled();
+      await dialog.getByTestId('signature-password').fill(CREDS.member.password);
       await page.getByTestId('confirm-materials-ok').click();
 
       await expect(page.getByRole('heading', { name: 'Passed' })).toBeVisible();
@@ -133,10 +137,14 @@ test.describe('Session start — materials confirmation', () => {
 
     // Fail the test (first option of every seeded question is wrong) — the result screen repeats the hint.
     await page.getByTestId('confirm-materials-ok').click();
+    // Wait for the quiz step before collecting the cards — querying mid-transition can capture the
+    // closing confirmation dialog (also a .card) as a stale handle.
+    await expect(page.getByText('step 2 of 3')).toBeVisible();
     for (const quizCard of await page.locator('section >> .card').all()) {
       await quizCard.locator('input[type="checkbox"]').first().check();
     }
     await page.getByRole('button', { name: 'Submit test' }).click();
+    await signSubmission(page, CREDS.member.password); // the completion signature (SR-173)
     await expect(page.getByRole('heading', { name: 'Not passed' })).toBeVisible();
     const resultHint = page.getByTestId('trainer-contact');
     await expect(resultHint).toContainText(card.name);

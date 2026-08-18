@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
-import type { Training, TrainingSession, UpdateAck } from '../types';
+import type { Training, TrainingSession, UpdateAck, User } from '../types';
 import { readStore, readSettings, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { gradeAnswers, isAnswerCorrect } from '../services/questions';
+import { verifyCompletionSignature } from '../services/signature';
 import { auditEvent } from '../services/audit';
 
 const router = Router();
@@ -64,14 +65,18 @@ router.post('/confirm-materials', async (req: AuthRequest, res) => {
 });
 
 // POST /api/sessions/grade  — grade an attempt server-side; persist ONLY if passed.
+// Every submission requires a completion signature (SR-173): the body carries `reauth` — the
+// ACTING user's password, or a fresh Microsoft ID token for SSO-linked accounts. The verified
+// method is recorded with the completion in the audit trail.
 router.post('/grade', async (req: AuthRequest, res) => {
-  const { trainingId, answers } = req.body ?? {};
+  const { trainingId, answers, reauth } = req.body ?? {};
   if (typeof trainingId !== 'string' || !Array.isArray(answers)) {
     return res.status(400).json({ error: 'trainingId and answers[] are required' });
   }
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === trainingId);
   if (!training) return res.status(404).json({ error: 'Training not found' });
+  const trainingName = training.name.en ?? Object.values(training.name)[0] ?? '';
 
   // An unpublished training (version 0) has no content to complete — without this guard, the
   // zero-questions auto-pass below (scorePct = 1) would let a learner "complete" it via the API
@@ -81,13 +86,39 @@ router.post('/grade', async (req: AuthRequest, res) => {
     return res.status(409).json({ error: 'This training has no published version yet' });
   }
 
+  // Completion signature — verified against the ACTING account, so an impersonating admin cannot
+  // complete a training for someone else (they would need the target's own credentials).
+  const settings = await readSettings();
+  const users = await readStore<User>('users');
+  const actingUser = users.find((u) => u.id === req.user!.id);
+  if (!actingUser) return res.status(404).json({ error: 'User not found' });
+  let signature;
+  try {
+    signature = await verifyCompletionSignature(actingUser, reauth, settings);
+  } catch (err) {
+    console.error('Completion signature verification error:', err);
+    return res.status(500).json({ error: 'Identity confirmation failed — please try again' });
+  }
+  if (!signature.ok) {
+    // The precise reason goes to the audit trail only; the client gets a generic message.
+    // 403, not 401: the SESSION is still valid — only the step-up confirmation failed. (The
+    // frontend treats any 401 as an expired session and bounces to the login page.)
+    await auditEvent(
+      req.user ?? null,
+      'login-failed',
+      { type: 'auth', id: actingUser.id, name: actingUser.email },
+      { details: `completion signature rejected (${signature.reason}) — training "${trainingName}"` },
+    );
+    return res.status(403).json({ error: 'Identity confirmation failed — please check your credentials' });
+  }
+
   // answers[i] is the learner's selected option index/indices for question i. A question with several
   // correct answers counts only when the selection matches the key exactly — no partial credit.
   const total = training.questions.length;
   const correct = gradeAnswers(training.questions, answers);
   const scorePct = total === 0 ? 1 : correct / total;
 
-  const { passThreshold, revealWrongQuestions } = await readSettings();
+  const { passThreshold, revealWrongQuestions } = settings;
   const passed = scorePct >= passThreshold;
 
   // Failed attempts are NOT recorded — the training simply stays due.
@@ -105,8 +136,8 @@ router.post('/grade', async (req: AuthRequest, res) => {
     await auditEvent(
       req.user ?? null,
       'training-completed',
-      { type: 'training', id: trainingId, name: training.name.en ?? Object.values(training.name)[0] ?? '' },
-      { details: `score ${Math.round(scorePct * 100)}%` },
+      { type: 'training', id: trainingId, name: trainingName },
+      { details: `score ${Math.round(scorePct * 100)}% · signed: ${signature.method}` },
     );
   }
 

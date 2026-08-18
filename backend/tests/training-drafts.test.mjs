@@ -244,7 +244,7 @@ test('SYS-UPD-08 / SR-171 / VT-184: a notify publish with a draft promotes the c
   await assignToMember(created.id);
   const pass = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: created.id, answers: [[0]] },
+    body: { trainingId: created.id, answers: [[0]], reauth: { password: 'user123' } },
   });
   assert.equal(pass.body.passed, true, 'the member passed v1');
 

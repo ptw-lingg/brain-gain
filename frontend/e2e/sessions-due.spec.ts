@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from './fixtures';
+import { CREDS, login, signSubmission } from './fixtures';
 
 // E2E for the training-session flow (frontend SYS-SES-01, traced to SR-050 / VT-050) plus the
 // dashboard due-status surface (SYS-DUE-02 / SR-060 / VT-060) and the retry affordance
@@ -61,6 +61,8 @@ test.describe('Training sessions & due status', () => {
     }
     await expect(submit).toBeEnabled();
     await submit.click();
+    // Every submission requires the completion signature (SR-173).
+    await signSubmission(page, CREDS.member.password);
 
     // Step 3 — result: a pass/fail result screen with the score is shown (server-graded).
     await expect(page.getByText('step 3 of 3')).toBeVisible();
@@ -85,6 +87,7 @@ test.describe('Training sessions & due status', () => {
       await card.locator('input[type="checkbox"]').first().check();
     }
     await page.getByRole('button', { name: 'Submit test' }).click();
+    await signSubmission(page, CREDS.member.password);
 
     // Failing result shows the retry button and the "not recorded / stays due" note.
     await expect(page.getByRole('heading', { name: 'Not passed' })).toBeVisible();

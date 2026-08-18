@@ -178,7 +178,7 @@ test('SYS-AUD-04 / SR-159 / VT-168: a passed grading writes a training-completed
   const rightAnswers = t.questions.map((q) => q.correctIndices);
   const wrongAnswers = t.questions.map(() => []);
 
-  const passed = await srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId: t.id, answers: rightAnswers } });
+  const passed = await srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId: t.id, answers: rightAnswers, reauth: { password: 'user123' } } });
   assert.equal(passed.status, 200);
   assert.equal(passed.body.passed, true);
 
@@ -187,9 +187,9 @@ test('SYS-AUD-04 / SR-159 / VT-168: a passed grading writes a training-completed
   const entry = afterPass.body.entries[0];
   assert.equal(entry.actor.email, 'user@braingain.app', 'the learner is the actor');
   assert.equal(entry.entityId, t.id);
-  assert.match(entry.details, /^score \d+%$/);
+  assert.match(entry.details, /^score \d+% · signed: password$/, 'score AND the completion-signature method are on record');
 
-  const failedAttempt = await srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId: t.id, answers: wrongAnswers } });
+  const failedAttempt = await srv.request('POST', '/api/sessions/grade', { token: memberToken, body: { trainingId: t.id, answers: wrongAnswers, reauth: { password: 'user123' } } });
   assert.equal(failedAttempt.status, 200);
   assert.equal(failedAttempt.body.passed, false);
 

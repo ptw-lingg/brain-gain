@@ -99,7 +99,7 @@ test('SYS-SES-02 / VT-051: an all-wrong submission scores 0 and does NOT pass', 
   // The seeded quizzes have no correct option at index 99, so every answer is wrong.
   const res = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers: safety.questions.map(() => 99) },
+    body: { trainingId: safety.id, answers: safety.questions.map(() => 99), reauth: { password: 'user123' } },
   });
   assert.equal(res.status, 200);
   assert.equal(res.body.scorePct, 0, 'server computed 0% for all-wrong answers');
@@ -116,6 +116,7 @@ test('SYS-SES-02 / VT-051: a client-supplied score is ignored — the server rec
     body: {
       trainingId: safety.id,
       answers: safety.questions.map(() => 99),
+      reauth: { password: 'user123' },
       scorePct: 1,
       passed: true,
       correct: safety.questions.length,
@@ -137,7 +138,7 @@ test('SYS-SES-02 / VT-051: a partial-but-below-threshold submission fails (0.8 t
   const answers = safety.questions.map((_q, i) => (i === 0 ? fullCorrect[0] : 99));
   const res = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers },
+    body: { trainingId: safety.id, answers, reauth: { password: 'user123' } },
   });
   assert.equal(res.status, 200);
   assert.equal(res.body.correct, 1, 'exactly one correct');
@@ -153,7 +154,7 @@ test('SYS-SES-02 / SYS-SES-04 / VT-052: a passing submission is recorded and ret
   const correct = await solve(quality);
   const res = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: quality.id, answers: correct },
+    body: { trainingId: quality.id, answers: correct, reauth: { password: 'user123' } },
   });
   assert.equal(res.status, 200);
   assert.equal(res.body.scorePct, 1, '100% when all answers correct');
@@ -188,7 +189,7 @@ test('SYS-SES-03 / SYS-DATA-08 / VT-052: failing the same training repeatedly re
   for (let i = 0; i < 3; i++) {
     const res = await srv.request('POST', '/api/sessions/grade', {
       token: memberToken,
-      body: { trainingId: safety.id, answers: safety.questions.map(() => 99) },
+      body: { trainingId: safety.id, answers: safety.questions.map(() => 99), reauth: { password: 'user123' } },
     });
     assert.equal(res.body.passed, false, `retry #${i + 1} fails`);
   }
@@ -205,7 +206,7 @@ test('SYS-SES-03 / SYS-DATA-08 / VT-052: failing the same training repeatedly re
   const correct = await solve(safety);
   const pass = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId: safety.id, answers: correct },
+    body: { trainingId: safety.id, answers: correct, reauth: { password: 'user123' } },
   });
   assert.equal(pass.body.passed, true, 'a later attempt can still pass (unlimited retries)');
   const after = await srv.request('GET', '/api/sessions/mine', { token: memberToken });
@@ -312,7 +313,7 @@ async function solve(training) {
 async function grade(trainingId, answers) {
   const res = await srv.request('POST', '/api/sessions/grade', {
     token: memberToken,
-    body: { trainingId, answers },
+    body: { trainingId, answers, reauth: { password: 'user123' } },
   });
   return res.body;
 }
