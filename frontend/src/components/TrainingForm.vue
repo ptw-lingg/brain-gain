@@ -83,8 +83,9 @@ const questionsSummary = computed(() =>
 const emptyTint = 'bg-amber-100 text-amber-700';
 
 // The first filled language of a localized string, English preferred — for titles and summaries.
+// The editor seeds every language with '', so blank strings must fall through, not just missing ones.
 const firstText = (lt: LocalizedText): string =>
-  (lt.en ?? Object.values(lt).find((v) => v.trim()) ?? '').trim();
+  (lt.en?.trim() || Object.values(lt).find((v) => v.trim()) || '').trim();
 
 const questionTitle = (q: Question, i: number): string =>
   `${i + 1}. ${firstText(q.text) || t('trainingForm.questionPlaceholder', { n: i + 1 })}`;

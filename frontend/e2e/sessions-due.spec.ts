@@ -45,9 +45,8 @@ test.describe('Training sessions & due status', () => {
     expect(await questionCards.count()).toBeGreaterThanOrEqual(1);
     // The seeded questions are all multiple-choice, so every option is a checkbox and the learner is
     // never told how many answers are correct (SYS-SES-05) — no radios anywhere on an all-multiple
-    // quiz. The prompt is repeated per question, hence .first(). (Single-choice questions render
-    // radios instead — covered in questions-single.spec.ts.)
-    await expect(page.getByText(/Select all correct answers/).first()).toBeVisible();
+    // quiz. (Single-choice questions render radios instead — covered in questions-single.spec.ts.)
+    expect(await page.locator('input[type="checkbox"]').count()).toBeGreaterThan(0);
     expect(await page.locator('input[type="radio"]').count()).toBe(0);
 
     // Submit is disabled until every question is answered.

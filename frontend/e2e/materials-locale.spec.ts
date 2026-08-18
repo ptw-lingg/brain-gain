@@ -54,7 +54,7 @@ test.describe('Localized training material', () => {
     await expect(reopened.getByPlaceholder('https://…').nth(1)).toHaveValue('https://docs.example.com/handbuch-de');
   });
 
-  test('SYS-SES-08 / SR-152 / VT-156 / SYS-UI-09: material follows the UI language — matching cards unadorned, alternatives get badge and flag', async ({ page, request }) => {
+  test('SYS-SES-08 / SR-152 / VT-156 / SYS-UI-09: material follows the UI language — matching cards unadorned, alternatives get the language flag', async ({ page, request }) => {
     const adminToken = await tokenFor(request, CREDS.admin);
     const trainerToken = await tokenFor(request, CREDS.trainer);
     const memberToken = await tokenFor(request, CREDS.member);
@@ -94,12 +94,11 @@ test.describe('Localized training material', () => {
       await login(page, 'member');
       await page.goto(`/session/${trainingId}`);
 
-      // DE+EN material → the German variant, no badge and no flag; the EN-only material stands in
-      // with the badge and its flag (the UI itself is German, so the badge text is German).
+      // DE+EN material → the German variant, no flag; the EN-only material stands in wearing its
+      // language flag as the only alternative-language marker.
       await expect(page.getByText('Handbuch (Deutsch)')).toBeVisible();
       await expect(page.getByText('Handbook (English)')).toHaveCount(0);
       await expect(page.getByText('English-only guide')).toBeVisible();
-      await expect(page.getByText('Alternative Sprache')).toHaveCount(1);
       await expect(page.locator('main .fi.fi-us')).toHaveCount(1);
       await expect(page.locator('main .fi.fi-de')).toHaveCount(0); // a matching material carries no flag
     } finally {

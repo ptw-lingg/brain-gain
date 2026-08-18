@@ -27,19 +27,22 @@ export function localeName(code: string): string {
  * Resolve a per-language string for display — the material fallback logic applied per string:
  * the chosen language's value, else the English one, else every filled value joined with ' / '
  * (so nothing localized is ever unreadable). `alternative` is true whenever the value shown is
- * not in the chosen language — it drives the session page's "alternative language" badge; every
- * other view resolves without a badge.
+ * not in the chosen language — it drives the session page's language flag; every other view
+ * resolves without one. `locale` names the language actually shown; it is null only for a
+ * genuinely mixed joined value, which has no single language to flag.
  */
 export function resolveLocalized(
   lt: LocalizedText | undefined,
   locale: string,
-): { value: string; alternative: boolean } {
+): { value: string; alternative: boolean; locale: string | null } {
   const map = lt ?? {};
   const chosen = map[locale];
-  if (chosen) return { value: chosen, alternative: false };
+  if (chosen) return { value: chosen, alternative: false, locale };
   const fallback = map[FALLBACK_LOCALE];
-  if (fallback) return { value: fallback, alternative: true };
-  return { value: Object.values(map).filter(Boolean).join(' / '), alternative: true };
+  if (fallback) return { value: fallback, alternative: true, locale: FALLBACK_LOCALE };
+  const filled = Object.entries(map).filter(([, v]) => Boolean(v));
+  if (filled.length === 1) return { value: filled[0][1] as string, alternative: true, locale: filled[0][0] };
+  return { value: filled.map(([, v]) => v).join(' / '), alternative: true, locale: null };
 }
 
 /** flag-icons CSS classes for a language code; unknown codes fall back to their own code. */

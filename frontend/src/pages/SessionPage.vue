@@ -129,6 +129,8 @@ const pendingUpdate = computed<TrainingUpdate | null>(() =>
 // Confirm-mode: reviewing + confirming the materials clears the update — the quiz is skipped.
 // Retake-mode: the normal full flow runs; the new passing session clears the update.
 const confirmOnly = computed(() => pendingUpdate.value?.mode === 'confirm');
+// In confirm-mode the update banner already says the confirmation completes it.
+const showNoQuestionsHint = computed(() => !hasQuestions.value && !confirmOnly.value);
 
 // Avatar initials from the trainer's name, e.g. "Tom Trainer" → "TT".
 const trainerInitials = computed(() =>
@@ -156,9 +158,9 @@ function visibleVariants(m: Material): MaterialVariant[] {
 }
 
 /**
- * A shown variant that is not in the chosen language gets an "alternative language" badge — the
- * transparent hint that this is either the English stand-in or one of the languages offered when
- * neither the chosen language nor English exists.
+ * A shown variant that is not in the chosen language gets a language flag — the transparent hint
+ * that this is either the English stand-in or one of the languages offered when neither the
+ * chosen language nor English exists.
  */
 const isAlternative = (v: MaterialVariant): boolean => v.locale !== chosenLocale.value;
 
@@ -169,9 +171,9 @@ const variantLabel = (v: MaterialVariant): string => v.label || v.url || v.file?
  * Resolve a localized string (training name/description, question/answer texts) with the material
  * logic applied per string: chosen language → English → all filled languages joined (so nothing is
  * ever unanswerable). `alternative` marks anything not shown in the chosen language — it drives the
- * badge. Thin wrapper over the shared resolver, bound to this session's content language.
+ * language flag. Thin wrapper over the shared resolver, bound to this session's content language.
  */
-function resolveText(lt: LocalizedText): { value: string; alternative: boolean } {
+function resolveText(lt: LocalizedText): { value: string; alternative: boolean; locale: string | null } {
   return resolveLocalized(lt, chosenLocale.value);
 }
 
@@ -321,23 +323,42 @@ onMounted(() => {
     </template>
 
     <template v-else-if="training">
-      <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
+      <h1 class="page-title flex flex-wrap items-baseline gap-x-2">
+        <span>{{ resolveText(training.name).value }}</span>
+        <!-- The content version the learner is taking — matches the editor and the dashboard chip. -->
+        <span
+          class="font-mono text-sm font-semibold text-ink-light"
+          :title="t('trainings.versionTitle')"
+          data-testid="session-version"
+        >
+          {{ t('trainings.version', { version: training.version ?? 1 }) }}
+        </span>
+      </h1>
 
       <!-- Step 1: Material -->
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4" data-testid="session-material">
-        <!-- Pending training update: why this training is back on the list and what clears it. -->
+        <!-- One hint box collects whichever notices apply: the pending update (why this training is
+             back on the list and what clears it) and the no-test hint. -->
         <div
-          v-if="pendingUpdate"
+          v-if="pendingUpdate || showNoQuestionsHint"
           class="rounded-lg border border-blue-200 bg-pastel-blue/30 p-4"
-          data-testid="update-banner"
+          data-testid="session-hints"
         >
-          <p class="font-sans text-sm font-semibold text-blue-800">
-            {{ confirmOnly
-              ? t('session.update.confirmBanner', { version: pendingUpdate.version, date: formatDate(pendingUpdate.deadline) })
-              : t('session.update.retakeBanner', { version: pendingUpdate.version, date: formatDate(pendingUpdate.deadline) }) }}
-          </p>
-          <p v-if="pendingUpdate.note" class="mt-1 font-mono text-xs italic text-ink-muted">
-            {{ pendingUpdate.note }}
+          <template v-if="pendingUpdate">
+            <!-- The banner names the training's CURRENT version, not the pending update's own
+                 version — with several pending updates the earliest deadline governs (SR-165), but
+                 what the learner retakes/confirms is always the latest published content. -->
+            <p class="font-sans text-sm font-semibold text-blue-800" data-testid="update-banner">
+              {{ confirmOnly
+                ? t('session.update.confirmBanner', { version: training.version ?? 1, date: formatDate(pendingUpdate.deadline) })
+                : t('session.update.retakeBanner', { version: training.version ?? 1, date: formatDate(pendingUpdate.deadline) }) }}
+            </p>
+            <p v-if="pendingUpdate.note" class="mt-1 font-mono text-xs italic text-ink-muted">
+              {{ pendingUpdate.note }}
+            </p>
+          </template>
+          <p v-if="showNoQuestionsHint" class="font-mono text-xs text-ink-muted" :class="pendingUpdate ? 'mt-2' : ''">
+            {{ t('session.noQuestions') }}
           </p>
         </div>
 
@@ -346,7 +367,7 @@ onMounted(() => {
         <div class="flex flex-col gap-3">
           <!-- Per material: the chosen language's variant, the English one as fallback, or — when
                neither exists — every available language. Anything not in the chosen language wears
-               an "alternative language" badge as the transparent hint. -->
+               its language flag as the transparent hint. -->
           <div v-for="m in training.materials" :key="m.id" class="flex flex-col gap-2">
             <template v-for="v in visibleVariants(m)" :key="`${m.id}-${v.locale}`">
               <!-- Link variants open in a new tab -->
@@ -361,11 +382,8 @@ onMounted(() => {
                   <FileText class="h-4 w-4 text-accent" />
                 </div>
                 <span class="flex-1 font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
-                <!-- Only an alternative-language material is marked (badge + flag); a matching one is unadorned. -->
-                <template v-if="isAlternative(v)">
-                  <span class="pill shrink-0 bg-amber-100 text-amber-700">{{ t('session.altLanguage') }}</span>
-                  <LocaleFlag :code="v.locale" />
-                </template>
+                <!-- Only an alternative-language material is flagged; a matching one is unadorned. -->
+                <LocaleFlag v-if="isAlternative(v)" :code="v.locale" />
                 <ExternalLink class="h-4 w-4 text-ink-light" />
               </a>
               <!-- File variants download to open in the learner's installed apps -->
@@ -382,10 +400,7 @@ onMounted(() => {
                   <span class="block truncate font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
                   <span class="font-mono text-[11px] text-ink-light">{{ formatBytes(v.file.size) }}</span>
                 </span>
-                <template v-if="isAlternative(v)">
-                  <span class="pill shrink-0 bg-amber-100 text-amber-700">{{ t('session.altLanguage') }}</span>
-                  <LocaleFlag :code="v.locale" />
-                </template>
+                <LocaleFlag v-if="isAlternative(v)" :code="v.locale" />
                 <Download class="h-4 w-4 text-ink-light" />
               </button>
             </template>
@@ -401,7 +416,6 @@ onMounted(() => {
               ? t('session.startTest')
               : t('session.completeTraining') }}
         </button>
-        <p v-if="!hasQuestions && !confirmOnly" class="font-mono text-xs text-ink-light">{{ t('session.noQuestions') }}</p>
 
         <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
              without questions this confirmation is the only evidence the training was done, so it is
@@ -414,17 +428,37 @@ onMounted(() => {
           <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
             <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.confirmTitle') }}</h2>
             <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.confirmText') }}</p>
-            <p v-if="!hasQuestions && !confirmOnly" class="mt-2 font-mono text-xs text-amber-600">
-              {{ t('session.confirmNoQuizNote') }}
-            </p>
+            <!-- Trainer contact (SR-163): who to ask before committing to the confirmation. -->
+            <div
+              v-if="trainer"
+              class="mt-4 flex items-start gap-3 rounded-lg border border-petrol-200 bg-gradient-to-br from-pastel-cyan/50 to-white p-4"
+              data-testid="trainer-contact"
+            >
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
+                {{ trainerInitials }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
+                <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>
+                <p v-if="trainer.orgUnitName" class="font-mono text-xs text-ink-muted">{{ trainer.orgUnitName }}</p>
+                <a
+                  :href="`mailto:${trainer.email}`"
+                  class="mt-1.5 inline-flex items-center gap-1.5 break-all font-mono text-xs font-semibold text-accent hover:underline"
+                >
+                  <Mail class="h-3.5 w-3.5 shrink-0" /> {{ trainer.email }}
+                </a>
+              </div>
+            </div>
             <!-- Completion signature (SR-173): a test-less training is COMPLETED by this
-                 confirmation, so the identity re-confirmation happens right here. -->
+                 confirmation, so the identity re-confirmation happens right here — its text also
+                 carries the "no test, this confirmation is the evidence" message. Last box, right
+                 above the buttons, since it is the field the learner fills before confirming. -->
             <div
               v-if="completesByConfirmation"
               class="mt-4 rounded-lg border border-line bg-pastel-slate/20 p-4"
               data-testid="signature-fields"
             >
-              <p class="font-mono text-xs text-ink-muted">{{ t('session.signature.text') }}</p>
+              <p class="font-mono text-xs text-ink-muted">{{ t('session.confirmSignatureText') }}</p>
               <p class="mt-2 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
               <input
                 v-if="hasPassword"
@@ -447,27 +481,6 @@ onMounted(() => {
               <p v-if="!hasPassword && !ssoConfig" class="mt-2 font-mono text-xs text-rose-600">
                 {{ t('session.signature.unavailable') }}
               </p>
-            </div>
-            <!-- Trainer contact (SR-163): who to ask before committing to the confirmation. -->
-            <div
-              v-if="trainer"
-              class="mt-4 flex items-start gap-3 rounded-lg border border-petrol-200 bg-gradient-to-br from-pastel-cyan/50 to-white p-4"
-              data-testid="trainer-contact"
-            >
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
-                {{ trainerInitials }}
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
-                <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>
-                <p v-if="trainer.orgUnitName" class="font-mono text-xs text-ink-muted">{{ trainer.orgUnitName }}</p>
-                <a
-                  :href="`mailto:${trainer.email}`"
-                  class="mt-1.5 inline-flex items-center gap-1.5 break-all font-mono text-xs font-semibold text-accent hover:underline"
-                >
-                  <Mail class="h-3.5 w-3.5 shrink-0" /> {{ trainer.email }}
-                </a>
-              </div>
             </div>
             <div class="mt-5 flex justify-end gap-2">
               <button class="btn-ghost" :disabled="confirming" @click="confirmOpen = false">
@@ -508,17 +521,18 @@ onMounted(() => {
         >
           <p class="flex items-start gap-2 font-sans text-sm font-semibold text-ink">
             <span class="flex-1">{{ qi + 1 }}. {{ resolveText(q.text).value }}</span>
-            <span v-if="resolveText(q.text).alternative" class="pill shrink-0 bg-amber-100 text-amber-700">
-              {{ t('session.altLanguage') }}
-            </span>
+            <!-- A question not shown in the chosen language wears the shown language's flag; only
+                 a genuinely mixed joined fallback has no single language and stays unflagged. -->
+            <LocaleFlag
+              v-if="resolveText(q.text).alternative && resolveText(q.text).locale"
+              :code="resolveText(q.text).locale ?? ''"
+            />
           </p>
           <!-- Single choice gets radios (exactly one answer, picking another replaces it). Everything
                else is multi-select: one or more options may be correct, and the payload deliberately
-               does not say how many, so the control must not reveal it either. The `?? 'multiple'`
-               fallback matters for owners/admins, who receive the raw training without computed type. -->
-          <p class="mt-1 font-mono text-[11px] text-ink-light">
-            {{ (q.type ?? 'multiple') === 'single' ? t('session.selectOne') : t('session.selectAllThatApply') }}
-          </p>
+               does not say how many, so the control must not reveal it either — the control type is
+               the only hint. The `?? 'multiple'` fallback matters for owners/admins, who receive the
+               raw training without computed type. -->
           <div class="mt-3 flex flex-col gap-2">
             <label
               v-for="(opt, oi) in q.options"

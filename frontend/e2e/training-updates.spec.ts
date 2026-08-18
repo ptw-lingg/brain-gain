@@ -81,6 +81,8 @@ test.describe('Trainings — published updates end to end', () => {
     await page.getByText(NAME).click();
     const editor = page.getByRole('dialog');
     await expect(editor).toBeVisible();
+    // The current published version sits right after the editor title (SYS-UPD-06).
+    await expect(editor.getByTestId('editor-version')).toHaveText('v1');
     await editor.getByPlaceholder('Training name').first().fill(`${NAME} renamed`);
     await editor.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByTestId('publish-update-dialog')).toHaveCount(0);
@@ -122,6 +124,10 @@ test.describe('Trainings — published updates end to end', () => {
     expect(afterPublish.updates[0].mode).toBe('confirm');
     expect(afterPublish.materials[0].variants[0].url, 'the draft was promoted').toBe('https://example.com/guide-v3');
     expect(afterPublish.draft).toBeUndefined();
+
+    // The editor title reflects the bumped version after the publish.
+    await page.getByText(`${NAME} renamed`).click();
+    await expect(editor.getByTestId('editor-version')).toHaveText('v2');
   });
 
   test('SYS-UPD-03 / SR-165 / VT-177: the learner dashboard shows the distinct Updated badge and the bumped version chip, included by the due filter', async ({ page }) => {
@@ -142,7 +148,9 @@ test.describe('Trainings — published updates end to end', () => {
     // The banner explains the update; the primary action is the confirmation, not a test.
     const banner = page.getByTestId('update-banner');
     await expect(banner).toBeVisible();
-    await expect(banner).toContainText('version 2');
+    await expect(banner).toContainText('version 2'); // the training's CURRENT version
+    // The version the learner is taking sits right after the session title (SYS-UPD-06).
+    await expect(page.getByTestId('session-version')).toHaveText('v2');
     const start = page.getByTestId('session-start');
     await expect(start).toContainText('Confirm updated materials');
     await start.click();

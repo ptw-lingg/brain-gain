@@ -37,6 +37,24 @@
           2
         ],
         "type": "single"
+      },
+      {
+        "id": "c4ee68e4-7175-460a-bade-1de80bafed1b",
+        "text": {
+          "de": "Und noch was"
+        },
+        "options": [
+          {
+            "de": "ja"
+          },
+          {
+            "de": "nein"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
       }
     ],
     "createdAt": "2026-06-02T14:32:18.157Z",
@@ -74,7 +92,7 @@
       }
     ],
     "durationMinutes": 20,
-    "version": 3,
+    "version": 4,
     "updates": [
       {
         "id": "cc5b08e7-f584-4ff6-a9ff-c6fc3a1900ab",
@@ -84,7 +102,8 @@
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 3
       }
-    ]
+    ],
+    "publishedAt": "2026-08-18T11:47:41.274Z"
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",

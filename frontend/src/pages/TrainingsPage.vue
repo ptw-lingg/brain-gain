@@ -521,8 +521,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
           :aria-label="draft.id ? resolved(draft.name) || t('trainings.edit') : t('trainings.new')"
         >
           <div class="flex items-center justify-between border-b border-line px-5 py-3">
-            <h2 class="min-w-0 truncate font-sans text-base font-bold text-ink">
-              {{ draft.id ? resolved(draft.name) || t('trainings.edit') : t('trainings.new') }}
+            <h2 class="flex min-w-0 items-baseline gap-2 font-sans text-base font-bold text-ink">
+              <span class="min-w-0 truncate">{{ draft.id ? resolved(draft.name) || t('trainings.edit') : t('trainings.new') }}</span>
+              <!-- Current published version right after the title; hidden while nothing is published. -->
+              <span
+                v-if="draft.id && (draft.version ?? 1) > 0"
+                class="shrink-0 font-mono text-xs font-semibold text-ink-light"
+                :title="t('trainings.versionTitle')"
+                data-testid="editor-version"
+              >
+                {{ t('trainings.version', { version: draft.version ?? 1 }) }}
+              </span>
             </h2>
             <button class="ml-3 shrink-0 text-ink-light hover:text-ink" :title="t('common.close')" :aria-label="t('common.close')" @click="cancel">
               <X class="h-5 w-5" />
@@ -551,7 +560,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                  Editor-side language is "versions" (the learner receives them as "updates"). -->
             <button v-if="draft.id" class="btn-ghost" data-testid="manage-updates" @click="openUpdates">
               <History class="h-4 w-4" />
-              {{ t('trainings.publish.manage', { version: draft.version ?? 1 }) }}
+              {{ t('trainings.publish.manage') }}
             </button>
             <div class="flex-1" />
             <template v-if="draft.id">

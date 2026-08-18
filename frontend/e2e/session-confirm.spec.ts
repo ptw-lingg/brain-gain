@@ -81,7 +81,7 @@ test.describe('Session start — materials confirmation', () => {
       await expect(page.getByText('This training has no test — confirming the materials completes it.')).toBeVisible();
       await page.getByTestId('session-start').click();
       const dialog = page.getByTestId('confirm-materials-dialog');
-      await expect(dialog).toContainText('this confirmation is recorded as the evidence');
+      await expect(dialog).toContainText('This confirmation completes the training');
       // This confirmation COMPLETES the training, so it carries the completion signature (SR-173):
       // the confirm button stays disabled until the learner re-enters their password.
       await expect(page.getByTestId('confirm-materials-ok')).toBeDisabled();
