@@ -323,17 +323,7 @@ onMounted(() => {
     </template>
 
     <template v-else-if="training">
-      <h1 class="page-title flex flex-wrap items-baseline gap-x-2">
-        <span>{{ resolveText(training.name).value }}</span>
-        <!-- The content version the learner is taking — matches the editor and the dashboard chip. -->
-        <span
-          class="font-mono text-sm font-semibold text-ink-light"
-          :title="t('trainings.versionTitle')"
-          data-testid="session-version"
-        >
-          {{ t('trainings.version', { version: training.version ?? 1 }) }}
-        </span>
-      </h1>
+      <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
 
       <!-- Step 1: Material -->
       <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4" data-testid="session-material">
@@ -345,13 +335,10 @@ onMounted(() => {
           data-testid="session-hints"
         >
           <template v-if="pendingUpdate">
-            <!-- The banner names the training's CURRENT version, not the pending update's own
-                 version — with several pending updates the earliest deadline governs (SR-165), but
-                 what the learner retakes/confirms is always the latest published content. -->
             <p class="font-sans text-sm font-semibold text-blue-800" data-testid="update-banner">
               {{ confirmOnly
-                ? t('session.update.confirmBanner', { version: training.version ?? 1, date: formatDate(pendingUpdate.deadline) })
-                : t('session.update.retakeBanner', { version: training.version ?? 1, date: formatDate(pendingUpdate.deadline) }) }}
+                ? t('session.update.confirmBanner', { date: formatDate(pendingUpdate.deadline) })
+                : t('session.update.retakeBanner', { date: formatDate(pendingUpdate.deadline) }) }}
             </p>
             <p v-if="pendingUpdate.note" class="mt-1 font-mono text-xs italic text-ink-muted">
               {{ pendingUpdate.note }}

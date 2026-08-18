@@ -130,8 +130,8 @@
       "unavailable": "Ihr Konto hat kein Passwort und Microsoft-Anmeldung ist nicht verfügbar — wenden Sie sich an Ihre Administration."
     },
     "update": {
-      "retakeBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte absolvieren Sie sie bis {date} erneut (Material und Test).",
-      "confirmBanner": "Diese Schulung wurde auf Version {version} aktualisiert — bitte sichten Sie das Material und bestätigen Sie bis {date}.",
+      "retakeBanner": "Diese Schulung wurde aktualisiert — bitte absolvieren Sie sie bis {date} erneut (Material und Test).",
+      "confirmBanner": "Diese Schulung wurde aktualisiert — bitte sichten Sie das Material und bestätigen Sie bis {date}.",
       "confirmCta": "Aktualisiertes Material bestätigen →",
       "confirmedTitle": "Aktualisierung bestätigt",
       "confirmedText": "Ihre Bestätigung wurde aufgezeichnet — diese Schulung ist wieder aktuell. Ihr regulärer Schulungszyklus bleibt unverändert."

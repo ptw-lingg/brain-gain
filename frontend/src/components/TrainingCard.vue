@@ -58,16 +58,6 @@ const meta = computed(() => {
       {{ label }}
     </span>
 
-    <!-- Content version, flush in the opposite corner — bumped whenever an update is published.
-         Hidden while nothing has been published yet (the corner badge says "in preparation"). -->
-    <span
-      v-if="!unpublished"
-      class="absolute right-0 top-0 inline-flex h-6 items-center rounded-bl-lg rounded-tr-lg bg-white/60 px-2.5 font-mono text-[11px] font-semibold leading-none text-ink-light"
-      :title="t('trainings.versionTitle')"
-    >
-      {{ t('trainings.version', { version: training.version ?? 1 }) }}
-    </span>
-
     <h3 class="mt-3 font-sans text-sm font-bold leading-snug text-ink">{{ name }}</h3>
 
     <!-- Category on its own line right below the title, per the plate structure. -->

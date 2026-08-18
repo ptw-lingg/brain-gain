@@ -130,8 +130,8 @@
       "unavailable": "Your account has no password and Microsoft sign-in is not available — contact your administrator."
     },
     "update": {
-      "retakeBanner": "This training was updated to version {version} — please retake it (materials and test) by {date}.",
-      "confirmBanner": "This training was updated to version {version} — please review the materials and confirm by {date}.",
+      "retakeBanner": "This training was updated — please retake it (materials and test) by {date}.",
+      "confirmBanner": "This training was updated — please review the materials and confirm by {date}.",
       "confirmCta": "Confirm updated materials →",
       "confirmedTitle": "Update confirmed",
       "confirmedText": "Your confirmation has been recorded — this training is up to date again. Your regular training cycle is unchanged."

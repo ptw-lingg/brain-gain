@@ -4,7 +4,7 @@ import { CREDS, login, publishSilent } from './fixtures';
 // E2E for published training updates (SYS-UPD-02/03/04, traced to SR-164/SR-165/SR-167 and
 // VT-176/VT-177/VT-178): a content-changing save offers the explicit publish step (a metadata-only
 // save stays silent, skipping publishes nothing), the affected learner sees the distinct "Updated"
-// badge and version chip on the dashboard card, and the confirm-mode session records the
+// badge on the dashboard card (no version numbers on learner views), and the confirm-mode session records the
 // acknowledgement without a quiz and returns the training to up-to-date. Endpoint semantics
 // (authz, validation, email tolerance, precedence, cancel, prune) are covered API-side in
 // backend/tests/training-updates.test.mjs.
@@ -130,13 +130,14 @@ test.describe('Trainings — published updates end to end', () => {
     await expect(editor.getByTestId('editor-version')).toHaveText('v2');
   });
 
-  test('SYS-UPD-03 / SR-165 / VT-177: the learner dashboard shows the distinct Updated badge and the bumped version chip, included by the due filter', async ({ page }) => {
+  test('SYS-UPD-03 / SR-165 / VT-177: the learner dashboard shows the distinct Updated badge, included by the due filter', async ({ page }) => {
     await login(page, 'member');
     // The "only due" filter is on by default — the 'updated' state counts as due work.
     const card = page.locator('.card', { hasText: `${NAME} renamed` });
     await expect(card).toBeVisible();
     await expect(card).toContainText(/Updated · by/);
-    await expect(card).toContainText('v2');
+    // Learner-facing views carry no version numbers — versions are a trainer-side concept.
+    await expect(card.getByText(/^v\d+$/)).toHaveCount(0);
   });
 
   test('SYS-UPD-04 / SR-167 / VT-178: the confirm-mode session records the acknowledgement without a quiz and returns the training to up-to-date', async ({ page, request }) => {
@@ -145,12 +146,12 @@ test.describe('Trainings — published updates end to end', () => {
     await card.getByRole('button', { name: 'Start' }).click();
     await expect(page).toHaveURL(new RegExp(`/session/${trainingId}`));
 
-    // The banner explains the update; the primary action is the confirmation, not a test.
+    // The banner explains the update without naming a version; the primary action is the
+    // confirmation, not a test.
     const banner = page.getByTestId('update-banner');
     await expect(banner).toBeVisible();
-    await expect(banner).toContainText('version 2'); // the training's CURRENT version
-    // The version the learner is taking sits right after the session title (SYS-UPD-06).
-    await expect(page.getByTestId('session-version')).toHaveText('v2');
+    await expect(banner).toContainText('This training was updated');
+    await expect(banner).not.toContainText(/version \d/);
     const start = page.getByTestId('session-start');
     await expect(start).toContainText('Confirm updated materials');
     await start.click();
