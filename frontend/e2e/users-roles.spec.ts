@@ -62,6 +62,8 @@ test.describe('Users page — admin CRUD via the drawer (SYS-USR-02)', () => {
 
     await expect(page.locator('.fixed.inset-0.z-40')).toHaveCount(0, { timeout: 15_000 });
     await expect(page.locator('tr', { hasText: 'user@braingain.app' })).toContainText(newName);
+    // The table marks the row whose drawer was opened last, so the user sees where they were.
+    await expect(page.locator('tr', { hasText: 'user@braingain.app' })).toHaveAttribute('data-selected', 'true');
   });
 
   test('SYS-USR-02 / VT-021 (SR-021): admin assigns several job roles to a user and they persist', async ({ page }) => {

@@ -33,6 +33,11 @@ test.describe('Learner dashboard (SYS-DSH-01)', () => {
     await login(page, 'member');
     await page.getByRole('button', { name: /Start/ }).first().click();
     await expect(page).toHaveURL(/\/session\//);
+
+    // Coming back, the card whose session was started last is marked — the user sees where
+    // they were (SR-095).
+    await page.goto('/dashboard');
+    await expect(page.locator('.card[data-selected="true"]', { hasText: 'Laboratory Safety Basics' })).toBeVisible();
   });
 
   test('SYS-DSH-01 / VT-061: an admin with no assigned trainings sees the friendly empty state', async ({ page }) => {

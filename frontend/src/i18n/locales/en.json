@@ -151,10 +151,10 @@
     "deleteNo": "No",
     "empty": "No trainings yet. Click “Add Training” to create one.",
     "ownerYou": "You",
-    "ready": "Ready",
     "noMaterial": "No material",
+    "noContent": "No material · No test",
+    "noContentTitle": "No material attached and no test questions — trainees can't use this training.",
     "noQuestions": "No test",
-    "readyTitle": "Has material and a test — trainees can complete it.",
     "noMaterialTitle": "No material attached — trainees can't study this training.",
     "noQuestionsTitle": "No test questions — trainees can't complete this training.",
     "toasts": {
@@ -167,7 +167,7 @@
       "orderSaved": "Order saved",
       "orderError": "Could not save order"
     },
-    "version": "v{version}",
+    "version": "Version {version}",
     "versionTitle": "Content version — increases whenever an update is published",
     "versionColTitle": "Published version · date of the last update",
     "notPublished": "Not published",
@@ -204,7 +204,7 @@
       "pendingBy": "due by {date}",
       "cancelUpdate": "Withdraw",
       "discard": "Discard draft",
-      "mailSubject": "Training \"{training}\" was updated (v{version})",
+      "mailSubject": "Training \"{training}\" was updated (Version {version})",
       "mailBodyRetake": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease retake the training (materials and test) in {company} by {date}.\n\n{note}\n\nThis is an automated message.",
       "mailBodyConfirm": "Hello,\n\nthe training \"{training}\" has been updated to version {version}.\n\nPlease review the updated materials in {company} and confirm by {date}.\n\n{note}\n\nThis is an automated message.",
       "toasts": {

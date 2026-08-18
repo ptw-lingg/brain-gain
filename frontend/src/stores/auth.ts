@@ -132,6 +132,8 @@ export const useAuthStore = defineStore('auth', () => {
     impersonatorToken.value = null;
     localStorage.removeItem('token');
     localStorage.removeItem('impersonatorToken');
+    // The "where was I" marker on the dashboard is per user — never carry it into the next session.
+    sessionStorage.removeItem('lastStartedTrainingId');
   }
 
   return {

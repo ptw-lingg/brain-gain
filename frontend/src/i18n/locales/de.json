@@ -151,10 +151,10 @@
     "deleteNo": "Nein",
     "empty": "Noch keine Schulungen. Klicken Sie auf „Schulung hinzufügen“, um eine anzulegen.",
     "ownerYou": "Sie",
-    "ready": "Bereit",
     "noMaterial": "Kein Material",
+    "noContent": "Kein Material · Kein Test",
+    "noContentTitle": "Kein Material hinterlegt und keine Testfragen – Teilnehmer können diese Schulung nicht nutzen.",
     "noQuestions": "Kein Test",
-    "readyTitle": "Material und Test vorhanden – Teilnehmer können sie abschließen.",
     "noMaterialTitle": "Kein Material hinterlegt – Teilnehmer können diese Schulung nicht durcharbeiten.",
     "noQuestionsTitle": "Keine Testfragen – Teilnehmer können diese Schulung nicht abschließen.",
     "toasts": {
@@ -167,7 +167,7 @@
       "orderSaved": "Reihenfolge gespeichert",
       "orderError": "Reihenfolge konnte nicht gespeichert werden"
     },
-    "version": "v{version}",
+    "version": "Version {version}",
     "versionTitle": "Inhaltsversion — erhöht sich mit jeder veröffentlichten Aktualisierung",
     "versionColTitle": "Veröffentlichte Version · Datum der letzten Aktualisierung",
     "notPublished": "Unveröffentlicht",
@@ -204,7 +204,7 @@
       "pendingBy": "fällig bis {date}",
       "cancelUpdate": "Zurückziehen",
       "discard": "Entwurf verwerfen",
-      "mailSubject": "Schulung \"{training}\" wurde aktualisiert (v{version})",
+      "mailSubject": "Schulung \"{training}\" wurde aktualisiert (Version {version})",
       "mailBodyRetake": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte absolvieren Sie die Schulung (Material und Test) in {company} erneut bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
       "mailBodyConfirm": "Hallo,\n\ndie Schulung \"{training}\" wurde auf Version {version} aktualisiert.\n\nBitte sichten Sie das aktualisierte Material in {company} und bestätigen Sie bis {date}.\n\n{note}\n\nDies ist eine automatische Nachricht.",
       "toasts": {

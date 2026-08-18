@@ -37,24 +37,6 @@
           2
         ],
         "type": "single"
-      },
-      {
-        "id": "c4ee68e4-7175-460a-bade-1de80bafed1b",
-        "text": {
-          "de": "Und noch was"
-        },
-        "options": [
-          {
-            "de": "ja"
-          },
-          {
-            "de": "nein"
-          }
-        ],
-        "correctIndices": [
-          0
-        ],
-        "type": "single"
       }
     ],
     "createdAt": "2026-06-02T14:32:18.157Z",
@@ -92,7 +74,7 @@
       }
     ],
     "durationMinutes": 20,
-    "version": 4,
+    "version": 5,
     "updates": [
       {
         "id": "cc5b08e7-f584-4ff6-a9ff-c6fc3a1900ab",
@@ -101,9 +83,17 @@
         "mode": "retake",
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 3
+      },
+      {
+        "id": "6e0e0fc3-9845-4020-a50a-19e1cdfd2998",
+        "publishedAt": "2026-08-18T14:19:55.022Z",
+        "deadline": "2026-09-01T23:59:59.999Z",
+        "mode": "retake",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 5
       }
     ],
-    "publishedAt": "2026-08-18T11:47:41.274Z"
+    "publishedAt": "2026-08-18T14:19:55.022Z"
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
@@ -116,7 +106,7 @@
     },
     "ownerId": "1666fe09-4252-44ef-b5eb-0028c66e5bca",
     "cycleYears": 1,
-    "windowBeforeMonths": 3,
+    "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
     "questions": [],
     "createdAt": "2026-06-02T14:55:48.130Z",
@@ -147,14 +137,14 @@
         "variants": [
           {
             "locale": "en",
-            "label": "Presentation",
+            "label": "Slides",
             "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
           }
         ]
       }
     ],
     "durationMinutes": 20,
-    "version": 4,
+    "version": 5,
     "updates": [
       {
         "id": "bd011abe-5d5c-4615-9b44-d42f65dcb065",
@@ -172,8 +162,17 @@
         "mode": "retake",
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 3
+      },
+      {
+        "id": "9311f427-37cb-4199-a852-18471fe968ea",
+        "publishedAt": "2026-08-18T14:26:33.884Z",
+        "deadline": "2026-09-01T23:59:59.999Z",
+        "mode": "retake",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 5
       }
-    ]
+    ],
+    "publishedAt": "2026-08-18T14:26:33.884Z"
   },
   {
     "id": "5c321dd7-d79f-4898-869c-62130f325d27",
@@ -186,7 +185,7 @@
     },
     "ownerId": "04f99f92-1208-423d-88d9-ab537ed4cd08",
     "cycleYears": 1,
-    "windowBeforeMonths": 3,
+    "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
     "questions": [
       {
@@ -240,6 +239,16 @@
     "order": 3,
     "materials": [
       {
+        "id": "50ca00ef-7df4-496b-a172-c7e6a74a251e",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84378"
+          }
+        ]
+      },
+      {
         "id": "408dcd29-4588-484b-b9b8-1d2880a602f3",
         "variants": [
           {
@@ -254,24 +263,14 @@
         "variants": [
           {
             "locale": "en",
-            "label": "Presentation",
+            "label": "Slides",
             "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.02%20Design%20Input%20and%20SOP-10.03%20Design%20Output.pdf?d=wbd1ba3bdafdb4e03a3ca1f1b66b7b945&csf=1&web=1&e=BbdNhh"
-          }
-        ]
-      },
-      {
-        "id": "50ca00ef-7df4-496b-a172-c7e6a74a251e",
-        "variants": [
-          {
-            "locale": "en",
-            "label": "SOP",
-            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84378"
           }
         ]
       }
     ],
     "durationMinutes": 25,
-    "version": 2,
+    "version": 3,
     "updates": [
       {
         "id": "537ffa17-d953-4345-aefb-f67dc1dbd2d0",
@@ -281,7 +280,8 @@
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 2
       }
-    ]
+    ],
+    "publishedAt": "2026-08-18T14:27:33.920Z"
   },
   {
     "id": "911c1823-0c2b-40a3-b525-1fe099182273",
@@ -428,7 +428,7 @@
     },
     "ownerId": "f9241c53-7a00-47c4-99b5-0df3e89eea44",
     "cycleYears": 1,
-    "windowBeforeMonths": 3,
+    "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
     "questions": [],
     "createdAt": "2026-06-02T14:59:40.488Z",
@@ -459,14 +459,14 @@
         "variants": [
           {
             "locale": "en",
-            "label": "Presentation",
+            "label": "Slides",
             "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.04%20Design%20Verification%20and%20Validation.pdf?d=w8a7025094b924343a4564384e2aabe90&csf=1&web=1&e=VxEfFu"
           }
         ]
       }
     ],
     "durationMinutes": 30,
-    "version": 2,
+    "version": 3,
     "updates": [
       {
         "id": "8463cb16-2298-4445-9a0f-c0414832402f",
@@ -476,7 +476,8 @@
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 2
       }
-    ]
+    ],
+    "publishedAt": "2026-08-18T14:28:16.802Z"
   },
   {
     "id": "90d2e37b-b87e-4ea2-8ee4-300b03473403",
@@ -489,19 +490,19 @@
     },
     "ownerId": "ab3017d7-e544-486b-927b-86112e66fadb",
     "cycleYears": 1,
-    "windowBeforeMonths": 3,
+    "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
     "questions": [],
     "createdAt": "2026-06-02T15:00:03.809Z",
     "order": 6,
     "materials": [
       {
-        "id": "5c1e6d36-4c79-4eb0-8b8c-95ce4186576b",
+        "id": "785fd817-3a41-4684-a987-3711734536c4",
         "variants": [
           {
             "locale": "en",
-            "label": "Presentation",
-            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.05%20Design%20Transfer.pdf?d=w72ebe54a212448ca9965d0070eccf9e5&csf=1&web=1&e=EPdf9G"
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=49039"
           }
         ]
       },
@@ -516,18 +517,18 @@
         ]
       },
       {
-        "id": "785fd817-3a41-4684-a987-3711734536c4",
+        "id": "5c1e6d36-4c79-4eb0-8b8c-95ce4186576b",
         "variants": [
           {
             "locale": "en",
-            "label": "SOP",
-            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=49039"
+            "label": "Slides",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.05%20Design%20Transfer.pdf?d=w72ebe54a212448ca9965d0070eccf9e5&csf=1&web=1&e=EPdf9G"
           }
         ]
       }
     ],
     "durationMinutes": 30,
-    "version": 2,
+    "version": 3,
     "updates": [
       {
         "id": "a14cb5b8-e813-4885-9fdb-00a7c9ac12d7",
@@ -537,7 +538,8 @@
         "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
         "version": 2
       }
-    ]
+    ],
+    "publishedAt": "2026-08-18T14:29:44.818Z"
   },
   {
     "id": "7f9017e7-a4bc-41cd-8c47-94865ff070a7",
@@ -791,7 +793,7 @@
     },
     "ownerId": "112d0d01-31ec-4953-9374-534ed8b4324b",
     "cycleYears": 1,
-    "windowBeforeMonths": 3,
+    "windowBeforeMonths": 1,
     "windowAfterMonths": 3,
     "questions": [],
     "createdAt": "2026-06-02T15:02:32.297Z",

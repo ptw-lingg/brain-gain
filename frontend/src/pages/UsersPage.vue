@@ -92,7 +92,12 @@ function openNew(): void {
   isNew.value = true;
   confirmDelete.value = false;
 }
+// The row whose drawer was opened last — kept marked in the table after the drawer closes, so the
+// user sees where they were when they come back.
+const lastOpenedId = ref<string | null>(null);
+
 function openEdit(u: SafeUser): void {
+  lastOpenedId.value = u.id;
   draft.value = { ...JSON.parse(JSON.stringify(u)), password: '' };
   isNew.value = false;
   confirmDelete.value = false;
@@ -210,6 +215,8 @@ onMounted(load);
             v-for="u in filteredUsers"
             :key="u.id"
             class="cursor-pointer border-b border-line/60 transition last:border-0 hover:bg-pastel-sky/20"
+            :class="lastOpenedId === u.id ? 'bg-accent-light/20' : ''"
+            :data-selected="lastOpenedId === u.id ? 'true' : undefined"
             @click="openEdit(u)"
           >
             <td class="px-5 py-3 text-sm font-semibold text-ink">{{ u.name }}</td>

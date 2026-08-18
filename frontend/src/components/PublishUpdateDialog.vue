@@ -154,7 +154,7 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-ink/40" @click="emit('close')" />
     <div
-      class="relative z-10 flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
+      class="relative z-10 flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lift"
       role="dialog"
       aria-modal="true"
       :aria-label="t('trainings.publish.title')"
@@ -182,8 +182,14 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
             : t('trainings.publish.noDraftInfo') }}
         </p>
 
+        <!-- Two columns while notifying: the decisions on the left, the notification email on the
+             right — the mail regenerates live while the editor flips mode/deadline/note, and the
+             side-by-side view makes that visible. Silent publishes have no email and collapse to
+             one column; small screens always stack. -->
+        <div class="mt-4 grid gap-x-6 gap-y-4" :class="kind === 'notify' ? 'lg:grid-cols-2' : ''">
+        <div>
         <!-- Notify or silent? A never-published training (v0) has nobody to notify. -->
-        <fieldset class="mt-4">
+        <fieldset>
           <legend class="form-label">{{ t('trainings.publish.kindLabel') }}</legend>
           <label
             class="check-card mt-2"
@@ -237,26 +243,28 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
             <span class="form-label">{{ t('trainings.publish.note') }}</span>
             <textarea v-model="note" rows="2" class="bg-input mt-1" :placeholder="t('trainings.publish.notePlaceholder')" />
           </label>
-
-          <!-- Notification email, prefilled — editable until sent. -->
-          <div class="mt-4 rounded-lg border border-line bg-pastel-slate/20 p-4">
-            <p class="form-label">{{ t('trainings.publish.emailPreview') }}</p>
-            <input
-              v-model="emailSubject"
-              type="text"
-              class="bg-input mt-2"
-              :aria-label="t('trainings.publish.emailSubject')"
-              @input="subjectDirty = true"
-            />
-            <textarea
-              v-model="emailText"
-              rows="6"
-              class="bg-input mt-2 font-mono text-xs"
-              :aria-label="t('trainings.publish.emailBody')"
-              @input="textDirty = true"
-            />
-          </div>
         </template>
+        </div>
+
+        <!-- Notification email, prefilled — editable until sent. -->
+        <div v-if="kind === 'notify'" class="flex flex-col rounded-lg border border-line bg-pastel-slate/20 p-4">
+          <p class="form-label">{{ t('trainings.publish.emailPreview') }}</p>
+          <input
+            v-model="emailSubject"
+            type="text"
+            class="bg-input mt-2"
+            :aria-label="t('trainings.publish.emailSubject')"
+            @input="subjectDirty = true"
+          />
+          <textarea
+            v-model="emailText"
+            rows="12"
+            class="bg-input mt-2 flex-1 font-mono text-xs"
+            :aria-label="t('trainings.publish.emailBody')"
+            @input="textDirty = true"
+          />
+        </div>
+        </div>
 
         <!-- Already-published updates: cancellable; the version never rolls back. -->
         <div v-if="pending.length" class="mt-5">
@@ -266,7 +274,7 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
             :key="u.id"
             class="mt-2 flex items-center gap-3 rounded-lg border border-line px-3 py-2"
           >
-            <span class="pill shrink-0 bg-pastel-blue/60 text-blue-700">v{{ u.version }}</span>
+            <span class="pill shrink-0 bg-pastel-blue/60 text-blue-700">{{ t('trainings.version', { version: u.version }) }}</span>
             <span class="min-w-0 flex-1 font-mono text-xs text-ink-muted">
               {{ u.mode === 'retake' ? t('trainings.publish.modeRetake') : t('trainings.publish.modeConfirm') }}
               · {{ t('trainings.publish.pendingBy', { date: formatDate(u.deadline) }) }}

@@ -72,7 +72,14 @@ async function load(): Promise<void> {
   }
 }
 
+// The card whose session was started last — marked so the user sees where they were when they
+// come back from the training. Starting a session navigates to another page, so the marker lives
+// in sessionStorage (per tab, survives the route change and a refresh).
+const lastStartedId = ref<string | null>(sessionStorage.getItem('lastStartedTrainingId'));
+
 function start(id: string): void {
+  sessionStorage.setItem('lastStartedTrainingId', id);
+  lastStartedId.value = id;
   router.push(`/session/${id}`);
 }
 
@@ -128,7 +135,13 @@ onMounted(load);
         tag="div"
         class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
-        <TrainingCard v-for="i in filteredItems" :key="i.training.id" :item="i" @start="start" />
+        <TrainingCard
+          v-for="i in filteredItems"
+          :key="i.training.id"
+          :item="i"
+          :last-opened="i.training.id === lastStartedId"
+          @start="start"
+        />
       </TransitionGroup>
       <p v-if="filteredItems.length === 0" class="font-mono text-sm text-ink-light">{{ t('common.noMatches') }}</p>
     </div>

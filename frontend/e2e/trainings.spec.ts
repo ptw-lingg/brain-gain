@@ -223,6 +223,9 @@ test.describe('Trainings — editor dialog behavior', () => {
     await expect(page.getByText('Laboratory Safety Basics')).toBeVisible();
     await expect(page.getByText('Discarded Draft Name')).toHaveCount(0);
 
+    // The list marks the row whose dialog was opened last, so the user sees where they were.
+    await expect(page.locator('.card', { hasText: 'Laboratory Safety Basics' })).toHaveAttribute('data-selected', 'true');
+
     // Reopening shows the untouched name.
     await page.getByText('Laboratory Safety Basics').click();
     await expect(page.getByRole('dialog').getByPlaceholder('Training name').first()).toHaveValue('Laboratory Safety Basics');
@@ -265,30 +268,33 @@ test.describe('Trainings — content readiness flags', () => {
     await editor.getByPlaceholder('Training name').first().fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
 
-    // Its list row is flagged as missing both material and a test — and as never published,
-    // since a new training stays invisible to trainees until version 1 is published (SR-170).
+    // Its list row is flagged as missing both material and a test (ONE combined pill) — and as
+    // never published, since a new training stays invisible until version 1 is published (SR-170).
     const row = page.locator('.card', { hasText: name });
     await expect(row).toBeVisible();
-    await expect(row).toContainText('No material');
-    await expect(row).toContainText('No test');
+    await expect(row).toContainText('No material · No test');
     await expect(row).toContainText('Not published');
   });
 
-  test('SYS-TRN-10 / SR-041 / SR-042: a complete (seeded) training is flagged "Ready"', async ({ page }) => {
+  test('SYS-TRN-10 / SR-041 / SR-042: a complete (seeded) training carries no attention flags', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/trainings');
 
-    // The seeded "Laboratory Safety Basics" has both material and questions → ready for trainees.
+    // The seeded "Laboratory Safety Basics" has both material and questions and is published —
+    // a complete training is the quiet default and shows no marker at all.
     const row = page.locator('.card', { hasText: 'Laboratory Safety Basics' });
     await expect(row).toBeVisible();
-    await expect(row).toContainText('Ready');
+    await expect(row).not.toContainText('No material');
+    await expect(row).not.toContainText('No test');
+    await expect(row).not.toContainText('Not published');
   });
 });
 
-// The version column (SYS-UPD-06, traced to SR-169 / VT-191): every list row names the published
-// version and the date of the last update; an unpublished training shows a placeholder.
-test.describe('Trainings — version column', () => {
-  test('SYS-UPD-06 / SR-169 / VT-191: the list shows the current version with the date of the last update, and "—" while unpublished', async ({ page }) => {
+// The version in the row's meta line (SYS-UPD-06, traced to SR-169 / VT-191): every published row
+// names the version and the date of the last update; an unpublished training shows no version —
+// the "Not published yet" pill flags it instead.
+test.describe('Trainings — version in the meta line', () => {
+  test('SYS-UPD-06 / SR-169 / VT-191: the list shows the current version with the date of the last update, and none while unpublished', async ({ page }) => {
     await login(page, 'trainer');
     const name = `E2E Version column ${Date.now()}`;
     await page.goto('/trainings');
@@ -297,13 +303,14 @@ test.describe('Trainings — version column', () => {
     await editor.getByPlaceholder('Training name').first().fill(name);
     await editor.getByRole('button', { name: 'Create' }).click();
 
-    // Unpublished (version 0) → placeholder instead of a version.
+    // Unpublished (version 0) → no version fragment; the row is flagged "Not published yet".
     const fresh = page.locator('.card', { hasText: name });
-    await expect(fresh.getByTestId('version-col')).toHaveText('—');
+    await expect(fresh).toContainText('Not published');
+    await expect(fresh.getByTestId('version-col')).toHaveCount(0);
 
     // The seeded training is published with a known publish date → "v{N} · <date>". (Not pinned
     // to v1: earlier specs in the shared suite may have published further versions of it.)
     const seeded = page.locator('.card', { hasText: 'Laboratory Safety Basics' });
-    await expect(seeded.getByTestId('version-col')).toContainText(/^v\d+ · .+/);
+    await expect(seeded.getByTestId('version-col')).toContainText(/^Version \d+ · .+/);
   });
 });

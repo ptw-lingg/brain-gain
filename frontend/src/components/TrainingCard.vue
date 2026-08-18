@@ -13,7 +13,9 @@ import {
 } from '@/utils/display';
 import { resolveLocalized } from '@/utils/locales';
 
-const props = defineProps<{ item: DueTraining }>();
+// `lastOpened` marks the card whose session was started last, so the user sees where they were
+// when they come back from the training.
+const props = defineProps<{ item: DueTraining; lastOpened?: boolean }>();
 const emit = defineEmits<{ start: [id: string] }>();
 const { t, locale } = useI18n();
 
@@ -47,7 +49,8 @@ const meta = computed(() => {
 <template>
   <div
     class="card relative flex h-full flex-col gap-2 bg-gradient-to-br to-white p-4 transition-transform hover:-translate-y-0.5 hover:shadow-lift"
-    :class="tint"
+    :class="[tint, lastOpened ? 'ring-1 ring-accent' : '']"
+    :data-selected="lastOpened ? 'true' : undefined"
   >
     <!-- The due status sits FLUSH in the card's top-left corner — the corner itself reads as red or
          green, the text just sits on it. Same colors/typography as the pill it replaces. -->

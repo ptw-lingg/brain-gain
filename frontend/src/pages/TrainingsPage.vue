@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AlertTriangle, CheckCircle2, ChevronRight, Download, FileText, GripVertical, History, Plus, Save, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, Download, FileText, GripVertical, History, Plus, Save, Trash2, X } from 'lucide-vue-next';
 import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
@@ -49,6 +49,19 @@ const filteredTrainings = computed(() =>
     ),
   ),
 );
+
+// Readiness is judged on the WORK-IN-PROGRESS content — the draft when one exists.
+const readinessOf = (tr: Training) => trainingReadiness(tr.draft ?? tr);
+
+// The row's one-line summary — replaces the former pill badges. Category first (may be blank),
+// then cycle and duration; the owner is appended in the template (admins only).
+function metaPrefix(tr: Training): string {
+  return [resolved(tr.category), cycleLabel(t, tr.cycleYears), formatDuration(tr.durationMinutes)]
+    .filter(Boolean)
+    .join(' · ');
+}
+const versionLabel = (tr: Training): string =>
+  t('trainings.version', { version: tr.version ?? 1 }) + (tr.publishedAt ? ' · ' + formatDate(tr.publishedAt) : '');
 
 // Training Plan controlled document (admin): the trainings, roles→trainings and members→roles, built
 // → previewed inline → downloaded for transfer to the DMS (view-before-download, like the team report).
@@ -178,7 +191,12 @@ function startCreate(): void {
 // take effect on save). The clone's content is the WORK-IN-PROGRESS: the server draft when one
 // exists, else the published content — and the server's `draft` field itself is dropped so the
 // local editing copy (also named `draft`) never carries the staging field along.
+// The row whose dialog was opened last — kept marked in the list after the dialog closes, so the
+// user sees where they were when they come back.
+const lastOpenedId = ref<string | null>(null);
+
 function openTraining(t: Training): void {
+  lastOpenedId.value = t.id;
   const clone: Training = JSON.parse(JSON.stringify(t));
   clone.materials = JSON.parse(JSON.stringify(t.draft?.materials ?? t.materials));
   clone.questions = JSON.parse(JSON.stringify(t.draft?.questions ?? t.questions));
@@ -371,7 +389,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
         v-for="tr in filteredTrainings"
         :key="tr.id"
         class="card overflow-hidden transition"
-        :class="dragId === tr.id ? 'opacity-50 ring-2 ring-accent/50' : ''"
+        :class="[
+          dragId === tr.id ? 'opacity-50 ring-2 ring-accent/50' : '',
+          lastOpenedId === tr.id ? 'ring-1 ring-accent' : '',
+        ]"
+        :data-selected="lastOpenedId === tr.id ? 'true' : undefined"
         :draggable="isAdmin && dragEnabled && !search.trim()"
         @dragstart="onDragStart(tr)"
         @dragover.prevent="onDragOver(tr)"
@@ -398,16 +420,29 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <GripVertical class="h-4 w-4" />
           </button>
           <div class="min-w-0 flex-1">
-            <div class="font-sans text-sm font-semibold text-ink">{{ resolved(tr.name) }}</div>
-            <div class="truncate font-mono text-xs text-ink-light" :title="resolved(tr.description)">{{ resolved(tr.description) }}</div>
+            <div class="truncate font-sans text-sm font-semibold text-ink" :title="resolved(tr.description)">{{ resolved(tr.name) }}</div>
+            <!-- Version + date of the last update on their own line right below the title; omitted
+                 while nothing is published — the "Not published yet" pill already flags that. -->
+            <div
+              v-if="(tr.version ?? 1) > 0"
+              class="truncate font-mono text-xs text-ink-light"
+              data-testid="version-col"
+              :title="t('trainings.versionColTitle')"
+            >
+              {{ versionLabel(tr) }}
+            </div>
+            <!-- One muted sentence instead of pill badges (the dashboard-card pattern): category,
+                 cycle, duration and (for admins) the owner. The description moved into the title
+                 tooltip on the name. -->
+            <div class="truncate font-mono text-xs text-ink-light">
+              {{ metaPrefix(tr) }}<template v-if="isAdmin"> · {{ ownerName(tr.ownerId) }}</template>
+            </div>
           </div>
-          <!-- Status column: trainees need material to study and questions to be tested. Missing either
-               is flagged so trainers see what to finish; a complete training shows a green "Ready". The
-               readiness is judged on the WORK-IN-PROGRESS content (the draft when one exists) — that is
-               what the editor is preparing to publish. Publication state gets its own pills: amber
-               "Not published yet" (version 0) and blue "Draft" (unpublished changes). The flags stack
-               within a fixed-width cell so the row reads like a table. -->
-          <div class="flex w-[8.5rem] shrink-0 flex-col justify-center gap-1">
+          <!-- Attention column: only what needs the trainer's attention is flagged — missing material
+               or test (judged on the WORK-IN-PROGRESS content: the draft when one exists) and the
+               publication state (amber "Not published yet" for version 0, blue "Draft" for unpublished
+               changes). A complete, published training carries no marker at all. -->
+          <div class="flex w-40 shrink-0 flex-col justify-center gap-1">
             <span
               v-if="(tr.version ?? 1) === 0"
               class="pill w-full bg-amber-100 text-amber-700"
@@ -422,44 +457,31 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             >
               {{ t('trainings.draftPill') }}
             </span>
+            <!-- Missing material and missing test collapse into ONE flag when both are absent. -->
             <span
-              v-if="!trainingReadiness(tr.draft ?? tr).hasMaterial"
+              v-if="!readinessOf(tr).hasMaterial && !readinessOf(tr).hasQuestions"
               class="pill w-full bg-amber-100 text-amber-700"
-              :title="t('trainings.noMaterialTitle')"
+              :title="t('trainings.noContentTitle')"
             >
-              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
+              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noContent') }}
             </span>
-            <span
-              v-if="!trainingReadiness(tr.draft ?? tr).hasQuestions"
-              class="pill w-full bg-amber-100 text-amber-700"
-              :title="t('trainings.noQuestionsTitle')"
-            >
-              <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
-            </span>
-            <span
-              v-if="trainingReadiness(tr.draft ?? tr).ready"
-              class="pill w-full bg-pastel-mint/50 text-emerald-700"
-              :title="t('trainings.readyTitle')"
-            >
-              <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
-            </span>
+            <template v-else>
+              <span
+                v-if="!readinessOf(tr).hasMaterial"
+                class="pill w-full bg-amber-100 text-amber-700"
+                :title="t('trainings.noMaterialTitle')"
+              >
+                <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noMaterial') }}
+              </span>
+              <span
+                v-if="!readinessOf(tr).hasQuestions"
+                class="pill w-full bg-amber-100 text-amber-700"
+                :title="t('trainings.noQuestionsTitle')"
+              >
+                <AlertTriangle class="h-3 w-3" /> {{ t('trainings.noQuestions') }}
+              </span>
+            </template>
           </div>
-          <!-- Published version and when it went live (the date of the last update); '—' while
-               nothing is published yet, version only when the publish date is unknown (legacy). -->
-          <span
-            class="pill w-36 shrink-0 truncate bg-white text-ink-muted"
-            :title="t('trainings.versionColTitle')"
-            data-testid="version-col"
-          >
-            {{ (tr.version ?? 1) === 0
-              ? '—'
-              : t('trainings.version', { version: tr.version ?? 1 }) + (tr.publishedAt ? ' · ' + formatDate(tr.publishedAt) : '') }}
-          </span>
-          <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ resolved(tr.category) }}</span>
-          <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ formatDuration(tr.durationMinutes) }}</span>
-          <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>
-          <span v-if="isAdmin" class="pill w-32 shrink-0 truncate bg-white text-ink-light">{{ ownerName(tr.ownerId) }}</span>
-          <ChevronRight class="h-4 w-4 shrink-0 text-ink-light" />
         </div>
       </div>
 

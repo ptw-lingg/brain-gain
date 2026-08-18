@@ -82,7 +82,7 @@ test.describe('Trainings — published updates end to end', () => {
     const editor = page.getByRole('dialog');
     await expect(editor).toBeVisible();
     // The current published version sits right after the editor title (SYS-UPD-06).
-    await expect(editor.getByTestId('editor-version')).toHaveText('v1');
+    await expect(editor.getByTestId('editor-version')).toHaveText('Version 1');
     await editor.getByPlaceholder('Training name').first().fill(`${NAME} renamed`);
     await editor.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByTestId('publish-update-dialog')).toHaveCount(0);
@@ -127,7 +127,7 @@ test.describe('Trainings — published updates end to end', () => {
 
     // The editor title reflects the bumped version after the publish.
     await page.getByText(`${NAME} renamed`).click();
-    await expect(editor.getByTestId('editor-version')).toHaveText('v2');
+    await expect(editor.getByTestId('editor-version')).toHaveText('Version 2');
   });
 
   test('SYS-UPD-03 / SR-165 / VT-177: the learner dashboard shows the distinct Updated badge, included by the due filter', async ({ page }) => {
@@ -137,7 +137,7 @@ test.describe('Trainings — published updates end to end', () => {
     await expect(card).toBeVisible();
     await expect(card).toContainText(/Updated · by/);
     // Learner-facing views carry no version numbers — versions are a trainer-side concept.
-    await expect(card.getByText(/^v\d+$/)).toHaveCount(0);
+    await expect(card.getByText(/^(v|Version )\d+$/)).toHaveCount(0);
   });
 
   test('SYS-UPD-04 / SR-167 / VT-178: the confirm-mode session records the acknowledgement without a quiz and returns the training to up-to-date', async ({ page, request }) => {

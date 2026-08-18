@@ -92,7 +92,7 @@ test.describe('Trainings — drafts stay invisible to trainees', () => {
     await expect(card).toContainText('In preparation');
     await expect(card.getByRole('button', { name: 'Start' })).toBeDisabled();
     // Learner cards never show a version number.
-    await expect(card.getByText(/^v\d+$/)).toHaveCount(0);
+    await expect(card.getByText(/^(v|Version )\d+$/)).toHaveCount(0);
 
     // A deep link cannot bypass the gate: the session page shows the in-preparation notice.
     await page.goto(`/session/${unpublishedId}`);
