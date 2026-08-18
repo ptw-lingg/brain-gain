@@ -389,9 +389,10 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
       b.windowAfterMonths != null
         ? clamp(b.windowAfterMonths, 0, 3, current.windowAfterMonths)
         : current.windowAfterMonths,
-    // `version` and `updates` are server-managed like `order`: never read from the body, they ride
-    // along from `current` via the spread above and change only through publish-update / cancel.
-    // The PUBLISHED content is server-managed too — written exclusively by publish-update:
+    // `version`, `publishedAt` and `updates` are server-managed like `order`: never read from the
+    // body, they ride along from `current` via the spread above and change only through
+    // publish-update / cancel. The PUBLISHED content is server-managed too — written exclusively
+    // by publish-update:
     materials: current.materials ?? [],
     questions: current.questions,
     // Content equal to the published version needs no draft (deleted below — the spread would keep
@@ -478,14 +479,16 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     delete training.draft;
   }
   const version = currentVersion + 1;
+  const publishedAt = new Date().toISOString();
   training.version = version;
+  training.publishedAt = publishedAt; // when the CURRENT version went live — silent publishes too
 
   let update: TrainingUpdate | null = null;
   if (kind === 'notify') {
     const note = typeof b.note === 'string' && b.note.trim() ? b.note.trim().slice(0, 2000) : undefined;
     update = {
       id: randomUUID(),
-      publishedAt: new Date().toISOString(),
+      publishedAt,
       deadline,
       mode: b.mode,
       ...(note ? { note } : {}),

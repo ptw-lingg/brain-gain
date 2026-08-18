@@ -138,6 +138,7 @@ test('SYS-UPD-01 / SYS-UPD-06 / VT-182: a new training starts at version 0 (unpu
   assert.deepEqual(created.body.updates, [], 'a new training starts with no updates');
   assert.deepEqual(created.body.materials, [], 'no published content yet');
   assert.ok(!('draft' in created.body), 'no content in the body → no draft either');
+  assert.ok(!('publishedAt' in created.body), 'no publish date before the first publish');
 
   const fakeUpdate = {
     id: randomUUID(),
@@ -191,6 +192,7 @@ test('SYS-UPD-02 / SYS-UPD-06 / VT-176 / VT-182: publishing bumps the version, r
   const t = await srv.request('GET', `/api/trainings/${safety.id}`, { token: trainerToken });
   assert.equal(t.body.version, 2, 'version persisted on the training');
   assert.equal(t.body.updates.length, 1, 'update persisted on the training');
+  assert.equal(t.body.publishedAt, res.body.update.publishedAt, 'the training records when the current version went live');
 });
 
 // ───────────────────────── SYS-UPD-03 — the 'updated' due state ─────────────────────────

@@ -192,6 +192,7 @@ test('SYS-UPD-08 / SR-171 / VT-184: a silent publish promotes the draft, bumps 0
   assert.equal(readBack.body.materials[0].variants[0].url, 'https://example.com/live', 'the draft was promoted');
   assert.ok(!('draft' in readBack.body), 'the draft is cleared');
   assert.deepEqual(readBack.body.updates, [], 'no obligation was recorded');
+  assert.ok(readBack.body.publishedAt, 'a SILENT publish also records when the version went live');
 });
 
 test('SYS-UPD-08 / SR-171 / VT-184: silent without a draft → 400, notify at version 0 → 400, an unknown kind → 400, kind defaults to notify', async () => {

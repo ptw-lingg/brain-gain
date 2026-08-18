@@ -11,7 +11,7 @@ import TrainingForm from '@/components/TrainingForm.vue';
 import PublishUpdateDialog from '@/components/PublishUpdateDialog.vue';
 import ListControls from '@/components/ListControls.vue';
 import { matchesQuery } from '@/utils/listFilter';
-import { cycleLabel, formatDuration, trainingReadiness } from '@/utils/display';
+import { cycleLabel, formatDate, formatDuration, trainingReadiness } from '@/utils/display';
 import { resolveLocalized } from '@/utils/locales';
 
 const auth = useAuthStore();
@@ -444,6 +444,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               <CheckCircle2 class="h-3 w-3" /> {{ t('trainings.ready') }}
             </span>
           </div>
+          <!-- Published version and when it went live (the date of the last update); '—' while
+               nothing is published yet, version only when the publish date is unknown (legacy). -->
+          <span
+            class="pill w-36 shrink-0 truncate bg-white text-ink-muted"
+            :title="t('trainings.versionColTitle')"
+            data-testid="version-col"
+          >
+            {{ (tr.version ?? 1) === 0
+              ? '—'
+              : t('trainings.version', { version: tr.version ?? 1 }) + (tr.publishedAt ? ' · ' + formatDate(tr.publishedAt) : '') }}
+          </span>
           <span class="pill w-28 shrink-0 truncate bg-pastel-sky/60 text-ink-muted">{{ resolved(tr.category) }}</span>
           <span class="pill w-16 shrink-0 bg-pastel-slate/60 text-ink-muted">{{ formatDuration(tr.durationMinutes) }}</span>
           <span class="pill w-28 shrink-0 bg-pastel-mint/50 text-emerald-700">{{ cycleLabel(t, tr.cycleYears) }}</span>

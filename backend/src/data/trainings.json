@@ -43,12 +43,12 @@
     "order": 1,
     "materials": [
       {
-        "id": "d8779e0c-e79b-4dcd-8b6e-93d1d71ffc30",
+        "id": "08c8e9ab-f93e-4806-bae6-ff944eb88e44",
         "variants": [
           {
             "locale": "en",
-            "label": "Slides",
-            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84376"
           }
         ]
       },
@@ -63,19 +63,28 @@
         ]
       },
       {
-        "id": "08c8e9ab-f93e-4806-bae6-ff944eb88e44",
+        "id": "d8779e0c-e79b-4dcd-8b6e-93d1d71ffc30",
         "variants": [
           {
             "locale": "en",
-            "label": "SOP",
-            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84376"
+            "label": "Slides",
+            "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
           }
         ]
       }
     ],
     "durationMinutes": 20,
-    "version": 2,
-    "updates": []
+    "version": 3,
+    "updates": [
+      {
+        "id": "cc5b08e7-f584-4ff6-a9ff-c6fc3a1900ab",
+        "publishedAt": "2026-08-18T07:06:26.428Z",
+        "deadline": "2026-09-01T23:59:59.999Z",
+        "mode": "retake",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 3
+      }
+    ]
   },
   {
     "id": "7f6bf0b1-b3fa-4760-9e9a-7c539806931c",
@@ -95,6 +104,16 @@
     "order": 2,
     "materials": [
       {
+        "id": "79f100ac-aa28-47c2-8ab6-c2eb4c4803f6",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "SOP",
+            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84377"
+          }
+        ]
+      },
+      {
         "id": "800616c0-808d-45cd-af4a-d7a773ea94d5",
         "variants": [
           {
@@ -113,20 +132,10 @@
             "url": "https://ptwfreiburg.sharepoint.com/:b:/r/sites/Entwicklung/Shared%20Documents/Product%20Life%20Cycle/Trainings/SOPs/2024/2024-03%20SOP-10.00%20PLC%20and%20SOP-10.01%20Planning.pdf?csf=1&web=1&e=WrhBzl"
           }
         ]
-      },
-      {
-        "id": "79f100ac-aa28-47c2-8ab6-c2eb4c4803f6",
-        "variants": [
-          {
-            "locale": "en",
-            "label": "SOP",
-            "url": "https://ptw13/Roxtra/doc/showfile.aspx?FileID=84377"
-          }
-        ]
       }
     ],
     "durationMinutes": 20,
-    "version": 3,
+    "version": 4,
     "updates": [
       {
         "id": "bd011abe-5d5c-4615-9b44-d42f65dcb065",
@@ -781,7 +790,18 @@
       }
     ],
     "durationMinutes": 30,
-    "version": 1
+    "version": 2,
+    "publishedAt": "2026-08-18T07:40:14.935Z",
+    "updates": [
+      {
+        "id": "d3921ac9-114b-45e6-912c-aadb71147aa6",
+        "publishedAt": "2026-08-18T07:40:14.935Z",
+        "deadline": "2026-09-01T23:59:59.999Z",
+        "mode": "retake",
+        "publishedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+        "version": 2
+      }
+    ]
   },
   {
     "id": "f2699e0d-b7ef-4699-9e11-9378d67caf0b",

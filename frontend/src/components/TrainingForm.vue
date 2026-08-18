@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X } from 'lucide-vue-next';
+import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X, ChevronUp, ChevronDown } from 'lucide-vue-next';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import CollapsibleSection from '@/components/CollapsibleSection.vue';
@@ -163,6 +163,41 @@ function normalizeMaterials(): void {
   }
 }
 watch([() => props.draft, () => materialLocales], normalizeMaterials, { immediate: true });
+
+// ── reordering ────────────────────────────────────────────────────────────────────────────────────
+// Materials, questions and answer options are presented to learners in array order, so the editor
+// reorders them with up/down buttons. Like every content edit, a new order is staged as the draft
+// on save and reaches learners only when published.
+function swapInPlace<T>(arr: T[], i: number, j: number): void {
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+}
+
+function moveMaterial(mi: number, dir: -1 | 1): void {
+  const j = mi + dir;
+  if (j < 0 || j >= props.draft.materials.length) return;
+  swapInPlace(props.draft.materials, mi, j);
+}
+
+function moveQuestion(qi: number, dir: -1 | 1): void {
+  const j = qi + dir;
+  if (j < 0 || j >= props.draft.questions.length) return;
+  swapInPlace(props.draft.questions, qi, j);
+  // The expanded state is tracked by position — swap it too, so an open question stays open.
+  const wasOpen = openQuestions.value[qi] ?? false;
+  openQuestions.value[qi] = openQuestions.value[j] ?? false;
+  openQuestions.value[j] = wasOpen;
+}
+
+function moveOption(q: Question, oi: number, dir: -1 | 1): void {
+  const j = oi + dir;
+  if (j < 0 || j >= q.options.length) return;
+  swapInPlace(q.options, oi, j);
+  // The answer key points at option INDICES: remap the two swapped positions so the key keeps
+  // marking the same answers (the same rule removeOption applies when an option disappears).
+  q.correctIndices = keyOf(q)
+    .map((k) => (k === oi ? j : k === j ? oi : k))
+    .sort((a, b) => a - b);
+}
 
 const blankVariants = (): MaterialVariant[] =>
   materialLocales.map((locale) => ({ locale, label: '', url: '' }));
@@ -328,14 +363,36 @@ function removeVariantFile(variant: MaterialVariant): void {
               <Paperclip class="h-4 w-4 shrink-0 text-accent" />
               <span class="truncate font-sans text-sm font-semibold text-ink">{{ materialTitle(m, mi) }}</span>
             </span>
-            <button
-              class="btn-ghost btn-icon"
-              :aria-label="t('trainingForm.removeMaterial')"
-              :title="t('trainingForm.removeMaterial')"
-              @click="removeMaterial(mi)"
-            >
-              <Trash2 class="h-4 w-4" />
-            </button>
+            <span class="flex shrink-0 items-center gap-1">
+              <button
+                class="btn-ghost btn-icon"
+                :disabled="mi === 0"
+                :aria-label="t('trainingForm.moveUp')"
+                :title="t('trainingForm.moveUp')"
+                data-testid="move-material-up"
+                @click="moveMaterial(mi, -1)"
+              >
+                <ChevronUp class="h-4 w-4" />
+              </button>
+              <button
+                class="btn-ghost btn-icon"
+                :disabled="mi === draft.materials.length - 1"
+                :aria-label="t('trainingForm.moveDown')"
+                :title="t('trainingForm.moveDown')"
+                data-testid="move-material-down"
+                @click="moveMaterial(mi, 1)"
+              >
+                <ChevronDown class="h-4 w-4" />
+              </button>
+              <button
+                class="btn-ghost btn-icon"
+                :aria-label="t('trainingForm.removeMaterial')"
+                :title="t('trainingForm.removeMaterial')"
+                @click="removeMaterial(mi)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </button>
+            </span>
           </div>
 
           <!-- One row per configured language: flag · label · url-or-file · upload -->
@@ -400,14 +457,36 @@ function removeVariantFile(variant: MaterialVariant): void {
           @toggle="toggleQuestion(qi)"
         >
           <template #actions>
-            <button
-              class="btn-ghost btn-icon"
-              :aria-label="t('trainingForm.removeQuestion')"
-              :title="t('trainingForm.removeQuestion')"
-              @click="$emit('remove-question', qi)"
-            >
-              <Trash2 class="h-4 w-4" />
-            </button>
+            <span class="flex items-center gap-1">
+              <button
+                class="btn-ghost btn-icon"
+                :disabled="qi === 0"
+                :aria-label="t('trainingForm.moveUp')"
+                :title="t('trainingForm.moveUp')"
+                data-testid="move-question-up"
+                @click="moveQuestion(qi, -1)"
+              >
+                <ChevronUp class="h-4 w-4" />
+              </button>
+              <button
+                class="btn-ghost btn-icon"
+                :disabled="qi === draft.questions.length - 1"
+                :aria-label="t('trainingForm.moveDown')"
+                :title="t('trainingForm.moveDown')"
+                data-testid="move-question-down"
+                @click="moveQuestion(qi, 1)"
+              >
+                <ChevronDown class="h-4 w-4" />
+              </button>
+              <button
+                class="btn-ghost btn-icon"
+                :aria-label="t('trainingForm.removeQuestion')"
+                :title="t('trainingForm.removeQuestion')"
+                @click="$emit('remove-question', qi)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </button>
+            </span>
           </template>
 
           <div class="flex flex-col gap-1">
@@ -488,15 +567,37 @@ function removeVariantFile(variant: MaterialVariant): void {
                   <input v-model="opt[loc]" class="bg-input flex-1" :placeholder="t('trainingForm.optionPlaceholder', { n: oi + 1 })" />
                 </div>
               </div>
-              <button
-                class="btn-ghost btn-icon mt-1"
-                :disabled="q.options.length <= 2"
-                :aria-label="t('trainingForm.removeOption')"
-                :title="t('trainingForm.removeOption')"
-                @click="$emit('remove-option', q, oi)"
-              >
-                <Trash2 class="h-3.5 w-3.5" />
-              </button>
+              <span class="mt-1 flex shrink-0 items-center gap-1">
+                <button
+                  class="btn-ghost btn-icon"
+                  :disabled="oi === 0"
+                  :aria-label="t('trainingForm.moveUp')"
+                  :title="t('trainingForm.moveUp')"
+                  data-testid="move-option-up"
+                  @click="moveOption(q, oi, -1)"
+                >
+                  <ChevronUp class="h-3.5 w-3.5" />
+                </button>
+                <button
+                  class="btn-ghost btn-icon"
+                  :disabled="oi === q.options.length - 1"
+                  :aria-label="t('trainingForm.moveDown')"
+                  :title="t('trainingForm.moveDown')"
+                  data-testid="move-option-down"
+                  @click="moveOption(q, oi, 1)"
+                >
+                  <ChevronDown class="h-3.5 w-3.5" />
+                </button>
+                <button
+                  class="btn-ghost btn-icon"
+                  :disabled="q.options.length <= 2"
+                  :aria-label="t('trainingForm.removeOption')"
+                  :title="t('trainingForm.removeOption')"
+                  @click="$emit('remove-option', q, oi)"
+                >
+                  <Trash2 class="h-3.5 w-3.5" />
+                </button>
+              </span>
             </div>
           </div>
           <button class="btn-ghost btn-sm mt-2" @click="$emit('add-option', q)">

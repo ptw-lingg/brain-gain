@@ -100,6 +100,10 @@ export interface Training {
   // Legacy records WITHOUT the field read as published v1 (backfilled by migrateTrainingVersions,
   // which deliberately never coerces an explicit 0 upward).
   version: number;
+  // When the current version was published (ISO 8601) — set by EVERY publish, silent ones
+  // included (notify updates additionally carry their own publishedAt). Server-managed; absent on
+  // legacy records and on never-published trainings, where the publish date is simply unknown.
+  publishedAt?: string;
   // Published content updates, append-only and SERVER-MANAGED like `order`: PUT /trainings/:id
   // never reads this from the body. Optional because legacy records lack it; readers use `?? []`.
   updates?: TrainingUpdate[];

@@ -83,6 +83,7 @@ export async function seed(): Promise<void> {
       },
     ],
     version: 1,
+    publishedAt: now,
     updates: [],
     createdAt: now,
   };
@@ -119,6 +120,7 @@ export async function seed(): Promise<void> {
       },
     ],
     version: 1,
+    publishedAt: now,
     updates: [],
     createdAt: now,
   };

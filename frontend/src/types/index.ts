@@ -85,6 +85,7 @@ export interface Training {
   // Content version shown on the card: 0 = never published ("in preparation"), the first publish
   // creates 1, every further publish increments. Server-managed.
   version: number;
+  publishedAt?: string; // when the current version was published — set by every publish; server-managed
   updates?: TrainingUpdate[]; // published updates, append-only, server-managed
   draft?: TrainingDraft; // WIP content — editor-facing payloads only, never sent to learners
   createdAt: string;

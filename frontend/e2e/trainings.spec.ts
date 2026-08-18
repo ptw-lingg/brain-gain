@@ -284,3 +284,26 @@ test.describe('Trainings — content readiness flags', () => {
     await expect(row).toContainText('Ready');
   });
 });
+
+// The version column (SYS-UPD-06, traced to SR-169 / VT-191): every list row names the published
+// version and the date of the last update; an unpublished training shows a placeholder.
+test.describe('Trainings — version column', () => {
+  test('SYS-UPD-06 / SR-169 / VT-191: the list shows the current version with the date of the last update, and "—" while unpublished', async ({ page }) => {
+    await login(page, 'trainer');
+    const name = `E2E Version column ${Date.now()}`;
+    await page.goto('/trainings');
+    await page.getByRole('button', { name: 'Add Training' }).click();
+    const editor = page.getByRole('dialog');
+    await editor.getByPlaceholder('Training name').first().fill(name);
+    await editor.getByRole('button', { name: 'Create' }).click();
+
+    // Unpublished (version 0) → placeholder instead of a version.
+    const fresh = page.locator('.card', { hasText: name });
+    await expect(fresh.getByTestId('version-col')).toHaveText('—');
+
+    // The seeded training is published with a known publish date → "v{N} · <date>". (Not pinned
+    // to v1: earlier specs in the shared suite may have published further versions of it.)
+    const seeded = page.locator('.card', { hasText: 'Laboratory Safety Basics' });
+    await expect(seeded.getByTestId('version-col')).toContainText(/^v\d+ · .+/);
+  });
+});
