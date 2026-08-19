@@ -1,0 +1,5771 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "npm",
+          "version": "10.9.2"
+        },
+        {
+          "type": "library",
+          "name": "cyclonedx-library",
+          "group": "@cyclonedx",
+          "version": "10.2.0",
+          "author": "Jan Kowalleck",
+          "description": "Core functionality of CycloneDX for JavaScript (Node.js or WebBrowser).",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-javascript-library.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-javascript-library#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "name": "cyclonedx-npm",
+          "group": "@cyclonedx",
+          "version": "6.0.1",
+          "author": "Jan Kowalleck",
+          "description": "Create CycloneDX Software Bill of Materials (SBOM) from NPM projects.",
+          "licenses": [
+            {
+              "license": {
+                "id": "Apache-2.0"
+              }
+            }
+          ],
+          "externalReferences": [
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/CycloneDX/cyclonedx-node-npm.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/CycloneDX/cyclonedx-node-npm#readme",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:constraint:engine:node",
+              "value": ">=20.18.0"
+            },
+            {
+              "name": "cdx:npm:package:constraint:engine:npm",
+              "value": ">=9"
+            }
+          ]
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "name": "braingain-frontend",
+      "version": "1.0.0",
+      "bom-ref": "braingain-frontend@1.0.0",
+      "purl": "pkg:npm/braingain-frontend@1.0.0",
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": ""
+        },
+        {
+          "name": "cdx:npm:package:private",
+          "value": "true"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:reproducible",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "msal-browser",
+      "group": "@azure",
+      "version": "5.11.0",
+      "bom-ref": "braingain-frontend@1.0.0|@azure/msal-browser@5.11.0",
+      "author": "Microsoft",
+      "description": "Microsoft Authentication Library for js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40azure/msal-browser@5.11.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@azure/msal-browser/-/msal-browser-5.11.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ce418d612dd3c18f255293c869f026b0509865b8058b163dcbf2d907d1948342082e81d3aa9376ea3e4eae42f50104e187f61d66c6b07b88965dfa7ce65155c6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/AzureAD/microsoft-authentication-library-for-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/AzureAD/microsoft-authentication-library-for-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/AzureAD/microsoft-authentication-library-for-js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.8.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@azure/msal-browser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "msal-common",
+      "group": "@azure",
+      "version": "16.6.2",
+      "bom-ref": "braingain-frontend@1.0.0|@azure/msal-common@16.6.2",
+      "author": "Microsoft",
+      "description": "Microsoft Authentication Library for js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40azure/msal-common@16.6.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@azure/msal-common/-/msal-common-16.6.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8508e3b1e9008c1d3470cd4499ab56265ce11282b6421cfb463e60bccead61ff222fb44cded93196953d7c6d3ea1f92e97383d004100e9d2049d2983af966a50"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/AzureAD/microsoft-authentication-library-for-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/AzureAD/microsoft-authentication-library-for-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/AzureAD/microsoft-authentication-library-for-js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.8.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@azure/msal-common"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "helper-string-parser",
+      "group": "@babel",
+      "version": "7.29.7",
+      "bom-ref": "braingain-frontend@1.0.0|@babel/helper-string-parser@7.29.7",
+      "author": "The Babel Team",
+      "description": "A utility package to parse strings",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-string-parser@7.29.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.29.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3dbe628cfad9f3d1831fcdb6dcbe143fc8ba400a56c6cd3845b3d02537960d5d3f91e476137e8c78a9f2afa2d899452fa91448f88bfced2b85d56e84ac837363"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/babel/babel/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/babel/babel.git#packages/babel-helper-string-parser",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://babel.dev/docs/en/next/babel-helper-string-parser",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6.9.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@babel/helper-string-parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "helper-validator-identifier",
+      "group": "@babel",
+      "version": "7.29.7",
+      "bom-ref": "braingain-frontend@1.0.0|@babel/helper-validator-identifier@7.29.7",
+      "author": "The Babel Team",
+      "description": "Validate identifier/keywords name",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40babel/helper-validator-identifier@7.29.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.29.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a9e8711a4463e7987f7dff0431a27e71887268a947231a980e7ebcdb0403ed1369f54ba3390b07a20dae4b4af6bf3af8a56fac5dff7435e79aca370d697ddf16"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/babel/babel/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/babel/babel.git#packages/babel-helper-validator-identifier",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/babel/babel#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6.9.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@babel/helper-validator-identifier"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parser",
+      "group": "@babel",
+      "version": "7.29.7",
+      "bom-ref": "braingain-frontend@1.0.0|@babel/parser@7.29.7",
+      "author": "The Babel Team",
+      "description": "A JavaScript parser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40babel/parser@7.29.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@babel/parser/-/parser-7.29.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8673919e33ffd4fff31449dda1e5fe9feb7547059126226933f8ceec55b7d8a9fdaf9fac241d8958e758a382fa93bf23d79782c18dc69bfef7eb807510cc2d36"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/babel/babel/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3A%22pkg%3A+parser+%28babylon%29%22+is%3Aopen",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/babel/babel.git#packages/babel-parser",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://babel.dev/docs/en/next/babel-parser",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@babel/parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "types",
+      "group": "@babel",
+      "version": "7.29.7",
+      "bom-ref": "braingain-frontend@1.0.0|@babel/types@7.29.7",
+      "author": "The Babel Team",
+      "description": "Babel Types is a Lodash-esque utility library for AST nodes",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40babel/types@7.29.7",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@babel/types/-/types-7.29.7.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e33048c693f3a30899a6eb28164c865706a4751254cae1f93f143f3ebaa085f7455966acbe709d3df4171eb7a70da8be8322c046e9598d9a3008e8fa7e34f8a4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/babel/babel/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3A%22pkg%3A%20types%22+is%3Aopen",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/babel/babel.git#packages/babel-types",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://babel.dev/docs/en/next/babel-types",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6.9.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@babel/types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "core-base",
+      "group": "@intlify",
+      "version": "10.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|@intlify/core-base@10.0.8",
+      "author": "kazuya kawaguchi",
+      "description": "@intlify/core-base",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40intlify/core-base@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@intlify/core-base/-/core-base-10.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1681ec94d592a078dd5012f2df96e99bd3d5ff42d523f0d2bfd2fa2a6e89d9a77caff9a6d15686834e82e3416a944f2ed800dc19433ad25ca853b332a3858d65"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/intlify/vue-i18n.git#packages/core",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/tree/master/packages/core-base#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@intlify/core-base"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "message-compiler",
+      "group": "@intlify",
+      "version": "10.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|@intlify/message-compiler@10.0.8",
+      "author": "kazuya kawaguchi",
+      "description": "@intlify/message-compiler",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40intlify/message-compiler@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@intlify/message-compiler/-/message-compiler-10.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "0d5fac6172241d5779c956f698bedbaff344530cd4a0b06c3245771f422779f5a09986b7e0d2d952f3021a2e68597f87aabd98daa5319d5ae73961786819605a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/intlify/vue-i18n.git#packages/message-compiler",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/tree/master/packages/message-compiler#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@intlify/message-compiler"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shared",
+      "group": "@intlify",
+      "version": "10.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|@intlify/shared@10.0.8",
+      "author": "kazuya kawaguchi",
+      "description": "@intlify/shared",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40intlify/shared@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@intlify/shared/-/shared-10.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "05c987a5be5b43279536ba6d0b7521ce905907f6071c3a04444394111ae6176051c6cc8e12e46babe67de82fc3e3ed8a25bf24b878a8bb301e8bb057946d1863"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/intlify/vue-i18n.git#packages/shared",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/tree/master/packages/shared#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@intlify/shared"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sourcemap-codec",
+      "group": "@jridgewell",
+      "version": "1.5.5",
+      "bom-ref": "braingain-frontend@1.0.0|@jridgewell/sourcemap-codec@1.5.5",
+      "author": "Justin Ridgewell",
+      "description": "Encode/decode sourcemap mappings",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jridgewell/sourcemap-codec@1.5.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "71843ddf5d20aeac6e7966e5f96b885086a251a0dc8fb58eab97d58449633558117ce52163d7f2db34ef7e8a96b2779b87c4a5ef45527056c80af2672ca0743a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/jridgewell/sourcemaps/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/jridgewell/sourcemaps.git#packages/sourcemap-codec",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@jridgewell/sourcemap-codec"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "canvas-win32-x64-msvc",
+      "group": "@napi-rs",
+      "version": "1.0.0",
+      "bom-ref": "braingain-frontend@1.0.0|@napi-rs/canvas-win32-x64-msvc@1.0.0",
+      "description": "Canvas for Node.js with skia backend",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40napi-rs/canvas-win32-x64-msvc@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@napi-rs/canvas-win32-x64-msvc/-/canvas-win32-x64-msvc-1.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ab076187d37a1a07bf842e292fd4b5b50a7488ac214a5fdd62383bf911a9f64dba8911918b932aa94c8a18e5c85a58b4cce72ecb9636c081ff8e4dabcba8bf8c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Brooooooklyn/canvas/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Brooooooklyn/canvas.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Brooooooklyn/canvas#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 10"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@napi-rs/canvas-win32-x64-msvc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "canvas",
+      "group": "@napi-rs",
+      "version": "1.0.0",
+      "bom-ref": "braingain-frontend@1.0.0|@napi-rs/canvas@1.0.0",
+      "description": "Canvas for Node.js with skia backend",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40napi-rs/canvas@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@napi-rs/canvas/-/canvas-1.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "26ac5ccb55ce22a8fe947f6c975193fa297a191dee42fd77bc8da6af0b9b3f7b93f0e95a9360a50eb2b6467c6540a8f0bfc051af86f7ba0d1847b73a8415fcc2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Brooooooklyn/canvas/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Brooooooklyn/canvas.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Brooooooklyn/canvas#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 10"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@napi-rs/canvas"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ciphers",
+      "group": "@noble",
+      "version": "1.3.0",
+      "bom-ref": "braingain-frontend@1.0.0|@noble/ciphers@1.3.0",
+      "author": "Paul Miller",
+      "description": "Audited & minimal JS implementation of Salsa20, ChaCha and AES",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40noble/ciphers@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@noble/ciphers/-/ciphers-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d88d209c854fb5f9ccc3d79ef61d5d246eeda7cd7ef0e6f73896f732fdfbaf1e4be34fdbd22edd8e3095bc6395a9cf40108432bf2bb58baca929d170f11f2043"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/paulmillr/noble-ciphers/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/paulmillr/noble-ciphers.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://paulmillr.com/noble/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "^14.21.3 || >=16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@noble/ciphers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hashes",
+      "group": "@noble",
+      "version": "1.8.0",
+      "bom-ref": "braingain-frontend@1.0.0|@noble/hashes@1.8.0",
+      "author": "Paul Miller",
+      "description": "Audited & minimal 0-dependency JS implementation of SHA, RIPEMD, BLAKE, HMAC, HKDF, PBKDF & Scrypt",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40noble/hashes@1.8.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8c2b3d95d77b370ce98170c87fa3f7f8dac787dfec0fa0907711f28d023e87feab0cda3cf32a41c71cf8e540ee647cfdaf7b4dcfb37f5489d256855db57108e0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/paulmillr/noble-hashes/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/paulmillr/noble-hashes.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://paulmillr.com/noble/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "^14.21.3 || >=16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@noble/hashes"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "helpers",
+      "group": "@swc",
+      "version": "0.5.23",
+      "bom-ref": "braingain-frontend@1.0.0|@swc/helpers@0.5.23",
+      "author": "강동윤",
+      "description": "External helpers for the swc project.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40swc/helpers@0.5.23",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.23.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e654ac30e4d751178f8250dfbee01052a9067a4f47836924b0e61acb69b4f9747ef9bd8d5982ffe2c5b2baf54122cf282a725ac64762f7085a2ffb2a375dda7f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/swc-project/swc/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/swc-project/swc.git#packages/helpers",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://swc.rs",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@swc/helpers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "node",
+      "group": "@types",
+      "version": "20.19.41",
+      "bom-ref": "braingain-frontend@1.0.0|@types/node@20.19.41",
+      "description": "TypeScript definitions for node",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/node@20.19.41",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/node/-/node-20.19.41.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "102ca65ceba43273a85640b66dbd5573fc3ff37e835e770e8399bc5e3d511fbc521d925635863a661ec41f8efbbdc9c3e5e80a34d7f2d91a4d3a6b8286114f81"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/node",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/node"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfkit",
+      "group": "@types",
+      "version": "0.17.6",
+      "bom-ref": "braingain-frontend@1.0.0|@types/pdfkit@0.17.6",
+      "description": "TypeScript definitions for pdfkit",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/pdfkit@0.17.6",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/pdfkit/-/pdfkit-0.17.6.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b48c33c64dae58aa740aaf49225b905c989defb958845e7612c20ec21b0c1788962c0e989dea01475c5529861d032b07b9ea54074397e2d7703225037462a68a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/pdfkit",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/pdfkit",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/pdfkit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfmake",
+      "group": "@types",
+      "version": "0.3.3",
+      "bom-ref": "braingain-frontend@1.0.0|@types/pdfmake@0.3.3",
+      "description": "TypeScript definitions for pdfmake",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/pdfmake@0.3.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@types/pdfmake/-/pdfmake-0.3.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b9f6dc781e10ddd2a998550c2846d9bc971f2e2f3e0b96f5fab4c5546eaeaed912dc51f0693407e8d0a1fe21040c83650290b11ff5b7febb2af7da4fe44f7f24"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/pdfmake",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/pdfmake",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@types/pdfmake"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "compiler-core",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/compiler-core@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/compiler-core",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/compiler-core@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/compiler-core/-/compiler-core-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "054987691d49f8ef82299f6e26e71d55312bd4b1ec772befeef1b778d4612b709ccc41de31dfcbb6c1c0b83ecf6ebc6f2367a7bc2636bfb1c8d6f0b56814732b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/compiler-core",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/compiler-core#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/compiler-core"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "compiler-dom",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/compiler-dom@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/compiler-dom",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/compiler-dom@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/compiler-dom/-/compiler-dom-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "93e6e9ae45f1baa8556a3813c799941ee8abed3c10cd428e591e349e0d67700a9044f9eb2e78061a0a9510484e9d332573c6ed1d854a9ab3fcb3943283486f60"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/compiler-dom",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/compiler-dom#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/compiler-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "compiler-sfc",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/compiler-sfc@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/compiler-sfc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/compiler-sfc@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/compiler-sfc/-/compiler-sfc-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1b954f31c5d34b2c17060b453993a71ca071292af05d472f63589a179fe145ccbbb7427a087fddf216bd1789f38b4d056b1d5e2d5d101cceefe2642eebc8f277"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/compiler-sfc",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/compiler-sfc#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/compiler-sfc"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "compiler-ssr",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/compiler-ssr@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/compiler-ssr",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/compiler-ssr@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/compiler-ssr/-/compiler-ssr-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ac684079781d33bfdf7d32465d3ebdac209d4e68c37b09c5b9465f0504074dd70405e59d4f91c2198eb4cb6cad2c9afdfc3b2eec89ed522e73ff0d21e918e7cf"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/compiler-ssr",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/compiler-ssr#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/compiler-ssr"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "devtools-api",
+      "group": "@vue",
+      "version": "6.6.4",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/devtools-api@6.6.4",
+      "author": "Guillaume Chau",
+      "description": "Interact with the Vue devtools from the page",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/devtools-api@6.6.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/devtools-api/-/devtools-api-6.6.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b068533ccb97a99d6b54e937d91ca5ced5a47d74d186e4bbbe000abf4ce3aa4f206ec1e427bc5f15ffa36f24b1b7bb5639b109c3229a1cc8a457f5860e2426f2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/vue-devtools/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/vue-devtools.git#packages/api",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/vue-devtools#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/devtools-api"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "reactivity",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/reactivity@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/reactivity",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/reactivity@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/reactivity/-/reactivity-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b5573e4ac1c2a27be1fcbcfae2aab5a4fdeb600ac198ae36c689e8bc473163be1242dbdcb59a1d1bfce1ab9e0fe5daf7f1c56ec36e5ddbb70f35176532276919"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/reactivity",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/reactivity#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/reactivity"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "runtime-core",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/runtime-core@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/runtime-core",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/runtime-core@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/runtime-core/-/runtime-core-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "03fc45357f65a087160f281e42e3427caba1d02a18073c61a8430d6a1e5348583d679dc3ac5604376aa2e4253d9de72333539661e8184445131e65d39a17d7b6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/runtime-core",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/runtime-core#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/runtime-core"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "runtime-dom",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/runtime-dom@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/runtime-dom",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/runtime-dom@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/runtime-dom/-/runtime-dom-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a1dac9d42dfdd5d6c69f20d187c53eae73fb2766a6204cdf991939bd7cbbc62dda661117a1f4efa62d13e0725bea394da9065334f47930f1d207744736420e44"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/runtime-dom",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/runtime-dom#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/runtime-dom"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "server-renderer",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/server-renderer@3.5.35",
+      "author": "Evan You",
+      "description": "@vue/server-renderer",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/server-renderer@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/server-renderer/-/server-renderer-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "36479b48e61d07def08bc39070edc7ab36529729898bf696b0dffb87be0e4958514e6eaa1acdc9a777b4ac25f29e65b04a529e46b9e522e83e8a56281c19900c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/server-renderer",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/server-renderer#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/server-renderer"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shared",
+      "group": "@vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+      "author": "Evan You",
+      "description": "internal utils shared across @vue packages",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40vue/shared@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@vue/shared/-/shared-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cd26e32fb8115f092cd9940b44609a8c1b415c43975bd0dd867fc7bd276b1a413676a1a7ba6cd6f17b6eb11af1ac4f4bbeab62a835d0f80eb41e9ea6bdd6317c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git#packages/shared",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/tree/main/packages/shared#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@vue/shared"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "agent-base",
+      "version": "6.0.2",
+      "bom-ref": "braingain-frontend@1.0.0|agent-base@6.0.2",
+      "author": "Nathan Rajlich",
+      "description": "Turn a function into an `http.Agent` instance",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/agent-base@6.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/agent-base/-/agent-base-6.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "45937035c945efe312ffc6c383bd1a9a0df6772799199c620ee42667128b025423af78c6c8bc7ee0a924e7c50eec3d90760148402a2fb92b991129dee911ba5d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-agent-base/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/TooTallNate/node-agent-base.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-agent-base#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 6.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/agent-base"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "asynckit",
+      "version": "0.4.0",
+      "bom-ref": "braingain-frontend@1.0.0|asynckit@0.4.0",
+      "author": "Alex Indigo",
+      "description": "Minimal async jobs utility library, with streams support",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/asynckit@0.4.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/asynckit/-/asynckit-0.4.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "39e8bd387e2d461d18a94dc6c615fbf5d33f9b0560bdb64969235a464f9bb21923d12e5c7c772061a92b7818eb1f06ad5ca6f3f88a087582f1aca8a6d8c8d6d1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/alexindigo/asynckit/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/alexindigo/asynckit.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/alexindigo/asynckit#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/asynckit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "axios",
+      "version": "1.16.1",
+      "bom-ref": "braingain-frontend@1.0.0|axios@1.16.1",
+      "author": "Matt Zabriskie",
+      "description": "Promise based HTTP client for the browser and node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/axios@1.16.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/axios/-/axios-1.16.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "71a624ba4beba153cef0aaf3b8911be741e6d3b2b07c164f102dd57851d3b2a587bca4eccb9e218c9cfd052fdc75aca944e136ac7eb1be6f661d7e1f81692bdc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/axios/axios/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/axios/axios.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://axios-http.com",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/axios"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "base64-js",
+      "version": "0.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|base64-js@0.0.8",
+      "author": "T. Jameson Little",
+      "description": "Base64 encoding/decoding in pure JS",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/base64-js@0.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/base64-js/-/base64-js-0.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "dd7480d9c47f87fef71339575dd53a60dc9c99823bfa489c4f192ce1e260da0dfd6e21d1f38b25836f9d7acfa9ee21d885b460fee7484b84c3e7759a6dc39493"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/beatgammit/base64-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/beatgammit/base64-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/beatgammit/base64-js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/base64-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "brotli",
+      "version": "1.3.3",
+      "bom-ref": "braingain-frontend@1.0.0|brotli@1.3.3",
+      "author": "Devon Govett",
+      "description": "A port of the Brotli compression algorithm as used in WOFF2",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/brotli@1.3.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/brotli/-/brotli-1.3.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a132a325d4a1983b865bde12cb26a842f0237f7d1d65a1e78c9f2e005faedbfbc626425b24f2404f580388e24fe6fd596fa7fd284c96ff51e9b9a5885ed1873e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/brotli.js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/devongovett/brotli.js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/brotli.js",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/brotli"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "base64-js",
+          "version": "1.5.1",
+          "bom-ref": "braingain-frontend@1.0.0|brotli@1.3.3|base64-js@1.5.1",
+          "author": "T. Jameson Little",
+          "description": "Base64 encoding/decoding in pure JS",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/base64-js@1.5.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "00aa5a6251e7f2de1255b3870b2f9be7e28a82f478bebb03f2f6efadb890269b3b7ca0d3923903af2ea38b4ad42630b49336cd78f2f0cf1abc8b2a68e35a9e58"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            },
+            {
+              "url": "https://github.com/beatgammit/base64-js/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git://github.com/beatgammit/base64-js.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/beatgammit/base64-js",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/brotli/node_modules/base64-js"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "browserify-zlib",
+      "version": "0.2.0",
+      "bom-ref": "braingain-frontend@1.0.0|browserify-zlib@0.2.0",
+      "author": "Devon Govett",
+      "description": "Full zlib module for the browser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/browserify-zlib@0.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/browserify-zlib/-/browserify-zlib-0.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "67de36472b075e626b86a93cf0598a055abfbf9b6a992903cfba79e06fcc1b28cc9c21459c2efd5d635b83e56d6bc5ba59bdaab526534b1206909ad1a4214488"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/browserify-zlib/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/devongovett/browserify-zlib.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/browserify-zlib",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/browserify-zlib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "bom-ref": "braingain-frontend@1.0.0|call-bind-apply-helpers@1.0.2",
+      "author": "Jordan Harband",
+      "description": "Helper functions around Function call/apply/bind, for use in `call-bind`",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/call-bind-apply-helpers@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/call-bind-apply-helpers/-/call-bind-apply-helpers-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4a9d5a6e52748af0e44b38dc68977112e9cde7f5ef92c149dac30115fabac74af285057fd9bfcac057b6d5c329987b4f3928a3f0af7dff049fa04b9339b9ae31"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/call-bind-apply-helpers/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/call-bind-apply-helpers.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/call-bind-apply-helpers#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/call-bind-apply-helpers"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "clone",
+      "version": "2.1.2",
+      "bom-ref": "braingain-frontend@1.0.0|clone@2.1.2",
+      "author": "Paul Vorbach",
+      "description": "deep cloning of objects and arrays",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/clone@2.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/clone/-/clone-2.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "dcf7bf085d4d9fde21ca1218a63b622e1742a04a33d03a90fbdf3c13d826784750665a23c6739bef8c1cb45caec16407ceac9ff57ec2ecc1bc8ee529a81253f3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/pvorb/node-clone/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/pvorb/node-clone.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/pvorb/node-clone#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.8"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/clone"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "combined-stream",
+      "version": "1.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|combined-stream@1.0.8",
+      "author": "Felix Geisendörfer",
+      "description": "A stream that emits multiple other streams one after another.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/combined-stream@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/combined-stream/-/combined-stream-1.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1503783117ee25e1dfedc05b04c2455e12920eafb690002b06599106f72f144e410751d9297b5214048385d973f73398c3187c943767be630e7bffb971da0476"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/felixge/node-combined-stream/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/felixge/node-combined-stream.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/felixge/node-combined-stream",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.8"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/combined-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "csstype",
+      "version": "3.2.3",
+      "bom-ref": "braingain-frontend@1.0.0|csstype@3.2.3",
+      "author": "Fredrik Nicol",
+      "description": "Strict TypeScript and Flow types for style based on MDN data",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/csstype@3.2.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cf51c629c632db103c00641fc2b9f43c0cbe3c1ed7fc64a3dd45495bda8aca7e37c566be825e675e6538aaa2cc4735952c50bc2aeb145fc4ffd240a2398a4021"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/frenic/csstype/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/frenic/csstype.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/frenic/csstype#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/csstype"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debug",
+      "version": "4.4.3",
+      "bom-ref": "braingain-frontend@1.0.0|debug@4.4.3",
+      "author": "Josh Junon",
+      "description": "Lightweight debugging utility for Node.js and the browser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/debug@4.4.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "446c305a7c10be455f6af295b76d8518bc3ec5849dcc04709b4aeee83853540dee994e6165cdbc57790ee2cb6062bcab4e52e9baf808f468a28e5b408cd6dca8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/debug-js/debug/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/debug-js/debug.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/debug-js/debug#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=6.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/debug"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "delayed-stream",
+      "version": "1.0.0",
+      "bom-ref": "braingain-frontend@1.0.0|delayed-stream@1.0.0",
+      "author": "Felix Geisendörfer",
+      "description": "Buffers events from a stream until you are ready to handle them.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/delayed-stream@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "672483ecd7fdd5a2c1d11c4be0a1ab28705797b11db350c098475ca156b05e72c3ed20e1a4d82db88236680920edaed04b8d63c4f499d7ba7855d1a730793731"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/felixge/node-delayed-stream/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/felixge/node-delayed-stream.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/felixge/node-delayed-stream",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.4.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/delayed-stream"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dfa",
+      "version": "1.2.0",
+      "bom-ref": "braingain-frontend@1.0.0|dfa@1.2.0",
+      "author": "Devon Govett",
+      "description": "A state machine compiler",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dfa@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/dfa/-/dfa-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "103de33fcb1a6b07854e37865fc1d03e3782d5863266cf7c8c6359c7a22206fc56ec91b9bf8f7691a980401de6db0a29d3b0af53f4509b370aafa6e0702e43fd"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/dfa/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+ssh://git@github.com/devongovett/dfa.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/dfa#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/dfa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dunder-proto",
+      "version": "1.0.1",
+      "bom-ref": "braingain-frontend@1.0.0|dunder-proto@1.0.1",
+      "author": "Jordan Harband",
+      "description": "If available, the `Object.prototype.__proto__` accessor and mutator, call-bound",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/dunder-proto@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "28837f9c3241411717c3430b561644f62407986ebca80548060f42aa65188e64088608a3f54e4c16faea9142f915bb72cb366e39e3add3375e45ee1463b72df8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/es-shims/dunder-proto/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/es-shims/dunder-proto.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/es-shims/dunder-proto#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/dunder-proto"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "entities",
+      "version": "7.0.1",
+      "bom-ref": "braingain-frontend@1.0.0|entities@7.0.1",
+      "author": "Felix Boehm",
+      "description": "Encode & decode XML and HTML entities with ease & speed",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/entities@7.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/entities/-/entities-7.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4d6ae02ce1544131fdf78614ca5d724f8bb26af6399cd0799ae7dff91b566aa3550802b8d3c6f96679db34050458b4c2a6e9bdc3a6ab4fbd22d57750e1478e3c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/fb55/entities/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/fb55/entities.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/fb55/entities#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.12"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/entities"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "bom-ref": "braingain-frontend@1.0.0|es-define-property@1.0.1",
+      "author": "Jordan Harband",
+      "description": "`Object.defineProperty`, but not IE 8's broken one.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-define-property@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7b79d17e07d4678acd18bdb7da05205f4e90372c9ecf4e0a76316b17e2d34683979ab3a014a0e0e0109db235bc1274faf5ea9d606991a49c223d560dac2696de"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-define-property/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/es-define-property.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-define-property#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-define-property"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-errors",
+      "version": "1.3.0",
+      "bom-ref": "braingain-frontend@1.0.0|es-errors@1.3.0",
+      "author": "Jordan Harband",
+      "description": "A simple cache for a few of the JS Error constructors.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-errors@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-errors/-/es-errors-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65fe47d8ac6ddb18d3bdb26f3f66562c4202c40ea3fa1026333225ca9cb8c5c060d6f2959f1f3d5b2d066d2fa47f9730095145cdd0858765d20853542d2e9cb3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-errors/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/es-errors.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-errors#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-errors"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-object-atoms",
+      "version": "1.1.2",
+      "bom-ref": "braingain-frontend@1.0.0|es-object-atoms@1.1.2",
+      "author": "Jordan Harband",
+      "description": "ES Object-related atoms: Object, ToObject, RequireObjectCoercible",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-object-atoms@1.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1d6701a0de8d8a57aab52c9d2b616a1db4bf2e80ddda9aab9d01cbc89cc18f890ea7f932d8c58c37af78c4e7e42bcfd29d4b16d831fb11fc9597274a0ac9b567"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-object-atoms/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/es-object-atoms.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/es-object-atoms#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-object-atoms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "es-set-tostringtag",
+      "version": "2.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|es-set-tostringtag@2.1.0",
+      "author": "Jordan Harband",
+      "description": "A helper to optimistically set Symbol.toStringTag, when possible.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/es-set-tostringtag@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/es-set-tostringtag/-/es-set-tostringtag-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8fabd6cdfac655fc97c607be3b4c79b21e9cbf10288346bfe1175dd8adfacc2315e5e27effeb4e0278113bc70e0cc3566d545d5659866502f6612df247c6c850"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/es-shims/es-set-tostringtag/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/es-shims/es-set-tostringtag.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/es-shims/es-set-tostringtag#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/es-set-tostringtag"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "estree-walker",
+      "version": "2.0.2",
+      "bom-ref": "braingain-frontend@1.0.0|estree-walker@2.0.2",
+      "author": "Rich Harris",
+      "description": "Traverse an ESTree-compliant AST",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/estree-walker@2.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/estree-walker/-/estree-walker-2.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "45f924fcca7f0cbec95637b7bb5f05c45ba34254cd476aba41f312301ec0bc2071f753468ff6dade409fcdad1fe9d5436f0ed89517ff9c3ae7ee942b082c90ff"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/estree-walker/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Rich-Harris/estree-walker.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/estree-walker#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/estree-walker"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "bom-ref": "braingain-frontend@1.0.0|fast-deep-equal@3.1.3",
+      "author": "Evgeny Poberezkin",
+      "description": "Fast deep equal",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-deep-equal@3.1.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7f7a90f68432f63d808417bf1fd542f75c0b98a042094fe00ce9ca340606e61b303bb04b2a3d3d1dce4760dcfd70623efb19690c22200da8ad56cd3701347ce1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/epoberezkin/fast-deep-equal/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/epoberezkin/fast-deep-equal.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/epoberezkin/fast-deep-equal#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fast-deep-equal"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "flag-icons",
+      "version": "7.5.0",
+      "bom-ref": "braingain-frontend@1.0.0|flag-icons@7.5.0",
+      "author": "Panayiotis Lipiridis",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/flag-icons@7.5.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/flag-icons/-/flag-icons-7.5.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "91df8c357be21488398628c7efaeadb7edf1efa7a57b5017968e330dd0b122fa966612ade13f376ceb7150e38c953c7f11c15d50c1f9caf420625161d44aaa16"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/lipis/flag-icons/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/lipis/flag-icons.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/lipis/flag-icons#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/flag-icons"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "follow-redirects",
+      "version": "1.16.0",
+      "bom-ref": "braingain-frontend@1.0.0|follow-redirects@1.16.0",
+      "author": "Ruben Verborgh",
+      "description": "HTTP and HTTPS modules that follow redirects.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/follow-redirects@1.16.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.16.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "cb9acdfee3ac69d153fc97d8c21c514b947b41c7be837cc6f7bf89aed159942f64957fd6e610fb8a22f349c2389d9a944bb0cd51d84f830e3123c5b62ee5e553"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/follow-redirects/follow-redirects/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+ssh://git@github.com/follow-redirects/follow-redirects.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/follow-redirects/follow-redirects",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=4.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/follow-redirects"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fontkit",
+      "version": "2.0.4",
+      "bom-ref": "braingain-frontend@1.0.0|fontkit@2.0.4",
+      "author": "Devon Govett",
+      "description": "An advanced font engine for Node and the browser",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fontkit@2.0.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fontkit/-/fontkit-2.0.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b327ad41a75a5040cd77176e8206bd0a911855a408c4ec24ec6970656599d7dfffa96e331396e49ce29e3010d80004b09e96921ca2484d12cc17d9b57e9decea"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/foliojs/fontkit/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/foliojs/fontkit.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/foliojs/fontkit#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fontkit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "form-data",
+      "version": "4.0.5",
+      "bom-ref": "braingain-frontend@1.0.0|form-data@4.0.5",
+      "author": "Felix Geisendörfer",
+      "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/form-data@4.0.5",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/form-data/-/form-data-4.0.5.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f118a944ba25dfb6cdb366e1a15ebb7e24c4bdd4eb6cc5187054e2cb7fb0bae3a75288364011c26565c34628d641f0248418f651fe549d56a25b0039bdd77cdb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/form-data/form-data/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/form-data/form-data.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/form-data/form-data#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 6"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/form-data"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "function-bind",
+      "version": "1.1.2",
+      "bom-ref": "braingain-frontend@1.0.0|function-bind@1.1.2",
+      "author": "Raynos",
+      "description": "Implementation of Function.prototype.bind",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/function-bind@1.1.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ed71cdc47eea5fdc46e66230c6486e993a31fcc21135c3a00ebc56b0cb76a40af6dd61e9e8cad194dec50521690a9afea153b417be38894811f369c931f1b648"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Raynos/function-bind/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Raynos/function-bind.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Raynos/function-bind",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/function-bind"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "bom-ref": "braingain-frontend@1.0.0|get-intrinsic@1.3.0",
+      "author": "Jordan Harband",
+      "description": "Get and robustly cache all JS language-level intrinsics at first require time",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-intrinsic@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-intrinsic/-/get-intrinsic-1.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f5f4a349aa2cfdf448548a7ec5226513a95fc21112ecb36d29a08121a987b23af69dad418800493e8d263a38f3f062435116ab9823c6a9a89583999f8dbf7c09"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/get-intrinsic/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/get-intrinsic.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/get-intrinsic#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-intrinsic"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "get-proto",
+      "version": "1.0.1",
+      "bom-ref": "braingain-frontend@1.0.0|get-proto@1.0.1",
+      "author": "Jordan Harband",
+      "description": "Robustly get the [[Prototype]] of an object",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/get-proto@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/get-proto/-/get-proto-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b1349f063a17069f3d26f20a21e7eac3b53608279bb1cef892263a6b0886a202ada1219b823604fc6ffe97db05dcc5853cd73d21ca0e0b83837ca1dfc459a9d2"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/get-proto/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/get-proto.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/get-proto#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/get-proto"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "gopd",
+      "version": "1.2.0",
+      "bom-ref": "braingain-frontend@1.0.0|gopd@1.2.0",
+      "author": "Jordan Harband",
+      "description": "`Object.getOwnPropertyDescriptor`, but accounts for IE's broken implementation.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/gopd@1.2.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/gopd/-/gopd-1.2.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "65429187afe4505a0089302d4d83d9277870f70371c7e04804e8a39e51bd3e7ac9b027128ecd70cb20fabc9a5a62d827cc3aca6114aa7f738ee917daf77c6c46"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/gopd/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ljharb/gopd.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/gopd#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/gopd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|has-symbols@1.1.0",
+      "author": "Jordan Harband",
+      "description": "Determine if the JS environment has Symbol support. Supports spec, or shams.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-symbols@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/has-symbols/-/has-symbols-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "d5c0cd77027625aa2199bdec8383a629a301c2e0b8f2c6278b91d4c360efb02f0b8c64cb2bd87e79bd57e91cae3877b8853d142c25baf22a26863528294aa53d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ljharb/has-symbols/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/inspect-js/has-symbols.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ljharb/has-symbols#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/has-symbols"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "has-tostringtag",
+      "version": "1.0.2",
+      "bom-ref": "braingain-frontend@1.0.0|has-tostringtag@1.0.2",
+      "author": "Jordan Harband",
+      "description": "Determine if the JS environment has `Symbol.toStringTag` support. Supports spec, or shams.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/has-tostringtag@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/has-tostringtag/-/has-tostringtag-1.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "36a00307c5633c52ccd95d15bc751ec30c2cc3465605a21d828fa2787b4ade16ac2f3e2a78246361ca9f07a010ac182044aa69285f0be76fd5a9d56c3b8ec397"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/inspect-js/has-tostringtag/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/inspect-js/has-tostringtag.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/inspect-js/has-tostringtag#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/has-tostringtag"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hasown",
+      "version": "2.0.4",
+      "bom-ref": "braingain-frontend@1.0.0|hasown@2.0.4",
+      "author": "Jordan Harband",
+      "description": "A robust, ES3 compatible, \"has own property\" predicate.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/hasown@2.0.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/hasown/-/hasown-2.0.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4f651b7db044177db089ea5722c3254d6f7e743602eb0321fedfef600e2db8e30aa96cff9f7bebd4d152c508b23fece4da65eca0c03f8bfeea57a2cabadd6dd4"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/inspect-js/hasOwn/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/inspect-js/hasOwn.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/inspect-js/hasOwn#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/hasown"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "https-proxy-agent",
+      "version": "5.0.1",
+      "bom-ref": "braingain-frontend@1.0.0|https-proxy-agent@5.0.1",
+      "author": "Nathan Rajlich",
+      "description": "An HTTP(s) proxy `http.Agent` implementation for HTTPS",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/https-proxy-agent@5.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/https-proxy-agent/-/https-proxy-agent-5.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7457008e94d0160a0b3330b657053e0bf09b4bbb912f49569b10c84e6aa6ec2fbb17439d9a3eacf65e9a95973a0042d786b9e080cd827964971c639d5f662dc0"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-https-proxy-agent/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/TooTallNate/node-https-proxy-agent.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/TooTallNate/node-https-proxy-agent#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 6"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/https-proxy-agent"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "js-md5",
+      "version": "0.8.3",
+      "bom-ref": "braingain-frontend@1.0.0|js-md5@0.8.3",
+      "author": "Chen, Yi-Cyuan",
+      "description": "A simple MD5 hash function for JavaScript supports UTF-8 encoding.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/js-md5@0.8.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/js-md5/-/js-md5-0.8.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a91d07079b8feb00ae44cad63d3ae431a7afecc259c09baec387e7c00cd180fe09e3f17c470b6874e2a91a9e17a6ab0b045cf382a20ee3679f140cb3d84b7a29"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/emn178/js-md5/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/emn178/js-md5.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/emn178/js-md5",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/js-md5"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "linebreak",
+      "version": "1.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|linebreak@1.1.0",
+      "author": "Devon Govett",
+      "description": "An implementation of the Unicode Line Breaking Algorithm (UAX #14)",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/linebreak@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/linebreak/-/linebreak-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "307a74dd4226795841ed766d8ddd04e27ebedf1af90eaffdc48ff9169b4693916b6c3477cda80f6b60d2e94f24b3fdc78db2961bd435336b9f3b3c55daa2d849"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/linebreaker/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/devongovett/linebreaker.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/linebreaker",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/linebreak"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lucide-vue-next",
+      "version": "0.400.0",
+      "bom-ref": "braingain-frontend@1.0.0|lucide-vue-next@0.400.0",
+      "author": "Eric Fennis",
+      "description": "A Lucide icon library package for Vue 3 applications",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lucide-vue-next@0.400.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/lucide-vue-next/-/lucide-vue-next-0.400.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "25031bcba1ee4abfc02cb2f72008e971afe13f8f7dbd6cb8fb3ab30ab4ec033760d011ccd0b81ef386cc331be9aaa5e7536e2e4509263990a2e64b1e713a207f"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/lucide-icons/lucide/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/lucide-icons/lucide.git#packages/lucide-vue-next",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://lucide.dev",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/lucide-vue-next"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "magic-string",
+      "version": "0.30.21",
+      "bom-ref": "braingain-frontend@1.0.0|magic-string@0.30.21",
+      "author": "Rich Harris",
+      "description": "Modify strings, generate sourcemaps",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/magic-string@0.30.21",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "bddd85e1853211728670b1e8abe4c4c828f1b9e49e1e7171cb28cda7cd328345d5e2f5219c37abfe5bef96a33f6ab0796d740de4adbfde88a7c82472c7c4f609"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/magic-string/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Rich-Harris/magic-string.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Rich-Harris/magic-string#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/magic-string"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|math-intrinsics@1.1.0",
+      "author": "Jordan Harband",
+      "description": "ES Math-related intrinsics and helpers, robustly cached.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/math-intrinsics@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/math-intrinsics/-/math-intrinsics-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fc85ed6f0124e474cfc84c32297ea11a4617c4cf676e3eb807e8a55499c2fd1e81d291f91b85776f4a556cbec3063e2d921040a696d05257fa17a5e5f4b1eed6"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/es-shims/math-intrinsics/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/es-shims/math-intrinsics.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/es-shims/math-intrinsics#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.4"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/math-intrinsics"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mime-db",
+      "version": "1.52.0",
+      "bom-ref": "braingain-frontend@1.0.0|mime-db@1.52.0",
+      "description": "Media Type Database",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/mime-db@1.52.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "b0f538b95edd625bed589c70c311c3d0fba285536213b4f201b439496c43081f66518bce82ba103b061040e28f27c0886c4fb51135653a82b5502da7537818be"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/jshttp/mime-db/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/jshttp/mime-db.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/jshttp/mime-db#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.6"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/mime-db"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mime-types",
+      "version": "2.1.35",
+      "bom-ref": "braingain-frontend@1.0.0|mime-types@2.1.35",
+      "description": "The ultimate javascript content-type utility.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/mime-types@2.1.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "64363e6cf9b9cd34c5f98a42ac053d9cad148080983d3d10b53d4d65616fe2cfbe4cd91c815693d20ebee11dae238323423cf2b07075cf1b962f9d21cda7978b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/jshttp/mime-types/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/jshttp/mime-types.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/jshttp/mime-types#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 0.6"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/mime-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ms",
+      "version": "2.1.3",
+      "bom-ref": "braingain-frontend@1.0.0|ms@2.1.3",
+      "description": "Tiny millisecond conversion utility",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e85973b9b4cb646dc9d9afcd542025784863ceae68c601f268253dc985ef70bb2fa1568726afece715c8ebf5d73fab73ed1f7100eb479d23bfb57b45dd645394"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vercel/ms/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vercel/ms.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/vercel/ms#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/ms"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nanoid",
+      "version": "3.3.12",
+      "bom-ref": "braingain-frontend@1.0.0|nanoid@3.3.12",
+      "author": "Andrey Sitnik",
+      "description": "A tiny (116 bytes), secure URL-friendly unique string ID generator",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/nanoid@3.3.12",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.12.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "641f511ffdfdaa9ab956ee98f8d99468585047aa69f8cd97b7be970671300da19c540aa196fc6b9770766ca4b90f7347dd047beafdda4ab29a17f2a2cbb944b5"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/ai/nanoid/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/ai/nanoid.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/ai/nanoid#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "^10 || ^12 || ^13.7 || ^14 || >=15.0.1"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/nanoid"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pako",
+      "version": "1.0.11",
+      "bom-ref": "braingain-frontend@1.0.0|pako@1.0.11",
+      "description": "zlib port to javascript - fast, modularized, with browser support",
+      "licenses": [
+        {
+          "expression": "(MIT AND Zlib)",
+          "acknowledgement": "declared"
+        }
+      ],
+      "purl": "pkg:npm/pako@1.0.11",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e212c1f0fcb8cd971ee6ce3277d5f3a29ab056fff218d855d4197c353982ab5efadc778adbe130553bfe95e19e2f5dc39e1db07dbaa8c153d70883b4cf8b5a63"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/nodeca/pako/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/nodeca/pako.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/nodeca/pako",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pako"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfjs-dist",
+      "version": "6.0.227",
+      "bom-ref": "braingain-frontend@1.0.0|pdfjs-dist@6.0.227",
+      "description": "Generic build of Mozilla's PDF.js library.",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pdfjs-dist@6.0.227",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.0.227.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "fcfe8ce125f0fbbd3068c54b50ceeb751b6fa3e744cea135b7a5bfcd036f0444e8d8c6916b9aebbc270061d7d61a253369d4e033494999102952b5b477dce02a"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/mozilla/pdf.js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/mozilla/pdf.js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://mozilla.github.io/pdf.js/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=22.13.0 || >=24"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pdfjs-dist"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfkit",
+      "version": "0.18.0",
+      "bom-ref": "braingain-frontend@1.0.0|pdfkit@0.18.0",
+      "author": "Devon Govett",
+      "description": "A PDF generation library for Node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pdfkit@0.18.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pdfkit/-/pdfkit-0.18.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "36f530483674798133a80896c154244648d8524678f2472c1ee08edf5ca4a8f3c8564c284838c31a2c088071cdb6c8b096cdf3dcfff3cb8ab4d2197672183652"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/foliojs/pdfkit/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/foliojs/pdfkit.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "http://pdfkit.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pdfkit"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfmake",
+      "version": "0.3.9",
+      "bom-ref": "braingain-frontend@1.0.0|pdfmake@0.3.9",
+      "author": "Bartek Pampuch",
+      "description": "Client/server side PDF printing in pure JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pdfmake@0.3.9",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pdfmake/-/pdfmake-0.3.9.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "57c548723306ff293ba09621623b6fc8b5efa29df0df37080746c7746df3d6fb96f2755e7a6cd15aeed8ace1bb400f4a61a7fce7c3199c2506ea143505e8b4bc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/bpampuch/pdfmake/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/bpampuch/pdfmake.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "http://pdfmake.org",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=20"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pdfmake"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "bom-ref": "braingain-frontend@1.0.0|picocolors@1.1.1",
+      "author": "Alexey Raspopov",
+      "description": "The tiniest and the fastest library for terminal output formatting with ANSI colors",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/picocolors@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c5c787dac9e1b5be4cf658aa0ec984c39ea57b7efa993664117fe311bfd1c4d1727a036e97b78db250973fd1438ff2dcbb45fc284c8c71e3f69eda5a1eb0c454"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/alexeyraspopov/picocolors/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/alexeyraspopov/picocolors.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/alexeyraspopov/picocolors#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/picocolors"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pinia",
+      "version": "2.3.1",
+      "bom-ref": "braingain-frontend@1.0.0|pinia@2.3.1",
+      "author": "Eduardo San Martin Morote",
+      "description": "Intuitive, type safe and flexible Store for Vue",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/pinia@2.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/pinia/-/pinia-2.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "921525652c2df715c26936dbc4560128373f6d60065898ce82fc444f091337b2919bae84793d597598fa8b671e87db0fd8fceab1b73bd38af6ca7801af1055ba"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/pinia/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/pinia.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/vuejs/pinia#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/pinia"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "png-js",
+      "version": "1.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|png-js@1.1.0",
+      "author": "Devon Govett",
+      "description": "A PNG decoder in JavaScript",
+      "purl": "pkg:npm/png-js@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/png-js/-/png-js-1.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "3ccfee606cc674d4b3a9e3a0972ebcfbac0a4032f5498d1afcdf8e11affe6ebe8b9c758e00907436989a9a7a1d7eade37762d2fe2d9f31e38a48020b8c0fa6e5"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "http://github.com/devongovett/png.js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/devongovett/png.js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/png.js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/png-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "postcss",
+      "version": "8.5.15",
+      "bom-ref": "braingain-frontend@1.0.0|postcss@8.5.15",
+      "author": "Andrey Sitnik",
+      "description": "Tool for transforming styles with JS plugins",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/postcss@8.5.15",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/postcss/-/postcss-8.5.15.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "15f47cb237787a6d93e9f6f723633000953b1d654cafdcdb6be7a799079e5857c26e6f94382ff45f80d2f17b6951333058c19b8ca60fef18df35e933c86981dc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/postcss/postcss/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/postcss/postcss.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://postcss.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": "^10 || ^12 || >=14"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/postcss"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proxy-from-env",
+      "version": "2.1.0",
+      "bom-ref": "braingain-frontend@1.0.0|proxy-from-env@2.1.0",
+      "author": "Rob Wu",
+      "description": "Offers getProxyForUrl to get the proxy URL for a URL, respecting the *_PROXY (e.g. HTTP_PROXY) and NO_PROXY environment variables.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/proxy-from-env@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-2.1.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "709fa81d35b554011af1c26c96099466b73eb2344a8002a5dd9cac7baf8f577f2165efd5e99d784db0ae5dc6a7f45f60865cf842b16bd9cf764cd17cd949181c"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Rob--W/proxy-from-env/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Rob--W/proxy-from-env.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/Rob--W/proxy-from-env#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=10"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/proxy-from-env"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "restructure",
+      "version": "3.0.2",
+      "bom-ref": "braingain-frontend@1.0.0|restructure@3.0.2",
+      "author": "Devon Govett",
+      "description": "Declaratively encode and decode binary data",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/restructure@3.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/restructure/-/restructure-3.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8127e888e100d153c4e93ba492bafb234441744d2cec7d5e1420c1934e65d4a2104f550828d739259cba8ddc96e9e607dda4778396f73ee2fbeebab486fc2d03"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/restructure/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/devongovett/restructure.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/restructure",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/restructure"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sax",
+      "version": "1.6.0",
+      "bom-ref": "braingain-frontend@1.0.0|sax@1.6.0",
+      "author": "Isaac Z. Schlueter",
+      "description": "An evented streaming XML parser in JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "BlueOak-1.0.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/sax@1.6.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/sax/-/sax-1.6.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "e91dc9e4ce0071bb4b51d66646fd92ca079568cec886b2d7bbd0669ce1a698009a93c7e252d3ac60d5944b8b8aeeea5b9872016cb05e15e23fff8efb04a2c1cc"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/isaacs/sax-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+ssh://git@github.com/isaacs/sax-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/isaacs/sax-js#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=11.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/sax"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "source-map-js",
+      "version": "1.2.1",
+      "bom-ref": "braingain-frontend@1.0.0|source-map-js@1.2.1",
+      "author": "Valentin 7rulnik Semirulnik",
+      "description": "Generates and consumes source maps",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/source-map-js@1.2.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "51758c2a12cec1529bef6f0852d40f5f17d853ebac7726ed52b2bff2e184f0240cbeb84ea70bf30c1c23d108522fb31073bbc8b084811bc550f3e203431a5f40"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/7rulnik/source-map-js/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/7rulnik/source-map-js.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/7rulnik/source-map-js",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=0.10.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/source-map-js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tiny-inflate",
+      "version": "1.0.3",
+      "bom-ref": "braingain-frontend@1.0.0|tiny-inflate@1.0.3",
+      "author": "Devon Govett",
+      "description": "A tiny inflate implementation",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tiny-inflate@1.0.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tiny-inflate/-/tiny-inflate-1.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a646357e3d5c2876f6b1e583cb4075e87796c9cce5240f7f596deeddce33fcd8960ec3b70ce5390fb9e14cb13d085d325effd064563bb042668f6e1d2be46bab"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/tiny-inflate/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/devongovett/tiny-inflate.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/tiny-inflate",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tiny-inflate"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tslib",
+      "version": "2.8.1",
+      "bom-ref": "braingain-frontend@1.0.0|tslib@2.8.1",
+      "author": "Microsoft Corp.",
+      "description": "Runtime library for TypeScript helper functions",
+      "licenses": [
+        {
+          "license": {
+            "id": "0BSD",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tslib@2.8.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a0916ef781d06fe29576e49440bef09e99aa9df98bb0e03f9c087a6fa107d30084a0ad3f98f79753a737c0a0d5f373243ae1cf447b525ca294f7d2016b34bfdb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/Microsoft/TypeScript/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/Microsoft/tslib.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.typescriptlang.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/tslib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typescript",
+      "version": "5.9.3",
+      "bom-ref": "braingain-frontend@1.0.0|typescript@5.9.3",
+      "author": "Microsoft Corp.",
+      "description": "TypeScript is a language for application scale JavaScript development",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/typescript@5.9.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8e5d6f6733c38a72ebf5e52ddc9feded5e8580d130f508ef04f772b33f4a7d00c3e357d0ac2d98e2f290762694a454f86d795bd511e12e9a7cc2d9ba3394e04b"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/microsoft/TypeScript/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/microsoft/TypeScript.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://www.typescriptlang.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=14.17"
+        },
+        {
+          "name": "cdx:npm:package:development",
+          "value": "true"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/typescript"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "undici-types",
+      "version": "6.21.0",
+      "bom-ref": "braingain-frontend@1.0.0|undici-types@6.21.0",
+      "description": "A stand-alone types package for Undici",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/undici-types@6.21.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8b00d9aa0d10006ae0f516afe47e27d0ceb87379a4479f5c27ac10a7eec2e2723482c984c5a79d6982cd3b8e1e4f802d041c236d38863cc96dd8c7744fd1fd25"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/nodejs/undici/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/nodejs/undici.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://undici.nodejs.org",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/undici-types"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "unicode-properties",
+      "version": "1.4.1",
+      "bom-ref": "braingain-frontend@1.0.0|unicode-properties@1.4.1",
+      "author": "Devon Govett",
+      "description": "Provides fast access to unicode character properties",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/unicode-properties@1.4.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/unicode-properties/-/unicode-properties-1.4.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "08b8c208b43a52e3315a76c8ca5922b1b463df5ab11cf02eaef7a76bfd22c1255b4361b5558e7f1e357421169b3846c31e5cd9951742ac3e0d841d09b54e343e"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/unicode-properties/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/devongovett/unicode-properties.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/unicode-properties",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/unicode-properties"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "base64-js",
+          "version": "1.5.1",
+          "bom-ref": "braingain-frontend@1.0.0|unicode-properties@1.4.1|base64-js@1.5.1",
+          "author": "T. Jameson Little",
+          "description": "Base64 encoding/decoding in pure JS",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/base64-js@1.5.1",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "00aa5a6251e7f2de1255b3870b2f9be7e28a82f478bebb03f2f6efadb890269b3b7ca0d3923903af2ea38b4ad42630b49336cd78f2f0cf1abc8b2a68e35a9e58"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            },
+            {
+              "url": "https://github.com/beatgammit/base64-js/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git://github.com/beatgammit/base64-js.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/beatgammit/base64-js",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/unicode-properties/node_modules/base64-js"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "unicode-trie",
+      "version": "2.0.0",
+      "bom-ref": "braingain-frontend@1.0.0|unicode-trie@2.0.0",
+      "author": "Devon Govett",
+      "description": "Unicode Trie data structure for fast character metadata lookup, ported from ICU",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/unicode-trie@2.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/unicode-trie/-/unicode-trie-2.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "c7b6dcefac746e6e29adfd552e0efdba10332b0f0355ba0295237957126e43e2ca0ce5445bd09d1fe558ed23febd7ef109842acf3810a45ab3d79cde2ef02d65"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/devongovett/unicode-trie/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/devongovett/unicode-trie.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/devongovett/unicode-trie",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/unicode-trie"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "name": "pako",
+          "version": "0.2.9",
+          "bom-ref": "braingain-frontend@1.0.0|unicode-trie@2.0.0|pako@0.2.9",
+          "description": "zlib port to javascript - fast, modularized, with browser support",
+          "licenses": [
+            {
+              "license": {
+                "id": "MIT",
+                "acknowledgement": "declared"
+              }
+            }
+          ],
+          "purl": "pkg:npm/pako@0.2.9",
+          "externalReferences": [
+            {
+              "url": "https://registry.npmjs.org/pako/-/pako-0.2.9.tgz",
+              "type": "distribution",
+              "hashes": [
+                {
+                  "alg": "SHA-512",
+                  "content": "35473068ac54c56ad92e90c6fb3ff165a0a04084e403f0efe15fd3e9bc3b54e37a9755f3fd59eb06aad88d9435d936a6287cc84d37ce1086148f8f32d8a5c898"
+                }
+              ],
+              "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+            },
+            {
+              "url": "https://github.com/nodeca/pako/issues",
+              "type": "issue-tracker",
+              "comment": "as detected from PackageJson property \"bugs.url\""
+            },
+            {
+              "url": "git+https://github.com/nodeca/pako.git",
+              "type": "vcs",
+              "comment": "as detected from PackageJson property \"repository.url\""
+            },
+            {
+              "url": "https://github.com/nodeca/pako",
+              "type": "website",
+              "comment": "as detected from PackageJson property \"homepage\""
+            }
+          ],
+          "properties": [
+            {
+              "name": "cdx:npm:package:path",
+              "value": "node_modules/unicode-trie/node_modules/pako"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vue-demi",
+      "version": "0.14.10",
+      "bom-ref": "braingain-frontend@1.0.0|vue-demi@0.14.10",
+      "author": "Anthony Fu",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vue-demi@0.14.10",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vue-demi/-/vue-demi-0.14.10.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9cc6413b0bb369b50ed272e021c73aaf271911e6c5e9e7947da890c7df964a4f1edbd21b2ef3d4f5f788eada96e244e8de1be8600264321f27f03d1fb884a986"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/antfu/vue-demi/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/antfu/vue-demi.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/antfu/vue-demi#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=12"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vue-demi"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vue-i18n",
+      "version": "10.0.8",
+      "bom-ref": "braingain-frontend@1.0.0|vue-i18n@10.0.8",
+      "author": "kazuya kawaguchi",
+      "description": "Internationalization plugin for Vue.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vue-i18n@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vue-i18n/-/vue-i18n-10.0.8.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "9888f2e2eb71333f6530ca3a1bdbd878fbfb81416de33b4e32163dff87330c9c59dbac4f789e3d30019af700401375ee5db602aed54f98fc4d8de8fb24926465"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/intlify/vue-i18n.git#packages/vue-i18n",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\" and \"repository.directory\""
+        },
+        {
+          "url": "https://github.com/intlify/vue-i18n/tree/master/packages/vue-i18n#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">= 16"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vue-i18n"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vue-router",
+      "version": "4.6.4",
+      "bom-ref": "braingain-frontend@1.0.0|vue-router@4.6.4",
+      "author": "Eduardo San Martin Morote",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vue-router@4.6.4",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vue-router/-/vue-router-4.6.4.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1f3f6ae6c6b7dd885dba0970cfa83db244fc3813e28bee1b167f3cc3a27e27831f128e0a451a6688d1bf8471e475b44594b04eab137ccbc81fd856f431352056"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/router/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/router.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://router.vuejs.org",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vue-router"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vue",
+      "version": "3.5.35",
+      "bom-ref": "braingain-frontend@1.0.0|vue@3.5.35",
+      "author": "Evan You",
+      "description": "The progressive JavaScript framework for building modern web UI.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vue@3.5.35",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/vue/-/vue-3.5.35.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "731f3d7e7afed245461e23451bacbab346dd8f2a494453599fac7758fb2d35d411d5b8b599b07b878bf9201193b0f254de72b5fb422a8f765ffa1656322791e1"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/vuejs/core/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/vuejs/core.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://vuejs.org/",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/vue"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xmldoc",
+      "version": "2.0.3",
+      "bom-ref": "braingain-frontend@1.0.0|xmldoc@2.0.3",
+      "author": "Nick Farina",
+      "description": "A lightweight XML Document class for JavaScript.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xmldoc@2.0.3",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xmldoc/-/xmldoc-2.0.3.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ea0464e0d63f26f83aef19fb3b326ec4b46c1a089705a3d442995527ff65f7db88ba0c61e054ce7b0633e6273c592723ed7c7fd96be110d8902b090af51a44e3"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/nfarina/xmldoc/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git://github.com/nfarina/xmldoc.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/nfarina/xmldoc#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=12.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xmldoc"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "braingain-frontend@1.0.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@azure/msal-browser@5.11.0",
+        "braingain-frontend@1.0.0|@types/pdfmake@0.3.3",
+        "braingain-frontend@1.0.0|axios@1.16.1",
+        "braingain-frontend@1.0.0|flag-icons@7.5.0",
+        "braingain-frontend@1.0.0|lucide-vue-next@0.400.0",
+        "braingain-frontend@1.0.0|pdfjs-dist@6.0.227",
+        "braingain-frontend@1.0.0|pdfmake@0.3.9",
+        "braingain-frontend@1.0.0|pinia@2.3.1",
+        "braingain-frontend@1.0.0|vue-i18n@10.0.8",
+        "braingain-frontend@1.0.0|vue-router@4.6.4",
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@azure/msal-browser@5.11.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@azure/msal-common@16.6.2"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@azure/msal-common@16.6.2"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@babel/helper-string-parser@7.29.7"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@babel/helper-validator-identifier@7.29.7"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@babel/parser@7.29.7",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@babel/types@7.29.7"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@babel/types@7.29.7",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@babel/helper-string-parser@7.29.7",
+        "braingain-frontend@1.0.0|@babel/helper-validator-identifier@7.29.7"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@intlify/core-base@10.0.8",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@intlify/message-compiler@10.0.8",
+        "braingain-frontend@1.0.0|@intlify/shared@10.0.8"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@intlify/message-compiler@10.0.8",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@intlify/shared@10.0.8",
+        "braingain-frontend@1.0.0|source-map-js@1.2.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@intlify/shared@10.0.8"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@jridgewell/sourcemap-codec@1.5.5"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@napi-rs/canvas-win32-x64-msvc@1.0.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@napi-rs/canvas@1.0.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@napi-rs/canvas-win32-x64-msvc@1.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@noble/ciphers@1.3.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@noble/hashes@1.8.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@swc/helpers@0.5.23",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|tslib@2.8.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@types/node@20.19.41",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|undici-types@6.21.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@types/pdfkit@0.17.6",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@types/node@20.19.41"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@types/pdfmake@0.3.3",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@types/node@20.19.41",
+        "braingain-frontend@1.0.0|@types/pdfkit@0.17.6"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/compiler-core@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@babel/parser@7.29.7",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.0.0|entities@7.0.1",
+        "braingain-frontend@1.0.0|estree-walker@2.0.2",
+        "braingain-frontend@1.0.0|source-map-js@1.2.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/compiler-dom@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/compiler-core@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/compiler-sfc@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@babel/parser@7.29.7",
+        "braingain-frontend@1.0.0|@vue/compiler-core@3.5.35",
+        "braingain-frontend@1.0.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.0.0|@vue/compiler-ssr@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.0.0|estree-walker@2.0.2",
+        "braingain-frontend@1.0.0|magic-string@0.30.21",
+        "braingain-frontend@1.0.0|postcss@8.5.15",
+        "braingain-frontend@1.0.0|source-map-js@1.2.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/compiler-ssr@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/devtools-api@6.6.4"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/reactivity@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/runtime-core@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/reactivity@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/runtime-dom@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/reactivity@3.5.35",
+        "braingain-frontend@1.0.0|@vue/runtime-core@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.0.0|csstype@3.2.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/server-renderer@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/compiler-ssr@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|@vue/shared@3.5.35"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|agent-base@6.0.2",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|debug@4.4.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|asynckit@0.4.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|axios@1.16.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|follow-redirects@1.16.0",
+        "braingain-frontend@1.0.0|form-data@4.0.5",
+        "braingain-frontend@1.0.0|https-proxy-agent@5.0.1",
+        "braingain-frontend@1.0.0|proxy-from-env@2.1.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|base64-js@0.0.8"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|brotli@1.3.3",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|brotli@1.3.3|base64-js@1.5.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|brotli@1.3.3|base64-js@1.5.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|browserify-zlib@0.2.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|pako@1.0.11"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|call-bind-apply-helpers@1.0.2",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|es-errors@1.3.0",
+        "braingain-frontend@1.0.0|function-bind@1.1.2"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|clone@2.1.2"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|combined-stream@1.0.8",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|delayed-stream@1.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|csstype@3.2.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|debug@4.4.3",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|ms@2.1.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|delayed-stream@1.0.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|dfa@1.2.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|dunder-proto@1.0.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|call-bind-apply-helpers@1.0.2",
+        "braingain-frontend@1.0.0|es-errors@1.3.0",
+        "braingain-frontend@1.0.0|gopd@1.2.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|entities@7.0.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|es-define-property@1.0.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|es-errors@1.3.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|es-object-atoms@1.1.2",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|es-errors@1.3.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|es-set-tostringtag@2.1.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|es-errors@1.3.0",
+        "braingain-frontend@1.0.0|get-intrinsic@1.3.0",
+        "braingain-frontend@1.0.0|has-tostringtag@1.0.2",
+        "braingain-frontend@1.0.0|hasown@2.0.4"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|estree-walker@2.0.2"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|fast-deep-equal@3.1.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|flag-icons@7.5.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|follow-redirects@1.16.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|fontkit@2.0.4",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@swc/helpers@0.5.23",
+        "braingain-frontend@1.0.0|brotli@1.3.3",
+        "braingain-frontend@1.0.0|clone@2.1.2",
+        "braingain-frontend@1.0.0|dfa@1.2.0",
+        "braingain-frontend@1.0.0|fast-deep-equal@3.1.3",
+        "braingain-frontend@1.0.0|restructure@3.0.2",
+        "braingain-frontend@1.0.0|tiny-inflate@1.0.3",
+        "braingain-frontend@1.0.0|unicode-properties@1.4.1",
+        "braingain-frontend@1.0.0|unicode-trie@2.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|form-data@4.0.5",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|asynckit@0.4.0",
+        "braingain-frontend@1.0.0|combined-stream@1.0.8",
+        "braingain-frontend@1.0.0|es-set-tostringtag@2.1.0",
+        "braingain-frontend@1.0.0|hasown@2.0.4",
+        "braingain-frontend@1.0.0|mime-types@2.1.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|function-bind@1.1.2"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|get-intrinsic@1.3.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|call-bind-apply-helpers@1.0.2",
+        "braingain-frontend@1.0.0|es-define-property@1.0.1",
+        "braingain-frontend@1.0.0|es-errors@1.3.0",
+        "braingain-frontend@1.0.0|es-object-atoms@1.1.2",
+        "braingain-frontend@1.0.0|function-bind@1.1.2",
+        "braingain-frontend@1.0.0|get-proto@1.0.1",
+        "braingain-frontend@1.0.0|gopd@1.2.0",
+        "braingain-frontend@1.0.0|has-symbols@1.1.0",
+        "braingain-frontend@1.0.0|hasown@2.0.4",
+        "braingain-frontend@1.0.0|math-intrinsics@1.1.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|get-proto@1.0.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|dunder-proto@1.0.1",
+        "braingain-frontend@1.0.0|es-object-atoms@1.1.2"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|gopd@1.2.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|has-symbols@1.1.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|has-tostringtag@1.0.2",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|has-symbols@1.1.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|hasown@2.0.4",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|function-bind@1.1.2"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|https-proxy-agent@5.0.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|agent-base@6.0.2",
+        "braingain-frontend@1.0.0|debug@4.4.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|js-md5@0.8.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|linebreak@1.1.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|base64-js@0.0.8",
+        "braingain-frontend@1.0.0|unicode-trie@2.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|lucide-vue-next@0.400.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|magic-string@0.30.21",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@jridgewell/sourcemap-codec@1.5.5"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|math-intrinsics@1.1.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|mime-db@1.52.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|mime-types@2.1.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|mime-db@1.52.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|ms@2.1.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|nanoid@3.3.12"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|pako@1.0.11"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|pdfjs-dist@6.0.227",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@napi-rs/canvas@1.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|pdfkit@0.18.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@noble/ciphers@1.3.0",
+        "braingain-frontend@1.0.0|@noble/hashes@1.8.0",
+        "braingain-frontend@1.0.0|fontkit@2.0.4",
+        "braingain-frontend@1.0.0|js-md5@0.8.3",
+        "braingain-frontend@1.0.0|linebreak@1.1.0",
+        "braingain-frontend@1.0.0|png-js@1.1.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|pdfmake@0.3.9",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|linebreak@1.1.0",
+        "braingain-frontend@1.0.0|pdfkit@0.18.0",
+        "braingain-frontend@1.0.0|xmldoc@2.0.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|picocolors@1.1.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|pinia@2.3.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.0.0|typescript@5.9.3",
+        "braingain-frontend@1.0.0|vue-demi@0.14.10",
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|png-js@1.1.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|browserify-zlib@0.2.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|postcss@8.5.15",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|nanoid@3.3.12",
+        "braingain-frontend@1.0.0|picocolors@1.1.1",
+        "braingain-frontend@1.0.0|source-map-js@1.2.1"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|proxy-from-env@2.1.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|restructure@3.0.2"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|sax@1.6.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|source-map-js@1.2.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|tiny-inflate@1.0.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|tslib@2.8.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|typescript@5.9.3"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|undici-types@6.21.0"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|unicode-properties@1.4.1",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|unicode-properties@1.4.1|base64-js@1.5.1",
+        "braingain-frontend@1.0.0|unicode-trie@2.0.0"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|unicode-properties@1.4.1|base64-js@1.5.1"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|unicode-trie@2.0.0",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|tiny-inflate@1.0.3",
+        "braingain-frontend@1.0.0|unicode-trie@2.0.0|pako@0.2.9"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|unicode-trie@2.0.0|pako@0.2.9"
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|vue-demi@0.14.10",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|vue-i18n@10.0.8",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@intlify/core-base@10.0.8",
+        "braingain-frontend@1.0.0|@intlify/shared@10.0.8",
+        "braingain-frontend@1.0.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|vue-router@4.6.4",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.0.0|vue@3.5.35"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|vue@3.5.35",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.0.0|@vue/compiler-sfc@3.5.35",
+        "braingain-frontend@1.0.0|@vue/runtime-dom@3.5.35",
+        "braingain-frontend@1.0.0|@vue/server-renderer@3.5.35",
+        "braingain-frontend@1.0.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.0.0|typescript@5.9.3"
+      ]
+    },
+    {
+      "ref": "braingain-frontend@1.0.0|xmldoc@2.0.3",
+      "dependsOn": [
+        "braingain-frontend@1.0.0|sax@1.6.0"
+      ]
+    }
+  ]
+}

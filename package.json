@@ -4,6 +4,7 @@
   "scripts": {
     "test:backend": "npm --prefix backend test",
     "e2e": "npm --prefix frontend run e2e",
+    "sbom": "npm --prefix backend run sbom && npm --prefix frontend run sbom",
     "verify": "node requirements/tools/build.mjs && node requirements/tools/sync-tests.mjs && node requirements/tools/build.mjs --check && node requirements/tools/drift-check.mjs"
   }
 }

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Building2, DatabaseBackup, KeyRound, Lock, Mail, Save, Send, SlidersHorizontal } from 'lucide-vue-next';
 import client from '@/api/client';
+import PasswordInput from '@/components/PasswordInput.vue';
 import { useToastStore } from '@/stores/toast';
 import type { Settings, TlsSettings } from '@/types';
 
@@ -491,10 +492,8 @@ onMounted(load);
           </label>
           <label class="flex flex-col gap-1">
             <span class="form-label">{{ t('settings.smtpPassword') }}</span>
-            <input
+            <PasswordInput
               v-model="smtpPassword"
-              type="password"
-              class="bg-input"
               autocomplete="new-password"
               :placeholder="smtpPasswordSet ? t('settings.smtpPasswordStored') : ''"
             />

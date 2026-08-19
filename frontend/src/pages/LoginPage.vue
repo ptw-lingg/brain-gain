@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth';
 import client from '@/api/client';
 import { signInWithEntra, type EntraConfig } from '@/auth/msal';
 import BrainGainLogo from '@/components/BrainGainLogo.vue';
+import PasswordInput from '@/components/PasswordInput.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -99,13 +100,7 @@ async function submit(): Promise<void> {
         </label>
         <label class="flex flex-col gap-1">
           <span class="form-label">{{ t('common.password') }}</span>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            class="bg-input"
-            required
-          />
+          <PasswordInput v-model="password" autocomplete="current-password" required />
         </label>
 
         <p v-if="error" class="font-mono text-xs text-rose-600">{{ error }}</p>

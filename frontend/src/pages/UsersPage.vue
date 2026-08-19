@@ -8,6 +8,7 @@ import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
 import type { JobRole, OrgUnit, SafeUser } from '@/types';
 import ListControls from '@/components/ListControls.vue';
+import PasswordInput from '@/components/PasswordInput.vue';
 import { matchesQuery } from '@/utils/listFilter';
 
 const toast = useToastStore();
@@ -279,7 +280,7 @@ onMounted(load);
           </label>
           <label class="flex flex-col gap-1">
             <span class="form-label">{{ isNew ? t('users.passwordNew') : t('users.passwordEdit') }}</span>
-            <input v-model="draft.password" type="password" class="bg-input" autocomplete="new-password" />
+            <PasswordInput v-model="draft.password" autocomplete="new-password" />
           </label>
 
           <label class="flex flex-col gap-1">

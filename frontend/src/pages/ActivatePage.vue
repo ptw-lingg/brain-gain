@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import client from '@/api/client';
 import BrainGainLogo from '@/components/BrainGainLogo.vue';
+import PasswordInput from '@/components/PasswordInput.vue';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -97,23 +98,11 @@ async function submit(): Promise<void> {
         </label>
         <label class="flex flex-col gap-1">
           <span class="form-label">{{ t('activate.newPassword') }}</span>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="new-password"
-            class="bg-input"
-            required
-          />
+          <PasswordInput v-model="password" autocomplete="new-password" required />
         </label>
         <label class="flex flex-col gap-1">
           <span class="form-label">{{ t('activate.confirmPassword') }}</span>
-          <input
-            v-model="confirm"
-            type="password"
-            autocomplete="new-password"
-            class="bg-input"
-            required
-          />
+          <PasswordInput v-model="confirm" autocomplete="new-password" required />
         </label>
 
         <p v-if="error" class="font-mono text-xs text-rose-600">{{ error }}</p>

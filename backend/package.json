@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "build": "tsc",
+    "build": "tsc && npm run sbom",
+    "sbom": "cyclonedx-npm --omit dev --mc-type application --output-format JSON --output-reproducible --output-file ../sbom/backend.cdx.json",
     "typecheck": "tsc --noEmit",
     "test": "node --test --test-concurrency=1"
   },
@@ -22,6 +23,7 @@
     "selfsigned": "^5.5.0"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^6.0.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",

@@ -13,6 +13,8 @@
     "name": "Name",
     "email": "Email",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "description": "Description",
     "none": "—",
     "search": "Search…",

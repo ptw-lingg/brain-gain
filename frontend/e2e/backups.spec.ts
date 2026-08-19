@@ -61,6 +61,9 @@ test.describe('Backups — admin data protection', () => {
   test('SYS-BAK-05 / SR-143 / VT-143: uploading a non-backup file is rejected with a message and adds no row', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/backups');
+    // Wait for the list to load before counting — count() does not wait, so an in-flight fetch
+    // would read 0 rows here and corrupt the row-count assertion below.
+    await expect(page.locator('tbody tr').first()).toBeVisible();
     const before = await page.locator('tbody tr').count();
 
     await page.locator('input[type="file"]').setInputFiles({
@@ -113,6 +116,9 @@ test.describe('Backups — admin data protection', () => {
   test('SYS-BAK-02 / SR-144 / VT-145: deleting a backup asks for confirmation and removes the row', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/backups');
+    // Wait for the list to load before counting — count() does not wait, so an in-flight fetch
+    // would read 0 rows here and corrupt the row-count assertion below.
+    await expect(page.locator('tbody tr').first()).toBeVisible();
     const before = await page.locator('tbody tr').count();
     const row = page.locator('tbody tr').first();
     const name = (await row.locator('td').first().textContent())?.trim();

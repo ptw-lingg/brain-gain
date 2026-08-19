@@ -80,6 +80,10 @@ test.describe('Training sessions & due status', () => {
     await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
     await page.getByRole('button', { name: 'Start test' }).click();
     await page.getByTestId('confirm-materials-ok').click();
+    // Wait for the quiz step before snapshotting cards — .all() does not wait, and mid-transition
+    // it captures the material step plus the confirmation dialog (itself a .card), so a stale
+    // nth(3) card would never resolve once the dialog unmounts.
+    await expect(page.getByTestId('session-quiz')).toBeVisible();
 
     const cards = await page.locator('section >> .card').all();
     for (const card of cards) {

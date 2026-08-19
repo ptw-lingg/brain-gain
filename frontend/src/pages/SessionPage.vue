@@ -18,6 +18,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import { reauthWithEntra, type EntraConfig } from '@/auth/msal';
 import LocaleFlag from '@/components/LocaleFlag.vue';
+import PasswordInput from '@/components/PasswordInput.vue';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
 import { formatDate } from '@/utils/display';
@@ -447,11 +448,10 @@ onMounted(() => {
             >
               <p class="font-mono text-xs text-ink-muted">{{ t('session.confirmSignatureText') }}</p>
               <p class="mt-2 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
-              <input
+              <PasswordInput
                 v-if="hasPassword"
                 v-model="signaturePassword"
-                type="password"
-                class="bg-input mt-2"
+                class="mt-2"
                 :placeholder="t('session.signature.password')"
                 data-testid="signature-password"
               />
@@ -563,11 +563,10 @@ onMounted(() => {
             <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.signature.title') }}</h2>
             <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.signature.text') }}</p>
             <p class="mt-3 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
-            <input
+            <PasswordInput
               v-if="hasPassword"
               v-model="signaturePassword"
-              type="password"
-              class="bg-input mt-2"
+              class="mt-2"
               :placeholder="t('session.signature.password')"
               data-testid="signature-password"
               @keydown.enter="signaturePassword && submit({ password: signaturePassword })"
