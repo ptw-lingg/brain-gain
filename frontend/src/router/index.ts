@@ -37,7 +37,8 @@ const router = createRouter({
         { path: 'org-units', component: OrgUnitsPage, meta: { requiresAdmin: true } },
         { path: 'users', component: UsersPage, meta: { requiresAdmin: true } },
         { path: 'users/import', component: UsersImportPage, meta: { requiresAdmin: true } },
-        { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true } },
+        // fullWidth: the four setting columns need more room than the default content width.
+        { path: 'settings', component: SettingsPage, meta: { requiresAdmin: true, fullWidth: true } },
         { path: 'backups', component: BackupsPage, meta: { requiresAdmin: true } },
         // fullWidth: the entries table and diff view profit from every pixel (AppLayout opt-out).
         { path: 'audit', component: AuditPage, meta: { requiresAdmin: true, fullWidth: true } },

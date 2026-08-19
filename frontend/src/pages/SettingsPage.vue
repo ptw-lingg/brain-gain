@@ -294,128 +294,169 @@ onMounted(load);
 
     <div v-if="loading" class="mt-6 card h-40 animate-pulse bg-pastel-slate/30" />
 
-    <!-- The setting cards flow into two columns on large screens (items-start keeps each card at
-         its natural height instead of stretching to its row partner). -->
-    <div v-else class="mt-6 grid items-start gap-6 lg:grid-cols-2">
-      <!-- Company name (names the root org unit) -->
-      <div class="card p-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <Building2 class="h-5 w-5 text-accent" />
+    <!-- Four columns on xl (two on lg, one below). Default grid stretch equalizes heights: the
+         single cards in columns 2-4 fill the row, and column 1's inner grid distributes any
+         extra space across its three cards. -->
+    <div v-else class="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+      <!-- Column 1: company name, pass threshold, automatic backups -->
+      <div class="grid gap-6">
+        <!-- Company name (names the root org unit) -->
+        <div class="card p-6">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+              <Building2 class="h-5 w-5 text-accent" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.companyTitle') }}</h2>
+              <p class="font-mono text-xs text-ink-light">{{ t('settings.companyDesc') }}</p>
+            </div>
           </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.companyTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">{{ t('settings.companyDesc') }}</p>
-          </div>
-        </div>
-        <div class="mt-6 flex flex-wrap items-end gap-3">
-          <input v-model="companyName" class="bg-input flex-1" :placeholder="t('settings.companyTitle')" />
-          <button class="btn-primary" :disabled="savingCompany" @click="saveCompany">
-            <Save class="h-4 w-4" /> {{ savingCompany ? t('common.saving') : t('settings.saveCompany') }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Global pass threshold -->
-      <div class="card p-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <SlidersHorizontal class="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.thresholdTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">
-              {{ t('settings.thresholdDesc') }}
-            </p>
+          <div class="mt-6 flex flex-wrap items-end gap-3">
+            <input v-model="companyName" class="bg-input flex-1" :placeholder="t('settings.companyTitle')" />
+            <button class="btn-primary" :disabled="savingCompany" @click="saveCompany">
+              <Save class="h-4 w-4" /> {{ savingCompany ? t('common.saving') : t('settings.saveCompany') }}
+            </button>
           </div>
         </div>
 
-        <div class="mt-6 flex items-center gap-4">
-          <input
-            v-model.number="pct"
-            type="range"
-            min="50"
-            max="100"
-            step="5"
-            class="flex-1 accent-accent"
-          />
-          <span class="w-16 text-right font-sans text-2xl font-bold text-accent">{{ pctLabel }}</span>
-        </div>
-
-        <label class="mt-5 flex cursor-pointer items-start gap-2 font-mono text-xs text-ink-muted">
-          <input v-model="revealWrong" type="checkbox" class="mt-0.5 accent-accent" />
-          <span>
-            {{ t('settings.revealWrong') }}
-            <span class="block text-[11px] text-ink-light">{{ t('settings.revealWrongHint') }}</span>
-          </span>
-        </label>
-
-        <div class="mt-6">
-          <button class="btn-primary" :disabled="saving" @click="save">
-            <Save class="h-4 w-4" /> {{ saving ? t('common.saving') : t('settings.saveChanges') }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Microsoft Entra ID single sign-on -->
-      <div class="card p-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <KeyRound class="h-5 w-5 text-accent" />
+        <!-- Global pass threshold -->
+        <div class="card p-6">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+              <SlidersHorizontal class="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.thresholdTitle') }}</h2>
+              <p class="font-mono text-xs text-ink-light">
+                {{ t('settings.thresholdDesc') }}
+              </p>
+            </div>
           </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.ssoTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">
-              {{ t('settings.ssoDesc') }}
-            </p>
-          </div>
-          <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
-            <input v-model="ssoEnabled" type="checkbox" class="accent-accent" />
-            {{ t('settings.enabled') }}
-          </label>
-        </div>
 
-        <div class="mt-6 flex flex-col gap-4">
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.tenantId') }}</span>
+          <div class="mt-6 flex items-center gap-4">
             <input
-              v-model="tenantId"
-              class="bg-input"
-              placeholder="00000000-0000-0000-0000-000000000000"
+              v-model.number="pct"
+              type="range"
+              min="50"
+              max="100"
+              step="5"
+              class="flex-1 accent-accent"
             />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.clientId') }}</span>
-            <input
-              v-model="clientId"
-              class="bg-input"
-              placeholder="00000000-0000-0000-0000-000000000000"
-            />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.allowedDomains') }}</span>
-            <input v-model="domains" class="bg-input" placeholder="ptwdosimetry.com, example.com" />
-            <span class="font-mono text-[11px] text-ink-light">
-              {{ t('settings.domainsHint') }}
+            <span class="w-16 text-right font-sans text-2xl font-bold text-accent">{{ pctLabel }}</span>
+          </div>
+
+          <label class="mt-5 flex cursor-pointer items-start gap-2 font-mono text-xs text-ink-muted">
+            <input v-model="revealWrong" type="checkbox" class="mt-0.5 accent-accent" />
+            <span>
+              {{ t('settings.revealWrong') }}
+              <span class="block text-[11px] text-ink-light">{{ t('settings.revealWrongHint') }}</span>
             </span>
           </label>
+
+          <div class="mt-6">
+            <button class="btn-primary" :disabled="saving" @click="save">
+              <Save class="h-4 w-4" /> {{ saving ? t('common.saving') : t('settings.saveChanges') }}
+            </button>
+          </div>
         </div>
 
-        <div class="mt-4 rounded-md border border-line bg-pastel-sky/10 px-3 py-2">
+        <!-- Automatic scheduled backups -->
+        <div class="card p-6">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+              <DatabaseBackup class="h-5 w-5 text-accent" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.autoBackupTitle') }}</h2>
+              <p class="font-mono text-xs text-ink-light">{{ t('settings.autoBackupDesc') }}</p>
+            </div>
+            <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
+              <input v-model="autoBackupEnabled" type="checkbox" class="accent-accent" />
+              {{ t('settings.enabled') }}
+            </label>
+          </div>
+
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-1">
+              <span class="form-label">{{ t('settings.autoBackupInterval') }}</span>
+              <input v-model.number="autoBackupIntervalDays" type="number" min="1" max="365" class="bg-input" />
+            </label>
+            <label class="flex flex-col gap-1">
+              <span class="form-label">{{ t('settings.autoBackupKeep') }}</span>
+              <input v-model.number="autoBackupKeep" type="number" min="1" max="100" class="bg-input" />
+            </label>
+          </div>
+          <p class="mt-2 font-mono text-[11px] text-ink-light">{{ t('settings.autoBackupRetentionHint') }}</p>
+
+          <div class="mt-6">
+            <button class="btn-primary" :disabled="savingAutoBackup" @click="saveAutoBackup">
+              <Save class="h-4 w-4" /> {{ savingAutoBackup ? t('common.saving') : t('settings.saveAutoBackup') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: HTTPS / TLS certificate -->
+      <div class="card p-6">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
+            <Lock class="h-5 w-5 text-accent" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.tlsTitle') }}</h2>
+            <p class="font-mono text-xs text-ink-light">
+              {{ t('settings.tlsDesc') }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Current certificate -->
+        <div class="mt-6 rounded-md border border-line bg-pastel-sky/10 px-3 py-3">
+          <p class="form-label">{{ t('settings.activeCert') }}</p>
+          <div v-if="tls" class="mt-1 grid grid-cols-1 gap-0.5 font-mono text-[11px] text-ink-light sm:grid-cols-2">
+            <span>{{ t('settings.certSource') }} <span class="text-ink">{{ tls.source }}</span></span>
+            <span>{{ t('settings.certFingerprint') }} <span class="text-ink">{{ tls.fingerprint.slice(0, 24) }}…</span></span>
+            <span>{{ t('settings.certSubject') }} <span class="text-ink">{{ tls.subject.replace(/\n/g, ', ') }}</span></span>
+            <span>{{ t('settings.certIssuer') }} <span class="text-ink">{{ tls.issuer.replace(/\n/g, ', ') }}</span></span>
+            <span>{{ t('settings.certValidFrom') }} <span class="text-ink">{{ fmtDate(tls.validFrom) }}</span></span>
+            <span>{{ t('settings.certValidTo') }} <span class="text-ink">{{ fmtDate(tls.validTo) }}</span></span>
+          </div>
+          <p v-else class="mt-1 font-mono text-[11px] text-ink-light">{{ t('settings.noCertMeta') }}</p>
+          <p v-if="tlsWarn" class="mt-2 font-mono text-[11px] text-amber-600">⚠ {{ tlsWarn }}</p>
+        </div>
+
+        <!-- Upload -->
+        <div class="mt-4 flex flex-col gap-4">
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.certPem') }}</span>
+            <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'cert')" />
+            <span v-if="certName" class="font-mono text-[11px] text-ink-light">{{ certName }}</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.keyPem') }}</span>
+            <input type="file" accept=".pem,.key" class="text-xs" @change="onFile($event, 'key')" />
+            <span v-if="keyName" class="font-mono text-[11px] text-ink-light">{{ keyName }}</span>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.chainPem') }}</span>
+            <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'chain')" />
+          </label>
           <p class="font-mono text-[11px] text-ink-light">
-            {{ t('settings.redirectHint') }}
-            <span class="text-ink">{{ redirectUri }}</span>
+            {{ t('settings.keyNote') }}
           </p>
         </div>
 
-        <div class="mt-6">
-          <button class="btn-primary" :disabled="savingSso" @click="saveSso">
-            <Save class="h-4 w-4" /> {{ savingSso ? t('settings.savingSso') : t('settings.saveSso') }}
+        <div class="mt-6 flex flex-wrap gap-2">
+          <button class="btn-primary" :disabled="savingCert" @click="saveCertificate">
+            <Save class="h-4 w-4" /> {{ savingCert ? t('settings.installing') : t('settings.installCert') }}
+          </button>
+          <button class="btn-ghost" :disabled="regenerating" @click="regenerateSelfSigned">
+            {{ regenerating ? t('settings.regenerating') : t('settings.regenSelfSigned') }}
           </button>
         </div>
       </div>
 
-      <!-- Outbound email (SMTP) -->
+      <!-- Column 3: outbound email (SMTP) -->
       <div class="card p-6">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
@@ -478,97 +519,60 @@ onMounted(load);
         </div>
       </div>
 
-      <!-- Automatic scheduled backups -->
+      <!-- Column 4: Microsoft Entra ID single sign-on -->
       <div class="card p-6">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <DatabaseBackup class="h-5 w-5 text-accent" />
+            <KeyRound class="h-5 w-5 text-accent" />
           </div>
           <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.autoBackupTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">{{ t('settings.autoBackupDesc') }}</p>
+            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.ssoTitle') }}</h2>
+            <p class="font-mono text-xs text-ink-light">
+              {{ t('settings.ssoDesc') }}
+            </p>
           </div>
           <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
-            <input v-model="autoBackupEnabled" type="checkbox" class="accent-accent" />
+            <input v-model="ssoEnabled" type="checkbox" class="accent-accent" />
             {{ t('settings.enabled') }}
           </label>
         </div>
 
-        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="mt-6 flex flex-col gap-4">
           <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.autoBackupInterval') }}</span>
-            <input v-model.number="autoBackupIntervalDays" type="number" min="1" max="365" class="bg-input" />
+            <span class="form-label">{{ t('settings.tenantId') }}</span>
+            <input
+              v-model="tenantId"
+              class="bg-input"
+              placeholder="00000000-0000-0000-0000-000000000000"
+            />
           </label>
           <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.autoBackupKeep') }}</span>
-            <input v-model.number="autoBackupKeep" type="number" min="1" max="100" class="bg-input" />
+            <span class="form-label">{{ t('settings.clientId') }}</span>
+            <input
+              v-model="clientId"
+              class="bg-input"
+              placeholder="00000000-0000-0000-0000-000000000000"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.allowedDomains') }}</span>
+            <input v-model="domains" class="bg-input" placeholder="ptwdosimetry.com, example.com" />
+            <span class="font-mono text-[11px] text-ink-light">
+              {{ t('settings.domainsHint') }}
+            </span>
           </label>
         </div>
-        <p class="mt-2 font-mono text-[11px] text-ink-light">{{ t('settings.autoBackupRetentionHint') }}</p>
 
-        <div class="mt-6">
-          <button class="btn-primary" :disabled="savingAutoBackup" @click="saveAutoBackup">
-            <Save class="h-4 w-4" /> {{ savingAutoBackup ? t('common.saving') : t('settings.saveAutoBackup') }}
-          </button>
-        </div>
-      </div>
-
-      <!-- HTTPS / TLS certificate -->
-      <div class="card p-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-pastel-sky/60">
-            <Lock class="h-5 w-5 text-accent" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.tlsTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">
-              {{ t('settings.tlsDesc') }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Current certificate -->
-        <div class="mt-6 rounded-md border border-line bg-pastel-sky/10 px-3 py-3">
-          <p class="form-label">{{ t('settings.activeCert') }}</p>
-          <div v-if="tls" class="mt-1 grid grid-cols-1 gap-0.5 font-mono text-[11px] text-ink-light sm:grid-cols-2">
-            <span>{{ t('settings.certSource') }} <span class="text-ink">{{ tls.source }}</span></span>
-            <span>{{ t('settings.certFingerprint') }} <span class="text-ink">{{ tls.fingerprint.slice(0, 24) }}…</span></span>
-            <span>{{ t('settings.certSubject') }} <span class="text-ink">{{ tls.subject.replace(/\n/g, ', ') }}</span></span>
-            <span>{{ t('settings.certIssuer') }} <span class="text-ink">{{ tls.issuer.replace(/\n/g, ', ') }}</span></span>
-            <span>{{ t('settings.certValidFrom') }} <span class="text-ink">{{ fmtDate(tls.validFrom) }}</span></span>
-            <span>{{ t('settings.certValidTo') }} <span class="text-ink">{{ fmtDate(tls.validTo) }}</span></span>
-          </div>
-          <p v-else class="mt-1 font-mono text-[11px] text-ink-light">{{ t('settings.noCertMeta') }}</p>
-          <p v-if="tlsWarn" class="mt-2 font-mono text-[11px] text-amber-600">⚠ {{ tlsWarn }}</p>
-        </div>
-
-        <!-- Upload -->
-        <div class="mt-4 flex flex-col gap-4">
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.certPem') }}</span>
-            <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'cert')" />
-            <span v-if="certName" class="font-mono text-[11px] text-ink-light">{{ certName }}</span>
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.keyPem') }}</span>
-            <input type="file" accept=".pem,.key" class="text-xs" @change="onFile($event, 'key')" />
-            <span v-if="keyName" class="font-mono text-[11px] text-ink-light">{{ keyName }}</span>
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="form-label">{{ t('settings.chainPem') }}</span>
-            <input type="file" accept=".pem,.crt,.cer" class="text-xs" @change="onFile($event, 'chain')" />
-          </label>
+        <div class="mt-4 rounded-md border border-line bg-pastel-sky/10 px-3 py-2">
           <p class="font-mono text-[11px] text-ink-light">
-            {{ t('settings.keyNote') }}
+            {{ t('settings.redirectHint') }}
+            <span class="text-ink">{{ redirectUri }}</span>
           </p>
         </div>
 
-        <div class="mt-6 flex flex-wrap gap-2">
-          <button class="btn-primary" :disabled="savingCert" @click="saveCertificate">
-            <Save class="h-4 w-4" /> {{ savingCert ? t('settings.installing') : t('settings.installCert') }}
-          </button>
-          <button class="btn-ghost" :disabled="regenerating" @click="regenerateSelfSigned">
-            {{ regenerating ? t('settings.regenerating') : t('settings.regenSelfSigned') }}
+        <div class="mt-6">
+          <button class="btn-primary" :disabled="savingSso" @click="saveSso">
+            <Save class="h-4 w-4" /> {{ savingSso ? t('settings.savingSso') : t('settings.saveSso') }}
           </button>
         </div>
       </div>
