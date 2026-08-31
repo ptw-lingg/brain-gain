@@ -189,11 +189,12 @@ function logout(): void {
         <!-- Data-dense pages (route meta fullWidth, e.g. the audit trail) use the whole window;
              everything else keeps the comfortable shared measure. -->
         <div class="mx-auto px-8 py-8" :class="route.meta.fullWidth ? 'max-w-none' : 'max-w-6xl'">
-          <RouterView v-slot="{ Component }">
-            <Transition name="fade-slide" mode="out-in">
-              <component :is="Component" />
-            </Transition>
-          </RouterView>
+          <!-- Deliberately NO <Transition> around the routed page: with mode="out-in" the enter of
+               the next page is silently SKIPPED when navigating away from the param route
+               (/session/:id) — the content area then stays blank on every navigation until a full
+               reload — and without out-in the leaving and entering pages coexist, which breaks
+               interaction during the overlap. A 150 ms fade is not worth either failure mode. -->
+          <RouterView />
         </div>
       </main>
     </div>

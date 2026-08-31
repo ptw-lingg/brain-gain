@@ -81,9 +81,12 @@ const thresholdPct = computed(() =>
 // evidence the training was done.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
 
-// A SCORM-backed training: the imported course replaces the quiz. The learner payload carries only
-// the non-revealing `scorm` summary; its presence is the whole signal.
-const isScorm = computed(() => training.value?.scorm != null);
+// A SCORM-backed training: the imported course replaces the quiz. The learner payload carries the
+// non-revealing `scorm` summary; the OWNER/ADMIN payload is the raw training instead, which
+// carries the published package id — both mean "SCORM-backed", and missing the second one sends
+// the owner into the classic empty flow (no material, completable by confirmation) instead of
+// their course preview.
+const isScorm = computed(() => training.value?.scorm != null || training.value?.scormPackageId != null);
 // The bridge/flush state machine — page-scoped so the flush policy survives player teardown and is
 // reachable from the signed submission below.
 const scorm = useScormAttempt(trainingId, () => training.value?.durationMinutes ?? 10);
@@ -218,6 +221,14 @@ async function load(): Promise<void> {
 }
 
 function startTest(): void {
+  // A SCORM course needs no materials-awareness confirmation (SR-162 is about provided materials —
+  // a SCORM training has none; the course itself is the content and the attempt is the evidence):
+  // straight into the course.
+  if (isScorm.value) {
+    step.value = 'scorm';
+    void scorm.launch();
+    return;
+  }
   confirmOpen.value = true;
 }
 
@@ -236,10 +247,6 @@ async function confirmMaterials(reauth?: Reauth): Promise<void> {
     if (updateId) {
       confirmOpen.value = false;
       step.value = 'confirmed';
-    } else if (isScorm.value) {
-      confirmOpen.value = false;
-      step.value = 'scorm';
-      void scorm.launch(); // errors surface inside the player, not as a toast
     } else if (hasQuestions.value) {
       confirmOpen.value = false;
       step.value = 'quiz';

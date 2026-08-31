@@ -57,6 +57,36 @@ test.describe('SCORM playback', () => {
     }
   });
 
+  test('SYS-SCO-05 / SR-177 / VT-198: the OWNER previews their own course from the session page (raw payload, no scorm summary)', async ({ page, request }) => {
+    // Regression guard: the owner/admin payload carries scormPackageId but not the learner-facing
+    // `scorm` summary — the session page must treat both as SCORM-backed, or the owner lands in the
+    // classic empty flow ("no material", completable by confirmation) instead of the course.
+    const trainerToken = await tokenFor(request, CREDS.trainer);
+    const pkgRes = await request.post('/api/trainings/scorm-packages?name=c.zip', {
+      headers: { ...auth(trainerToken), 'content-type': 'application/octet-stream' },
+      data: await buildScorm12({}),
+    });
+    const packageId = (await pkgRes.json()).packageId;
+    const created = await request.post('/api/trainings', {
+      headers: auth(trainerToken),
+      data: { name: `E2E Owner Preview ${Date.now()}` },
+    });
+    const trainingId = (await created.json()).id;
+    createdTrainings.push(trainingId);
+    await request.put(`/api/trainings/${trainingId}`, { headers: auth(trainerToken), data: { scormPackageId: packageId } });
+    await request.post(`/api/trainings/${trainingId}/publish-update`, { headers: auth(trainerToken), data: { kind: 'silent' } });
+
+    await login(page, 'trainer');
+    await page.goto(`/session/${trainingId}`);
+    // No materials confirmation for a SCORM course — Start goes straight into it.
+    await page.getByTestId('session-start').click();
+    await expect(page.getByTestId('confirm-materials-dialog')).toHaveCount(0);
+    // The course opens — as a preview (an unassigned owner's run is never recordable).
+    await expect(page.getByTestId('session-scorm')).toBeVisible();
+    await expect(page.getByTestId('scorm-frame')).toBeVisible();
+    await expect(page.getByText('Preview — not recorded')).toBeVisible();
+  });
+
   test('SYS-SCO-05 / SR-177 / VT-198: the course runs in a sandboxed cross-origin iframe instead of the quiz', async ({ page, request }) => {
     const trainingId = await makeAssignedScorm(request);
     await login(page, 'member');
@@ -64,7 +94,6 @@ test.describe('SCORM playback', () => {
 
     // Confirm materials → the SCORM step, not the quiz.
     await page.getByTestId('session-start').click();
-    await page.getByTestId('confirm-materials-ok').click();
     await expect(page.getByTestId('session-scorm')).toBeVisible();
     await expect(page.getByTestId('session-quiz')).toHaveCount(0);
 
@@ -84,7 +113,6 @@ test.describe('SCORM playback', () => {
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
     await page.getByTestId('session-start').click();
-    await page.getByTestId('confirm-materials-ok').click();
 
     // Drill into the nested SCO frame (wrapper → SCO) and drive the stub.
     const wrapper = page.frameLocator('[data-testid="scorm-frame"]');
@@ -103,7 +131,6 @@ test.describe('SCORM playback', () => {
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
     await page.getByTestId('session-start').click();
-    await page.getByTestId('confirm-materials-ok').click();
 
     const wrapper = page.frameLocator('[data-testid="scorm-frame"]');
     const sco = wrapper.frameLocator('#sco');

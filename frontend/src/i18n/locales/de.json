@@ -326,8 +326,6 @@
       "allowExternalWarning": "Nur aktivieren, wenn das Paket es benötigt — der importierte Inhalt darf dann mit Servern im Internet kommunizieren.",
       "a11yNotice": "Barrierefreiheit innerhalb eines importierten Kurses verantwortet dessen Autor:in — BrainGain kann Kontrast, Untertitel oder Tastaturbedienung in Fremdinhalten nicht reparieren.",
       "singleLanguageNotice": "Ein SCORM-Paket ist einsprachig: Anders als Materialien hat es keine Sprachvarianten. Nutzen Sie ein Paket mit eigener Sprachumschaltung oder getrennte Schulungen je Sprache.",
-      "quizDisabled": "Diese Schulung wird durch einen SCORM-Kurs vermittelt, der seinen eigenen Test mitbringt. Die Fragen unten bleiben erhalten, werden aber nicht verwendet — entfernen Sie das Paket, um sie wieder zu nutzen.",
-      "quizIgnored": "nicht verwendet (SCORM-Kurs angehängt)",
       "optionError": "Die Option konnte nicht gespeichert werden — bitte erneut versuchen.",
       "error": {
         "generic": "Die Datei ist kein verwendbares SCORM-Paket.",
@@ -355,6 +353,13 @@
       "diagScore": "Ergebnis",
       "diagWrites": "Schreibzugriffe",
       "diagTerminated": "Sauber beendet"
+    },
+    "contentKind": {
+      "label": "Inhaltstyp",
+      "classic": "Material & Test",
+      "classicHint": "Lernmaterialien zum Durcharbeiten plus der eingebaute Test, bewertet von BrainGain.",
+      "scorm": "SCORM-Kurs",
+      "scormHint": "Ein importierter interaktiver Kurs (z. B. aus Articulate, Captivate, iSpring), der Inhalt und Test selbst mitbringt."
     }
   },
   "trainees": {

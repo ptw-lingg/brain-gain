@@ -2,7 +2,7 @@
   {
     "id": "454ce72d-e1b5-4ed5-9130-2b8045ce5d6f",
     "name": {
-      "en": "SOP-10.00 Product Life Cycle"
+      "en": "SOP-10.00 Product Life Cycle renamed"
     },
     "description": {},
     "category": {
@@ -1046,5 +1046,28 @@
     "materials": [],
     "durationMinutes": 60,
     "version": 1
+  },
+  {
+    "id": "bb0dc85b-a524-4f52-b2fa-62cdba583889",
+    "name": {
+      "en": "SCROMs first try"
+    },
+    "description": {},
+    "durationMinutes": 60,
+    "category": {
+      "en": "SCORM"
+    },
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 1,
+    "windowBeforeMonths": 3,
+    "windowAfterMonths": 3,
+    "order": 21,
+    "materials": [],
+    "questions": [],
+    "version": 1,
+    "updates": [],
+    "createdAt": "2026-08-31T09:19:43.730Z",
+    "scormPackageId": "9f1acce3-b644-4e4b-b7e6-9e6304277360",
+    "publishedAt": "2026-08-31T09:20:00.875Z"
   }
 ]

@@ -85,6 +85,9 @@ test.describe('Trainings — published updates end to end', () => {
     await expect(editor.getByTestId('editor-version')).toHaveText('Version 1');
     await editor.getByPlaceholder('Training name').first().fill(`${NAME} renamed`);
     await editor.getByRole('button', { name: 'Save' }).click();
+    // Wait for the save to FULLY finish (the editor stays open until then — its header also shows
+    // the renamed text, so clicking the row too early would hit the dialog instead of the list).
+    await expect(editor).toHaveCount(0);
     await expect(page.getByTestId('publish-update-dialog')).toHaveCount(0);
 
     // Content change: edit the material URL → the change is STAGED and the publish dialog is

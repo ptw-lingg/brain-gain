@@ -37,7 +37,8 @@ test.describe('SCORM import UI', () => {
     await page.goto('/trainings');
     await page.getByText(/E2E Pkg Import/).first().click();
 
-    // Open the SCORM section and upload a valid 1.2 package through the file input.
+    // Choose the SCORM content kind (the sections are mutually exclusive), open its section.
+    await page.getByTestId('content-kind-scorm').check();
     await page.getByRole('button', { name: /^SCORM course/ }).click();
     await page.getByTestId('scorm-upload').click();
     await page.getByTestId('scorm-upload').locator('xpath=..').locator('input[type=file]');
@@ -65,7 +66,7 @@ test.describe('SCORM import UI', () => {
     void trainingId;
   });
 
-  test('SYS-SCO-03 / SR-176 / VT-212: the quiz editor is disabled while a package is attached and restored on removal', async ({ page, request }) => {
+  test('SYS-SCO-03 / SR-176 / VT-212: quiz inputs are never offered beside a SCORM course, and return when the package is removed', async ({ page, request }) => {
     const trainerToken = await tokenFor(request, CREDS.trainer);
     const pkgId = await uploadPackage(request, trainerToken, await buildScorm12({}));
     const created = await request.post('/api/trainings', {
@@ -77,14 +78,17 @@ test.describe('SCORM import UI', () => {
     await login(page, 'trainer');
     await page.goto('/trainings');
     await page.getByText(/E2E Pkg Quiz/).first().click();
-    await page.getByRole('button', { name: /^Quiz questions/ }).click();
-    await expect(page.getByTestId('scorm-quiz-disabled')).toBeVisible();
+    // SCORM kind derived from the attached package: neither material nor quiz inputs exist.
+    await expect(page.getByRole('button', { name: /^Quiz questions/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Material/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^SCORM course/ })).toHaveCount(1);
 
-    // Remove the package → the disabled notice disappears.
+    // Removing the package flips the editor back to the classic kind — material + quiz return.
     await page.getByRole('button', { name: /^SCORM course/ }).click();
     await page.getByTestId('scorm-remove').click();
     await page.getByTestId('scorm-remove-confirm').click();
-    await expect(page.getByTestId('scorm-quiz-disabled')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Quiz questions/ })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: /^SCORM course/ })).toHaveCount(0);
     void trainingId;
   });
 
@@ -109,6 +113,7 @@ test.describe('SCORM import UI', () => {
     await login(page, 'trainer');
     await page.goto('/trainings');
     await page.getByText(/E2E Pkg Publish/).first().click();
+    await page.getByTestId('content-kind-scorm').check();
     await page.getByRole('button', { name: /^SCORM course/ }).click();
     await page.getByTestId('scorm-upload').click();
     await page.locator('input[type="file"][accept=".zip"]').setInputFiles({

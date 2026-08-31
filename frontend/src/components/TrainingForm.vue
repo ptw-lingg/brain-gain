@@ -263,6 +263,34 @@ function removeVariantFile(variant: MaterialVariant): void {
 // publish). Attaching a package is NOT destructive: the questions are kept but unused, and removing
 // the package brings them back.
 const SCORM_MAX_BYTES = 500 * 1024 * 1024;
+
+// The trainer decides the training's CONTENT KIND — material + quiz, or an imported SCORM course —
+// and the editor shows exactly one of the two: never inputs for both. Derived from the record when
+// an existing training opens; the switch is reversible (content is kept server-side, so flipping
+// back restores what was there), but the two kinds never mix.
+const contentKind = ref<'classic' | 'scorm'>('classic');
+// Flipping to classic detaches the package (an explicit null on save); the id is stashed so
+// flipping back before saving re-attaches it instead of losing the upload.
+let stashedScormId: string | null = null;
+watch(
+  () => props.draft,
+  () => {
+    contentKind.value = props.draft.scormPackageId ? 'scorm' : 'classic';
+    stashedScormId = null;
+  },
+  { immediate: true },
+);
+function setContentKind(kind: 'classic' | 'scorm'): void {
+  if (kind === contentKind.value) return;
+  contentKind.value = kind;
+  if (kind === 'classic') {
+    stashedScormId = props.draft.scormPackageId ?? null;
+    props.draft.scormPackageId = null;
+  } else if (stashedScormId) {
+    props.draft.scormPackageId = stashedScormId;
+  }
+}
+
 const scormPkg = ref<ScormPackageRef | null>(null);
 const scormUploading = ref(false);
 const scormProgress = ref<number | null>(null);
@@ -356,11 +384,13 @@ function cancelScormUpload(): void {
 }
 
 /** Detach the package: an explicit null (kept by JSON) tells the save to clear the WIP reference.
- *  The quiz below comes back to life — removal is the reversible counterpart of attaching. */
+ *  The editor falls back to the classic kind — removal is the reversible counterpart of attaching. */
 function removeScorm(): void {
   props.draft.scormPackageId = null;
   scormPkg.value = null;
+  stashedScormId = null;
   confirmScormRemove.value = false;
+  contentKind.value = 'classic';
 }
 
 /** The rejection message for a known code, else the server's own text. */
@@ -488,8 +518,46 @@ async function loadScormAttempts(): Promise<void> {
       </div>
     </CollapsibleSection>
 
+    <!-- CONTENT KIND: material + quiz, or an imported SCORM course — the trainer decides, and the
+         editor shows exactly one of the two. Switching is reversible (nothing is deleted until
+         saved), but inputs for both never appear together. -->
+    <fieldset class="rounded-xl border border-line bg-white p-4 shadow-soft" data-testid="content-kind">
+      <legend class="form-label px-1">{{ t('trainingForm.contentKind.label') }}</legend>
+      <div class="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <label class="check-card" :class="contentKind === 'classic' ? 'border-accent bg-accent-light/30' : ''">
+          <input
+            type="radio"
+            name="content-kind"
+            class="mt-0.5 accent-accent"
+            :checked="contentKind === 'classic'"
+            data-testid="content-kind-classic"
+            @change="setContentKind('classic')"
+          />
+          <span>
+            <span class="block text-sm font-semibold text-ink">{{ t('trainingForm.contentKind.classic') }}</span>
+            <span class="block font-mono text-[11px] text-ink-light">{{ t('trainingForm.contentKind.classicHint') }}</span>
+          </span>
+        </label>
+        <label class="check-card" :class="contentKind === 'scorm' ? 'border-accent bg-accent-light/30' : ''">
+          <input
+            type="radio"
+            name="content-kind"
+            class="mt-0.5 accent-accent"
+            :checked="contentKind === 'scorm'"
+            data-testid="content-kind-scorm"
+            @change="setContentKind('scorm')"
+          />
+          <span>
+            <span class="block text-sm font-semibold text-ink">{{ t('trainingForm.contentKind.scorm') }}</span>
+            <span class="block font-mono text-[11px] text-ink-light">{{ t('trainingForm.contentKind.scormHint') }}</span>
+          </span>
+        </label>
+      </div>
+    </fieldset>
+
     <!-- Material: one sub-card per material, one flag-prefixed row per configured language inside it -->
     <CollapsibleSection
+      v-if="contentKind === 'classic'"
       :title="t('trainingForm.material')"
       :summary="materialSummary"
       :summary-class="materialCount === 0 ? emptyTint : undefined"
@@ -586,8 +654,9 @@ async function loadScormAttempts(): Promise<void> {
       </button>
     </CollapsibleSection>
 
-    <!-- SCORM package: an imported course that replaces the quiz. -->
+    <!-- SCORM package: an imported course that replaces material and quiz entirely. -->
     <CollapsibleSection
+      v-if="contentKind === 'scorm'"
       :title="t('trainingForm.scorm.section')"
       :summary="scormSummary"
       :open="open.scorm"
@@ -741,22 +810,20 @@ async function loadScormAttempts(): Promise<void> {
     </CollapsibleSection>
 
     <!-- Questions: each one collapses to a single row, since this is what makes the editor grow.
-         With a SCORM package attached the quiz is kept but UNUSED (the course carries its own
-         test) — the section is disabled, not emptied: removing the package brings it back. -->
+         Shown only for the classic kind — a SCORM course carries its own test, so quiz inputs
+         never appear beside it (stored questions are kept server-side; switching the kind back
+         restores them). -->
     <CollapsibleSection
+      v-if="contentKind === 'classic'"
       :title="t('trainingForm.questions')"
-      :summary="hasScorm ? t('trainingForm.scorm.quizIgnored') : questionsSummary"
-      :summary-class="!hasScorm && questionCount === 0 ? emptyTint : undefined"
+      :summary="questionsSummary"
+      :summary-class="questionCount === 0 ? emptyTint : undefined"
       :open="open.questions"
       @toggle="toggle('questions')"
     >
       <template #icon><HelpCircle class="h-4 w-4 shrink-0 text-accent" /></template>
 
-      <div v-if="hasScorm" class="mb-3 rounded-lg border border-blue-200 bg-pastel-blue/30 p-3" data-testid="scorm-quiz-disabled">
-        <p class="font-mono text-xs text-blue-800">{{ t('trainingForm.scorm.quizDisabled') }}</p>
-      </div>
-
-      <div class="flex flex-col gap-2" :class="hasScorm ? 'pointer-events-none opacity-50' : ''">
+      <div class="flex flex-col gap-2">
         <CollapsibleSection
           v-for="(q, qi) in draft.questions"
           :key="qi"
@@ -915,7 +982,7 @@ async function loadScormAttempts(): Promise<void> {
         </CollapsibleSection>
       </div>
 
-      <button v-if="!hasScorm" class="btn-ghost btn-sm mt-2" @click="$emit('add-question')">
+      <button class="btn-ghost btn-sm mt-2" @click="$emit('add-question')">
         <Plus class="h-3.5 w-3.5" /> {{ t('trainingForm.addQuestion') }}
       </button>
     </CollapsibleSection>

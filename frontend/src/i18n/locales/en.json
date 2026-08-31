@@ -326,8 +326,6 @@
       "allowExternalWarning": "Only enable this if the package requires it — it lets the imported content talk to servers on the internet.",
       "a11yNotice": "Accessibility inside an imported course is the responsibility of its author — BrainGain cannot repair contrast, captions or keyboard support in third-party content.",
       "singleLanguageNotice": "A SCORM package is a single-language unit: unlike materials it has no per-language variants. Use a package with its own language switch, or separate trainings per language.",
-      "quizDisabled": "This training is delivered by a SCORM course, which carries its own test. The questions below are kept but not used — remove the package to use them again.",
-      "quizIgnored": "not used (SCORM course attached)",
       "optionError": "The option could not be saved — please try again.",
       "error": {
         "generic": "The file is not a usable SCORM package.",
@@ -355,6 +353,13 @@
       "diagScore": "Score",
       "diagWrites": "Writes",
       "diagTerminated": "Finished cleanly"
+    },
+    "contentKind": {
+      "label": "Content type",
+      "classic": "Material & quiz",
+      "classicHint": "Learning materials to study plus the built-in test, graded by BrainGain.",
+      "scorm": "SCORM course",
+      "scormHint": "An imported interactive course (e.g. from Articulate, Captivate, iSpring) that carries its own content and test."
     }
   },
   "trainees": {

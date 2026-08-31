@@ -87,7 +87,6 @@ test.describe('SCORM isolation boundary', () => {
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
     await page.getByTestId('session-start').click();
-    await page.getByTestId('confirm-materials-ok').click();
     await expect(page.getByTestId('scorm-frame')).toBeVisible();
 
     const sco = page.frameLocator('[data-testid="scorm-frame"]').frameLocator('#sco');
@@ -110,7 +109,6 @@ test.describe('SCORM isolation boundary', () => {
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
     await page.getByTestId('session-start').click();
-    await page.getByTestId('confirm-materials-ok').click();
 
     const sco = page.frameLocator('[data-testid="scorm-frame"]').frameLocator('#sco');
     await sco.getByTestId('sco-init').click();
