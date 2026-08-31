@@ -177,6 +177,58 @@
     },
     {
       "type": "library",
+      "name": "entities",
+      "group": "@nodable",
+      "version": "3.0.0",
+      "bom-ref": "braingain-backend@1.0.0|@nodable/entities@3.0.0",
+      "author": "Amit Gupta",
+      "description": "Entity parser for XML, HTML, External entites with security and NCR control",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40nodable/entities@3.0.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/@nodable/entities/-/entities-3.0.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "f0bf7115e4d82a19b8f717c8ca9a1ed96e705759bfdd9e7c913fbb911f40f0ec85c5c3ddb88e159b1694310c8a62b4635282cb497bfa10a2880f94ef8fd71457"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/nodable/val-parsers/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/nodable/val-parsers.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/nodable/val-parsers#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/@nodable/entities"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "asn1-cms",
       "group": "@peculiar",
       "version": "2.7.0",
@@ -1058,6 +1110,57 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/accepts"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anynum",
+      "version": "1.0.1",
+      "bom-ref": "braingain-backend@1.0.0|anynum@1.0.1",
+      "author": "Amit Gupta",
+      "description": "Normalize all Unicode decimal digits (Devanagari, Arabic, Thai, etc.) to ASCII numerals. Zero dependencies, performance-first.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/anynum@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/anynum/-/anynum-1.0.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "37afff14b113fed5d834cfc5e8005c6b5a07e9f581f8a953b7dd3d2dedbc58c0c193ca1a4f8bd8d7b0c2af083632f9aea942addcd8b837974627f12806070ee8"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/anynum/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/anynum.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/anynum#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/anynum"
         }
       ]
     },
@@ -2571,6 +2674,108 @@
     },
     {
       "type": "library",
+      "name": "fast-xml-builder",
+      "version": "1.3.1",
+      "bom-ref": "braingain-backend@1.0.0|fast-xml-builder@1.3.1",
+      "author": "Amit Gupta",
+      "description": "Build XML from JSON without C/C++ based libraries",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-builder@1.3.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.3.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "a4833fd67de7b455ca62b519c16ed008ad20016ed763ec338f560c215ded2c3bcf8ff57ecd31892b97b7ff85897f08f4a96c361253578938b175afd1fb7612ba"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/fast-xml-builder/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/fast-xml-builder.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/fast-xml-builder#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fast-xml-builder"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fast-xml-parser",
+      "version": "5.11.1",
+      "bom-ref": "braingain-backend@1.0.0|fast-xml-parser@5.11.1",
+      "author": "Amit Gupta",
+      "description": "Validate XML, Parse XML, Build XML without C/C++ based libraries",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-xml-parser@5.11.1",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.11.1.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "4c1c3a2bf7f1a101868c29990f0f70fd9c0fdee0dc9d3338607fe0f8f1515abf2c6dee62757b7134deaf213878fb5aee0996a1a3ab8116eac496c03b174cf383"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/fast-xml-parser/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/fast-xml-parser.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/fast-xml-parser#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/fast-xml-parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "finalhandler",
       "version": "1.3.2",
       "bom-ref": "braingain-backend@1.0.0|finalhandler@1.3.2",
@@ -3321,6 +3526,57 @@
         {
           "name": "cdx:npm:package:path",
           "value": "node_modules/ipaddr.js"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "is-unsafe",
+      "version": "2.0.2",
+      "bom-ref": "braingain-backend@1.0.0|is-unsafe@2.0.2",
+      "author": "Amit Gupta",
+      "description": "Zero-dependency, DOM-free, pure predicate for detecting unsafe strings across HTML, XML, SVG, SQL, SHELL, and REGEX contexts",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-unsafe@2.0.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/is-unsafe/-/is-unsafe-2.0.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "1e06c81cf047d0a1c709c8cb7c6b02be1b4f4d5c636806655e3c1dcfbfc6402e344a349ee2c7d0b1aafc279545a3c24e49b6ab92957438b1bde5b6da35df5a01"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/is-unsafe/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/is-unsafe.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/is-unsafe#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/is-unsafe"
         }
       ]
     },
@@ -5271,6 +5527,61 @@
     },
     {
       "type": "library",
+      "name": "path-expression-matcher",
+      "version": "1.6.2",
+      "bom-ref": "braingain-backend@1.0.0|path-expression-matcher@1.6.2",
+      "author": "Amit Gupta",
+      "description": "Efficient path tracking and pattern matching for XML/JSON parsers",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/path-expression-matcher@1.6.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.6.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "7a74a56a26add3989ab27ce680dc518fcade15d8f7a6e6364293603f568f21a55f4fa9e7f480ae3e816528793c10ddb61dcc1ec2c84efa63760c66e40843ada9"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/path-expression-matcher/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/path-expression-matcher.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/path-expression-matcher#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=14.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/path-expression-matcher"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "path-to-regexp",
       "version": "0.1.13",
       "bom-ref": "braingain-backend@1.0.0|path-to-regexp@0.1.13",
@@ -6758,6 +7069,57 @@
     },
     {
       "type": "library",
+      "name": "strnum",
+      "version": "2.4.2",
+      "bom-ref": "braingain-backend@1.0.0|strnum@2.4.2",
+      "author": "Amit Gupta",
+      "description": "Parse String to Number based on configuration",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/strnum@2.4.2",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/strnum/-/strnum-2.4.2.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "ac31b7021e13574935856bcb4b3919b4c98b37df9e4be877927ab830fe80e36637621e6a18d9ce52cd63264a12afc146e5db0bdbc73b2a0908073484ca4aadbb"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/strnum/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/strnum.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/strnum#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/strnum"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "toidentifier",
       "version": "1.0.1",
       "bom-ref": "braingain-backend@1.0.0|toidentifier@1.0.1",
@@ -7296,6 +7658,61 @@
           "value": "node_modules/vary"
         }
       ]
+    },
+    {
+      "type": "library",
+      "name": "xml-naming",
+      "version": "0.3.0",
+      "bom-ref": "braingain-backend@1.0.0|xml-naming@0.3.0",
+      "author": "Amit Gupta",
+      "description": "Validates XML name productions — Name, NCName, QName, NMToken, NMTokens — for XML 1.0 and 1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "purl": "pkg:npm/xml-naming@0.3.0",
+      "externalReferences": [
+        {
+          "url": "https://registry.npmjs.org/xml-naming/-/xml-naming-0.3.0.tgz",
+          "type": "distribution",
+          "hashes": [
+            {
+              "alg": "SHA-512",
+              "content": "8218a0d93044fc7d7568e56099a840dcc8629af901afa2486249c7fc385d935d275f075b22a049b1b7ccc69bc53c6f1b030efb80ddbd6905af2a9995a0f96f3d"
+            }
+          ],
+          "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/xml-naming/issues",
+          "type": "issue-tracker",
+          "comment": "as detected from PackageJson property \"bugs.url\""
+        },
+        {
+          "url": "git+https://github.com/NaturalIntelligence/xml-naming.git",
+          "type": "vcs",
+          "comment": "as detected from PackageJson property \"repository.url\""
+        },
+        {
+          "url": "https://github.com/NaturalIntelligence/xml-naming#readme",
+          "type": "website",
+          "comment": "as detected from PackageJson property \"homepage\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "cdx:npm:package:constraint:engine:node",
+          "value": ">=16.0.0"
+        },
+        {
+          "name": "cdx:npm:package:path",
+          "value": "node_modules/xml-naming"
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -7306,6 +7723,7 @@
         "braingain-backend@1.0.0|bcryptjs@2.4.3",
         "braingain-backend@1.0.0|cors@2.8.6",
         "braingain-backend@1.0.0|express@4.22.2",
+        "braingain-backend@1.0.0|fast-xml-parser@5.11.1",
         "braingain-backend@1.0.0|jsonwebtoken@9.0.3",
         "braingain-backend@1.0.0|jszip@3.10.1",
         "braingain-backend@1.0.0|jwks-rsa@4.0.1",
@@ -7315,6 +7733,9 @@
     },
     {
       "ref": "braingain-backend@1.0.0|@noble/hashes@1.4.0"
+    },
+    {
+      "ref": "braingain-backend@1.0.0|@nodable/entities@3.0.0"
     },
     {
       "ref": "braingain-backend@1.0.0|@peculiar/asn1-cms@2.7.0",
@@ -7462,6 +7883,9 @@
         "braingain-backend@1.0.0|mime-types@2.1.35",
         "braingain-backend@1.0.0|negotiator@0.6.3"
       ]
+    },
+    {
+      "ref": "braingain-backend@1.0.0|anynum@1.0.1"
     },
     {
       "ref": "braingain-backend@1.0.0|array-flatten@1.1.1"
@@ -7629,6 +8053,24 @@
       ]
     },
     {
+      "ref": "braingain-backend@1.0.0|fast-xml-builder@1.3.1",
+      "dependsOn": [
+        "braingain-backend@1.0.0|path-expression-matcher@1.6.2",
+        "braingain-backend@1.0.0|xml-naming@0.3.0"
+      ]
+    },
+    {
+      "ref": "braingain-backend@1.0.0|fast-xml-parser@5.11.1",
+      "dependsOn": [
+        "braingain-backend@1.0.0|@nodable/entities@3.0.0",
+        "braingain-backend@1.0.0|fast-xml-builder@1.3.1",
+        "braingain-backend@1.0.0|is-unsafe@2.0.2",
+        "braingain-backend@1.0.0|path-expression-matcher@1.6.2",
+        "braingain-backend@1.0.0|strnum@2.4.2",
+        "braingain-backend@1.0.0|xml-naming@0.3.0"
+      ]
+    },
+    {
       "ref": "braingain-backend@1.0.0|finalhandler@1.3.2",
       "dependsOn": [
         "braingain-backend@1.0.0|debug@2.6.9",
@@ -7707,6 +8149,9 @@
     },
     {
       "ref": "braingain-backend@1.0.0|ipaddr.js@1.9.1"
+    },
+    {
+      "ref": "braingain-backend@1.0.0|is-unsafe@2.0.2"
     },
     {
       "ref": "braingain-backend@1.0.0|isarray@1.0.0"
@@ -7868,6 +8313,9 @@
     },
     {
       "ref": "braingain-backend@1.0.0|parseurl@1.3.3"
+    },
+    {
+      "ref": "braingain-backend@1.0.0|path-expression-matcher@1.6.2"
     },
     {
       "ref": "braingain-backend@1.0.0|path-to-regexp@0.1.13"
@@ -8039,6 +8487,12 @@
       "ref": "braingain-backend@1.0.0|string_decoder@1.1.1|safe-buffer@5.1.2"
     },
     {
+      "ref": "braingain-backend@1.0.0|strnum@2.4.2",
+      "dependsOn": [
+        "braingain-backend@1.0.0|anynum@1.0.1"
+      ]
+    },
+    {
       "ref": "braingain-backend@1.0.0|toidentifier@1.0.1"
     },
     {
@@ -8074,6 +8528,9 @@
     },
     {
       "ref": "braingain-backend@1.0.0|vary@1.1.2"
+    },
+    {
+      "ref": "braingain-backend@1.0.0|xml-naming@0.3.0"
     }
   ]
 }

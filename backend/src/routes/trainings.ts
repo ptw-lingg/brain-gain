@@ -7,6 +7,8 @@ import type {
   OrgUnit,
   PublicTraining,
   Question,
+  ScormAttempt,
+  ScormPackageRef,
   Training,
   TraineeGroup,
   TrainingSession,
@@ -22,6 +24,9 @@ import {
   saveMaterial,
   writeStore,
 } from '../services/fileStore';
+import { importScormPackage, ScormImportError } from '../services/scorm/import';
+import { deletePackageIfUnreferenced, getPackage, referencedPackageIds } from '../services/scorm/packages';
+import { deleteAttempt } from '../services/scorm/attempts';
 import { materialFileIds, sanitizeMaterials } from '../services/materials';
 import { MATERIAL_LOCALES } from '../services/locales';
 import {
@@ -54,18 +59,30 @@ router.use(authenticate);
  * disclosing "exactly one correct answer" is the point of the type, not a leak.
  * The work-in-progress `draft` is stripped too: learners see and use ONLY the published content —
  * the top-level materials/questions, which publish-update alone writes.
+ * `scormPackageId` is stripped as well (toPublic spreads ...rest, so any kept field leaks by
+ * default): a SCORM-backed training gives the learner only the non-revealing `scorm` summary —
+ * never the package id, entry file, mastery score or manifest internals. Its questions (kept in
+ * storage but unused — the package replaces the quiz) are withheld entirely.
  */
-function toPublic(t: Training): PublicTraining {
-  const { draft, ...rest } = t;
+function toPublic(t: Training, pkgs?: Map<string, ScormPackageRef>): PublicTraining {
+  const { draft, scormPackageId, ...rest } = t;
   void draft;
+  const pkg = scormPackageId ? pkgs?.get(scormPackageId) : undefined;
   return {
     ...rest,
-    questions: t.questions.map((q) => {
+    questions: (scormPackageId ? [] : t.questions).map((q) => {
       const { correctIndices, ...stripped } = q;
       void correctIndices;
       return { ...stripped, type: questionType(q) };
     }),
+    ...(pkg ? { scorm: { version: pkg.version, title: pkg.title } } : {}),
   };
+}
+
+/** packageId → descriptor, for resolving `scorm` summaries in list responses. */
+async function packageMap(): Promise<Map<string, ScormPackageRef>> {
+  const packages = await readStore<ScormPackageRef>('scormPackages');
+  return new Map(packages.map((p) => [p.packageId, p]));
 }
 
 /** File ids referenced by a training's WIP draft ([] when none). */
@@ -145,6 +162,7 @@ async function readOrderedTrainings(): Promise<Training[]> {
 // GET /api/trainings  (admin: all; trainer with ?mine=1: only owned)
 router.get('/', async (req: AuthRequest, res) => {
   const trainings = await readOrderedTrainings();
+  const pkgs = await packageMap();
   const mine = req.query.mine === '1' || req.query.mine === 'true';
   const canSeeAnswers = (t: Training) => req.user?.isAdmin || t.ownerId === req.user?.id;
   let result = trainings;
@@ -152,7 +170,7 @@ router.get('/', async (req: AuthRequest, res) => {
     result = trainings.filter((t) => t.ownerId === req.user?.id);
   }
   // Owners/admins get full questions; everyone else gets the public (no-answer) shape.
-  res.json(result.map((t) => (canSeeAnswers(t) ? t : toPublic(t))));
+  res.json(result.map((t) => (canSeeAnswers(t) ? t : toPublic(t, pkgs))));
 });
 
 // GET /api/trainings/mine  — current user's required trainings + due status
@@ -163,6 +181,7 @@ router.get('/mine', async (req: AuthRequest, res) => {
     readStore<UpdateAck>('updateAcks'),
   ]);
   const required = await requiredTrainingIds(req.user!.id);
+  const pkgs = await packageMap();
   const result: DueTraining[] = trainings
     .filter((t) => required.has(t.id))
     .map((t) => {
@@ -171,7 +190,7 @@ router.get('/mine', async (req: AuthRequest, res) => {
         sessionsFor(sessions, req.user!.id, t.id),
         acksFor(acks, req.user!.id, t.id),
       );
-      return { training: toPublic(t), ...due };
+      return { training: toPublic(t, pkgs), ...due };
     });
   res.json(result);
 });
@@ -244,6 +263,108 @@ router.get('/materials/:fileId', async (req: AuthRequest, res) => {
   return sendAttachment(res, file.bytes, file.meta.name, file.meta.type);
 });
 
+// POST /api/trainings/scorm-packages — upload a SCORM zip (trainer/admin). Training-independent,
+// like the material upload: the editor uploads immediately, references the returned packageId in
+// the draft, and persists on save — a brand-new training has no id until then. The archive is
+// fully validated (manifest, single SCO, zip-slip/symlink/zip-bomb guards) and extracted before
+// anything is recorded; a never-referenced package is swept by gcScorm after a day.
+// Registered before '/:id' so the literal path is never mistaken for a training id.
+router.post(
+  '/scorm-packages',
+  requireTrainerOrAdmin,
+  raw({ type: '*/*', limit: '500mb' }), // packages with video run 100–250 MB; largest limit in the app
+  async (req: AuthRequest, res) => {
+    const bytes = req.body;
+    if (!Buffer.isBuffer(bytes) || bytes.length === 0) {
+      return res.status(400).json({ error: 'empty upload' });
+    }
+    const name = sanitizeFileName(req.query.name, 'package.zip');
+    try {
+      const ref = await importScormPackage({
+        zipBytes: bytes,
+        uploadedBy: req.user!.id,
+        originalFileName: name,
+      });
+      await auditEvent(
+        req.user ?? null,
+        'scorm-imported',
+        { type: 'scormPackage', id: ref.packageId, name },
+        {
+          details: `scorm=${ref.version} files=${ref.fileCount} bytes=${ref.bytes} sco=1 title="${ref.title}"`,
+        },
+      );
+      return res.status(201).json(ref);
+    } catch (err) {
+      if (err instanceof ScormImportError) {
+        // Trainers WILL bring rejected packages to support — the reason belongs in the audit trail.
+        await auditEvent(
+          req.user ?? null,
+          'scorm-rejected',
+          { type: 'scormPackage', id: '', name },
+          { details: `${err.code}: ${err.message}` },
+        );
+        return res.status(422).json({ error: err.message, code: err.code, details: err.details });
+      }
+      throw err;
+    }
+  },
+);
+
+// PATCH /api/trainings/scorm-packages/:packageId — the two trainer-editable package options.
+// Everything else on the record is immutable after import (a new build is a new package).
+router.patch('/scorm-packages/:packageId', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
+  const b = req.body ?? {};
+  const packages = await readStore<ScormPackageRef>('scormPackages');
+  const pkg = packages.find((p) => p.packageId === req.params.packageId);
+  if (!pkg) return res.status(404).json({ error: 'Not found' });
+  if (b.completionRule !== undefined) {
+    if (!['status', 'exit', 'time'].includes(b.completionRule)) {
+      return res.status(400).json({ error: "completionRule must be 'status', 'exit' or 'time'" });
+    }
+    pkg.completionRule = b.completionRule;
+  }
+  if (b.allowExternal !== undefined) pkg.allowExternal = b.allowExternal === true;
+  await writeStore('scormPackages', packages);
+  await auditEvent(
+    req.user ?? null,
+    'update',
+    { type: 'scormPackage', id: pkg.packageId, name: pkg.originalFileName },
+    { details: `completionRule=${pkg.completionRule} allowExternal=${pkg.allowExternal}` },
+  );
+  return res.json(pkg);
+});
+
+// DELETE /api/trainings/scorm-packages/:packageId — only when nothing references it (an attached
+// package is removed by editing the training, which then cleans up here automatically).
+router.delete('/scorm-packages/:packageId', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
+  const pkg = await getPackage(req.params.packageId);
+  if (!pkg) return res.status(404).json({ error: 'Not found' });
+  const deleted = await deletePackageIfUnreferenced(req.params.packageId);
+  if (!deleted) return res.status(409).json({ error: 'The package is attached to a training' });
+  await auditEvent(req.user ?? null, 'delete', {
+    type: 'scormPackage',
+    id: pkg.packageId,
+    name: pkg.originalFileName,
+  });
+  return res.status(204).end();
+});
+
+// GET /api/trainings/:id/scorm-attempts — trainer diagnostics: the attempts against this training
+// (index rows only — status, score, write counts; never the cmi itself). This is what resolves
+// "the package doesn't work" tickets: it shows whether a course ever reported status or terminate.
+router.get('/:id/scorm-attempts', requireAdminOrOwner, async (req: AuthRequest, res) => {
+  const attempts = await readStore<ScormAttempt>('scormAttempts');
+  const users = await readStore<User>('users');
+  const emailOf = new Map(users.map((u) => [u.id, u.email]));
+  return res.json(
+    attempts
+      .filter((a) => a.trainingId === req.params.id)
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+      .slice(0, 100)
+      .map((a) => ({ ...a, userEmail: emailOf.get(a.userId) ?? '' })),
+  );
+});
+
 // GET /api/trainings/:id/trainer — the owning trainer's contact card for any authenticated user.
 // The session page shows it so a trainee with questions can reach the right person; name, org unit
 // and email are exactly what identifies the trainer in the company address list (SR-163). Only these
@@ -260,14 +381,23 @@ router.get('/:id/trainer', async (req: AuthRequest, res) => {
   return res.json({ name: owner.name, email: owner.email, orgUnitName });
 });
 
-// GET /api/trainings/:id  — single training, answer key stripped for non-owners
+// GET /api/trainings/:id  — single training, answer key stripped for non-owners. Owners/admins
+// (the editor) additionally get the RESOLVED package descriptors — published and staged — so the
+// form can render the manifest card without a second round-trip.
 router.get('/:id', async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
   if (!training) return res.status(404).json({ error: 'Not found' });
   if (!Array.isArray(training.materials)) training.materials = []; // backfill legacy records
   const canSeeAnswers = req.user?.isAdmin || training.ownerId === req.user?.id;
-  return res.json(canSeeAnswers ? training : toPublic(training));
+  if (!canSeeAnswers) return res.json(toPublic(training, await packageMap()));
+  const publishedPkg = training.scormPackageId ? await getPackage(training.scormPackageId) : null;
+  const draftPkg = training.draft?.scormPackageId
+    ? training.draft.scormPackageId === training.scormPackageId
+      ? publishedPkg
+      : await getPackage(training.draft.scormPackageId)
+    : null;
+  return res.json({ ...training, scormPackages: { published: publishedPkg, draft: draftPkg } });
 });
 
 // POST /api/trainings  — admin or trainer
@@ -291,6 +421,17 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   // learners see nothing until version 1 is explicitly published.
   const draftMaterials = sanitizeMaterials(b.materials, MATERIAL_LOCALES);
   const draftQuestions = sanitizeQuestions(b.questions, MATERIAL_LOCALES);
+  // A staged SCORM package (uploaded before the first save) — id only, validated like PUT does.
+  let draftScormId: string | null = null;
+  if (typeof b.scormPackageId === 'string' && b.scormPackageId) {
+    if (!(await getPackage(b.scormPackageId))) {
+      return res.status(400).json({ error: 'Unknown SCORM package' });
+    }
+    if (referencedPackageIds(trainings).has(b.scormPackageId)) {
+      return res.status(409).json({ error: 'This SCORM package belongs to another training' });
+    }
+    draftScormId = b.scormPackageId;
+  }
   const training: Training = {
     id: randomUUID(),
     name,
@@ -306,8 +447,15 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     questions: [],
     version: 0,
     updates: [],
-    ...(draftMaterials.length || draftQuestions.length
-      ? { draft: { materials: draftMaterials, questions: draftQuestions, savedAt: new Date().toISOString() } }
+    ...(draftMaterials.length || draftQuestions.length || draftScormId
+      ? {
+          draft: {
+            materials: draftMaterials,
+            questions: draftQuestions,
+            ...(draftScormId ? { scormPackageId: draftScormId } : {}),
+            savedAt: new Date().toISOString(),
+          },
+        }
       : {}),
     createdAt: new Date().toISOString(),
   };
@@ -360,10 +508,32 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     b.questions != null
       ? sanitizeQuestions(b.questions, MATERIAL_LOCALES)
       : current.draft?.questions ?? current.questions;
-  const publishedJson = JSON.stringify([current.materials ?? [], current.questions]);
-  const candidateJson = JSON.stringify([candMaterials, candQuestions]);
+  // The staged SCORM package: an id ONLY (null clears it) — the descriptor is resolved from the
+  // server's own store, so a client can never smuggle a tampered masteryScore/entryHref in.
+  // Same present-or-keep rule as above; undefined keeps the WIP value.
+  const candScormId: string | null =
+    b.scormPackageId !== undefined
+      ? typeof b.scormPackageId === 'string' && b.scormPackageId
+        ? b.scormPackageId
+        : null
+      : current.draft
+        ? current.draft.scormPackageId ?? null
+        : current.scormPackageId ?? null;
+  if (candScormId && candScormId !== current.scormPackageId && candScormId !== current.draft?.scormPackageId) {
+    if (!(await getPackage(candScormId))) {
+      return res.status(400).json({ error: 'Unknown SCORM package' });
+    }
+    // One package = one training: a package referenced elsewhere cannot be attached here too
+    // (attempt records and GC pin a package to the training it belongs to).
+    const others = trainings.filter((t) => t.id !== current.id);
+    if (referencedPackageIds(others).has(candScormId)) {
+      return res.status(409).json({ error: 'This SCORM package belongs to another training' });
+    }
+  }
+  const publishedJson = JSON.stringify([current.materials ?? [], current.questions, current.scormPackageId ?? null]);
+  const candidateJson = JSON.stringify([candMaterials, candQuestions, candScormId]);
   const oldDraftJson = current.draft
-    ? JSON.stringify([current.draft.materials, current.draft.questions])
+    ? JSON.stringify([current.draft.materials, current.draft.questions, current.draft.scormPackageId ?? null])
     : null;
 
   trainings[idx] = {
@@ -403,7 +573,12 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
           draft:
             candidateJson === oldDraftJson
               ? current.draft
-              : { materials: candMaterials, questions: candQuestions, savedAt: new Date().toISOString() },
+              : {
+                  materials: candMaterials,
+                  questions: candQuestions,
+                  ...(candScormId ? { scormPackageId: candScormId } : {}),
+                  savedAt: new Date().toISOString(),
+                },
         }),
   };
   if (candidateJson === publishedJson) delete trainings[idx].draft;
@@ -414,6 +589,11 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const keptIds = new Set([...materialFileIds(trainings[idx]), ...draftFileIds(trainings[idx])]);
   const droppedIds = draftFileIds(current).filter((id) => !keptIds.has(id));
   await Promise.allSettled(droppedIds.map((id) => deleteMaterial(id)));
+  // Same for a replaced/removed draft package: its tree is deleted once nothing references it.
+  const oldDraftScormId = current.draft?.scormPackageId;
+  if (oldDraftScormId && oldDraftScormId !== candScormId) {
+    await deletePackageIfUnreferenced(oldDraftScormId);
+  }
   await auditEvent(
     req.user ?? null,
     'update',
@@ -469,13 +649,25 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     return res.status(400).json({ error: 'nothing to publish — no draft' });
   }
 
+  // A confirm-mode update is discharged by a button click (confirm-materials) — meaningless for a
+  // SCORM course, whose new content must actually be run. Judged against the POST-promotion state.
+  const nextScormId = training.draft ? training.draft.scormPackageId : training.scormPackageId;
+  if (kind === 'notify' && b.mode === 'confirm' && nextScormId) {
+    return res.status(400).json({ error: 'A SCORM course update requires a retake, not a confirmation' });
+  }
+
   // Promote the draft: it becomes the published content; bytes only the old published version
   // referenced are deleted after the store write. (A notify publish WITHOUT a draft is allowed —
-  // it re-announces the current content.)
+  // it re-announces the current content.) The SCORM package id is promoted the same way — the
+  // published id is PINNED to this version; in-flight attempts keep running against the build they
+  // launched with and are refused at grading if a newer one was published meanwhile.
   const oldPublishedIds = materialFileIds(training);
+  const oldPublishedScormId = training.scormPackageId;
   if (training.draft) {
     training.materials = training.draft.materials;
     training.questions = training.draft.questions;
+    if (training.draft.scormPackageId) training.scormPackageId = training.draft.scormPackageId;
+    else delete training.scormPackageId;
     delete training.draft;
   }
   const version = currentVersion + 1;
@@ -502,6 +694,9 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
   await Promise.allSettled(
     oldPublishedIds.filter((id) => !newPublishedIds.has(id)).map((id) => deleteMaterial(id)),
   );
+  if (oldPublishedScormId && oldPublishedScormId !== training.scormPackageId) {
+    await deletePackageIfUnreferenced(oldPublishedScormId);
+  }
 
   if (kind === 'silent') {
     await auditEvent(
@@ -562,12 +757,16 @@ router.delete('/:id/draft', requireAdminOrOwner, async (req: AuthRequest, res) =
   if (!training.draft) return res.status(404).json({ error: 'No draft to discard' });
   const savedAt = training.draft.savedAt;
   const droppedCandidates = draftFileIds(training);
+  const droppedScormId = training.draft.scormPackageId;
   delete training.draft;
   await writeStore('trainings', trainings);
   const publishedIds = new Set(materialFileIds(training));
   await Promise.allSettled(
     droppedCandidates.filter((id) => !publishedIds.has(id)).map((id) => deleteMaterial(id)),
   );
+  if (droppedScormId && droppedScormId !== training.scormPackageId) {
+    await deletePackageIfUnreferenced(droppedScormId);
+  }
   await auditEvent(
     req.user ?? null,
     'training-draft-discarded',
@@ -609,6 +808,16 @@ router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   // Best-effort cleanup of the deleted training's uploaded files — published AND draft bytes.
   const removedIds = new Set([...materialFileIds(removed), ...draftFileIds(removed)]);
   await Promise.allSettled([...removedIds].map((id) => deleteMaterial(id)));
+  // SCORM cleanup: the training's packages (published + draft) once unreferenced, and its
+  // never-consumed attempts. Consumed attempts stay — they are the evidence behind persisted
+  // sessions, which survive a training deletion too.
+  for (const pkgId of new Set([removed.scormPackageId, removed.draft?.scormPackageId])) {
+    if (pkgId) await deletePackageIfUnreferenced(pkgId);
+  }
+  const scormAttempts = await readStore<ScormAttempt>('scormAttempts');
+  await Promise.allSettled(
+    scormAttempts.filter((a) => a.trainingId === removed.id).map((a) => deleteAttempt(a.id)),
+  );
   // Drop the training's update acknowledgements too (the prune migration is the safety net).
   const acks = await readStore<UpdateAck>('updateAcks');
   const keptAcks = acks.filter((a) => a.trainingId !== removed.id);

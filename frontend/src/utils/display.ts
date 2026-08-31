@@ -86,24 +86,36 @@ export function cycleLabel(t: TFn, years: number): string {
  * without a test is completed by confirming the materials instead (the confirmation is audited and
  * the empty grading persists the session as evidence). The trainer list still flags a missing test
  * via `ready`/`hasQuestions`.
+ * A SCORM package is BOTH the material and the test: a SCORM-backed training is ready and
+ * startable with no materials and no questions of its own.
  */
 export interface TrainingReadiness {
   hasMaterial: boolean;
   hasQuestions: boolean;
-  /** Material AND a test present — fully prepared from the trainer's point of view. */
+  hasScorm: boolean;
+  /** Fully prepared from the trainer's point of view. */
   ready: boolean;
-  /** Material present — learners can start; without questions the confirmation completes it. */
+  /** Learners can start it. */
   startable: boolean;
 }
 
 export function trainingReadiness(
-  training: Pick<Training, 'materials' | 'questions'>,
+  training: Pick<Training, 'materials' | 'questions'> &
+    Partial<Pick<Training, 'scorm' | 'scormPackageId' | 'draft'>>,
 ): TrainingReadiness {
   // Every stored material carries at least one content-bearing variant (a link or an uploaded
   // file in some language), so one material is enough to have something to study.
   const hasMaterial = (training.materials?.length ?? 0) > 0;
   const hasQuestions = training.questions.length > 0;
-  return { hasMaterial, hasQuestions, ready: hasMaterial && hasQuestions, startable: hasMaterial };
+  // Learner payloads carry `scorm`, owner payloads the raw id (+ possibly a staged draft one).
+  const hasScorm = Boolean(training.scorm ?? training.scormPackageId ?? training.draft?.scormPackageId);
+  return {
+    hasMaterial,
+    hasQuestions,
+    hasScorm,
+    ready: hasScorm || (hasMaterial && hasQuestions),
+    startable: hasScorm || hasMaterial,
+  };
 }
 
 /** Human-readable duration from minutes: 45 → "45 min", 120 → "2 h", 90 → "1 h 30 min". */

@@ -1,0 +1,118 @@
+<!doctype html>
+<!--
+  SCORM wrapper page — served by the CONTENT origin at /s/<token>/_lms/wrapper.html.
+  It installs the SCORM API (window.API / window.API_1484_11) and nests the SCO one frame below,
+  SAME-origin, so the standard parent-walk API finder succeeds on the first hop. The complete cmi
+  seed arrives from the app over postMessage BEFORE the SCO iframe is created — that is the
+  synchronous-read invariant: every LMSGetValue is answered locally on the same tick, no read ever
+  crosses a frame boundary. Do not "simplify" the ordering; it is what makes real packages work.
+
+  The cfg placeholder below is replaced server-side with a JSON config object ({ appOrigin, nonce,
+  attemptId, entryUrl, version }) — JSON into a non-executing script tag, read via JSON.parse,
+  because parts of it (entryHref) derive from the UNTRUSTED manifest and must never be
+  string-interpolated into markup (an XSS here could steal the launch token).
+
+  NOTE: the backend runs from src/ (tsx), so this file needs no build step — it is read from disk
+  next to scormServer.ts. If the backend ever runs from dist/, these shim assets must be copied.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<title>Training content</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #fff; }
+  #sco { border: 0; width: 100%; height: 100%; display: block; }
+  #wait { font: 14px system-ui, sans-serif; color: #666; padding: 1rem; }
+</style>
+</head>
+<body>
+<script type="application/json" id="cfg">__CFG_JSON__</script>
+<div id="wait">Loading training content…</div>
+<script src="scorm-api.js"></script>
+<script>
+(function () {
+  'use strict';
+  var cfg = JSON.parse(document.getElementById('cfg').textContent);
+  var APP_ORIGIN = cfg.appOrigin;
+  var NONCE = cfg.nonce;
+  var ATTEMPT_ID = cfg.attemptId;
+  var port = null;
+  var seq = 0;
+  var lastInSeq = 0;
+
+  function envelope(type, payload) {
+    seq += 1;
+    var msg = { bg: 'scorm', v: 1, nonce: NONCE, attemptId: ATTEMPT_ID, seq: seq, type: type };
+    for (var k in payload) msg[k] = payload[k];
+    return msg;
+  }
+
+  function send(type, payload) {
+    var msg = envelope(type, payload || {});
+    if (port) port.postMessage(msg);
+    else window.parent.postMessage(msg, APP_ORIGIN); // handshake phase only
+    return msg.seq;
+  }
+
+  // The shim (scorm-api.js) is transport-agnostic: it hands us flush batches, we envelope them.
+  var shim = window.__scormShim;
+  shim.onFlush = function (kind, values, exit) {
+    return send(kind, kind === 'terminate' ? { values: values, exit: exit || '' } : { values: values });
+  };
+
+  function onInit(data) {
+    shim.seed(data.cmi, data.version, data.readOnly || []);
+    if (data.version === '1.2') window.API = shim.api12;
+    else window.API_1484_11 = shim.api2004;
+    // Only NOW does the SCO exist — its first LMSGetValue must find a complete local model.
+    var wait = document.getElementById('wait');
+    if (wait) wait.parentNode.removeChild(wait);
+    var frame = document.createElement('iframe');
+    frame.id = 'sco';
+    // entryUrl is server-constructed ("../<entryHref>" relative to _lms/) — assigned as a
+    // property, never interpolated into HTML.
+    frame.src = cfg.entryUrl;
+    document.body.appendChild(frame);
+  }
+
+  function validEnvelope(d) {
+    return d && d.bg === 'scorm' && d.v === 1 && d.nonce === NONCE && d.attemptId === ATTEMPT_ID &&
+      typeof d.seq === 'number' && d.seq > lastInSeq;
+  }
+
+  function onPortMessage(e) {
+    var d = e.data;
+    if (!validEnvelope(d)) return;
+    lastInSeq = d.seq;
+    if (d.type === 'ack') shim.onAck(d.forSeq);
+    else if (d.type === 'nak') shim.onNak(d.forSeq);
+    else if (d.type === 'close') { try { document.getElementById('sco').src = 'about:blank'; } catch (err) { /* gone */ } }
+  }
+
+  window.addEventListener('message', function (e) {
+    // Handshake: exactly one init, from the app window, on the app origin, carrying our port.
+    if (e.origin !== APP_ORIGIN || e.source !== window.parent) return;
+    var d = e.data;
+    if (port || !validEnvelope(d) || d.type !== 'init') return;
+    lastInSeq = d.seq;
+    if (e.ports && e.ports[0]) {
+      port = e.ports[0];
+      port.onmessage = onPortMessage;
+    }
+    onInit(d);
+  });
+
+  // A closing/backgrounded tab flushes whatever is dirty — the app-side keepalive POST is what
+  // actually persists it, this just gets the final deltas across the bridge in time.
+  function lastGasp() { shim.flush('commit'); }
+  window.addEventListener('pagehide', lastGasp);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') lastGasp();
+  });
+
+  send('ready', { api: cfg.version === '1.2' ? 'API' : 'API_1484_11' });
+})();
+</script>
+</body>
+</html>

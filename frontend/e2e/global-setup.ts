@@ -7,6 +7,9 @@ import { setTimeout as sleep } from 'node:timers/promises';
 // Ports for the isolated e2e backend (distinct from dev :3001 and the test harness :3990).
 const HTTPS_PORT = 4443;
 const HTTP_PORT = 4442;
+// The SCORM content origin — a SECOND https listener; the origin split is what the isolation
+// specs actually verify, so it must be a real separate origin here too.
+const SCORM_PORT = 4444;
 
 export default async function globalSetup(): Promise<void> {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // accept the self-signed cert from Node-side fetches
@@ -26,6 +29,11 @@ export default async function globalSetup(): Promise<void> {
       DATA_DIR: dataDir,
       HTTPS_PORT: String(HTTPS_PORT),
       HTTP_PORT: String(HTTP_PORT),
+      SCORM_CONTENT_PORT: String(SCORM_PORT),
+      // The SPA is served by express here, so the app origin is the backend itself — this is the
+      // environment where the real production CSP gets exercised end to end. Enforce it.
+      APP_ORIGIN: `https://localhost:${HTTPS_PORT}`,
+      CSP_ENFORCE: '1',
       JWT_SECRET: 'e2e-secret',
     },
     stdio: 'pipe',

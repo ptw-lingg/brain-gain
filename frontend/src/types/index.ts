@@ -50,7 +50,75 @@ export interface Question {
 export interface TrainingDraft {
   materials: Material[];
   questions: Question[];
+  // Staged SCORM package id. Present = the draft is SCORM-backed (the package replaces the quiz).
+  scormPackageId?: string;
   savedAt: string;
+}
+
+// ── SCORM (see backend/src/types.ts for the full rationale on every field) ───────────────────────
+
+export type ScormVersion = '1.2' | '2004';
+export type ScormCompletionRule = 'status' | 'exit' | 'time';
+
+// An imported SCORM package descriptor — trainer/admin payloads only.
+export interface ScormPackageRef {
+  packageId: string;
+  // From the manifest — UNTRUSTED text. Render with {{ }} only; never v-html, never into
+  // :href/:src/:style, never into pdfmake markup.
+  title: string;
+  version: ScormVersion;
+  entryHref: string;
+  launchParameters?: string;
+  masteryScore: number | null; // normalized 0–1; advisory (the SCO grades itself with it)
+  dataFromLms?: string;
+  manifestIdentifier: string;
+  fileCount: number;
+  bytes: number;
+  sha256: string;
+  originalFileName: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  completionRule: ScormCompletionRule;
+  allowExternal: boolean;
+}
+
+/** What a LEARNER sees of a SCORM-backed training — deliberately nothing else. */
+export interface PublicScormInfo {
+  version: ScormVersion;
+  title: string;
+}
+
+/** Response of POST /api/sessions/scorm/launch — everything the player needs for one run. */
+export interface ScormLaunch {
+  attemptId: string;
+  resumed: boolean;
+  contentOrigin: string; // the exact origin every postMessage is pinned to, both directions
+  url: string; // wrapper URL on the content origin, token in the path
+  nonce: string; // per-launch bridge secret
+  version: ScormVersion;
+  cmi: Record<string, string>; // the COMPLETE seed — shim reads never hit the network
+  readOnly: readonly string[];
+  preview: boolean;
+  completionRule: ScormCompletionRule;
+  masteryScore: number | null;
+  expiresAt: string;
+}
+
+/** One row of the trainer diagnostics list (GET /api/trainings/:id/scorm-attempts). */
+export interface ScormAttemptSummary {
+  id: string;
+  userId: string;
+  userEmail: string;
+  status: 'in-progress' | 'completed' | 'failed' | 'abandoned';
+  preview: boolean;
+  startedAt: string;
+  lastActivityAt: string;
+  activeSec: number;
+  terminated: boolean;
+  completion: string;
+  success: string;
+  scoreScaled: number | null;
+  setValuesCount: number;
 }
 
 // One published content update of a training (see backend TrainingUpdate): the editor changed
@@ -88,6 +156,13 @@ export interface Training {
   publishedAt?: string; // when the current version was published — set by every publish; server-managed
   updates?: TrainingUpdate[]; // published updates, append-only, server-managed
   draft?: TrainingDraft; // WIP content — editor-facing payloads only, never sent to learners
+  // SCORM: owner/admin payloads carry the raw published package id (+ resolved descriptors on the
+  // single-training view); learner payloads carry ONLY the `scorm` summary. In the EDITOR copy this
+  // field holds the WIP value sent on save — an explicit null detaches the package (undefined would
+  // be stripped by JSON and read as "keep").
+  scormPackageId?: string | null;
+  scormPackages?: { published: ScormPackageRef | null; draft: ScormPackageRef | null };
+  scorm?: PublicScormInfo;
   createdAt: string;
 }
 
@@ -147,6 +222,7 @@ export interface TrainingSession {
   trainingId: string;
   completedAt: string;
   scorePct: number;
+  scormAttemptId?: string; // SCORM completions: the server-side attempt behind this session
 }
 
 export interface EntraSsoSettings {
@@ -233,11 +309,15 @@ export interface GradeResult {
   scorePct: number;
   passed: boolean;
   passThreshold: number;
-  correct: number;
-  total: number;
+  // Quiz gradings only — a SCORM grading carries success/completion instead.
+  correct?: number;
+  total?: number;
   // Indices of wrongly answered questions — present only on a FAILED attempt and only when the
   // admin has enabled revealWrongQuestions in Settings.
   wrongIndices?: number[];
+  // SCORM gradings only: the course's own verdict as recorded server-side.
+  success?: string;
+  completion?: string;
 }
 
 /** A server-side backup archive of all app data (see backend/src/services/backup.ts). */

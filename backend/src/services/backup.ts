@@ -30,7 +30,13 @@ import JSZip from 'jszip';
 import {
   dataDir,
   listMaterialFiles,
+  listScormAttemptFiles,
+  listScormEntries,
+  listScormPackageDirs,
   materialFilePath,
+  resolveScormEntry,
+  scormAttemptPath,
+  scormPackageDir,
   STORE_FILES,
   storeFilePath,
   type StoreFile,
@@ -40,6 +46,11 @@ import { auditFilePath } from './audit';
 const BACKUPS_DIR_NAME = 'backups';
 const STAGING_DIR_NAME = '.restore-staging';
 const MATERIALS_PREFIX = 'data/materials/';
+// SCORM package trees (data/scorm/<packageId>/<original relative path…>) and attempt files
+// (data/scorm-attempts/<attemptId>.json). Both prefixes are OPTIONAL in an archive — a pre-SCORM
+// backup restores unchanged, so FORMAT_VERSION stays 1.
+const SCORM_PREFIX = 'data/scorm/';
+const SCORM_ATTEMPTS_PREFIX = 'data/scorm-attempts/';
 const MANIFEST = 'manifest.json';
 const APP = 'BrainGain';
 const FORMAT_VERSION = 1;
@@ -52,7 +63,8 @@ export interface BackupMeta {
   createdAt: string;
   size: number;
   source: BackupSource;
-  contents: { users: number; trainings: number; materials: number };
+  // scormPackages is absent on archives that predate SCORM support (readers use `?? 0`).
+  contents: { users: number; trainings: number; materials: number; scormPackages?: number };
 }
 
 /** Thrown when an archive isn't a usable BrainGain backup → mapped to HTTP 400 by the route. */
@@ -142,6 +154,44 @@ function zipMaterials(zip: JSZip): { base: string; entry: JSZip.JSZipObject }[] 
   return out;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * SCORM package entries inside an archive: package id + relative path, each GUARDED. Unlike
+ * materials these keep their nested paths (an SCO resolves assets relatively), so an uploaded
+ * archive's paths are untrusted — we cannot basename them away. Instead: the first segment must be
+ * a UUID (the package id) and the remainder must pass resolveScormEntry's containment check;
+ * anything else is silently skipped, never written.
+ */
+function zipScormEntries(zip: JSZip): { pkgId: string; rel: string; entry: JSZip.JSZipObject }[] {
+  const out: { pkgId: string; rel: string; entry: JSZip.JSZipObject }[] = [];
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (entry.dir || !name.startsWith(SCORM_PREFIX)) continue;
+    const remainder = name.slice(SCORM_PREFIX.length);
+    const slash = remainder.indexOf('/');
+    if (slash <= 0) continue;
+    const pkgId = remainder.slice(0, slash);
+    const rel = remainder.slice(slash + 1);
+    if (!UUID_RE.test(pkgId) || !rel) continue;
+    if (resolveScormEntry(pkgId, rel) === null) continue;
+    out.push({ pkgId, rel, entry });
+  }
+  return out;
+}
+
+/** SCORM attempt files inside an archive (flat `<uuid>.json` entries; anything else is skipped). */
+function zipScormAttempts(zip: JSZip): { id: string; entry: JSZip.JSZipObject }[] {
+  const out: { id: string; entry: JSZip.JSZipObject }[] = [];
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (entry.dir || !name.startsWith(SCORM_ATTEMPTS_PREFIX)) continue;
+    const base = path.posix.basename(name);
+    if (!base.endsWith('.json')) continue;
+    const id = base.slice(0, -'.json'.length);
+    if (UUID_RE.test(id)) out.push({ id, entry });
+  }
+  return out;
+}
+
 /** Uploads (not raw entries) among a set of material file names — bytes have a .meta.json sibling. */
 const uploadCount = (names: string[]): number => names.filter((n) => !n.endsWith('.meta.json')).length;
 
@@ -181,6 +231,22 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
     zip.file(`${MATERIALS_PREFIX}${entry}`, await fs.readFile(materialFilePath(entry)), { compression: 'STORE' });
   }
 
+  // SCORM package trees, ORIGINAL relative paths preserved (unlike materials these cannot be
+  // flattened — an SCO resolves its assets relatively). STORE: course assets are mostly
+  // already-compressed media. Attempt files are JSON and deflate well.
+  const scormDirs = await listScormPackageDirs();
+  for (const pkgId of scormDirs) {
+    for (const rel of await listScormEntries(pkgId)) {
+      zip.file(`${SCORM_PREFIX}${pkgId}/${rel}`, await fs.readFile(path.join(scormPackageDir(pkgId), ...rel.split('/'))), {
+        compression: 'STORE',
+      });
+    }
+  }
+  for (const name of await listScormAttemptFiles()) {
+    const id = name.replace(/\.json$/, '');
+    zip.file(`${SCORM_ATTEMPTS_PREFIX}${name}`, await fs.readFile(scormAttemptPath(id), 'utf-8'));
+  }
+
   // The audit log rides along as evidence. It goes into the manifest's own `audit` field, NOT into
   // `files`: validateArchive maps every `files` entry against STORE_FILES (and would reject this
   // one), and restoreBackup swaps only `files` stores — so the copy is archived but never restored.
@@ -196,6 +262,7 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
     users: countOf(raw.users),
     trainings: countOf(raw.trainings),
     materials: uploadCount(mats),
+    scormPackages: scormDirs.length,
   };
 
   zip.file(
@@ -352,6 +419,7 @@ export async function validateArchive(bytes: Buffer): Promise<ValidArchive> {
       users: counts.users ?? 0,
       trainings: counts.trainings ?? 0,
       materials: uploadCount(zipMaterials(zip).map((m) => m.base)),
+      scormPackages: new Set(zipScormEntries(zip).map((e) => e.pkgId)).size,
     },
   };
 }
@@ -416,6 +484,35 @@ export function restoreBackup(id: string): Promise<{ meta: BackupMeta; safetyBac
       const wanted = new Set(materials.map((m) => m.base));
       for (const existing of await listMaterialFiles()) {
         if (!wanted.has(existing)) await fs.rm(materialFilePath(existing), { force: true });
+      }
+
+      // 3b. SCORM package trees, same write-then-prune shape — but with GUARDED nested paths
+      //     (zipScormEntries already dropped anything that fails UUID/containment checks; entries
+      //     are content-addressed by package id, so overwriting is idempotent).
+      const scormEntries = zipScormEntries(zip);
+      for (const { pkgId, rel, entry } of scormEntries) {
+        const abs = resolveScormEntry(pkgId, rel)!; // non-null: filtered above
+        await fs.mkdir(path.dirname(abs), { recursive: true });
+        await fs.writeFile(abs, await entry.async('nodebuffer'));
+      }
+      const wantedPkgs = new Set(scormEntries.map((e) => e.pkgId));
+      for (const existing of await listScormPackageDirs()) {
+        if (!wantedPkgs.has(existing)) {
+          await fs.rm(scormPackageDir(existing), { recursive: true, force: true });
+        }
+      }
+
+      // 3c. SCORM attempt files (flat, UUID-named — the same shape as materials).
+      const attempts = zipScormAttempts(zip);
+      if (attempts.length) await fs.mkdir(path.dirname(scormAttemptPath(attempts[0].id)), { recursive: true });
+      for (const { id, entry } of attempts) {
+        await fs.writeFile(scormAttemptPath(id), await entry.async('nodebuffer'));
+      }
+      const wantedAttempts = new Set(attempts.map((a) => `${a.id}.json`));
+      for (const existing of await listScormAttemptFiles()) {
+        if (!wantedAttempts.has(existing)) {
+          await fs.rm(scormAttemptPath(existing.replace(/\.json$/, '')), { force: true });
+        }
       }
 
       // 4. Clean up.

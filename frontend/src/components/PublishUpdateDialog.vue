@@ -36,6 +36,24 @@ function defaultDeadline(): string {
 }
 const todayStr = new Date().toISOString().slice(0, 10);
 
+// Is (or becomes) this training SCORM-backed after publishing? The server refuses confirm-mode for
+// SCORM courses — a new course must actually be run, not clicked away — so the mode choice is
+// pinned to retake here too.
+const scormBacked = computed(() =>
+  Boolean(props.training.draft ? props.training.draft.scormPackageId : props.training.scormPackageId),
+);
+// What the publish changes about the package: attaching, replacing or removing a course is
+// content-change information the editor should see spelled out before notifying anyone.
+const scormChange = computed<'added' | 'replaced' | 'removed' | null>(() => {
+  if (!props.training.draft) return null;
+  const before = props.training.scormPackageId ?? null;
+  const after = props.training.draft.scormPackageId ?? null;
+  if (before === after) return null;
+  if (!before) return 'added';
+  if (!after) return 'removed';
+  return 'replaced';
+});
+
 const kind = ref<'notify' | 'silent'>(isUnpublished.value ? 'silent' : 'notify');
 const mode = ref<'retake' | 'confirm'>('retake');
 const deadline = ref(defaultDeadline());
@@ -181,6 +199,11 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
             ? t('trainings.publish.draftInfo', { date: formatDateTime(serverDraft.savedAt) })
             : t('trainings.publish.noDraftInfo') }}
         </p>
+        <!-- A course change is named explicitly, and the published build is PINNED to this version:
+             in-flight learner attempts finish on the build they launched with. -->
+        <p v-if="scormChange" class="mt-1 font-mono text-xs font-semibold text-blue-700" data-testid="publish-scorm-change">
+          {{ t(`trainings.publish.scorm_${scormChange}`) }} · {{ t('trainings.publish.scormPinned') }}
+        </p>
 
         <!-- Two columns while notifying: the decisions on the left, the notification email on the
              right — the mail regenerates live while the editor flips mode/deadline/note, and the
@@ -222,11 +245,18 @@ async function cancelUpdate(u: TrainingUpdate): Promise<void> {
               <span class="block font-mono text-[11px] text-ink-light">{{ t('trainings.publish.modeRetakeHint') }}</span>
             </span>
           </label>
-          <label class="check-card mt-2" :class="mode === 'confirm' ? 'border-accent bg-accent-light/30' : ''">
-            <input v-model="mode" type="radio" value="confirm" class="mt-0.5 accent-accent" />
+          <!-- Confirm-mode is meaningless for a SCORM course (the server refuses it too): reviewing
+               new course content means running it, not clicking a confirmation. -->
+          <label
+            class="check-card mt-2"
+            :class="[mode === 'confirm' ? 'border-accent bg-accent-light/30' : '', scormBacked ? 'cursor-not-allowed opacity-50' : '']"
+          >
+            <input v-model="mode" type="radio" value="confirm" class="mt-0.5 accent-accent" :disabled="scormBacked" />
             <span>
               <span class="block text-sm font-semibold text-ink">{{ t('trainings.publish.modeConfirm') }}</span>
-              <span class="block font-mono text-[11px] text-ink-light">{{ t('trainings.publish.modeConfirmHint') }}</span>
+              <span class="block font-mono text-[11px] text-ink-light">
+                {{ scormBacked ? t('trainings.publish.modeConfirmScormUnavailable') : t('trainings.publish.modeConfirmHint') }}
+              </span>
             </span>
           </label>
         </fieldset>

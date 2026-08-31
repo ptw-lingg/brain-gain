@@ -200,6 +200,9 @@ function openTraining(t: Training): void {
   const clone: Training = JSON.parse(JSON.stringify(t));
   clone.materials = JSON.parse(JSON.stringify(t.draft?.materials ?? t.materials));
   clone.questions = JSON.parse(JSON.stringify(t.draft?.questions ?? t.questions));
+  // The WIP package reference, same present-or-keep shape as materials/questions. null (not
+  // undefined) when absent, so a removal survives JSON serialization on save.
+  clone.scormPackageId = t.draft?.scormPackageId ?? t.scormPackageId ?? null;
   delete clone.draft;
   draft.value = clone;
 }
@@ -251,8 +254,11 @@ async function save(): Promise<void> {
   // The publish dialog is offered when a save STAGED new content: the server response carries a
   // draft whose content differs from the record's previous draft. Saving never publishes anything
   // by itself — trainees keep seeing the last published version until the editor publishes.
+  // The package id MUST be part of this comparison: without it, attaching or replacing a SCORM
+  // package never trips draftChanged, the publish dialog is never offered, and learners silently
+  // keep the old course.
   const contentOf = (d?: TrainingDraft | null): string | null =>
-    d ? JSON.stringify([d.materials, d.questions]) : null;
+    d ? JSON.stringify([d.materials, d.questions, d.scormPackageId ?? null]) : null;
   // The editor dialog stays open (its overlay blocking further interaction) until the save has
   // FULLY finished, list reload included — closing it earlier lets a fast next click race the
   // reload and interact with a dialog that is about to be re-rendered under it.
@@ -457,9 +463,18 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             >
               {{ t('trainings.draftPill') }}
             </span>
+            <!-- A SCORM course is both the material and the test — its pill replaces the
+                 missing-content warnings entirely. -->
+            <span
+              v-if="readinessOf(tr).hasScorm"
+              class="pill w-full bg-pastel-cyan/60 text-petrol-700"
+              :title="t('trainings.scormPillTitle')"
+            >
+              {{ t('trainings.scormPill') }}
+            </span>
             <!-- Missing material and missing test collapse into ONE flag when both are absent. -->
             <span
-              v-if="!readinessOf(tr).hasMaterial && !readinessOf(tr).hasQuestions"
+              v-else-if="!readinessOf(tr).hasMaterial && !readinessOf(tr).hasQuestions"
               class="pill w-full bg-amber-100 text-amber-700"
               :title="t('trainings.noContentTitle')"
             >

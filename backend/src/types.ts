@@ -56,6 +56,11 @@ export interface Question {
 export interface TrainingDraft {
   materials: Material[];
   questions: Question[];
+  // Staged SCORM package (id into the scormPackages store). Its presence makes the DRAFT
+  // SCORM-backed: the package replaces the quiz, so `questions` are kept but unused. Absent/null =
+  // a classic training. Like materials/questions this is staged by PUT and promoted by
+  // publish-update; the id is validated against the store on write — never trusted as an object.
+  scormPackageId?: string;
   savedAt: string; // ISO 8601 — the last content-bearing save
 }
 
@@ -110,6 +115,12 @@ export interface Training {
   // Work-in-progress content, invisible to learners (stripped by toPublic; masked in audit diffs
   // because it carries the answer key). Absent = no unpublished changes.
   draft?: TrainingDraft;
+  // PUBLISHED SCORM package (id into the scormPackages store). Server-managed like `materials`:
+  // written ONLY by publish-update (promoting draft.scormPackageId), never read from a PUT body.
+  // Presence makes the training SCORM-backed — POST /api/sessions/grade refuses quiz answers for
+  // it, and completion runs through the SCORM attempt arm instead. Stripped from learner payloads
+  // (toPublic emits only the non-revealing `scorm` summary).
+  scormPackageId?: string;
   createdAt: string;
 }
 
@@ -178,6 +189,9 @@ export interface TrainingSession {
   trainingId: string;
   completedAt: string;
   scorePct: number; // 0–1, fraction correct (>= passThreshold)
+  // For a SCORM completion: the server-side attempt this session was signed from — the completion
+  // evidence (the attempt file holds the full cmi the course reported). Absent on quiz sessions.
+  scormAttemptId?: string;
 }
 
 // Microsoft Entra ID (Azure AD) single sign-on configuration — admin-editable via Settings.
@@ -247,8 +261,11 @@ export type DueStatus = 'never' | 'up-to-date' | 'due' | 'overdue' | 'updated';
 // allowed to see. The question `type` stays in (the learner UI needs it to pick radio vs checkbox
 // controls); for multiple-choice questions the COUNT of correct answers is still withheld, not
 // just which ones. A single-choice question discloses "exactly one" by design.
-export type PublicTraining = Omit<Training, 'questions' | 'draft'> & {
+// `scormPackageId` is stripped too: a learner gets only the non-revealing `scorm` summary — never
+// the package id, entry file, mastery score or manifest internals.
+export type PublicTraining = Omit<Training, 'questions' | 'draft' | 'scormPackageId'> & {
   questions: Omit<Question, 'correctIndices'>[];
+  scorm?: PublicScormInfo;
 };
 
 export interface DueTraining {
@@ -293,7 +310,9 @@ export type AuditAction =
   | 'training-update-published'
   | 'training-update-confirmed'
   | 'training-update-cancelled'
-  | 'training-draft-discarded';
+  | 'training-draft-discarded'
+  | 'scorm-imported'
+  | 'scorm-rejected';
 
 export type AuditEntityType =
   | 'user'
@@ -304,7 +323,8 @@ export type AuditEntityType =
   | 'settings'
   | 'backup'
   | 'auth'
-  | 'session';
+  | 'session'
+  | 'scormPackage';
 
 // One changed field on an update. Secret fields are recorded as '***' → '***' — the CHANGE is
 // visible, the values never are (see REDACT_FIELDS in services/audit.ts).
@@ -333,6 +353,133 @@ export interface AuditEntry {
   entityName: string; // human-readable label captured at event time
   changes?: AuditChange[]; // field-level diffs on updates (redacted)
   details?: string; // free text: score, counts, failure reason, safety backup id…
+}
+
+// ── SCORM ────────────────────────────────────────────────────────────────────────────────────────
+
+/** Which SCORM data model a package speaks. '2004' covers the tolerated 3rd/4th-edition subset. */
+export type ScormVersion = '1.2' | '2004';
+
+/** Trainer-chosen rule for when a SCORM attempt counts as completable — enforced SERVER-side.
+ *  'status' = the course must report completed/passed (spec-correct default);
+ *  'exit'   = a clean Terminate/LMSFinish suffices, whatever the status (covers courses that
+ *             report 'incomplete' forever);
+ *  'time'   = signable after the training's duration of SERVER-clocked in-content time (covers
+ *             courses that report nothing at all). The rule relied upon is recorded in the audit
+ *             trail with every completion. */
+export type ScormCompletionRule = 'status' | 'exit' | 'time';
+
+/**
+ * An imported SCORM package — the descriptor only. The extracted files live on disk under
+ * DATA_DIR/scorm/<packageId>/ with their ORIGINAL relative paths preserved: an SCO's HTML resolves
+ * its assets relatively, so unlike uploaded materials these names cannot be flattened (see
+ * services/scorm/import.ts for the zip-slip guard that makes that safe). Records are immutable
+ * after import apart from the two trainer options: a new course build is a NEW package, staged in
+ * the training's draft and promoted by publish-update, exactly like material files.
+ */
+export interface ScormPackageRef {
+  packageId: string; // server-assigned UUID; also the directory name and content-URL segment
+  // From the manifest — UNTRUSTED text. Render with {{ }} only; never v-html, never into
+  // :href/:src/:style, never into pdfmake markup.
+  title: string;
+  version: ScormVersion; // detected from the manifest, never client-supplied
+  entryHref: string; // POSIX-relative launch path of the single SCO, URL-decoded and validated
+  launchParameters?: string; // <item parameters="…"> — appended to the launch URL
+  // Manifest mastery score normalized to 0–1 (1.2 adlcp:masteryscore /100, 2004
+  // minNormalizedMeasure as-is). ADVISORY only — it is handed to the SCO (which grades itself
+  // with it); the pass decision uses the SCO's success verdict plus Settings.passThreshold.
+  masteryScore: number | null;
+  dataFromLms?: string; // manifest <adlcp:datafromlms> — seeded as cmi.launch_data
+  manifestIdentifier: string; // <manifest identifier="…"> — traceability in the audit trail
+  fileCount: number; // extracted files (directories excluded)
+  bytes: number; // total uncompressed size on disk
+  sha256: string; // hash of the uploaded ZIP — dedupe + traceability evidence
+  originalFileName: string; // sanitized upload name, for the editor UI and the audit trail
+  uploadedBy: string; // User id
+  uploadedAt: string; // ISO 8601
+  completionRule: ScormCompletionRule;
+  // Widens the content-origin CSP connect-src/img-src/font-src/media-src to https: for packages
+  // that genuinely need a CDN or telemetry endpoint. Default false — packages talk to no one.
+  allowExternal: boolean;
+}
+
+/** What a LEARNER may know about a SCORM-backed training: that it is one, and how it is titled. */
+export interface PublicScormInfo {
+  version: ScormVersion;
+  title: string;
+}
+
+export type ScormCompletionStatus = 'unknown' | 'not attempted' | 'incomplete' | 'completed';
+export type ScormSuccessStatus = 'unknown' | 'passed' | 'failed';
+export type ScormAttemptStatus = 'in-progress' | 'completed' | 'failed' | 'abandoned';
+
+/**
+ * The internal, version-neutral cmi model. Both the 1.2 element names (cmi.core.*) and the 2004
+ * names map onto THIS — see scorm/model.ts for the single mapping table used in both directions.
+ * Interactions/objectives and tolerated unmodelled writable elements are kept as VERBATIM
+ * key→value maps (capped): they are evidence of what the learner answered, round-trip exactly,
+ * and are never re-encoded.
+ */
+export interface ScormCmi {
+  location: string; // 1.2 cmi.core.lesson_location | 2004 cmi.location
+  // Opaque course bookmark blob. Capped at 64k chars for BOTH dialects — the 1.2 spec says 4096,
+  // but Storyline routinely exceeds it and expects a byte-exact read-back; truncating breaks
+  // resume. Over-cap writes are REJECTED (SCORM error), never silently truncated.
+  suspendData: string;
+  completion: ScormCompletionStatus;
+  success: ScormSuccessStatus;
+  entry: 'ab-initio' | 'resume' | '';
+  exit: '' | 'time-out' | 'suspend' | 'logout' | 'normal';
+  score: { raw: number | null; min: number | null; max: number | null; scaled: number | null };
+  progressMeasure: number | null; // 2004 only
+  sessionTimeSec: number; // the LAST reported session_time of the current browser session
+  totalTimeSec: number; // accumulated across sessions — SERVER-computed, read-only for content
+  // cmi.interactions.N.* / cmi.objectives.N.* exactly as written (key → value), capped.
+  interactions: Record<string, string>;
+  objectives: Record<string, string>;
+  // Tolerated but unmodelled writable elements (comments, vendor extensions), verbatim, capped.
+  extra: Record<string, string>;
+}
+
+/**
+ * A learner's run of a SCORM package. The per-attempt FILE (DATA_DIR/scorm-attempts/<id>.json,
+ * shape ScormAttemptFile) is the source of truth for `cmi`; this index record is denormalized for
+ * resume lookup, launch-token revocation, trainer diagnostics and GC, refreshed on lifecycle
+ * transitions only. The completion arm always re-reads the FILE and never trusts the index.
+ */
+export interface ScormAttempt {
+  id: string;
+  userId: string;
+  trainingId: string;
+  packageId: string; // pins the attempt to the package build it launched against
+  trainingVersion: number; // a later publish invalidates resume (suspend_data is build-specific)
+  scormVersion: ScormVersion;
+  status: ScormAttemptStatus;
+  // A trainer/admin trial run, or any attempt launched inside an IMPERSONATION session. Never
+  // consumable into a TrainingSession; the SCO sees mode='browse' / credit='no-credit'.
+  preview: boolean;
+  startedAt: string; // ISO 8601
+  lastActivityAt: string; // bumped on every commit; drives the stale-attempt sweep
+  // SERVER-clocked in-content seconds (capped deltas between commits) — the 'time' completion
+  // rule uses this, never a client-reported total_time.
+  activeSec: number;
+  terminated: boolean; // a clean Terminate/LMSFinish was received — the 'exit' rule uses this
+  completedAt?: string; // when the course first reported completion
+  // The TrainingSession this attempt was signed into. Set once; its presence blocks replay and
+  // revokes the launch token. A consumed attempt (and its file) is completion evidence — never GC'd.
+  consumedBySessionId?: string;
+  // Denormalized from the file for list views; advisory only (see the note above).
+  completion: ScormCompletionStatus;
+  success: ScormSuccessStatus;
+  scoreScaled: number | null;
+  setValuesCount: number; // diagnostics: how many data-model writes the course made
+}
+
+/** The full attempt as persisted on disk: the index record plus the authoritative cmi model. */
+export interface ScormAttemptFile {
+  attempt: ScormAttempt;
+  cmi: ScormCmi;
+  rev: number; // monotonic write counter — cheap concurrency/debug aid
 }
 
 // JWT payload attached to authenticated requests.

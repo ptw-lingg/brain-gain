@@ -55,6 +55,9 @@ export async function startTestServer(opts = {}) {
 
 async function boot(httpsPort, httpPort, extraEnv = {}) {
   const dataDir = mkdtempSync(join(tmpdir(), 'braingain-test-'));
+  // The SCORM content listener gets its own port next to the app's (additive default — a test may
+  // still override via extraEnv); its base URL is returned as scormBaseUrl.
+  const scormPort = httpsPort + 2;
   const proc = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
     cwd: backendRoot,
     env: {
@@ -62,6 +65,7 @@ async function boot(httpsPort, httpPort, extraEnv = {}) {
       DATA_DIR: dataDir,
       HTTPS_PORT: String(httpsPort),
       HTTP_PORT: String(httpPort),
+      SCORM_CONTENT_PORT: String(scormPort),
       JWT_SECRET: 'test-secret',
       ...extraEnv,
     },
@@ -111,5 +115,5 @@ async function boot(httpsPort, httpPort, extraEnv = {}) {
     try { rmSync(dataDir, { recursive: true, force: true }); } catch { /* ignore */ }
   }
 
-  return { baseUrl, dataDir, request, stop };
+  return { baseUrl, scormBaseUrl: `https://localhost:${scormPort}`, dataDir, request, stop };
 }

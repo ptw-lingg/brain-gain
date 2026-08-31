@@ -19,6 +19,8 @@ import { useToastStore } from '@/stores/toast';
 import { reauthWithEntra, type EntraConfig } from '@/auth/msal';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import ScormPlayer from '@/components/ScormPlayer.vue';
+import { useScormAttempt } from '@/composables/useScormAttempt';
 import { formatBytes } from '@/utils/display';
 import { downloadFile as saveFile } from '@/utils/download';
 import { formatDate } from '@/utils/display';
@@ -36,7 +38,9 @@ const training = ref<Training | null>(null);
 const loading = ref(true);
 // 'confirmed' is the closing screen of the confirm-only path: a pending confirm-mode update was
 // acknowledged — no quiz, no new session, the regular cycle clock deliberately untouched.
-const step = ref<'material' | 'quiz' | 'result' | 'confirmed'>('material');
+// 'scorm' sits exactly where 'quiz' sits: after the audited materials confirmation, before the
+// result — a SCORM-backed training runs its imported course instead of the built-in quiz.
+const step = ref<'material' | 'quiz' | 'scorm' | 'result' | 'confirmed'>('material');
 // One selection set per question — a question may have several correct options, so the answer is a set
 // of option indices rather than a single index.
 const answers = ref<number[][]>([]);
@@ -77,6 +81,13 @@ const thresholdPct = computed(() =>
 // evidence the training was done.
 const hasQuestions = computed(() => (training.value?.questions.length ?? 0) > 0);
 
+// A SCORM-backed training: the imported course replaces the quiz. The learner payload carries only
+// the non-revealing `scorm` summary; its presence is the whole signal.
+const isScorm = computed(() => training.value?.scorm != null);
+// The bridge/flush state machine — page-scoped so the flush policy survives player teardown and is
+// reachable from the signed submission below.
+const scorm = useScormAttempt(trainingId, () => training.value?.durationMinutes ?? 10);
+
 // Version 0 = no published version yet: the flow is replaced by an "in preparation" notice.
 // Learners normally never get here (the dashboard card is not startable); this guards deep links
 // and owners previewing their own unpublished training.
@@ -98,8 +109,10 @@ const signaturePassword = ref('');
 const signing = ref(false); // a Microsoft re-login popup is in flight
 const hasPassword = computed(() => auth.user?.hasPassword ?? true);
 // A test-less training (outside the confirm-only update path) is COMPLETED by the confirmation,
-// so the confirmation dialog itself carries the signature fields.
-const completesByConfirmation = computed(() => !hasQuestions.value && !confirmOnly.value);
+// so the confirmation dialog itself carries the signature fields. A SCORM training also has no
+// questions but is NOT completed here — its course runs first; without the isScorm guard the
+// confirmation dialog would complete the whole training without ever launching the package.
+const completesByConfirmation = computed(() => !hasQuestions.value && !isScorm.value && !confirmOnly.value);
 
 async function fetchSsoConfig(): Promise<void> {
   try {
@@ -130,8 +143,9 @@ const pendingUpdate = computed<TrainingUpdate | null>(() =>
 // Confirm-mode: reviewing + confirming the materials clears the update — the quiz is skipped.
 // Retake-mode: the normal full flow runs; the new passing session clears the update.
 const confirmOnly = computed(() => pendingUpdate.value?.mode === 'confirm');
-// In confirm-mode the update banner already says the confirmation completes it.
-const showNoQuestionsHint = computed(() => !hasQuestions.value && !confirmOnly.value);
+// In confirm-mode the update banner already says the confirmation completes it. A SCORM training
+// has no questions either — but a test follows inside the course, so the hint would be a lie.
+const showNoQuestionsHint = computed(() => !hasQuestions.value && !isScorm.value && !confirmOnly.value);
 
 // Avatar initials from the trainer's name, e.g. "Tom Trainer" → "TT".
 const trainerInitials = computed(() =>
@@ -222,6 +236,10 @@ async function confirmMaterials(reauth?: Reauth): Promise<void> {
     if (updateId) {
       confirmOpen.value = false;
       step.value = 'confirmed';
+    } else if (isScorm.value) {
+      confirmOpen.value = false;
+      step.value = 'scorm';
+      void scorm.launch(); // errors surface inside the player, not as a toast
     } else if (hasQuestions.value) {
       confirmOpen.value = false;
       step.value = 'quiz';
@@ -263,12 +281,16 @@ async function downloadFile(file: MaterialFile): Promise<void> {
 
 // Grade the attempt. Every submission carries the completion signature; a rejected signature (401)
 // keeps the signature UI open so the learner can correct their credentials and try again.
+// A SCORM training names its server-side attempt and NOTHING else — the score/status live in the
+// attempt the server already holds; no result field ever travels from the browser.
 async function submit(reauth: Reauth): Promise<void> {
   submitting.value = true;
   try {
     const { data } = await client.post<GradeResult>('/sessions/grade', {
       trainingId,
-      answers: answers.value,
+      ...(isScorm.value
+        ? { scormAttemptId: scorm.ticket.value?.attemptId }
+        : { answers: answers.value }),
       reauth,
     });
     signatureOpen.value = false;
@@ -282,6 +304,24 @@ async function submit(reauth: Reauth): Promise<void> {
   } finally {
     submitting.value = false;
   }
+}
+
+// SCORM: "Finish and sign" first flushes everything and REMOVES the third-party content from the
+// screen — the signature dialog must never share the viewport with untrusted content (overlay
+// phishing) — and only then opens the identity dialog.
+async function finishScorm(): Promise<void> {
+  await scorm.closeForSigning();
+  signatureOpen.value = true;
+}
+
+// SCORM: the course reported a definitive FAIL, or the learner wants a clean start — a fresh
+// attempt (the old one is abandoned server-side; a failed run's bookmark must not resume onto its
+// results screen).
+async function retryScorm(): Promise<void> {
+  result.value = null;
+  signaturePassword.value = '';
+  step.value = 'scorm';
+  await scorm.launch({ restart: true });
 }
 
 // Quiz submission signed via a fresh Microsoft re-login instead of a password.
@@ -299,6 +339,10 @@ async function submitWithMicrosoft(): Promise<void> {
 }
 
 function retry(): void {
+  if (isScorm.value) {
+    void retryScorm();
+    return;
+  }
   if (training.value) answers.value = Array.from({ length: training.value.questions.length }, () => []);
   result.value = null;
   signaturePassword.value = '';
@@ -312,7 +356,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl">
+  <!-- Most authoring-tool output is designed for a 1024px+ stage — the 672px reading column is
+       unusable for it, so the SCORM step escapes to full width. -->
+  <div :class="step === 'scorm' ? 'w-full' : 'mx-auto max-w-2xl'">
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
 
     <template v-else-if="training && unpublished">
@@ -393,16 +439,19 @@ onMounted(() => {
               </button>
             </template>
           </div>
-          <p v-if="training.materials.length === 0" class="font-mono text-xs text-ink-light">
+          <!-- A SCORM package IS the material — "no material" would be misleading. -->
+          <p v-if="training.materials.length === 0 && !isScorm" class="font-mono text-xs text-ink-light">
             {{ t('session.noMaterial') }}
           </p>
         </div>
         <button class="btn-primary self-start" data-testid="session-start" @click="startTest">
           {{ confirmOnly
             ? t('session.update.confirmCta')
-            : hasQuestions
-              ? t('session.startTest')
-              : t('session.completeTraining') }}
+            : isScorm
+              ? t('session.scorm.startCta')
+              : hasQuestions
+                ? t('session.startTest')
+                : t('session.completeTraining') }}
         </button>
 
         <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
@@ -552,55 +601,71 @@ onMounted(() => {
           <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
           {{ submitting ? t('session.grading') : t('session.submitTest') }}
         </button>
+      </section>
 
-        <!-- Completion signature (SR-173): identity re-confirmation gates every submission. -->
-        <div
-          v-if="signatureOpen"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
-          data-testid="signature-dialog"
-        >
-          <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
-            <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.signature.title') }}</h2>
-            <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.signature.text') }}</p>
-            <p class="mt-3 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
-            <PasswordInput
-              v-if="hasPassword"
-              v-model="signaturePassword"
-              class="mt-2"
-              :placeholder="t('session.signature.password')"
-              data-testid="signature-password"
-              @keydown.enter="signaturePassword && submit({ password: signaturePassword })"
-            />
-            <p v-if="!hasPassword && !ssoConfig" class="mt-2 font-mono text-xs text-rose-600">
-              {{ t('session.signature.unavailable') }}
-            </p>
-            <div class="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                v-if="ssoConfig"
-                class="btn-ghost"
-                :disabled="submitting || signing"
-                data-testid="signature-microsoft"
-                @click="submitWithMicrosoft"
-              >
-                <Loader2 v-if="signing" class="h-4 w-4 animate-spin" />
-                {{ t('session.signature.microsoft') }}
-              </button>
-              <button class="btn-ghost" :disabled="submitting || signing" @click="signatureOpen = false">
-                {{ t('common.cancel') }}
-              </button>
-              <button
-                v-if="hasPassword"
-                class="btn-primary"
-                :disabled="submitting || signing || !signaturePassword"
-                data-testid="signature-ok"
-                @click="submit({ password: signaturePassword })"
-              >
-                <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
-                {{ t('session.signature.submit') }}
-              </button>
-            </div>
-          </div>
+      <!-- Step 2 (SCORM): the imported course replaces the quiz. -->
+      <section v-else-if="step === 'scorm'" class="mt-6 flex flex-col gap-3" data-testid="session-scorm">
+        <div v-if="scorm.ticket.value?.resumed" class="rounded-lg border border-blue-200 bg-pastel-blue/30 p-3" data-testid="scorm-resume-banner">
+          <p class="font-mono text-xs text-blue-800">{{ t('session.scorm.resumeBanner') }}</p>
+          <button class="btn-ghost btn-sm mt-1" data-testid="scorm-start-over" @click="retryScorm">
+            {{ t('session.scorm.startOver') }}
+          </button>
         </div>
+
+        <div v-if="scorm.phase.value === 'error'" class="card flex flex-col items-center gap-3 bg-rose-50 p-8 text-center" data-testid="scorm-error">
+          <XCircle class="h-10 w-10 text-rose-500" />
+          <p class="font-mono text-sm text-ink-muted">
+            {{ scorm.fatal.value === 'origin-mismatch'
+              ? t('session.scorm.misconfigured')
+              : scorm.fatal.value === 'expired'
+                ? t('session.scorm.expired')
+                : t('session.scorm.launchFailed') }}
+          </p>
+          <button class="btn-ghost" @click="router.push('/dashboard')">{{ t('session.backToTrainings') }}</button>
+        </div>
+
+        <!-- Signing is underway: the player (and its third-party iframe) was torn down by
+             closeForSigning BEFORE the signature dialog opened, so credentials are never typed with
+             untrusted content on screen. -->
+        <div v-else-if="scorm.phase.value === 'done'" class="card h-24 animate-pulse bg-pastel-slate/30" />
+
+        <!-- No ticket yet: the launch call is in flight. -->
+        <div v-else-if="!scorm.ticket.value" class="card h-64 animate-pulse bg-pastel-slate/30" />
+
+        <!-- The player renders as soon as the ticket exists — its iframe must be in the DOM for the
+             wrapper handshake to complete (the handshake is what advances the phase to 'running'). -->
+        <template v-else>
+          <ScormPlayer
+            :scorm="scorm"
+            :nudge-after-minutes="Math.max(training.durationMinutes || 0, 10)"
+            @exit="router.push('/dashboard')"
+          />
+
+          <!-- A definitive FAIL from the course: nothing to sign — retry a fresh run instead. -->
+          <div
+            v-if="scorm.success.value === 'failed'"
+            class="card flex items-center gap-3 bg-rose-50 p-4"
+            data-testid="scorm-failed"
+          >
+            <XCircle class="h-6 w-6 shrink-0 text-rose-500" />
+            <p class="flex-1 font-mono text-xs text-ink-muted">{{ t('session.scorm.courseFailed') }}</p>
+            <button class="btn-primary" data-testid="scorm-retry" @click="retryScorm">
+              <RefreshCw class="h-4 w-4" /> {{ t('session.retry') }}
+            </button>
+          </div>
+
+          <!-- Finish appears only when the course is completion-worthy under its rule AND every
+               write is durably on the server — a learner can never sign unpersisted evidence. -->
+          <button
+            v-else-if="scorm.canFinish.value"
+            class="btn-primary self-start"
+            data-testid="scorm-finish"
+            @click="finishScorm"
+          >
+            {{ t('session.scorm.finishCta') }}
+          </button>
+          <p v-else class="font-mono text-[11px] text-ink-light">{{ t('session.scorm.notCompletedYet') }}</p>
+        </template>
       </section>
 
       <!-- Step 3: Result -->
@@ -614,9 +679,13 @@ onMounted(() => {
           <h2 class="font-sans text-xl font-bold text-ink">
             {{ result.passed ? t('session.passed') : t('session.notPassed') }}
           </h2>
+          <!-- SCORM: the course reported the score — there is no "N of M questions" to show. -->
+          <p v-if="isScorm" class="font-mono text-sm text-ink-muted" data-testid="scorm-result-score">
+            {{ t('session.scorm.resultScore', { pct: Math.round(result.scorePct * 100), threshold: thresholdPct }) }}
+          </p>
           <!-- A question-less training passes via the materials confirmation — a "0 of 0 correct"
                score line would be nonsense, so name the confirmation as what completed it. -->
-          <p v-if="result.total === 0" class="font-mono text-sm text-ink-muted">
+          <p v-else-if="result.total === 0" class="font-mono text-sm text-ink-muted">
             {{ t('session.completedByConfirmation') }}
           </p>
           <p v-else class="font-mono text-sm text-ink-muted">
@@ -680,6 +749,58 @@ onMounted(() => {
           </p>
         </div>
       </section>
+
+      <!-- Completion signature (SR-173): identity re-confirmation gates every submission. Shared
+           between the quiz and SCORM paths — for SCORM it opens only AFTER the third-party frame
+           was torn down (finishScorm), so credentials are never typed with untrusted content on
+           screen. -->
+      <div
+        v-if="signatureOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+        data-testid="signature-dialog"
+      >
+        <div class="card w-full max-w-md p-6" role="dialog" aria-modal="true">
+          <h2 class="font-sans text-lg font-bold text-ink">{{ t('session.signature.title') }}</h2>
+          <p class="mt-2 font-mono text-sm text-ink-muted">{{ t('session.signature.text') }}</p>
+          <p class="mt-3 font-mono text-xs font-semibold text-ink">{{ auth.user?.email }}</p>
+          <PasswordInput
+            v-if="hasPassword"
+            v-model="signaturePassword"
+            class="mt-2"
+            :placeholder="t('session.signature.password')"
+            data-testid="signature-password"
+            @keydown.enter="signaturePassword && submit({ password: signaturePassword })"
+          />
+          <p v-if="!hasPassword && !ssoConfig" class="mt-2 font-mono text-xs text-rose-600">
+            {{ t('session.signature.unavailable') }}
+          </p>
+          <div class="mt-5 flex flex-wrap justify-end gap-2">
+            <button
+              v-if="ssoConfig"
+              class="btn-ghost"
+              :disabled="submitting || signing"
+              data-testid="signature-microsoft"
+              @click="submitWithMicrosoft"
+            >
+              <Loader2 v-if="signing" class="h-4 w-4 animate-spin" />
+              {{ t('session.signature.microsoft') }}
+            </button>
+            <button class="btn-ghost" :disabled="submitting || signing" @click="signatureOpen = false">
+              {{ t('common.cancel') }}
+            </button>
+            <button
+              v-if="hasPassword"
+              class="btn-primary"
+              :disabled="submitting || signing || !signaturePassword"
+              data-testid="signature-ok"
+              @click="submit({ password: signaturePassword })"
+            >
+              <Loader2 v-if="submitting" class="h-4 w-4 animate-spin" />
+              {{ t('session.signature.submit') }}
+            </button>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 </template>

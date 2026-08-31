@@ -135,13 +135,18 @@ export async function storeUploadedCredentials(
 }
 
 // --- live HTTPS server hot-swap ---
-let httpsServer: https.Server | null = null;
+// A LIST, not a single slot: the app listener and the SCORM content listener share one
+// certificate, and an uploaded cert must re-key both — a swap that reaches only one of them would
+// leave the content origin serving the old cert until restart.
+const httpsServers: https.Server[] = [];
 
 export function registerHttpsServer(server: https.Server): void {
-  httpsServer = server;
+  httpsServers.push(server);
 }
 
-/** Swap the running server's certificate (affects new TLS connections; no restart needed). */
+/** Swap every running server's certificate (affects new TLS connections; no restart needed). */
 export function applyCredentials(creds: TlsCredentials): void {
-  httpsServer?.setSecureContext({ key: creds.key, cert: creds.cert, ca: creds.ca });
+  for (const server of httpsServers) {
+    server.setSecureContext({ key: creds.key, cert: creds.cert, ca: creds.ca });
+  }
 }
