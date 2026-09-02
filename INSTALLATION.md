@@ -285,8 +285,8 @@ inside the application after first start.
 |---|---|---|
 | `DATA_DIR` | `<install>/backend/dist/data` | **Set it.** Point at `/var/lib/braingain` so data lives outside the code tree and survives upgrades. |
 | `JWT_SECRET` | `braingain-secret` | **Set it.** The built-in default is public knowledge; anyone who knows it can forge a session token for any account, including an administrator. Use ≥32 random bytes. |
-| `HTTPS_PORT` (or `PORT`) | `3001` | `443` for direct exposure. `HTTPS_PORT` wins if both are set. |
-| `HTTP_PORT` | `3000` | `80`. This listener serves no content — it only issues a 308 redirect to the HTTPS port. |
+| `HTTPS_PORT` (or `PORT`) | `3101` | `443` for direct exposure. `HTTPS_PORT` wins if both are set. |
+| `HTTP_PORT` | `3100` | `80`. This listener serves no content — it only issues a 308 redirect to the HTTPS port. |
 
 `ENTRA_AUTHORITY_BASE` also exists, but it is a test hook that redirects Entra token validation to a
 stub identity provider. **Never set it in production**; leaving it unset uses
@@ -731,9 +731,9 @@ sign-ins, and rotating `JWT_SECRET` is the mechanism for invalidating tokens alr
 |---|---|---|
 | `DATA_DIR` | `<install>/backend/dist/data` | Root of all persisted data. Set explicitly in production. |
 | `JWT_SECRET` | `braingain-secret` | Signs and verifies 7-day session tokens. Must be overridden. |
-| `HTTPS_PORT` | `3001` | Application HTTPS listener. Takes precedence over `PORT`. |
+| `HTTPS_PORT` | `3101` | Application HTTPS listener. Takes precedence over `PORT`. |
 | `PORT` | — | Alternative name for the HTTPS port; used only if `HTTPS_PORT` is unset. |
-| `HTTP_PORT` | `3000` | Redirect-only HTTP listener. |
+| `HTTP_PORT` | `3100` | Redirect-only HTTP listener. |
 | `ENTRA_AUTHORITY_BASE` | `https://login.microsoftonline.com` | Test hook for a stub identity provider. Never set in production. |
 
 ## Appendix B — Ports

@@ -5,13 +5,13 @@
 export const SCORM_ENABLED = process.env.SCORM_ENABLED !== '0' && process.env.SCORM_ENABLED !== 'false';
 
 /** Port of the second HTTPS listener that serves package content on its own origin. */
-export const SCORM_CONTENT_PORT = Number(process.env.SCORM_CONTENT_PORT) || 3002;
+export const SCORM_CONTENT_PORT = Number(process.env.SCORM_CONTENT_PORT) || 3102;
 
 /**
  * The app origin as browsers see it — needed for the content origin's frame-ancestors and for the
  * wrapper's postMessage target. In production (express serves the SPA) it derives from the request
  * host; in dev the SPA lives on Vite's own HTTPS port, so APP_ORIGIN MUST be set explicitly there
- * (e.g. https://localhost:5173) or the content origin will refuse to be framed.
+ * (e.g. https://localhost:5273) or the content origin will refuse to be framed.
  */
 export function appOrigin(requestHost: string | undefined, httpsPort: number): string {
   if (process.env.APP_ORIGIN) return process.env.APP_ORIGIN;

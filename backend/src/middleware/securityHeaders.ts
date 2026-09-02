@@ -33,14 +33,20 @@ export function appSecurityHeaders(contentOriginFor: (host: string | undefined) 
       // 'unsafe-inline' for styles only: Vue :style bindings and Tailwind arbitrary values need it;
       // scripts never get it. Google Fonts' stylesheet is loaded from index.html.
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob:",
+      // https: on img/media/frame carries the learning-material viewer, which renders
+      // trainer-supplied documents and videos in place: uploaded files through blob: (fetched with
+      // the auth header), and links pointing straight at a file on their own host. The app is not
+      // exposed by it — media elements execute nothing, and a framed document is cross-origin and
+      // sandboxed WITHOUT allow-top-navigation (see frontend utils/embed.ts), labelled third-party
+      // in the viewer chrome. Uploaded files never enter a frame at all — the app renders them itself.
+      "img-src 'self' data: blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
-      "media-src 'self' blob:",
+      "media-src 'self' blob: https:",
       "worker-src 'self' blob:",
       // MSAL's endpoints for SSO sign-in and the SR-173 re-authentication popup.
       "connect-src 'self' https://login.microsoftonline.com https://*.login.microsoftonline.com https://graph.microsoft.com",
-      `frame-src ${frameSrc}`,
-      `child-src ${frameSrc}`,
+      `frame-src 'self' https: ${frameSrc}`,
+      `child-src 'self' https: ${frameSrc}`,
       'upgrade-insecure-requests',
     ].join('; ');
     res.setHeader(CSP_ENFORCE ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only', csp);

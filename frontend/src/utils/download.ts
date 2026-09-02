@@ -34,6 +34,18 @@ export async function downloadFile(url: string, fallbackName: string): Promise<v
   URL.revokeObjectURL(href);
 }
 
+/**
+ * Fetch `url` with the auth header and expose the bytes as a blob: URL, so an <iframe>/<video> can
+ * render them — those elements issue their own request and cannot carry an Authorization header.
+ * The caller OWNS the returned URL and must URL.revokeObjectURL() it when the viewer closes.
+ * Note the blob: URL inherits the app's origin; only types that cannot execute script there are
+ * ever rendered this way (see utils/embed.ts).
+ */
+export async function fetchBlobUrl(url: string): Promise<string> {
+  const res = await client.get(url, { responseType: 'blob' });
+  return URL.createObjectURL(res.data as Blob);
+}
+
 /** Message from a failed API call, unwrapping the Blob body that a responseType:'blob' error carries. */
 export async function apiErrorMessage(err: unknown): Promise<string> {
   const data = (err as { response?: { data?: unknown } }).response?.data;

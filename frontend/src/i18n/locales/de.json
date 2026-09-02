@@ -137,17 +137,12 @@
       "confirmedText": "Ihre Bestätigung wurde aufgezeichnet — diese Schulung ist wieder aktuell. Ihr regulärer Schulungszyklus bleibt unverändert."
     },
     "scorm": {
-      "startCta": "Schulungsinhalt starten →",
       "exit": "Beenden und später fortsetzen",
-      "thirdParty": "Externer Inhalt",
-      "thirdPartyHint": "Dieser Kurs wurde als SCORM-Paket importiert. BrainGain fragt niemals innerhalb des Kurses nach Ihrem Passwort — die Identitätsbestätigung erscheint immer als eigener Dialog, nachdem der Kurs geschlossen wurde.",
       "preview": "Vorschau — wird nicht gewertet",
       "saving": "Speichern…",
       "saved": "Gespeichert {time}",
       "saveFailed": "Nicht gespeichert",
       "saveFailedHint": "Ihr Fortschritt konnte nicht gespeichert werden. Es wird automatisch erneut versucht — der Abschluss bleibt deaktiviert, bis das Speichern wieder funktioniert.",
-      "fullscreen": "Vollbild",
-      "exitFullscreen": "Vollbild beenden",
       "frameTitle": "Importierter Schulungskurs (externer Inhalt)",
       "noSignalHint": "Inhalt fertig, aber nichts passiert? Der Kurs meldet den Abschluss möglicherweise nicht. Bitte wenden Sie sich an die verantwortliche Trainer:in.",
       "resumeBanner": "Es geht dort weiter, wo Sie aufgehört haben.",
@@ -158,7 +153,9 @@
       "misconfigured": "Der Schulungsinhalt ist auf diesem Server falsch konfiguriert — bitte wenden Sie sich an die Administration.",
       "expired": "Dieser Versuch ist abgelaufen. Ihr Fortschritt wurde gespeichert — öffnen Sie die Schulung erneut, um fortzufahren.",
       "launchFailed": "Der Schulungsinhalt konnte nicht gestartet werden. Bitte erneut versuchen oder die verantwortliche Trainer:in kontaktieren.",
-      "resultScore": "Kursergebnis: {pct} % (Bestehensgrenze {threshold} %)"
+      "resultScore": "Kursergebnis: {pct} % (Bestehensgrenze {threshold} %)",
+      "finishShort": "Abschließen",
+      "startOverConfirm": "Neu beginnen? Ihr Fortschritt in diesem Kurs wird verworfen."
     }
   },
   "trainings": {
@@ -806,5 +803,16 @@
       "loadError": "Audit-Trail konnte nicht geladen werden",
       "exportError": "Audit-Trail konnte nicht exportiert werden"
     }
+  },
+  "viewer": {
+    "back": "Zurück",
+    "fullTab": "Ganzer Tab",
+    "exitFullTab": "Ganzen Tab verlassen",
+    "download": "Herunterladen",
+    "openExternal": "In neuem Tab öffnen",
+    "thirdParty": "Externer Inhalt",
+    "thirdPartyHint": "Dieser Inhalt kommt von außerhalb von BrainGain. BrainGain fragt darin niemals nach Ihrem Passwort.",
+    "blockedHint": "Nichts zu sehen? Manche Seiten erlauben die Anzeige innerhalb einer anderen Seite nicht — nutzen Sie „In neuem Tab öffnen“.",
+    "pageOf": "Seite {n} von {total}"
   }
 }

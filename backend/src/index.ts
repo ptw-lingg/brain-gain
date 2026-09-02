@@ -25,8 +25,8 @@ import { createScormApp } from './scormServer';
 
 const app = express();
 // HTTPS is the only delivery channel; HTTP only 308-redirects here.
-const HTTPS_PORT = Number(process.env.HTTPS_PORT) || Number(process.env.PORT) || 3001;
-const HTTP_PORT = Number(process.env.HTTP_PORT) || 3000;
+const HTTPS_PORT = Number(process.env.HTTPS_PORT) || Number(process.env.PORT) || 3101;
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 3100;
 
 // No cross-origin reads of the API: the SPA is served same-origin (by this server in production,
 // by Vite's /api proxy in dev), so the only legitimate cross-origin caller is an explicitly

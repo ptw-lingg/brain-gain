@@ -137,17 +137,12 @@
       "confirmedText": "Your confirmation has been recorded — this training is up to date again. Your regular training cycle is unchanged."
     },
     "scorm": {
-      "startCta": "Start training content →",
       "exit": "Exit and continue later",
-      "thirdParty": "Third-party content",
-      "thirdPartyHint": "This course was imported as a SCORM package. BrainGain never asks for your password inside the course — the identity confirmation always appears as a separate dialog after the course is closed.",
       "preview": "Preview — not recorded",
       "saving": "Saving…",
       "saved": "Saved {time}",
       "saveFailed": "Not saved",
       "saveFailedHint": "Your progress could not be saved to the server. It will be retried automatically — completion stays disabled until saving works again.",
-      "fullscreen": "Fullscreen",
-      "exitFullscreen": "Exit fullscreen",
       "frameTitle": "Imported training course (third-party content)",
       "noSignalHint": "Finished the content but nothing happened? The course may not be reporting completion. Please contact the responsible trainer.",
       "resumeBanner": "Continuing where you left off.",
@@ -158,7 +153,9 @@
       "misconfigured": "The training content is misconfigured on this server — please contact your administrator.",
       "expired": "This attempt has expired. Your progress was saved — reopen the training to continue.",
       "launchFailed": "The training content could not be started. Please try again or contact the responsible trainer.",
-      "resultScore": "Course result: {pct}% (pass threshold {threshold}%)"
+      "resultScore": "Course result: {pct}% (pass threshold {threshold}%)",
+      "finishShort": "Finish",
+      "startOverConfirm": "Start over? Your progress in this course will be discarded."
     }
   },
   "trainings": {
@@ -806,5 +803,16 @@
       "loadError": "Could not load the audit trail",
       "exportError": "Could not export the audit trail"
     }
+  },
+  "viewer": {
+    "back": "Back",
+    "fullTab": "Full tab",
+    "exitFullTab": "Exit full tab",
+    "download": "Download",
+    "openExternal": "Open in a new tab",
+    "thirdParty": "External content",
+    "thirdPartyHint": "This content comes from outside BrainGain. BrainGain never asks for your password inside it.",
+    "blockedHint": "Nothing shown? Some sites do not allow being displayed inside another page — use “Open in a new tab”.",
+    "pageOf": "Page {n} of {total}"
   }
 }

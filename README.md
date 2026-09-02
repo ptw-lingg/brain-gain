@@ -54,17 +54,17 @@ requirements/  BrainGain's requirements dataset (single source of truth) + tooli
 ## Develop
 
 ```
-# backend (HTTPS API) — https://localhost:3001, http://localhost:3000 redirects
+# backend (HTTPS API) — https://localhost:3101, http://localhost:3100 redirects
 cd backend && npm install && npm run dev
 
-# frontend (separate terminal) — https://localhost:5173 (self-signed; accept the warning), proxies /api
+# frontend (separate terminal) — https://localhost:5273 (self-signed; accept the warning), proxies /api
 cd frontend && npm install && npm run dev
 npm run typecheck
 npm run build
 ```
 
 For production, `npm --prefix frontend run build` then `npm --prefix backend start` serves the built
-SPA over HTTPS at `https://localhost:3001`. The first run seeds an initial admin and writes a
+SPA over HTTPS at `https://localhost:3101`. The first run seeds an initial admin and writes a
 self-signed certificate.
 
 ## Requirements & tests

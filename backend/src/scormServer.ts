@@ -1,5 +1,5 @@
 // The CONTENT origin — a second, deliberately dumb express app on its own HTTPS listener (default
-// :3002) that serves nothing but SCORM package files and the wrapper/shim. Untrusted package
+// :3102) that serves nothing but SCORM package files and the wrapper/shim. Untrusted package
 // HTML/JS executes on THIS origin, which is why it must hold nothing: it imports no auth
 // middleware and no route modules, never sets a cookie, answers /api/* with 404 by construction,
 // and sends no CORS headers — so package script cannot read app APIs even if it tries.
@@ -18,7 +18,7 @@ import { contentTypeFor } from './services/scorm/mime';
 import { contentSecurityHeaders } from './middleware/securityHeaders';
 import { appOrigin } from './services/scorm/config';
 
-const HTTPS_PORT = Number(process.env.HTTPS_PORT) || Number(process.env.PORT) || 3001;
+const HTTPS_PORT = Number(process.env.HTTPS_PORT) || Number(process.env.PORT) || 3101;
 const SHIM_DIR = path.join(__dirname, 'scorm', 'shim');
 
 // Per-request lookups are one small file/store read each; a 2 s cache keeps a media-heavy course

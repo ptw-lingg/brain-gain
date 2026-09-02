@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
@@ -8,6 +8,7 @@ import {
   FileText,
   Loader2,
   Mail,
+  Maximize2,
   PartyPopper,
   RefreshCw,
   XCircle,
@@ -15,14 +16,17 @@ import {
 import axios from 'axios';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
+import { useLayoutStore } from '@/stores/layout';
 import { useToastStore } from '@/stores/toast';
 import { reauthWithEntra, type EntraConfig } from '@/auth/msal';
+import ContentViewer from '@/components/ContentViewer.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import ScormPlayer from '@/components/ScormPlayer.vue';
 import { useScormAttempt } from '@/composables/useScormAttempt';
 import { formatBytes } from '@/utils/display';
-import { downloadFile as saveFile } from '@/utils/download';
+import { fetchBlobUrl, downloadFile as saveFile } from '@/utils/download';
+import { materialSandbox, MEDIA_KINDS, variantEmbedKind, type EmbedKind } from '@/utils/embed';
 import { formatDate } from '@/utils/display';
 import { FALLBACK_LOCALE, localeName, resolveLocalized } from '@/utils/locales';
 import type { DueTraining, GradeResult, LocalizedText, Material, MaterialFile, MaterialVariant, Settings, TrainerContact, Training, TrainingUpdate } from '@/types';
@@ -31,6 +35,7 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const auth = useAuthStore();
+const layout = useLayoutStore();
 const toast = useToastStore();
 const trainingId = route.params.trainingId as string;
 
@@ -218,17 +223,16 @@ async function load(): Promise<void> {
   } catch {
     myDue.value = null;
   }
+  // A SCORM training has no start step: the course IS the content and there are no materials to
+  // review first, so it opens straight away. Anything the removed screen carried (a pending
+  // update's deadline and note) rides along as a slim banner above the course instead.
+  if (isScorm.value && !unpublished.value && !confirmOnly.value) {
+    step.value = 'scorm';
+    void scorm.launch();
+  }
 }
 
 function startTest(): void {
-  // A SCORM course needs no materials-awareness confirmation (SR-162 is about provided materials —
-  // a SCORM training has none; the course itself is the content and the attempt is the evidence):
-  // straight into the course.
-  if (isScorm.value) {
-    step.value = 'scorm';
-    void scorm.launch();
-    return;
-  }
   confirmOpen.value = true;
 }
 
@@ -276,8 +280,9 @@ async function confirmWithMicrosoft(): Promise<void> {
   }
 }
 
-// Material files are download-only (no in-app preview). Fetch the bytes with the auth header, then
-// save under the original filename so the learner can open it in their installed app.
+// Save a material file under its original filename, so the learner can open it in their installed
+// app. Still the only path for anything the browser cannot render (see utils/embed.ts), and always
+// available from the viewer's Download control.
 async function downloadFile(file: MaterialFile): Promise<void> {
   try {
     await saveFile(`/trainings/materials/${file.id}`, file.name);
@@ -285,6 +290,104 @@ async function downloadFile(file: MaterialFile): Promise<void> {
     toast.error(t('session.downloadError'));
   }
 }
+
+// ── In-app material viewer ────────────────────────────────────────────────────────────────────────
+// Material the browser can render is shown INSIDE the app, filling the whole client area (with a
+// full-tab toggle), instead of leaving for a new tab or the downloads folder. What qualifies is
+// decided in utils/embed.ts; everything else keeps the old behaviour.
+interface OpenMaterial {
+  kind: EmbedKind;
+  label: string;
+  /** Media/iframe source; absent when the content is pre-rendered into `pages`/`text`. */
+  src?: string;
+  /** An uploaded PDF rendered by pdf.js, one image per page. */
+  pages?: string[];
+  /** An uploaded text file's content. */
+  text?: string;
+  /** Set for links: the viewer offers the original URL, since a host may refuse to be framed. */
+  externalUrl: string | null;
+  /** Set for uploaded files: the viewer keeps a Download control. */
+  file: MaterialFile | null;
+  sandbox?: string;
+  /** A blob: URL we created and must revoke on close. */
+  objectUrl: string | null;
+}
+const viewing = ref<OpenMaterial | null>(null);
+const viewerLoading = ref(false);
+
+/**
+ * Open a material in the in-app viewer, or fall back to a new tab / download.
+ *
+ * Uploaded files are rendered by the app itself: their bytes need the auth header anyway, and
+ * rendering them here means a PDF displays even when the browser is configured to download PDFs
+ * (the same reason utils/pdfPreview.ts exists for controlled documents). Only links — whose bytes
+ * we cannot fetch cross-origin — go into a sandboxed iframe.
+ */
+async function openMaterial(v: MaterialVariant): Promise<void> {
+  const kind = variantEmbedKind(v);
+  if (!kind) {
+    // Not renderable here: a link opens where it works (its own tab), a file downloads.
+    if (v.url) window.open(v.url, '_blank', 'noopener,noreferrer');
+    else if (v.file) await downloadFile(v.file);
+    return;
+  }
+  const label = variantLabel(v);
+
+  if (v.file) {
+    const file = v.file;
+    const url = `/trainings/materials/${file.id}`;
+    viewerLoading.value = true;
+    try {
+      const base = { kind, label, externalUrl: null, file, objectUrl: null } as const;
+      if (kind === 'pdf') {
+        const { data } = await client.get<ArrayBuffer>(url, { responseType: 'arraybuffer' });
+        // Lazy-imported so pdf.js stays out of the initial bundle (see utils/pdfPreview.ts).
+        const { renderPdfToImages } = await import('@/utils/pdfPreview');
+        viewing.value = { ...base, pages: await renderPdfToImages(data) };
+      } else if (kind === 'text') {
+        viewing.value = { ...base, text: (await client.get<string>(url, { responseType: 'text' })).data };
+      } else {
+        // Media streams from a blob: URL — <video>/<audio>/<img> cannot send the auth header.
+        const objectUrl = await fetchBlobUrl(url);
+        viewing.value = { ...base, src: objectUrl, objectUrl };
+      }
+    } catch {
+      toast.error(t('session.downloadError'));
+    } finally {
+      viewerLoading.value = false;
+    }
+    return;
+  }
+
+  const url = v.url!;
+  viewing.value = {
+    kind,
+    label,
+    src: url,
+    externalUrl: url,
+    file: null,
+    sandbox: materialSandbox(url),
+    objectUrl: null,
+  };
+}
+
+function closeViewer(): void {
+  if (viewing.value?.objectUrl) URL.revokeObjectURL(viewing.value.objectUrl);
+  viewing.value = null;
+}
+
+/** The viewer and the SCORM player both need the whole client area — claim it while they are up. */
+watch(
+  () => step.value === 'scorm' || viewing.value !== null,
+  (immersive) => {
+    layout.immersive = immersive;
+  },
+  { immediate: true },
+);
+onBeforeUnmount(() => {
+  layout.immersive = false;
+  if (viewing.value?.objectUrl) URL.revokeObjectURL(viewing.value.objectUrl);
+});
 
 // Grade the attempt. Every submission carries the completion signature; a rejected signature (401)
 // keeps the signature UI open so the learner can correct their credentials and try again.
@@ -363,9 +466,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Most authoring-tool output is designed for a 1024px+ stage — the 672px reading column is
-       unusable for it, so the SCORM step escapes to full width. -->
-  <div :class="step === 'scorm' ? 'w-full' : 'mx-auto max-w-2xl'">
+  <!-- Embedded content (a SCORM course, a material document) gets the whole client area the page
+       claimed from the shell — the 672px reading column is unusable for a 1024px course stage or an
+       A4 page. Everything else keeps the comfortable measure. -->
+  <div :class="layout.immersive ? 'h-full' : 'mx-auto max-w-2xl'">
     <div v-if="loading" class="card h-64 animate-pulse bg-pastel-slate/30" />
 
     <template v-else-if="training && unpublished">
@@ -377,10 +481,32 @@ onMounted(() => {
     </template>
 
     <template v-else-if="training">
-      <h1 class="page-title">{{ resolveText(training.name).value }}</h1>
+      <!-- While embedded content is up the training name lives in the viewer's title line instead,
+           so the page heading would only repeat it and steal vertical space. -->
+      <h1 v-if="!layout.immersive" class="page-title">{{ resolveText(training.name).value }}</h1>
+
+      <!-- A material document/video, filling the client area (full-tab toggle in its title line). -->
+      <ContentViewer
+        v-if="viewing"
+        :kind="viewing.kind"
+        :title="resolveText(training.name).value"
+        :subtitle="viewing.label"
+        :src="viewing.src"
+        :pages="viewing.pages"
+        :text="viewing.text"
+        :sandbox="viewing.sandbox"
+        :frame-title="viewing.label"
+        :external-url="viewing.externalUrl"
+        :downloadable="viewing.file !== null"
+        :third-party="viewing.externalUrl !== null"
+        leave="back"
+        :leave-label="t('viewer.back')"
+        @leave="closeViewer"
+        @download="viewing.file && downloadFile(viewing.file)"
+      />
 
       <!-- Step 1: Material -->
-      <section v-if="step === 'material'" class="mt-6 flex flex-col gap-4" data-testid="session-material">
+      <section v-else-if="step === 'material'" class="mt-6 flex flex-col gap-4" data-testid="session-material">
         <!-- One hint box collects whichever notices apply: the pending update (why this training is
              back on the list and what clears it) and the no-test hint. -->
         <div
@@ -411,9 +537,31 @@ onMounted(() => {
                its language flag as the transparent hint. -->
           <div v-for="m in training.materials" :key="m.id" class="flex flex-col gap-2">
             <template v-for="v in visibleVariants(m)" :key="`${m.id}-${v.locale}`">
-              <!-- Link variants open in a new tab -->
+              <!-- Anything the browser renders (an uploaded PDF/video/image, or a link straight to
+                   such a file) opens in the in-app viewer, filling the client area. -->
+              <button
+                v-if="variantEmbedKind(v)"
+                type="button"
+                class="card flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lift"
+                :disabled="viewerLoading"
+                data-testid="material-open"
+                @click="openMaterial(v)"
+              >
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-pastel-sky/60">
+                  <Loader2 v-if="viewerLoading" class="h-4 w-4 animate-spin text-accent" />
+                  <FileText v-else class="h-4 w-4 text-accent" />
+                </div>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate font-sans text-sm font-semibold text-ink">{{ variantLabel(v) }}</span>
+                  <span v-if="v.file" class="font-mono text-[11px] text-ink-light">{{ formatBytes(v.file.size) }}</span>
+                </span>
+                <LocaleFlag v-if="isAlternative(v)" :code="v.locale" />
+                <Maximize2 class="h-4 w-4 shrink-0 text-ink-light" />
+              </button>
+              <!-- Link variants the browser cannot render in place (a page, an authenticated
+                   document viewer) open where they do work: their own tab. -->
               <a
-                v-if="v.url"
+                v-else-if="v.url"
                 :href="v.url"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -427,7 +575,7 @@ onMounted(() => {
                 <LocaleFlag v-if="isAlternative(v)" :code="v.locale" />
                 <ExternalLink class="h-4 w-4 text-ink-light" />
               </a>
-              <!-- File variants download to open in the learner's installed apps -->
+              <!-- File variants the browser cannot render download to open in installed apps -->
               <button
                 v-else-if="v.file"
                 type="button"
@@ -451,14 +599,14 @@ onMounted(() => {
             {{ t('session.noMaterial') }}
           </p>
         </div>
+        <!-- The material step is never reached by a SCORM training (its course opens straight away),
+             so this button only ever labels the classic paths. -->
         <button class="btn-primary self-start" data-testid="session-start" @click="startTest">
           {{ confirmOnly
             ? t('session.update.confirmCta')
-            : isScorm
-              ? t('session.scorm.startCta')
-              : hasQuestions
-                ? t('session.startTest')
-                : t('session.completeTraining') }}
+            : hasQuestions
+              ? t('session.startTest')
+              : t('session.completeTraining') }}
         </button>
 
         <!-- Materials-awareness confirmation (SR-162): shown before any test starts. For a training
@@ -611,14 +759,7 @@ onMounted(() => {
       </section>
 
       <!-- Step 2 (SCORM): the imported course replaces the quiz. -->
-      <section v-else-if="step === 'scorm'" class="mt-6 flex flex-col gap-3" data-testid="session-scorm">
-        <div v-if="scorm.ticket.value?.resumed" class="rounded-lg border border-blue-200 bg-pastel-blue/30 p-3" data-testid="scorm-resume-banner">
-          <p class="font-mono text-xs text-blue-800">{{ t('session.scorm.resumeBanner') }}</p>
-          <button class="btn-ghost btn-sm mt-1" data-testid="scorm-start-over" @click="retryScorm">
-            {{ t('session.scorm.startOver') }}
-          </button>
-        </div>
-
+      <section v-else-if="step === 'scorm'" class="flex h-full flex-col gap-2 p-2" data-testid="session-scorm">
         <div v-if="scorm.phase.value === 'error'" class="card flex flex-col items-center gap-3 bg-rose-50 p-8 text-center" data-testid="scorm-error">
           <XCircle class="h-10 w-10 text-rose-500" />
           <p class="font-mono text-sm text-ink-muted">
@@ -641,38 +782,49 @@ onMounted(() => {
 
         <!-- The player renders as soon as the ticket exists — its iframe must be in the DOM for the
              wrapper handshake to complete (the handshake is what advances the phase to 'running'). -->
-        <template v-else>
-          <ScormPlayer
-            :scorm="scorm"
-            :nudge-after-minutes="Math.max(training.durationMinutes || 0, 10)"
-            @exit="router.push('/dashboard')"
-          />
-
-          <!-- A definitive FAIL from the course: nothing to sign — retry a fresh run instead. -->
-          <div
-            v-if="scorm.success.value === 'failed'"
-            class="card flex items-center gap-3 bg-rose-50 p-4"
-            data-testid="scorm-failed"
-          >
-            <XCircle class="h-6 w-6 shrink-0 text-rose-500" />
-            <p class="flex-1 font-mono text-xs text-ink-muted">{{ t('session.scorm.courseFailed') }}</p>
-            <button class="btn-primary" data-testid="scorm-retry" @click="retryScorm">
-              <RefreshCw class="h-4 w-4" /> {{ t('session.retry') }}
-            </button>
-          </div>
-
-          <!-- Finish appears only when the course is completion-worthy under its rule AND every
-               write is durably on the server — a learner can never sign unpersisted evidence. -->
-          <button
-            v-else-if="scorm.canFinish.value"
-            class="btn-primary self-start"
-            data-testid="scorm-finish"
-            @click="finishScorm"
-          >
-            {{ t('session.scorm.finishCta') }}
-          </button>
-          <p v-else class="font-mono text-[11px] text-ink-light">{{ t('session.scorm.notCompletedYet') }}</p>
-        </template>
+        <!-- Every control lives in the player's title line; the slim banners below it carry what the
+             removed start screen used to say. -->
+        <ScormPlayer
+          v-else
+          :scorm="scorm"
+          :title="resolveText(training.name).value"
+          :nudge-after-minutes="Math.max(training.durationMinutes || 0, 10)"
+          class="min-h-0 flex-1"
+          @exit="router.push('/dashboard')"
+          @restart="retryScorm"
+          @finish="finishScorm"
+        >
+          <template #notice>
+            <!-- The obligation the removed start screen carried: why this training is back on the
+                 list and by when it must be redone, plus the trainer's note. -->
+            <div
+              v-if="pendingUpdate"
+              class="shrink-0 border-b border-blue-200 bg-pastel-blue/30 px-3 py-1.5"
+              data-testid="update-banner"
+            >
+              <p class="font-mono text-xs text-blue-800">
+                {{ t('session.update.retakeBanner', { date: formatDate(pendingUpdate.deadline) }) }}
+                <span v-if="pendingUpdate.note" class="italic text-ink-muted"> · {{ pendingUpdate.note }}</span>
+              </p>
+            </div>
+            <!-- A definitive FAIL from the course: nothing to sign — start over for a fresh run
+                 (the title line's restart control does it, and asks first). -->
+            <div
+              v-if="scorm.success.value === 'failed'"
+              class="shrink-0 border-b border-rose-200 bg-rose-50 px-3 py-1.5"
+              data-testid="scorm-failed"
+            >
+              <p class="font-mono text-xs text-rose-700">{{ t('session.scorm.courseFailed') }}</p>
+            </div>
+            <div
+              v-else-if="scorm.ticket.value?.resumed"
+              class="shrink-0 border-b border-blue-200 bg-pastel-blue/30 px-3 py-1.5"
+              data-testid="scorm-resume-banner"
+            >
+              <p class="font-mono text-xs text-blue-800">{{ t('session.scorm.resumeBanner') }}</p>
+            </div>
+          </template>
+        </ScormPlayer>
       </section>
 
       <!-- Step 3: Result -->

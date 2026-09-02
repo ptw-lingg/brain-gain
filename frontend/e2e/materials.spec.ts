@@ -65,10 +65,17 @@ test.describe('Trainings — material files end to end', () => {
     await expect(page.getByRole('heading', { name: 'Laboratory Safety Basics' })).toBeVisible();
     await expect(page.getByTestId('session-material')).toBeVisible();
 
-    // The file appears alongside the link material, named, with a download affordance.
+    // The file appears alongside the link material, named. A text file is one the browser can
+    // render, so it opens in the in-app viewer (SR-184) — and the download stays one click away, in
+    // the viewer's title line.
     const fileCard = page.getByRole('button', { name: new RegExp(FILE_NAME) });
     await expect(fileCard).toBeVisible();
-    const [download] = await Promise.all([page.waitForEvent('download'), fileCard.click()]);
+    await fileCard.click();
+    await expect(page.getByTestId('viewer-text')).toContainText(FILE_TEXT);
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByTestId('viewer-download').click(),
+    ]);
     expect(download.suggestedFilename()).toBe(FILE_NAME);
   });
 });

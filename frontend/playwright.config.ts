@@ -14,7 +14,7 @@ export default defineConfig({
   expect: { timeout: 8_000 },
   reporter: [['list']],
   use: {
-    baseURL: 'https://localhost:4443',
+    baseURL: 'https://localhost:4543',
     ignoreHTTPSErrors: true,
     channel: 'msedge',
     headless: true,

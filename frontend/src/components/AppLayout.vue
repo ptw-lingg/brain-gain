@@ -4,12 +4,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Eye, Languages, LogOut, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
+import { useLayoutStore } from '@/stores/layout';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
 import AppSidebar from './AppSidebar.vue';
 import BrainGainLogo from './BrainGainLogo.vue';
 import LocaleFlag from './LocaleFlag.vue';
 
 const auth = useAuthStore();
+const layout = useLayoutStore();
 const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
@@ -185,10 +187,21 @@ function logout(): void {
 
     <div class="flex flex-1 overflow-hidden">
       <AppSidebar />
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1" :class="layout.immersive ? 'overflow-hidden' : 'overflow-y-auto'">
         <!-- Data-dense pages (route meta fullWidth, e.g. the audit trail) use the whole window;
-             everything else keeps the comfortable shared measure. -->
-        <div class="mx-auto px-8 py-8" :class="route.meta.fullWidth ? 'max-w-none' : 'max-w-6xl'">
+             everything else keeps the comfortable shared measure. A page showing EMBEDDED content
+             (the material viewer, the SCORM player) claims the whole client area instead — full
+             height, no padding, no page scroll (see stores/layout.ts). -->
+        <div
+          class="mx-auto"
+          :class="
+            layout.immersive
+              ? 'h-full max-w-none'
+              : route.meta.fullWidth
+                ? 'max-w-none px-8 py-8'
+                : 'max-w-6xl px-8 py-8'
+          "
+        >
           <!-- Deliberately NO <Transition> around the routed page: with mode="out-in" the enter of
                the next page is silently SKIPPED when navigating away from the param route
                (/session/:id) — the content area then stays blank on every navigation until a full

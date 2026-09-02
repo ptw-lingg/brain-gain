@@ -78,13 +78,16 @@ test.describe('SCORM playback', () => {
 
     await login(page, 'trainer');
     await page.goto(`/session/${trainingId}`);
-    // No materials confirmation for a SCORM course — Start goes straight into it.
-    await page.getByTestId('session-start').click();
+    // No start step and no materials confirmation for a SCORM course — it opens straight away.
+    await expect(page.getByTestId('session-start')).toHaveCount(0);
     await expect(page.getByTestId('confirm-materials-dialog')).toHaveCount(0);
     // The course opens — as a preview (an unassigned owner's run is never recordable).
     await expect(page.getByTestId('session-scorm')).toBeVisible();
     await expect(page.getByTestId('scorm-frame')).toBeVisible();
-    await expect(page.getByText('Preview — not recorded')).toBeVisible();
+    // Preview is an icon-only badge; its tooltip/accessible name carries the words.
+    const badge = page.getByTestId('viewer-preview');
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveAttribute('aria-label', 'Preview — not recorded');
   });
 
   test('SYS-SCO-05 / SR-177 / VT-198: the course runs in a sandboxed cross-origin iframe instead of the quiz', async ({ page, request }) => {
@@ -92,8 +95,9 @@ test.describe('SCORM playback', () => {
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
 
-    // Confirm materials → the SCORM step, not the quiz.
-    await page.getByTestId('session-start').click();
+    // The course opens on arrival — no start step, no materials confirmation — and it replaces
+    // the quiz entirely.
+    await expect(page.getByTestId('session-start')).toHaveCount(0);
     await expect(page.getByTestId('session-scorm')).toBeVisible();
     await expect(page.getByTestId('session-quiz')).toHaveCount(0);
 
@@ -105,14 +109,13 @@ test.describe('SCORM playback', () => {
     const src = await frame.getAttribute('src');
     const frameOrigin = new URL(src!).origin;
     expect(frameOrigin).not.toBe(new URL(page.url()).origin);
-    expect(frameOrigin).toBe('https://localhost:4444');
+    expect(frameOrigin).toBe('https://localhost:4544');
   });
 
   test('SYS-SCO-07 / SR-177 / VT-209: the package finds the API through the wrapper and reads the seed synchronously', async ({ page, request }) => {
     const trainingId = await makeAssignedScorm(request);
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
-    await page.getByTestId('session-start').click();
 
     // Drill into the nested SCO frame (wrapper → SCO) and drive the stub.
     const wrapper = page.frameLocator('[data-testid="scorm-frame"]');
@@ -130,7 +133,6 @@ test.describe('SCORM playback', () => {
     const memberToken = await tokenFor(request, CREDS.member);
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
-    await page.getByTestId('session-start').click();
 
     const wrapper = page.frameLocator('[data-testid="scorm-frame"]');
     const sco = wrapper.frameLocator('#sco');

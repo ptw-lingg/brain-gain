@@ -86,7 +86,6 @@ test.describe('SCORM isolation boundary', () => {
     const memberToken = await tokenFor(request, CREDS.member);
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
-    await page.getByTestId('session-start').click();
     await expect(page.getByTestId('scorm-frame')).toBeVisible();
 
     const sco = page.frameLocator('[data-testid="scorm-frame"]').frameLocator('#sco');
@@ -101,14 +100,15 @@ test.describe('SCORM isolation boundary', () => {
     // The forged terminate created no session (wrong nonce, and completion needs the signature).
     const sessions = await (await request.get('/api/sessions/mine', { headers: auth(memberToken) })).json();
     expect(sessions.filter((s: { trainingId: string }) => s.trainingId === trainingId)).toHaveLength(0);
-    await expect(page.getByTestId('scorm-finish')).toHaveCount(0);
+    // The completion control sits in the title line at all times; a forged message must leave it
+    // DISABLED (its tooltip says the course has not reported completion).
+    await expect(page.getByTestId('scorm-finish')).toBeDisabled();
   });
 
   test('SYS-SCO-05 / SR-178 / VT-214: the signature dialog never shares the screen with third-party content', async ({ page, request }) => {
     const trainingId = await makeAssignedScorm(request, await buildScorm12({}));
     await login(page, 'member');
     await page.goto(`/session/${trainingId}`);
-    await page.getByTestId('session-start').click();
 
     const sco = page.frameLocator('[data-testid="scorm-frame"]').frameLocator('#sco');
     await sco.getByTestId('sco-init').click();
@@ -129,7 +129,10 @@ test.describe('SCORM isolation boundary', () => {
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("script-src 'self'");
     expect(csp).not.toContain("'unsafe-eval'");
-    expect(csp).toContain('frame-src https://localhost:4444');
+    // frame-src names the SCORM content origin; 'self' and https: additionally carry the
+    // learning-material viewer (SR-184). Framed content is sandboxed and cannot reach the app.
+    expect(csp).toContain('frame-src ');
+    expect(csp).toContain('https://localhost:4544');
     expect(res.headers()['x-frame-options']).toBe('DENY');
     expect(res.headers()['x-content-type-options']).toBe('nosniff');
   });
@@ -145,7 +148,7 @@ test.describe('SCORM isolation boundary', () => {
     const res = await request.get(launch.url);
     const csp = res.headers()['content-security-policy'];
     expect(csp).toContain("connect-src 'self'");
-    expect(csp).toContain('frame-ancestors https://localhost:4443');
+    expect(csp).toContain('frame-ancestors https://localhost:4543');
     expect(csp).toContain('sandbox allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads');
     expect(res.headers()['referrer-policy']).toBe('no-referrer');
     expect(res.headers()['access-control-allow-origin']).toBeUndefined();
@@ -155,7 +158,7 @@ test.describe('SCORM isolation boundary', () => {
     const token = launch.url.split('/s/')[1].split('/')[0];
     const bent = launch.url.replace(`/s/${token}/`, `/s/${token}x/`);
     expect((await request.get(bent)).status()).toBe(403);
-    expect((await request.get('https://localhost:4444/api/trainings')).status()).toBe(404);
+    expect((await request.get('https://localhost:4544/api/trainings')).status()).toBe(404);
     void page;
     void stubScoHtml;
   });
