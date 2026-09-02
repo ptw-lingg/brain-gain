@@ -13,14 +13,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5273,
+    port: 3013,
     proxy: {
       // Backend runs HTTPS with a self-signed cert in dev → target https + secure:false.
-      '/api': { target: 'https://localhost:3101', changeOrigin: true, secure: false },
-      // Deliberately NOT proxied: the SCORM content origin (https://localhost:3102). The player
+      '/api': { target: 'https://localhost:3011', changeOrigin: true, secure: false },
+      // Deliberately NOT proxied: the SCORM content origin (https://localhost:3012). The player
       // loads it directly — proxying it through Vite would collapse the two origins into one and
       // void the whole isolation design (untrusted package JS could then read the app's storage).
-      // For SCORM in dev, start the backend with APP_ORIGIN=https://localhost:5273 so the content
+      // For SCORM in dev, start the backend with APP_ORIGIN=https://localhost:3013 so the content
       // origin's frame-ancestors allows the Vite-served app to frame it.
     },
   },

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-// Ports for the isolated e2e backend (distinct from dev :3101 and the random test-harness ports).
+// Ports for the isolated e2e backend (distinct from dev :3011 and the random test-harness ports).
 const HTTPS_PORT = 4543;
 const HTTP_PORT = 4542;
 // The SCORM content origin — a SECOND https listener; the origin split is what the isolation
