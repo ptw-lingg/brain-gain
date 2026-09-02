@@ -53,6 +53,8 @@ requirements/  BrainGain's requirements dataset (single source of truth) + tooli
 
 ## Develop
 
+`.\dev.ps1` starts both servers (each in its own terminal window), or manually:
+
 ```
 # backend (HTTPS API) — https://localhost:3101, http://localhost:3100 redirects
 cd backend && npm install && npm run dev
