@@ -155,6 +155,7 @@ function blankTraining(): Training {
     order: 0,
     materials: [],
     questions: [],
+    previewImage: null,
     version: 0,
     createdAt: '',
   };

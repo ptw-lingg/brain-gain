@@ -13,6 +13,7 @@
     "uploadedBy": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
     "uploadedAt": "2026-08-31T09:18:47.668Z",
     "completionRule": "status",
-    "allowExternal": false
+    "allowExternal": false,
+    "thumbnailHref": "story_content/thumbnail.jpg"
   }
 ]

@@ -121,6 +121,14 @@ export interface Training {
   // it, and completion runs through the SCORM attempt arm instead. Stripped from learner payloads
   // (toPublic emits only the non-revealing `scorm` summary).
   scormPackageId?: string;
+  // Optional preview image shown as the cover of the learner's training card. MASTER DATA like
+  // name/category — applied immediately by PUT (never draft-staged, never a content update). The
+  // bytes live in the materials byte store (uploaded through POST /materials like any file); the
+  // descriptor is validated on write against the STORED sidecar — UUID id, a raster image type,
+  // bounded size (services/materials.ts#sanitizePreviewImage). Absent = no image (the card falls
+  // back to its category tint). Bytes are deleted when the image is replaced, removed or the
+  // training is deleted.
+  previewImage?: MaterialFile;
   createdAt: string;
 }
 
@@ -391,6 +399,13 @@ export interface ScormPackageRef {
   masteryScore: number | null;
   dataFromLms?: string; // manifest <adlcp:datafromlms> — seeded as cmi.launch_data
   manifestIdentifier: string; // <manifest identifier="…"> — traceability in the audit trail
+  // A cover-image CANDIDATE found in the package — POSIX-relative, a raster image under the
+  // preview-image size cap, path-validated like every entry. No SCORM/LOM element defines a cover,
+  // so this comes from vendor conventions (Storyline's meta.xml thumbnail, conventional file names;
+  // services/scorm/thumbnail.ts) and is only OFFERED to the trainer in the editor, never applied on
+  // its own. null = scanned, nothing qualifies. ABSENT = a record from before the field existed —
+  // migrateScormThumbnails backfills it at boot by scanning the extracted directory.
+  thumbnailHref?: string | null;
   fileCount: number; // extracted files (directories excluded)
   bytes: number; // total uncompressed size on disk
   sha256: string; // hash of the uploaded ZIP — dedupe + traceability evidence

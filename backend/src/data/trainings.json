@@ -1068,6 +1068,12 @@
     "updates": [],
     "createdAt": "2026-08-31T09:19:43.730Z",
     "scormPackageId": "9f1acce3-b644-4e4b-b7e6-9e6304277360",
-    "publishedAt": "2026-08-31T09:20:00.875Z"
+    "publishedAt": "2026-08-31T09:20:00.875Z",
+    "previewImage": {
+      "id": "642401fe-30e1-44e4-afa9-da0237fc0a32",
+      "name": "thumbnail.jpg",
+      "size": 47990,
+      "type": "image/jpeg"
+    }
   }
 ]

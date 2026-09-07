@@ -76,6 +76,9 @@ export interface ScormPackageRef {
   bytes: number;
   sha256: string;
   originalFileName: string;
+  // Cover candidate found in the package at import (vendor conventions — no SCORM element defines
+  // one). Offered to the trainer in the editor; fetched via /scorm-packages/:id/thumbnail.
+  thumbnailHref?: string | null;
   uploadedBy: string;
   uploadedAt: string;
   completionRule: ScormCompletionRule;
@@ -161,6 +164,10 @@ export interface Training {
   // field holds the WIP value sent on save — an explicit null detaches the package (undefined would
   // be stripped by JSON and read as "keep").
   scormPackageId?: string | null;
+  // Cover image of the learner's training card — master data applied immediately on save (never
+  // staged). Uploaded through the material upload endpoint; the card fetches the bytes with the
+  // Authorization header. In the EDITOR copy an explicit null removes it (undefined = keep).
+  previewImage?: MaterialFile | null;
   scormPackages?: { published: ScormPackageRef | null; draft: ScormPackageRef | null };
   scorm?: PublicScormInfo;
   createdAt: string;

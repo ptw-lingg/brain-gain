@@ -42,6 +42,26 @@ export function dueClasses(status: DueStatus, dueDate: string | null = null): st
   }
 }
 
+/**
+ * dueClasses for a badge sitting ON the card's cover image: the same hues, but OPAQUE — the
+ * translucent tints blend into a dark photo and the label becomes unreadable.
+ */
+export function dueCornerClasses(status: DueStatus, dueDate: string | null = null): string {
+  switch (status) {
+    case 'up-to-date':
+      return 'bg-pastel-mint text-emerald-700';
+    case 'due':
+      return 'bg-orange-100 text-orange-700';
+    case 'never':
+    case 'overdue':
+      return 'bg-rose-100 text-rose-600';
+    case 'updated':
+      return dueDate && new Date(dueDate).getTime() < Date.now()
+        ? 'bg-rose-100 text-rose-600'
+        : 'bg-pastel-blue text-blue-700';
+  }
+}
+
 export function isActionable(status: DueStatus): boolean {
   return status !== 'up-to-date';
 }

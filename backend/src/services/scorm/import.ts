@@ -15,7 +15,9 @@ import {
   writeScormEntry,
   writeStore,
 } from '../fileStore';
+import { PREVIEW_IMAGE_MAX_BYTES } from '../materials';
 import { parseManifest, ScormManifestError } from './manifest';
+import { META_XML_MAX_BYTES, META_XML_NAME, pickThumbnailCandidate } from './thumbnail';
 
 /** An unusable upload → HTTP 422 with a stable `code` the frontend maps to an i18n string. */
 export class ScormImportError extends Error {
@@ -51,6 +53,24 @@ const isSymlink = (entry: JSZip.JSZipObject): boolean => {
   const perms = (entry as unknown as { unixPermissions?: number | null }).unixPermissions;
   return typeof perms === 'number' && (perms & 0xf000) === 0xa000;
 };
+
+/**
+ * The cover-image CANDIDATE inside the archive (rules in ./thumbnail.ts): the Storyline meta.xml is
+ * read from the zip here; the size cap is enforced by the caller once the bytes inflate.
+ */
+async function detectThumbnail(rebased: Map<string, CensusEntry>, packageId: string): Promise<string | undefined> {
+  const meta = rebased.get(META_XML_NAME);
+  let metaXml: string | undefined;
+  if (meta) {
+    try {
+      const xml = await meta.entry.async('string');
+      if (xml.length <= META_XML_MAX_BYTES) metaXml = xml;
+    } catch {
+      // Vendor metadata — unreadable simply means "no hint"; the manifest is what must parse.
+    }
+  }
+  return pickThumbnailCandidate(packageId, rebased.keys(), metaXml);
+}
 
 export async function importScormPackage(args: {
   zipBytes: Buffer;
@@ -164,6 +184,10 @@ export async function importScormPackage(args: {
     throw new ScormImportError('entry-missing', `Entry file "${entryHref.slice(0, 200)}" is missing from the package`);
   }
 
+  // The cover candidate is resolved before extraction (it reads meta.xml from the archive); its
+  // size is checked as its bytes inflate below.
+  let thumbnailHref = await detectThumbnail(rebased, packageId);
+
   // ── Extract, re-checking sizes as bytes actually inflate ────────────────────────────────────────
   let totalBytes = 0;
   let fileCount = 0;
@@ -178,6 +202,7 @@ export async function importScormPackage(args: {
       if (bytes.length > IMPORT_LIMITS.maxEntryBytes) {
         throw new ScormImportError('uncompressed-too-large', 'A single package file is too large (max 200 MB)');
       }
+      if (rel === thumbnailHref && bytes.length > PREVIEW_IMAGE_MAX_BYTES) thumbnailHref = undefined;
       totalBytes += bytes.length;
       if (totalBytes > IMPORT_LIMITS.maxTotalUncompressedBytes) {
         throw new ScormImportError('uncompressed-too-large', 'Package is too large when unpacked (max 500 MB)');
@@ -205,6 +230,7 @@ export async function importScormPackage(args: {
     masteryScore: info.masteryScore,
     ...(info.dataFromLms ? { dataFromLms: info.dataFromLms } : {}),
     manifestIdentifier: info.identifier,
+    thumbnailHref: thumbnailHref ?? null, // always written: null = scanned, nothing qualifies
     fileCount,
     bytes: totalBytes,
     sha256: createHash('sha256').update(zipBytes).digest('hex'),

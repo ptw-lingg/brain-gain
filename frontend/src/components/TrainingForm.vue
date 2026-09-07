@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X, ChevronUp, ChevronDown, Package, AlertTriangle } from 'lucide-vue-next';
+import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X, ChevronUp, ChevronDown, Package, AlertTriangle, Image as ImageIcon } from 'lucide-vue-next';
 import axios from 'axios';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
@@ -10,6 +10,8 @@ import LocaleFlag from '@/components/LocaleFlag.vue';
 import type { LocalizedText, Material, MaterialFile, MaterialVariant, Question, SafeUser, ScormAttemptSummary, ScormPackageRef, Training } from '@/types';
 import { formatBytes, formatDuration } from '@/utils/display';
 import { MATERIAL_LOCALES, resolveLocalized } from '@/utils/locales';
+import { usePreviewImage } from '@/composables/usePreviewImage';
+import { downscalePreviewImage, PREVIEW_IMAGE_TYPES } from '@/utils/image';
 
 const { t, locale } = useI18n();
 const toast = useToastStore();
@@ -256,6 +258,49 @@ function removeVariantFile(variant: MaterialVariant): void {
   variant.url = '';
 }
 
+// ── Preview image ─────────────────────────────────────────────────────────────────────────────────
+// The cover of the learner's card. Master data, not content: it is applied on save without a
+// publish step. The picked image is scaled down in the browser (the card shows it at ~250 px) and
+// uploaded immediately through the material upload; only the descriptor lands on the editing copy.
+// Removing sets an explicit null so the removal survives serialization on save.
+const previewInput = ref<HTMLInputElement | null>(null);
+const previewUploading = ref(false);
+const previewUrl = usePreviewImage(computed(() => props.draft.previewImage?.id ?? null));
+const previewAccept = PREVIEW_IMAGE_TYPES.join(',');
+
+function pickPreviewImage(): void {
+  previewInput.value?.click();
+}
+
+async function onPreviewPicked(e: Event): Promise<void> {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file) return;
+  if (!PREVIEW_IMAGE_TYPES.includes(file.type)) {
+    toast.error(t('trainingForm.previewImageNotImage'));
+    return;
+  }
+  previewUploading.value = true;
+  try {
+    const scaled = await downscalePreviewImage(file);
+    const name = `${file.name.replace(/\.[^.]+$/, '') || 'preview'}.jpg`;
+    const { data } = await client.post<MaterialFile>('/trainings/materials', scaled, {
+      params: { name, type: 'image/jpeg' },
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+    props.draft.previewImage = data;
+  } catch {
+    toast.error(t('trainingForm.uploadError', { name: file.name }));
+  } finally {
+    previewUploading.value = false;
+  }
+}
+
+function removePreviewImage(): void {
+  props.draft.previewImage = null;
+}
+
 // ── SCORM package ─────────────────────────────────────────────────────────────────────────────────
 // A training is delivered either by materials + quiz or by an imported SCORM course. The zip is
 // uploaded immediately (like material files) and fully validated server-side; only the returned
@@ -328,6 +373,59 @@ watch(
   },
   { immediate: true },
 );
+
+// ── Cover from the package ────────────────────────────────────────────────────────────────────────
+// No SCORM/LOM element defines a cover, but the import reads vendor conventions (Storyline's
+// meta.xml thumbnail, conventional file names) and reports a candidate. The TRAINER decides: the
+// offer shows the picture and applies it only on click — through the same downscale + upload path
+// as a picked file, so the server validates it exactly like a manual upload. Dismissed per editing
+// session; hidden once the training has a preview image.
+const scormThumbBlob = ref<Blob | null>(null);
+const scormThumbUrl = ref<string | null>(null);
+const scormThumbDismissed = ref(false);
+const scormThumbApplying = ref(false);
+const scormThumbOffer = computed(
+  () => Boolean(scormThumbUrl.value) && !props.draft.previewImage && !scormThumbDismissed.value,
+);
+watch(
+  () => scormPkg.value?.packageId,
+  async (pkgId) => {
+    scormThumbBlob.value = null;
+    scormThumbUrl.value = null;
+    scormThumbDismissed.value = false;
+    if (!pkgId || !scormPkg.value?.thumbnailHref) return;
+    try {
+      const { data } = await client.get<Blob>(`/trainings/scorm-packages/${pkgId}/thumbnail`, { responseType: 'blob' });
+      if (scormPkg.value?.packageId !== pkgId) return; // the package changed meanwhile
+      scormThumbBlob.value = data;
+      scormThumbUrl.value = URL.createObjectURL(data);
+    } catch {
+      // No picture, no offer.
+    }
+  },
+  { immediate: true },
+);
+
+async function useScormThumbnail(): Promise<void> {
+  const blob = scormThumbBlob.value;
+  const href = scormPkg.value?.thumbnailHref;
+  if (!blob || !href) return;
+  const name = `${(href.split('/').pop() ?? 'cover').replace(/\.[^.]+$/, '') || 'cover'}.jpg`;
+  scormThumbApplying.value = true;
+  try {
+    const scaled = await downscalePreviewImage(blob);
+    const { data } = await client.post<MaterialFile>('/trainings/materials', scaled, {
+      params: { name, type: 'image/jpeg' },
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+    props.draft.previewImage = data;
+    toast.success(t('trainingForm.scorm.thumbnailApplied'));
+  } catch {
+    toast.error(t('trainingForm.uploadError', { name }));
+  } finally {
+    scormThumbApplying.value = false;
+  }
+}
 
 function pickScormZip(): void {
   scormInput.value?.click();
@@ -485,6 +583,65 @@ async function loadScormAttempts(): Promise<void> {
             <option v-for="o in owners" :key="o.id" :value="o.id">{{ o.name }} ({{ o.email }})</option>
           </select>
         </label>
+        <!-- Cover image of the learner's card: thumbnail at the card's aspect ratio, then the
+             upload/replace and remove actions with a hint on what works. -->
+        <div class="flex flex-col gap-1 sm:col-span-2">
+          <span class="form-label">{{ t('trainingForm.previewImage') }}</span>
+          <div class="flex flex-wrap items-start gap-3">
+            <div
+              class="flex h-[90px] w-[160px] shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-pastel-sky/60"
+              data-testid="preview-image-thumb"
+            >
+              <img v-if="previewUrl" :src="previewUrl" alt="" class="h-full w-full object-cover" />
+              <ImageIcon v-else class="h-6 w-6 text-ink-light" aria-hidden="true" />
+            </div>
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <p class="font-mono text-xs text-ink-light">{{ t('trainingForm.previewImageHint') }}</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  class="btn-ghost btn-sm"
+                  data-testid="preview-image-upload"
+                  :disabled="previewUploading"
+                  @click="pickPreviewImage"
+                >
+                  <Loader2 v-if="previewUploading" class="h-4 w-4 animate-spin" />
+                  <Upload v-else class="h-4 w-4" />
+                  {{ draft.previewImage ? t('trainingForm.replacePreviewImage') : t('trainingForm.uploadPreviewImage') }}
+                </button>
+                <!-- The attached course package's own cover picture — available whenever the
+                     training is edited, not only in the offer shown right after import. -->
+                <button
+                  v-if="scormThumbUrl && hasScorm"
+                  class="btn-ghost btn-sm"
+                  data-testid="preview-image-from-scorm"
+                  :disabled="scormThumbApplying"
+                  :title="t('trainingForm.useScormImageTitle')"
+                  @click="useScormThumbnail"
+                >
+                  <Loader2 v-if="scormThumbApplying" class="h-4 w-4 animate-spin" />
+                  <Package v-else class="h-4 w-4" />
+                  {{ t('trainingForm.useScormImage') }}
+                </button>
+                <button
+                  v-if="draft.previewImage"
+                  class="btn-ghost btn-sm"
+                  data-testid="preview-image-remove"
+                  @click="removePreviewImage"
+                >
+                  <X class="h-4 w-4" /> {{ t('trainingForm.removePreviewImage') }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <input
+            ref="previewInput"
+            type="file"
+            :accept="previewAccept"
+            class="hidden"
+            data-testid="preview-image-input"
+            @change="onPreviewPicked"
+          />
+        </div>
       </div>
     </CollapsibleSection>
 
@@ -734,6 +891,31 @@ async function loadScormAttempts(): Promise<void> {
             <dd class="font-mono text-[11px] text-ink-muted">{{ formatBytes(scormPkg.bytes) }}</dd>
           </div>
         </dl>
+
+        <!-- Cover candidate from the package: shown, never applied without the trainer's click. -->
+        <div
+          v-if="scormThumbOffer && scormThumbUrl"
+          class="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white p-3"
+          data-testid="scorm-thumbnail-offer"
+        >
+          <img :src="scormThumbUrl" alt="" class="h-[63px] w-[112px] shrink-0 rounded-md border border-line object-cover" />
+          <p class="min-w-0 flex-1 font-mono text-xs text-ink-muted">{{ t('trainingForm.scorm.thumbnailOffer') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              class="btn-primary btn-sm"
+              data-testid="scorm-thumbnail-use"
+              :disabled="scormThumbApplying"
+              @click="useScormThumbnail"
+            >
+              <Loader2 v-if="scormThumbApplying" class="h-3.5 w-3.5 animate-spin" />
+              <ImageIcon v-else class="h-3.5 w-3.5" />
+              {{ t('trainingForm.scorm.thumbnailUse') }}
+            </button>
+            <button class="btn-ghost btn-sm" data-testid="scorm-thumbnail-dismiss" @click="scormThumbDismissed = true">
+              {{ t('trainingForm.scorm.thumbnailDismiss') }}
+            </button>
+          </div>
+        </div>
 
         <!-- Trainer options — applied immediately (runtime policy, not staged content). -->
         <div class="mt-3 border-t border-line pt-3">

@@ -99,7 +99,7 @@ onMounted(load);
 
     <!-- Loading skeletons -->
     <div v-if="loading" class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <div v-for="n in 3" :key="n" class="card h-32 animate-pulse bg-pastel-slate/30" />
+      <div v-for="n in 3" :key="n" class="card h-72 animate-pulse bg-pastel-slate/30" />
     </div>
 
     <!-- Empty state -->

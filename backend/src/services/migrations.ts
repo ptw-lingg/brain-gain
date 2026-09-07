@@ -7,6 +7,7 @@ import { migrateQuestions } from './questions';
 import { migrateDurations, migrateMaterials, migrateTrainingTexts } from './materials';
 import { migrateTrainingVersions, pruneUpdateAcks } from './updates';
 import { gcScorm } from './scorm/packages';
+import { migrateScormThumbnails } from './scorm/thumbnail';
 
 export async function runDataMigrations(): Promise<void> {
   await migrateOrgUnits();
@@ -16,6 +17,8 @@ export async function runDataMigrations(): Promise<void> {
   await migrateTrainingTexts();
   await migrateTrainingVersions();
   await pruneUpdateAcks();
+  // Packages imported before the cover-candidate field existed get scanned on disk once.
+  await migrateScormThumbnails();
   // Not a migration in the strict sense, but the same trigger points are exactly right: boot, and
   // after a restore (which can drop the training a package/attempt belonged to). Sweeps
   // unreferenced packages, crashed-import directories and stale attempts; never touches consumed

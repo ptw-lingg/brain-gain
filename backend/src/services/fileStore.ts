@@ -93,6 +93,16 @@ export async function readMaterial(id: string): Promise<{ bytes: Buffer; meta: S
   }
 }
 
+/** The stored descriptor alone (no bytes) — for validating a reference without reading the file. */
+export async function readMaterialMeta(id: string): Promise<StoredMaterialMeta | null> {
+  try {
+    return JSON.parse(await fs.readFile(`${materialPath(id)}.meta.json`, 'utf-8')) as StoredMaterialMeta;
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw err;
+  }
+}
+
 export async function deleteMaterial(id: string): Promise<void> {
   await Promise.allSettled([
     fs.rm(materialPath(id), { force: true }),

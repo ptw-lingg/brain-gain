@@ -1,5 +1,6 @@
 import { Router, raw } from 'express';
 import { randomUUID } from 'crypto';
+import { promises as fs } from 'fs';
 import type {
   DueTraining,
   JobRole,
@@ -21,13 +22,15 @@ import {
   readMaterial,
   readSettings,
   readStore,
+  resolveScormEntry,
   saveMaterial,
   writeStore,
 } from '../services/fileStore';
 import { importScormPackage, ScormImportError } from '../services/scorm/import';
+import { contentTypeFor } from '../services/scorm/mime';
 import { deletePackageIfUnreferenced, getPackage, referencedPackageIds } from '../services/scorm/packages';
 import { deleteAttempt } from '../services/scorm/attempts';
-import { materialFileIds, sanitizeMaterials } from '../services/materials';
+import { materialFileIds, sanitizeMaterials, sanitizePreviewImage } from '../services/materials';
 import { MATERIAL_LOCALES } from '../services/locales';
 import {
   authenticate,
@@ -334,6 +337,29 @@ router.patch('/scorm-packages/:packageId', requireTrainerOrAdmin, async (req: Au
   return res.json(pkg);
 });
 
+// GET /api/trainings/scorm-packages/:packageId/thumbnail — the cover candidate the import found in
+// the package (trainer/admin), served inline for the editor's "use as preview image?" offer.
+// Adopting it is a CLIENT step: the editor downsizes these bytes and uploads them like any picked
+// image, so the cover goes through exactly the same validation as a manual upload. The path comes
+// from the stored descriptor (server-written at import), re-checked for containment before reading.
+router.get('/scorm-packages/:packageId/thumbnail', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
+  const pkg = await getPackage(req.params.packageId);
+  if (!pkg?.thumbnailHref) return res.status(404).json({ error: 'Not found' });
+  const abs = resolveScormEntry(pkg.packageId, pkg.thumbnailHref);
+  if (!abs) return res.status(404).json({ error: 'Not found' });
+  let bytes: Buffer;
+  try {
+    bytes = await fs.readFile(abs);
+  } catch {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.setHeader('Content-Type', contentTypeFor(pkg.thumbnailHref));
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Content-Length', String(bytes.length));
+  return res.end(bytes);
+});
+
 // DELETE /api/trainings/scorm-packages/:packageId — only when nothing references it (an attached
 // package is removed by editing the training, which then cleans up here automatically).
 router.delete('/scorm-packages/:packageId', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
@@ -432,12 +458,16 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     }
     draftScormId = b.scormPackageId;
   }
+  // The card cover, validated against the stored upload (master data — never staged).
+  const preview = await sanitizePreviewImage(b.previewImage ?? null);
+  if (!preview.ok) return res.status(400).json({ error: preview.error });
   const training: Training = {
     id: randomUUID(),
     name,
     description: sanitizeLocalizedText(b.description, MATERIAL_LOCALES),
     durationMinutes: Math.max(0, Math.round(Number(b.durationMinutes) || 0)),
     category: sanitizeLocalizedText(b.category, MATERIAL_LOCALES),
+    ...(preview.file ? { previewImage: preview.file } : {}),
     ownerId,
     cycleYears: clamp(b.cycleYears, 1, 5, 1),
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
@@ -530,6 +560,14 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
       return res.status(409).json({ error: 'This SCORM package belongs to another training' });
     }
   }
+  // The card cover: present-or-keep like the other master data; an explicit null removes it. It is
+  // validated against the stored upload and applied immediately — never part of the draft below.
+  let nextPreview = current.previewImage;
+  if (b.previewImage !== undefined) {
+    const preview = await sanitizePreviewImage(b.previewImage);
+    if (!preview.ok) return res.status(400).json({ error: preview.error });
+    nextPreview = preview.file ?? undefined;
+  }
   const publishedJson = JSON.stringify([current.materials ?? [], current.questions, current.scormPackageId ?? null]);
   const candidateJson = JSON.stringify([candMaterials, candQuestions, candScormId]);
   const oldDraftJson = current.draft
@@ -582,12 +620,23 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
         }),
   };
   if (candidateJson === publishedJson) delete trainings[idx].draft;
+  // The spread above carried the old cover along; apply the decision (kept, replaced or removed).
+  if (nextPreview) trainings[idx].previewImage = nextPreview;
+  else delete trainings[idx].previewImage;
   await writeStore('trainings', trainings);
   // A draft's file may have been removed or replaced: delete bytes referenced by the OLD draft
   // that neither the new draft nor the published content still uses. Published bytes are never
   // deleted here — PUT cannot change the published content. Best-effort, as before.
-  const keptIds = new Set([...materialFileIds(trainings[idx]), ...draftFileIds(trainings[idx])]);
-  const droppedIds = draftFileIds(current).filter((id) => !keptIds.has(id));
+  // A replaced or removed cover image is dropped the same way (unless a material still uses it).
+  const keptIds = new Set([
+    ...materialFileIds(trainings[idx]),
+    ...draftFileIds(trainings[idx]),
+    ...(nextPreview ? [nextPreview.id] : []),
+  ]);
+  const droppedIds = [
+    ...draftFileIds(current),
+    ...(current.previewImage ? [current.previewImage.id] : []),
+  ].filter((id) => !keptIds.has(id));
   await Promise.allSettled(droppedIds.map((id) => deleteMaterial(id)));
   // Same for a replaced/removed draft package: its tree is deleted once nothing references it.
   const oldDraftScormId = current.draft?.scormPackageId;
@@ -805,8 +854,13 @@ router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const removed = trainings.find((t) => t.id === req.params.id);
   if (!removed) return res.status(404).json({ error: 'Not found' });
   await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
-  // Best-effort cleanup of the deleted training's uploaded files — published AND draft bytes.
-  const removedIds = new Set([...materialFileIds(removed), ...draftFileIds(removed)]);
+  // Best-effort cleanup of the deleted training's uploaded files — published AND draft bytes,
+  // plus the card's cover image.
+  const removedIds = new Set([
+    ...materialFileIds(removed),
+    ...draftFileIds(removed),
+    ...(removed.previewImage ? [removed.previewImage.id] : []),
+  ]);
   await Promise.allSettled([...removedIds].map((id) => deleteMaterial(id)));
   // SCORM cleanup: the training's packages (published + draft) once unreferenced, and its
   // never-consumed attempts. Consumed attempts stay — they are the evidence behind persisted

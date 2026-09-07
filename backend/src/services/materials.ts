@@ -11,7 +11,7 @@
 
 import { randomUUID } from 'crypto';
 import type { Material, MaterialFile, MaterialVariant, Training } from '../types';
-import { readStore, writeStore } from './fileStore';
+import { readMaterialMeta, readStore, writeStore } from './fileStore';
 import { UUID_RE } from '../routes/http';
 
 // Material-file descriptors come from the client (it uploads bytes first via POST /materials, then
@@ -65,6 +65,43 @@ export function sanitizeMaterials(input: unknown, allowedLocales: readonly strin
       };
     })
     .filter((m): m is Material => m !== null);
+}
+
+// ── Preview image ────────────────────────────────────────────────────────────────────────────────
+// The card cover is an ordinary upload (POST /materials) that the training references by
+// descriptor. Unlike a material file the reference is validated against the STORED sidecar, not the
+// client's fields: only a raster image of bounded size may become a cover — the learner's browser
+// renders it inline, so no SVG (script-bearing) and no arbitrary blob.
+export const PREVIEW_IMAGE_TYPES: ReadonlySet<string> = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+]);
+export const PREVIEW_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+
+export type PreviewImageResult =
+  | { ok: true; file: MaterialFile | null } // null = explicitly cleared
+  | { ok: false; error: string };
+
+/**
+ * Validate a client-supplied preview-image descriptor. `null` clears the image; anything else must
+ * name an existing upload whose stored type/size qualify. The returned descriptor is rebuilt from
+ * the sidecar, so a client can never persist a forged name/size/type.
+ */
+export async function sanitizePreviewImage(input: unknown): Promise<PreviewImageResult> {
+  if (input === null) return { ok: true, file: null };
+  const desc = sanitizeFile(input);
+  if (!desc) return { ok: false, error: 'preview image must be an uploaded file' };
+  const meta = await readMaterialMeta(desc.id);
+  if (!meta) return { ok: false, error: 'preview image upload not found' };
+  if (!PREVIEW_IMAGE_TYPES.has(meta.type)) {
+    return { ok: false, error: 'preview image must be a PNG, JPEG, WebP or GIF image' };
+  }
+  if (meta.size > PREVIEW_IMAGE_MAX_BYTES) {
+    return { ok: false, error: 'preview image must not exceed 5 MB' };
+  }
+  return { ok: true, file: { id: desc.id, name: meta.name, size: meta.size, type: meta.type } };
 }
 
 /** Every uploaded-file id a training references — the enumeration for byte cleanup. */
