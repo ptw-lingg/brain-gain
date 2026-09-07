@@ -295,12 +295,13 @@ onMounted(load);
 
     <div v-if="loading" class="mt-6 card h-40 animate-pulse bg-pastel-slate/30" />
 
-    <!-- Four columns on xl (two on lg, one below). Default grid stretch equalizes heights: the
+    <!-- Four columns on 2xl (two on lg, one below; xl is too narrow next to the 240px sidebar).
+         Default grid stretch equalizes heights: the
          single cards in columns 2-4 fill the row, and column 1's inner grid distributes any
          extra space across its three cards. -->
-    <div v-else class="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+    <div v-else class="mt-6 grid gap-6 lg:grid-cols-2 2xl:grid-cols-4">
       <!-- Column 1: company name, pass threshold, automatic backups -->
-      <div class="grid gap-6">
+      <div class="grid grid-cols-1 gap-6">
         <!-- Company name (names the root org unit) -->
         <div class="card p-6">
           <div class="flex items-center gap-3">
@@ -312,8 +313,12 @@ onMounted(load);
               <p class="font-mono text-xs text-ink-light">{{ t('settings.companyDesc') }}</p>
             </div>
           </div>
-          <div class="mt-6 flex flex-wrap items-end gap-3">
-            <input v-model="companyName" class="bg-input flex-1" :placeholder="t('settings.companyTitle')" />
+          <label class="mt-6 flex flex-col gap-1">
+            <span class="form-label">{{ t('settings.companyTitle') }}</span>
+            <input v-model="companyName" class="bg-input" :placeholder="t('settings.companyTitle')" />
+          </label>
+
+          <div class="mt-6">
             <button class="btn-primary" :disabled="savingCompany" @click="saveCompany">
               <Save class="h-4 w-4" /> {{ savingCompany ? t('common.saving') : t('settings.saveCompany') }}
             </button>
@@ -465,7 +470,7 @@ onMounted(load);
           </div>
           <div class="min-w-0 flex-1">
             <h2 class="font-sans text-sm font-bold text-ink">{{ t('settings.smtpTitle') }}</h2>
-            <p class="font-mono text-xs text-ink-light">{{ t('settings.smtpDesc') }}</p>
+            <p class="break-words font-mono text-xs text-ink-light">{{ t('settings.smtpDesc') }}</p>
           </div>
           <label class="flex cursor-pointer items-center gap-2 font-mono text-xs text-ink-muted">
             <input v-model="smtpEnabled" type="checkbox" class="accent-accent" />
