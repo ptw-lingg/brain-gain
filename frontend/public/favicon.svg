@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- BrainGain favicon: graduation cap on a petrol tile (bg-sidebar #0E4A4D). -->
+  <rect width="64" height="64" rx="14" fill="#0E4A4D"/>
+  <path fill="#FFFFFF" d="M32 15 6 27l26 12 26-12z"/>
+  <path fill="#FFFFFF" d="M17 34.5v9c0 3.5 6.7 7.5 15 7.5s15-4 15-7.5v-9L32 41.5z"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" d="M54 28v14"/>
+  <circle cx="54" cy="45" r="3" fill="#FFFFFF"/>
+</svg>
