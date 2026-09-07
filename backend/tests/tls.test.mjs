@@ -77,7 +77,7 @@ test('SYS-TLS-01 / VT-110: the API is served over HTTPS (health responds over TL
   assert.ok(srv.baseUrl.startsWith('https://'), 'the backend base URL is HTTPS');
   const res = await srv.request('GET', '/api/health');
   assert.equal(res.status, 200);
-  assert.deepEqual(res.body, { ok: true });
+  assert.equal(res.body.ok, true); // the payload also carries the app version (SYS-VER-02)
 });
 
 test('SYS-TLS-09 / SR-110: responses include an HSTS header (HTTPS-only origin)', async () => {

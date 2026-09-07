@@ -16,6 +16,12 @@
 // The archived copy is never imported anywhere, including on a fresh install; each installation's
 // local log is the sole authoritative record of what happened on that installation.
 //
+// The data-version marker (data/_meta.json, see dataVersion.ts) rides along the same way — archived as
+// a passenger, never in `files` — but unlike the audit log it IS acted on: the manifest's dataVersion
+// (falling back to the passenger, then to the pre-versioning baseline) tells restoreBackup what shape
+// the archive is in, so it can refuse an archive from a newer app and write the local marker to the
+// archive's version before the migrations re-run.
+//
 // Archives are stored server-side as DATA_DIR/backups/<uuid>.zip with a sibling <uuid>.meta.json,
 // the same id + sidecar scheme fileStore.ts uses for materials: the id in a URL path is a UUID, so it
 // cannot traverse, and the human-readable download name lives in the sidecar.
@@ -28,7 +34,9 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import JSZip from 'jszip';
 import {
+  DATA_META_FILE,
   dataDir,
+  dataMetaFilePath,
   listMaterialFiles,
   listScormAttemptFiles,
   listScormEntries,
@@ -42,20 +50,29 @@ import {
   type StoreFile,
 } from './fileStore';
 import { auditFilePath } from './audit';
+import { appVersion, BASELINE_DATA_VERSION, compareVersions, isValidVersion } from './appVersion';
+import { readDataMeta, stampDataVersion } from './dataVersion';
 
 const BACKUPS_DIR_NAME = 'backups';
 const STAGING_DIR_NAME = '.restore-staging';
 const MATERIALS_PREFIX = 'data/materials/';
 // SCORM package trees (data/scorm/<packageId>/<original relative path…>) and attempt files
 // (data/scorm-attempts/<attemptId>.json). Both prefixes are OPTIONAL in an archive — a pre-SCORM
-// backup restores unchanged, so FORMAT_VERSION stays 1.
+// backup restores unchanged.
 const SCORM_PREFIX = 'data/scorm/';
 const SCORM_ATTEMPTS_PREFIX = 'data/scorm-attempts/';
 const MANIFEST = 'manifest.json';
 const APP = 'BrainGain';
-const FORMAT_VERSION = 1;
+// 1 = the original layout. 2 = the manifest also records dataVersion + appVersion and the archive
+// carries the data/_meta.json passenger. Readers NEVER refuse on formatVersion: an absent or 1 manifest
+// is a pre-versioning archive (data version = BASELINE_DATA_VERSION), and refusing an archive from a
+// newer app is dataVersion's job (BackupTooNew) — a blunt "unknown format" rejection would only add a
+// second, less precise failure mode.
+const FORMAT_VERSION = 2;
 
-export type BackupSource = 'manual' | 'pre-restore' | 'upload' | 'auto';
+// 'pre-migration' = taken by migrations.ts right before the first version-gated step of an upgrade.
+// Like 'pre-restore' it is a recovery point and is never aged out by autoBackup.ts's retention.
+export type BackupSource = 'manual' | 'pre-restore' | 'upload' | 'auto' | 'pre-migration';
 
 export interface BackupMeta {
   id: string;
@@ -80,6 +97,23 @@ export class BackupNotFound extends BackupError {
   constructor() {
     super('Backup not found');
     this.name = 'BackupNotFound';
+  }
+}
+
+/**
+ * The archive holds data written by a NEWER app than the one running → mapped to HTTP 409. Refused
+ * before the pre-restore snapshot or any write — the boot-time refusal in migrations.ts mirrored as a
+ * request outcome. Extends BackupError so an un-updated caller still degrades to 400.
+ */
+export class BackupTooNew extends BackupError {
+  constructor(
+    readonly dataVersion: string,
+    readonly appVersion: string,
+  ) {
+    super(
+      `This backup holds data written by BrainGain ${dataVersion}; this server runs ${appVersion}. Upgrade the server before restoring it.`,
+    );
+    this.name = 'BackupTooNew';
   }
 }
 
@@ -258,6 +292,17 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
     // no audit log yet — simply absent from the archive
   }
 
+  // The data-version marker rides along the same way (a passenger, not in `files`), and the manifest
+  // states the data version outright — that is what validateArchive reads first. A backup taken by
+  // migrations.ts BEFORE it advances the marker therefore records the OLD version, which is exactly
+  // right: restoring it later re-runs the steps.
+  const dataVersion = (await readDataMeta())?.dataVersion ?? BASELINE_DATA_VERSION;
+  try {
+    zip.file(`data/${DATA_META_FILE}`, await fs.readFile(dataMetaFilePath(), 'utf-8'));
+  } catch {
+    // no marker yet — absent from the archive; the manifest's dataVersion still tells the story
+  }
+
   const contents = {
     users: countOf(raw.users),
     trainings: countOf(raw.trainings),
@@ -268,7 +313,16 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
   zip.file(
     MANIFEST,
     JSON.stringify(
-      { app: APP, formatVersion: FORMAT_VERSION, createdAt: new Date().toISOString(), files, materials: contents.materials, ...(audit ? { audit } : {}) },
+      {
+        app: APP,
+        formatVersion: FORMAT_VERSION,
+        dataVersion,
+        appVersion: appVersion(),
+        createdAt: new Date().toISOString(),
+        files,
+        materials: contents.materials,
+        ...(audit ? { audit } : {}),
+      },
       null,
       2,
     ),
@@ -278,15 +332,20 @@ async function buildArchive(): Promise<{ bytes: Buffer; contents: BackupMeta['co
   return { bytes, contents };
 }
 
+// Archive-name suffix per source; the sources not listed (manual, upload) carry none.
+const NAME_SUFFIX: Partial<Record<BackupSource, string>> = {
+  'pre-restore': '-pre-restore',
+  auto: '-auto',
+  'pre-migration': '-pre-migration',
+};
+
 async function writeBackup(bytes: Buffer, source: BackupSource, contents: BackupMeta['contents'], fileName?: string): Promise<BackupMeta> {
   await fs.mkdir(backupsDir(), { recursive: true });
   const id = randomUUID();
   const createdAt = new Date().toISOString();
   const meta: BackupMeta = {
     id,
-    fileName:
-      fileName ??
-      archiveName('backup', createdAt, source === 'pre-restore' ? '-pre-restore' : source === 'auto' ? '-auto' : ''),
+    fileName: fileName ?? archiveName('backup', createdAt, NAME_SUFFIX[source] ?? ''),
     createdAt,
     size: bytes.length,
     source,
@@ -363,6 +422,8 @@ interface ValidArchive {
   /** Store file name → its text, already read and parsed once during validation. */
   stores: { name: string; text: string }[];
   contents: BackupMeta['contents'];
+  /** The shape the archived data is in (manifest → passenger marker → pre-versioning baseline). */
+  dataVersion: string;
 }
 
 /**
@@ -381,7 +442,7 @@ export async function validateArchive(bytes: Buffer): Promise<ValidArchive> {
 
   const manifestRaw = await zip.file(MANIFEST)?.async('string');
   if (!manifestRaw) throw new BackupError('Not a BrainGain backup (no manifest.json)');
-  let manifest: { app?: string; files?: unknown };
+  let manifest: { app?: string; files?: unknown; formatVersion?: unknown; dataVersion?: unknown };
   try {
     manifest = JSON.parse(manifestRaw);
   } catch {
@@ -412,9 +473,35 @@ export async function validateArchive(bytes: Buffer): Promise<ValidArchive> {
     stores.push({ name, text });
   }
 
+  // The archive's data version: the manifest (format 2), else the passenger marker, else the
+  // pre-versioning baseline. Never a reason to reject here — an old archive is a legitimate input,
+  // and one from a NEWER app is refused by restoreBackup rather than by validation, so it can still
+  // be uploaded and parked until the server is upgraded.
+  let dataVersion: string;
+  if (isValidVersion(manifest.dataVersion)) {
+    dataVersion = manifest.dataVersion;
+  } else {
+    let fromPassenger: unknown;
+    try {
+      const passenger = await zip.file(`data/${DATA_META_FILE}`)?.async('string');
+      fromPassenger = passenger ? (JSON.parse(passenger) as { dataVersion?: unknown }).dataVersion : undefined;
+    } catch {
+      fromPassenger = undefined;
+    }
+    if (isValidVersion(fromPassenger)) {
+      dataVersion = fromPassenger;
+    } else {
+      dataVersion = BASELINE_DATA_VERSION;
+      if (Number(manifest.formatVersion) >= 2) {
+        console.warn(`⚠  backup manifest (format ${String(manifest.formatVersion)}) carries no usable dataVersion — assuming ${BASELINE_DATA_VERSION}`);
+      }
+    }
+  }
+
   return {
     zip,
     stores,
+    dataVersion,
     contents: {
       users: counts.users ?? 0,
       trainings: counts.trainings ?? 0,
@@ -440,13 +527,19 @@ export function storeUploadedBackup(bytes: Buffer, fileName: string): Promise<Ba
  * first (so a wrong restore is undoable), stages every store, then swaps — data/tls/ and data/backups/
  * are outside the allowlist and are left untouched.
  */
-export function restoreBackup(id: string): Promise<{ meta: BackupMeta; safetyBackupId: string; files: string[]; materials: number }> {
+export function restoreBackup(
+  id: string,
+): Promise<{ meta: BackupMeta; safetyBackupId: string; files: string[]; materials: number; dataVersion: string }> {
   return exclusive(async () => {
     const stored = await readBackup(id);
     if (!stored) throw new BackupNotFound();
 
     // Validate BEFORE touching anything on disk — a throw from here leaves the dataset untouched.
-    const { zip, stores, contents } = await validateArchive(stored.bytes);
+    const { zip, stores, contents, dataVersion } = await validateArchive(stored.bytes);
+
+    // Data from a newer app is refused BEFORE the snapshot or any write (→ 409). An OLDER archive is
+    // fine: the route re-runs the migrations right after the restore, which bring it up to date.
+    if (compareVersions(dataVersion, appVersion()) > 0) throw new BackupTooNew(dataVersion, appVersion());
 
     // Undo point for the state we are about to overwrite.
     const snapshot = await buildArchive();
@@ -515,6 +608,12 @@ export function restoreBackup(id: string): Promise<{ meta: BackupMeta; safetyBac
         }
       }
 
+      // 3d. Write the marker to the ARCHIVE's version, so the migrations the route runs next see the
+      //     restored shape rather than the one this directory had before. Marker first, migrate
+      //     second: a crash in between leaves a marker that is too old, which only causes a harmless
+      //     re-run of idempotent steps. The local history is kept — this directory's story continues.
+      await stampDataVersion(dataVersion, 'restored', { note: `restored from ${stored.meta.fileName}` });
+
       // 4. Clean up.
       await fs.rm(staging, { recursive: true, force: true });
     } catch (err) {
@@ -525,6 +624,6 @@ export function restoreBackup(id: string): Promise<{ meta: BackupMeta; safetyBac
       );
     }
 
-    return { meta: stored.meta, safetyBackupId: safety.id, files: stores.map((s) => s.name), materials: contents.materials };
+    return { meta: stored.meta, safetyBackupId: safety.id, files: stores.map((s) => s.name), materials: contents.materials, dataVersion };
   });
 }

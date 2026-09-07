@@ -320,7 +320,10 @@ export type AuditAction =
   | 'training-update-cancelled'
   | 'training-draft-discarded'
   | 'scorm-imported'
-  | 'scorm-rejected';
+  | 'scorm-rejected'
+  // Actor-less: the server upgraded its own data at boot (services/migrations.ts).
+  | 'data-migrated'
+  | 'data-migration-failed';
 
 export type AuditEntityType =
   | 'user'
@@ -332,7 +335,8 @@ export type AuditEntityType =
   | 'backup'
   | 'auth'
   | 'session'
-  | 'scormPackage';
+  | 'scormPackage'
+  | 'system'; // the installation itself (data migrations)
 
 // One changed field on an update. Secret fields are recorded as '***' → '***' — the CHANGE is
 // visible, the values never are (see REDACT_FIELDS in services/audit.ts).

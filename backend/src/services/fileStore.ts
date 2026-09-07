@@ -37,6 +37,22 @@ export function storeFilePath(name: StoreFile): string {
   return filePath(name);
 }
 
+// The data-version marker (services/dataVersion.ts). Deliberately NOT a store: it is not an array, it
+// must never be swapped by a restore (the restore writes it explicitly from the archive's manifest),
+// and backup.ts archives it as a read-only passenger next to the audit log.
+export const DATA_META_FILE = '_meta.json';
+export function dataMetaFilePath(): string {
+  return path.join(DATA_DIR, DATA_META_FILE);
+}
+
+/** Write JSON via temp+rename so a crash mid-write can never leave a truncated file behind. */
+export async function writeJsonAtomic(target: string, data: unknown, pretty = false): Promise<void> {
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  const tmp = `${target}.tmp`;
+  await fs.writeFile(tmp, pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data), 'utf-8');
+  await fs.rename(tmp, target);
+}
+
 /** The uploaded-material files present on disk (bytes and their `<id>.meta.json` sidecars). */
 export async function listMaterialFiles(): Promise<string[]> {
   try {
@@ -201,11 +217,7 @@ export async function readScormAttemptFile<T>(attemptId: string): Promise<T | nu
 
 /** Write via temp+rename: an ack to the client means the attempt state is durably on disk. */
 export async function writeScormAttemptFile<T>(attemptId: string, data: T): Promise<void> {
-  await fs.mkdir(SCORM_ATTEMPTS_DIR, { recursive: true });
-  const target = scormAttemptPath(attemptId);
-  const tmp = `${target}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(data), 'utf-8');
-  await fs.rename(tmp, target);
+  await writeJsonAtomic(scormAttemptPath(attemptId), data);
 }
 
 /** Attempt file names on disk (the `<attemptId>.json` entries). */
@@ -240,7 +252,8 @@ export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
   await fs.writeFile(filePath(file), JSON.stringify(data, null, 2), 'utf-8');
 }
 
-const DEFAULT_SETTINGS: Settings = {
+// Exported for the 1.3.0 migration step, which prunes stored keys that are not in this shape.
+export const DEFAULT_SETTINGS: Settings = {
   passThreshold: 0.8,
   revealWrongQuestions: false,
   companyName: 'PTW Dosimetry',

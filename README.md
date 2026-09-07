@@ -83,7 +83,8 @@ suites, embeds the results, and gates on drift:
 
 ```
 npm run verify
-  = node requirements/tools/build.mjs           # validate dataset + rebuild test-case catalog + coverage
+  = node tools/sync-version.mjs --check         # every descriptor must repeat the root VERSION
+  + node requirements/tools/build.mjs           # validate dataset + rebuild test-case catalog + coverage
   + node requirements/tools/sync-tests.mjs      # run the suites + embed results under testRun (fails hard on partial runs)
   + node requirements/tools/build.mjs --check   # drift gate: file must be byte-identical to a rebuild
   + node requirements/tools/drift-check.mjs     # tooling must match the veri-trace sibling checkout
@@ -97,3 +98,30 @@ Authoring rule: edit `requirements.json`, then `npm run verify`. `build.mjs` reb
 partial or failed-to-launch run. Never hand-edit the generated catalog/coverage/result blocks. The
 tools under `requirements/tools/` are identical copies shared with the VeriTrace repo — change them in
 lockstep (drift-check enforces this when both checkouts sit side by side).
+
+## Versioning & releases
+
+The app version is the root [`VERSION`](VERSION) file — strict `MAJOR.MINOR.PATCH`, the single source
+of truth. `node tools/sync-version.mjs` copies it into both `package.json` files, both lockfiles and the
+requirements catalog's `meta.version` (the SBOMs pick it up from the package descriptors); `npm run
+verify` fails on any drift. The backend reads `VERSION` at boot and reports it on `GET /api/health`
+(`{ ok, version }`). Every user can see it under **About** in the user menu; admins also see the data
+version there (`GET /api/version`, admin-only, with the migration history).
+
+**Data versioning.** `DATA_DIR/_meta.json` records which version's shape the stored data is in. At boot
+the backend runs the unconditional shape-normalizing pass (`backend/src/services/migrations.ts`), then
+applies every version-gated step in `backend/src/services/migrationSteps/` with
+`dataVersion < step.version <= appVersion` — exactly once each, after an automatic `pre-migration`
+backup, advancing the marker after each step. A data directory without a marker is adopted at the
+baseline `1.2.0`; a fresh one is stamped at the current version. A directory written by a **newer**
+version refuses to boot (`ALLOW_DATA_DOWNGRADE=1` overrides in an emergency), and restoring a newer
+archive is refused with 409. Steps must be idempotent: a failure exits the process with the marker
+left unadvanced, so the same step re-runs. Rule of thumb — an added field with a default, or anything a
+record can be inspected for, is a normalizer; a removed/renamed field, a destructive prune or a
+re-interpreted value is a gated step.
+
+**Releasing.** `/release patch|minor|major` (a Claude Code skill, [`.claude/skills/release/`](.claude/skills/release/SKILL.md))
+bumps `VERSION`, syncs the descriptors, adds the [`CHANGELOG.md`](CHANGELOG.md) section (Keep a
+Changelog, with a mandatory *Data migrations* subsection), scaffolds a migration step when the persisted
+shape changed, runs `npm run verify`, commits `chore(release): X.Y.Z` and tags `vX.Y.Z`. Deployments
+check out that tag (see [INSTALLATION.md](INSTALLATION.md) §12).

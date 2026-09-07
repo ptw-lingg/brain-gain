@@ -4,6 +4,7 @@ import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
 import {
   BackupError,
   BackupNotFound,
+  BackupTooNew,
   bundleAll,
   createBackup,
   deleteBackup,
@@ -104,8 +105,12 @@ router.post('/:id/restore', async (req: AuthRequest, res) => {
   try {
     const result = await restoreBackup(req.params.id);
     // An archive may carry records in any historical shape — normalize them right away rather
-    // than waiting for the next boot (which is when the migrations otherwise run).
-    await runDataMigrations();
+    // than waiting for the next boot (which is when the migrations otherwise run). The restore wrote
+    // the data-version marker to the archive's version, so the version-gated steps since then run
+    // too. No pre-migration backup: the pre-restore snapshot is the recovery point (and the archive
+    // itself a second one) — and this call is deliberately AFTER restoreBackup() has left backup.ts's
+    // exclusive() queue, where a nested createBackup() would self-deadlock.
+    await runDataMigrations({ preMigrationBackup: false });
     // The restore itself becomes audit history — the log SURVIVED the restore (it is outside the
     // swap set), so this entry appends to everything recorded before it.
     await auditEvent(
@@ -124,6 +129,8 @@ router.post('/:id/restore', async (req: AuthRequest, res) => {
   } catch (err) {
     // Refused before any write: the dataset is untouched.
     if (err instanceof BackupNotFound) return res.status(404).json({ error: err.message });
+    // Data written by a newer app than this one: a conflict with the running version, not a bad archive.
+    if (err instanceof BackupTooNew) return res.status(409).json({ error: err.message });
     if (err instanceof BackupError) return res.status(400).json({ error: err.message });
     // Failed mid-restore: the data may be partially updated, so hand back the recovery point.
     if (err instanceof RestoreFailed) {

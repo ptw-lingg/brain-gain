@@ -15,8 +15,11 @@ import settingsRoutes from './routes/settings';
 import mailRoutes from './routes/mail';
 import backupRoutes from './routes/backups';
 import auditRoutes from './routes/audit';
+import versionRoutes from './routes/version';
 import { seed } from './seed';
 import { runDataMigrations } from './services/migrations';
+import { initDataVersion } from './services/dataVersion';
+import { appVersion } from './services/appVersion';
 import { startAutoBackupScheduler } from './services/autoBackup';
 import { ensureCredentials, registerHttpsServer } from './services/tls';
 import { appSecurityHeaders } from './middleware/securityHeaders';
@@ -46,7 +49,9 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+// Unauthenticated: a load-balancer probe and every user's About dialog read the app version here.
+// The DATA version (the marker) is admin-only on /api/version.
+app.get('/api/health', (_req, res) => res.json({ ok: true, version: appVersion() }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -59,6 +64,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/backups', backupRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/version', versionRoutes);
 
 // Serve the built SPA from the same HTTPS origin (production). In dev the SPA is served by Vite,
 // and `frontend/dist` may not exist — so only mount this when a build is present.
@@ -105,7 +111,13 @@ function listenWithRetry(
   server.listen(port);
 }
 
-seed()
+// Boot order is load-bearing: the data-version marker is decided BEFORE seed() (seed materializes
+// settings.json, which would make a virgin directory look populated), the migrations run before the
+// auto-backup scheduler (an automatic backup must archive normalized data) and before any listener
+// binds (no request can observe half-migrated data). A migration failure — or data written by a
+// newer version — lands in the catch below and exits 1.
+initDataVersion()
+  .then(() => seed())
   .then(() => runDataMigrations())
   .then(async () => {
     // After the migrations (an automatic backup must archive normalized data), before listen — the

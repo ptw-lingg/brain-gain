@@ -333,7 +333,7 @@ export interface BackupMeta {
   fileName: string;
   createdAt: string;
   size: number;
-  source: 'manual' | 'pre-restore' | 'upload' | 'auto';
+  source: 'manual' | 'pre-restore' | 'upload' | 'auto' | 'pre-migration';
   contents: { users: number; trainings: number; materials: number };
 }
 
@@ -359,7 +359,9 @@ export type AuditAction =
   | 'training-update-published'
   | 'training-update-confirmed'
   | 'training-update-cancelled'
-  | 'training-draft-discarded';
+  | 'training-draft-discarded'
+  | 'data-migrated'
+  | 'data-migration-failed';
 
 export type AuditEntityType =
   | 'user'
@@ -370,7 +372,8 @@ export type AuditEntityType =
   | 'settings'
   | 'backup'
   | 'auth'
-  | 'session';
+  | 'session'
+  | 'system';
 
 /** One changed field on an update; secret values arrive masked as '***'. */
 export interface AuditChange {

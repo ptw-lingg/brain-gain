@@ -38,7 +38,14 @@
     "userMenu": "Benutzermenü",
     "roleAdmin": "Admin",
     "roleTrainer": "Trainer",
-    "roleMember": "Mitglied"
+    "roleMember": "Mitglied",
+    "about": "Über BrainGain"
+  },
+  "about": {
+    "title": "Über BrainGain",
+    "version": "Version",
+    "dataVersion": "Datenversion",
+    "dataVersionHint": "Stand der gespeicherten Daten"
   },
   "impersonation": {
     "viewingAs": "Angesehen als",
@@ -729,6 +736,7 @@
     "sourcePreRestore": "vor Wiederherstellung",
     "sourceUpload": "hochgeladen",
     "sourceAuto": "Automatisch",
+    "sourcePreMigration": "vor Migration",
     "thName": "Archiv",
     "thCreated": "Erstellt",
     "thSize": "Größe",
@@ -793,6 +801,8 @@
       "backup-delete": "Backup gelöscht",
       "backup-restore": "Backup wiederhergestellt",
       "backup-restore-failed": "Wiederherstellung fehlgeschlagen",
+      "data-migrated": "Daten migriert",
+      "data-migration-failed": "Datenmigration fehlgeschlagen",
       "materials-confirmed": "Material bestätigt",
       "training-completed": "Schulung abgeschlossen",
       "training-update-published": "Schulungs-Aktualisierung veröffentlicht",
@@ -809,7 +819,8 @@
       "settings": "Einstellungen",
       "backup": "Backup",
       "auth": "Anmeldung",
-      "session": "Sitzung"
+      "session": "Sitzung",
+      "system": "System"
     },
     "toasts": {
       "loadError": "Audit-Trail konnte nicht geladen werden",

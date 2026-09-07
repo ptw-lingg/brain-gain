@@ -35,8 +35,9 @@ const ACTIONS: AuditAction[] = [
   'materials-confirmed', 'training-completed',
   'training-update-published', 'training-update-confirmed', 'training-update-cancelled',
   'training-draft-discarded',
+  'data-migrated', 'data-migration-failed',
 ];
-const ENTITY_TYPES: AuditEntityType[] = ['user', 'role', 'training', 'material', 'orgUnit', 'settings', 'backup', 'auth', 'session'];
+const ENTITY_TYPES: AuditEntityType[] = ['user', 'role', 'training', 'material', 'orgUnit', 'settings', 'backup', 'auth', 'session', 'system'];
 
 // Badge tone per action family — additions are visible immediately (unknown actions fall back to slate).
 const ACTION_CLS: Partial<Record<AuditAction, string>> = {
@@ -60,6 +61,8 @@ const ACTION_CLS: Partial<Record<AuditAction, string>> = {
   'training-update-confirmed': 'bg-pastel-mint/60 text-emerald-700',
   'training-update-cancelled': 'bg-amber-100 text-amber-700',
   'training-draft-discarded': 'bg-amber-100 text-amber-700',
+  'data-migrated': 'bg-pastel-slate/50 text-ink-muted',
+  'data-migration-failed': 'bg-rose-100 text-rose-700',
 };
 
 function filterParams(): Record<string, string> {

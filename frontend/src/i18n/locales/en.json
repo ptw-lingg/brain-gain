@@ -38,7 +38,14 @@
     "userMenu": "User menu",
     "roleAdmin": "admin",
     "roleTrainer": "trainer",
-    "roleMember": "member"
+    "roleMember": "member",
+    "about": "About BrainGain"
+  },
+  "about": {
+    "title": "About BrainGain",
+    "version": "Version",
+    "dataVersion": "Data version",
+    "dataVersionHint": "shape of the stored data"
   },
   "impersonation": {
     "viewingAs": "Viewing as",
@@ -729,6 +736,7 @@
     "sourcePreRestore": "pre-restore",
     "sourceUpload": "uploaded",
     "sourceAuto": "Automatic",
+    "sourcePreMigration": "pre-migration",
     "thName": "Archive",
     "thCreated": "Created",
     "thSize": "Size",
@@ -793,6 +801,8 @@
       "backup-delete": "Backup deleted",
       "backup-restore": "Backup restored",
       "backup-restore-failed": "Restore failed",
+      "data-migrated": "Data migrated",
+      "data-migration-failed": "Data migration failed",
       "materials-confirmed": "Materials confirmed",
       "training-completed": "Training completed",
       "training-update-published": "Training update published",
@@ -809,7 +819,8 @@
       "settings": "Settings",
       "backup": "Backup",
       "auth": "Sign-in",
-      "session": "Session"
+      "session": "Session",
+      "system": "System"
     },
     "toasts": {
       "loadError": "Could not load the audit trail",

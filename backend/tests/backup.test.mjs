@@ -114,7 +114,10 @@ test('SYS-BAK-07 / SR-140 / VT-140: the archive holds every JSON store plus mate
 
   const manifest = JSON.parse(await zip.file('manifest.json').async('string'));
   assert.equal(manifest.app, 'BrainGain', 'the manifest identifies the producing app');
-  assert.equal(manifest.formatVersion, 1);
+  // Format 2 (SYS-VER-08): the manifest also states which version's shape the data is in.
+  assert.equal(manifest.formatVersion, 2);
+  assert.match(manifest.dataVersion, /^\d+\.\d+\.\d+$/, 'the manifest records the data version');
+  assert.match(manifest.appVersion, /^\d+\.\d+\.\d+$/, 'and the producing app version');
 
   for (const store of ['users', 'roles', 'trainings', 'sessions', 'orgUnits', 'settings']) {
     const entry = zip.file(`data/${store}.json`);

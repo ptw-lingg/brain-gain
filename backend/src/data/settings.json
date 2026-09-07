@@ -31,10 +31,5 @@
     "enabled": true,
     "intervalDays": 1,
     "keep": 7
-  },
-  "materialLocales": [
-    "en",
-    "de",
-    "da"
-  ]
+  }
 }

@@ -148,6 +148,7 @@ async function remove(backup: BackupMeta): Promise<void> {
 const SOURCE: Record<BackupMeta['source'], { key: string; cls: string }> = {
   manual: { key: 'backups.sourceManual', cls: 'bg-pastel-mint/60 text-emerald-700' },
   'pre-restore': { key: 'backups.sourcePreRestore', cls: 'bg-amber-100 text-amber-700' },
+  'pre-migration': { key: 'backups.sourcePreMigration', cls: 'bg-amber-100 text-amber-700' },
   upload: { key: 'backups.sourceUpload', cls: 'bg-pastel-blue/50 text-ink' },
   auto: { key: 'backups.sourceAuto', cls: 'bg-pastel-cyan/60 text-petrol-700' },
 };

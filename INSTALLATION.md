@@ -391,7 +391,7 @@ Smoke-test both listeners from the VM. `-k` is expected at this stage — the au
 certificate is self-signed and issued for `localhost`.
 
 ```bash
-curl -sk https://localhost/api/health          # {"ok":true}
+curl -sk https://localhost/api/health          # {"ok":true,"version":"1.3.0"}
 curl -sI http://localhost/ | head -1           # HTTP/1.1 308 Permanent Redirect
 ```
 
@@ -578,12 +578,18 @@ taken at the next boot rather than being skipped.
 A backup is a ZIP containing all JSON stores and every uploaded material file. Two things are
 deliberately **excluded**: the `tls/` directory (the private key must never leave the server) and the
 `backups/` directory itself (no recursion). Retention prunes **automatic** backups only — manual,
-uploaded and pre-restore archives are never aged out.
+uploaded, pre-restore and pre-migration archives are never aged out.
 
 Restoring validates the archive first, then takes an automatic *pre-restore* snapshot, stages every
 file and swaps it into place. A corrupt or foreign archive is rejected before anything is written,
 and a failure after the snapshot names the snapshot to recover from. The running certificate is never
 touched by a restore.
+
+Every archive records the data version it holds (`manifest.json` → `dataVersion`). Restoring an
+archive from an **older** version brings its data up to date immediately after the restore — the same
+migrations that run at start-up. An archive from a **newer** version than the server is refused (HTTP
+409) before anything is written: upgrade the server first, then restore. The *pre-migration* archive
+the server takes before an upgrade (see §12) is the recovery point for undoing that upgrade.
 
 ### 11.2 Infrastructure backups
 
@@ -620,7 +626,9 @@ The application code needs no backup; it is rebuilt from the repository.
 
 ## 12. Upgrading
 
-Data migrations run automatically at boot, so an upgrade is: snapshot, fetch, rebuild, restart.
+Releases are tagged `vMAJOR.MINOR.PATCH`; `CHANGELOG.md` says what each one changes and which data
+migration it carries. Data migrations run automatically at boot, so an upgrade is: snapshot, fetch,
+rebuild, restart.
 
 ```bash
 # 1. Take a backup from the admin UI (Settings -> Backups -> Create backup), or snapshot the disk.
@@ -628,7 +636,7 @@ Data migrations run automatically at boot, so an upgrade is: snapshot, fetch, re
 # 2. Fetch the new release
 cd /opt/braingain/app
 sudo git fetch --all --tags
-sudo git checkout <new-release-tag>
+sudo git checkout v1.3.0                  # the release tag you are upgrading to
 
 # 3. Rebuild both halves
 sudo npm --prefix backend ci && sudo npm --prefix backend run build
@@ -638,12 +646,30 @@ sudo npm --prefix backend prune --omit=dev
 # 4. Restart and verify
 sudo systemctl restart braingain
 sudo journalctl -u braingain -n 30 --no-pager
-curl -sk https://localhost/api/health
+curl -sk https://localhost/api/health     # {"ok":true,"version":"1.3.0"}
 ```
 
-Because `DATA_DIR` points outside the code tree, rebuilding never touches user data. Expect a few
-seconds of downtime at the restart. Roll back by checking out the previous tag, rebuilding and
-restarting; if a migration changed data in a way you need to undo, restore the backup from step 1.
+What the first start of a new version does with the existing data:
+
+1. It reads `DATA_DIR/_meta.json`, the data-version marker that records which version's shape the
+   data is in. A data directory from before versioning existed (no marker) is adopted at `1.2.0`.
+2. If any migration step lies between the data version and the new version, it first creates an
+   automatic **pre-migration** backup (listed under Backups, never aged out by retention), then applies
+   the steps in order, advancing the marker after each one. The log shows every step, and the audit
+   trail records a `data-migrated` entry.
+3. If nothing is due, the marker is advanced and nothing else is written.
+
+A failing step stops the start (exit 1) with the marker left at the previous step, so the same step
+runs again once the cause is fixed. Because `DATA_DIR` points outside the code tree, rebuilding never
+touches user data. Expect a few seconds of downtime at the restart. **About** in the user menu shows
+the running version to every user; an administrator also sees the data version there.
+
+**Rolling back.** The server refuses to start on data written by a newer version than itself (the log
+names both versions), so a rollback is: *while still on the new version*, restore the pre-migration
+backup (Backups → Restore), then check out the previous tag, rebuild and restart. If the new version
+cannot start at all and no restore is possible, `ALLOW_DATA_DOWNGRADE=1` in the unit's environment lets
+the old build start on the newer data — an emergency-only override: fields the old build does not
+know about may be dropped on the next write.
 
 ---
 
@@ -662,8 +688,9 @@ du -sh /var/lib/braingain/*               # data growth by area
 
 ### 13.2 Health monitoring
 
-`GET /api/health` is unauthenticated and returns `{"ok":true}`. Use it for Azure Load Balancer health
-probes, Application Insights availability tests, or any external monitor. Monitor certificate expiry
+`GET /api/health` is unauthenticated and returns `{"ok":true,"version":"<app version>"}`. Use it for
+Azure Load Balancer health probes, Application Insights availability tests, or any external monitor;
+the version lets a monitor confirm that a deployment landed. Monitor certificate expiry
 too — the admin UI shows the active certificate's validity window, subject, issuer and fingerprint.
 
 ### 13.3 Troubleshooting
@@ -686,6 +713,7 @@ too — the admin UI shows the active certificate's validity window, subject, is
 
 ```
 /var/lib/braingain/
+├── _meta.json          Data-version marker: which version's shape the data is in, plus migration history
 ├── users.json          Accounts, bcrypt hashes, role and org-unit assignments
 ├── roles.json          Job roles and their required trainings
 ├── trainings.json      Trainings, materials, quiz questions, recurrence
@@ -734,6 +762,7 @@ sign-ins, and rotating `JWT_SECRET` is the mechanism for invalidating tokens alr
 | `HTTPS_PORT` | `3011` | Application HTTPS listener. Takes precedence over `PORT`. |
 | `PORT` | — | Alternative name for the HTTPS port; used only if `HTTPS_PORT` is unset. |
 | `HTTP_PORT` | `3010` | Redirect-only HTTP listener. |
+| `ALLOW_DATA_DOWNGRADE` | — | Emergency only: set to `1` to let an older build start on data written by a newer version (see §12). |
 | `ENTRA_AUTHORITY_BASE` | `https://login.microsoftonline.com` | Test hook for a stub identity provider. Never set in production. |
 
 ## Appendix B — Ports

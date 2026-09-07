@@ -1,0 +1,21 @@
+// {{VERSION}} — {{ONE_LINE_SUMMARY}}
+//
+// Why a gated step and not a normalizer: {{WHY_NOT_INFERABLE_OR_WHY_DESTRUCTIVE}}
+//
+// CONTRACT: up() is idempotent and re-runnable — the marker advances only after it resolves, so a
+// throw or a crash mid-step means it runs again at the next boot over partially written data.
+
+import type { MigrationStep } from './index';
+
+export const {{CAMEL_CASE_NAME}}: MigrationStep = {
+  version: '{{VERSION}}',
+  description: '{{ONE_LINE_SUMMARY}}',
+  async up() {
+    // 1. read the affected store(s)
+    // 2. detect what still needs changing — return { changed: false } when nothing does
+    // 3. rewrite, then report what was done for the boot log / marker history / audit trail
+    return { changed: false, details: 'nothing to do' };
+  },
+};
+
+// Register in backend/src/services/migrationSteps/index.ts:  const registered = [..., {{CAMEL_CASE_NAME}}];

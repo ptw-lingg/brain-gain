@@ -117,3 +117,60 @@ async function boot(httpsPort, httpPort, extraEnv = {}) {
 
   return { baseUrl, scormBaseUrl: `https://localhost:${scormPort}`, dataDir, request, stop };
 }
+
+/**
+ * Spawn the backend expecting it to REFUSE to start (e.g. a data directory written by a newer
+ * version): one attempt, no port re-roll, no health polling. Resolves { code, log } once the process
+ * has exited; rejects if it becomes healthy instead, or is still running after timeoutMs. Creates and
+ * removes its own temp data dir unless the caller passes env.DATA_DIR.
+ */
+export async function startTestServerExpectingExit(opts = {}) {
+  const { env = {}, timeoutMs = 20000 } = opts;
+  const httpsPort = 20000 + Math.floor(Math.random() * 40000);
+  const ownDir = env.DATA_DIR ? null : mkdtempSync(join(tmpdir(), 'braingain-test-'));
+  const proc = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
+    cwd: backendRoot,
+    env: {
+      ...process.env,
+      DATA_DIR: ownDir ?? env.DATA_DIR,
+      HTTPS_PORT: String(httpsPort),
+      HTTP_PORT: String(httpsPort + 1),
+      SCORM_CONTENT_PORT: String(httpsPort + 2),
+      JWT_SECRET: 'test-secret',
+      ...env,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let log = '';
+  proc.stdout.on('data', (d) => { log += d; });
+  proc.stderr.on('data', (d) => { log += d; });
+
+  try {
+    const code = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        proc.kill();
+        reject(new Error(`backend still running after ${timeoutMs}ms — expected it to refuse to start:\n${log}`));
+      }, timeoutMs);
+      // If it ever answers health it did NOT refuse — fail fast instead of waiting for the timeout.
+      const poll = setInterval(async () => {
+        try {
+          const r = await fetch(`https://localhost:${httpsPort}/api/health`);
+          if (r.ok) {
+            clearInterval(poll);
+            clearTimeout(timer);
+            proc.kill();
+            reject(new Error(`backend became healthy — expected it to refuse to start:\n${log}`));
+          }
+        } catch { /* not up */ }
+      }, 250);
+      proc.once('exit', (c) => {
+        clearInterval(poll);
+        clearTimeout(timer);
+        resolve(c);
+      });
+    });
+    return { code, log };
+  } finally {
+    if (ownDir) { try { rmSync(ownDir, { recursive: true, force: true }); } catch { /* ignore */ } }
+  }
+}

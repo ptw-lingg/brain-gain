@@ -2,10 +2,11 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Eye, Languages, LogOut, X } from 'lucide-vue-next';
+import { Eye, Info, Languages, LogOut, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useLayoutStore } from '@/stores/layout';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
+import AboutDialog from './AboutDialog.vue';
 import AppSidebar from './AppSidebar.vue';
 import BrainGainLogo from './BrainGainLogo.vue';
 import LocaleFlag from './LocaleFlag.vue';
@@ -67,9 +68,16 @@ const roleLabel = computed(() =>
       : t('nav.roleMember'),
 );
 
-// User menu (avatar dropdown): language switch + logout.
+// User menu (avatar dropdown): language switch + about + logout.
 const menuOpen = ref(false);
 const menuRoot = ref<HTMLElement | null>(null);
+
+// The About dialog is mounted OUTSIDE the dropdown so closing the menu does not unmount it.
+const aboutOpen = ref(false);
+function openAbout(): void {
+  menuOpen.value = false;
+  aboutOpen.value = true;
+}
 
 function onDocClick(e: MouseEvent): void {
   if (menuOpen.value && menuRoot.value && !menuRoot.value.contains(e.target as Node)) {
@@ -164,6 +172,15 @@ function logout(): void {
             </div>
 
             <button
+              class="flex w-full items-center gap-2 border-b border-line px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-petrol-50 hover:text-ink"
+              role="menuitem"
+              data-testid="about-open"
+              @click="openAbout"
+            >
+              <Info class="h-4 w-4" /> {{ t('nav.about') }}
+            </button>
+
+            <button
               class="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-petrol-50 hover:text-ink"
               role="menuitem"
               @click="logout"
@@ -211,5 +228,7 @@ function logout(): void {
         </div>
       </main>
     </div>
+
+    <AboutDialog v-if="aboutOpen" @close="aboutOpen = false" />
   </div>
 </template>

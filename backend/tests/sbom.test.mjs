@@ -11,6 +11,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// The root VERSION file is the app's single version source of truth; the SBOM must report it
+// (VERSION → package.json via tools/sync-version.mjs → cyclonedx metadata.component.version).
+const VERSION = readFileSync(join(repoRoot, 'VERSION'), 'utf8').trim();
 
 function generateAndRead(pkg) {
   execSync('npm run sbom', { cwd: join(repoRoot, pkg), stdio: 'pipe', timeout: 120_000 });
@@ -27,6 +30,7 @@ test('SYS-ARCH-08 / SR-175 / VT-192: the build generates CycloneDX SBOMs listing
     assert.equal(sbom.bomFormat, 'CycloneDX', `${pkg}: bomFormat`);
     assert.match(sbom.specVersion, /^1\.\d+$/, `${pkg}: CycloneDX 1.x spec`);
     assert.equal(sbom.metadata.component.name, `braingain-${pkg}`, `${pkg}: root component names the package`);
+    assert.equal(sbom.metadata.component.version, VERSION, `${pkg}: root component carries the app version (SYS-VER-01)`);
 
     const names = new Set(sbom.components.map((c) => c.name));
     assert.ok(names.size > 0, `${pkg}: components listed`);
