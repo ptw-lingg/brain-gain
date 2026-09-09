@@ -1,4 +1,5 @@
-import { Router, raw } from 'express';
+import { raw } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
 import {
@@ -17,7 +18,7 @@ import {
 import { runDataMigrations } from '../services/migrations';
 import { auditEvent } from '../services/audit';
 
-const router = Router();
+const router = asyncRouter();
 
 // Backups contain every record in the system, including password hashes and the SMTP password, and a
 // restore overwrites all data — so every endpoint here is administrator-only.

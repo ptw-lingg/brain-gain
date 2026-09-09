@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import { UI_PREF_KEYS, type OrgUnit, type SafeUser, type User } from '../types';
-import { readSettings, readStore, writeStore } from '../services/fileStore';
+import { readSettings, readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { UI_LOCALES } from '../services/locales';
 import { rootOrgUnitId } from '../services/orgUnits';
 import { authenticate, requireAdmin, signToken, type AuthRequest } from '../middleware/auth';
@@ -18,7 +18,7 @@ import {
 // for auth events that happen outside an authenticated request (login, activation, SSO).
 const asActor = (u: User) => ({ id: u.id, email: u.email, isAdmin: u.isAdmin, isTrainer: u.isTrainer });
 
-const router = Router();
+const router = asyncRouter();
 
 export function toSafeUser(user: User): SafeUser {
   const { passwordHash, entraOid, activationToken, ...safe } = user;
@@ -94,18 +94,23 @@ router.post('/activate', async (req, res) => {
       .status(400)
       .json({ error: 'A token and a password of at least 8 characters are required' });
   }
-  const users = await readStore<User>('users');
-  const idx = users.findIndex((u) => !!u.activationToken && u.activationToken === token);
-  const user = idx === -1 ? undefined : users[idx];
-  // A spent or bogus token (or an already-active account) fails with the same generic message.
-  if (!user || !user.isDisabled || user.passwordHash) {
+  // Hash BEFORE taking the store lock: bcrypt takes ~100 ms and does not depend on store state.
+  const passwordHash = await bcrypt.hash(password, 10);
+  let user: User | undefined;
+  await updateStore<User>('users', (users) => {
+    const idx = users.findIndex((u) => !!u.activationToken && u.activationToken === token);
+    const found = idx === -1 ? undefined : users[idx];
+    // A spent or bogus token (or an already-active account) fails with the same generic message.
+    if (!found || !found.isDisabled || found.passwordHash) return null;
+    found.passwordHash = passwordHash;
+    found.isDisabled = false;
+    delete found.activationToken;
+    user = found;
+    return users;
+  });
+  if (!user) {
     return res.status(400).json({ error: 'This activation link is invalid or has already been used' });
   }
-  user.passwordHash = await bcrypt.hash(password, 10);
-  user.isDisabled = false;
-  delete user.activationToken;
-  users[idx] = user;
-  await writeStore('users', users);
   await auditEvent(asActor(user), 'activate', { type: 'auth', id: user.id, name: user.email });
 
   const jwt = signToken({
@@ -149,12 +154,17 @@ router.put('/me', authenticate, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: `prefs accepts boolean flags: ${UI_PREF_KEYS.join(', ')}` });
     }
   }
-  const users = await readStore<User>('users');
-  const user = users.find((u) => u.id === req.user?.id);
+  // Under the store lock: this is the one write EVERY learner performs, and unlocked it could
+  // revert a concurrent admin change (a disabled account, a removed admin flag, a deletion).
+  let user: User | undefined;
+  await updateStore<User>('users', (users) => {
+    user = users.find((u) => u.id === req.user?.id);
+    if (!user) return null;
+    if (locale !== undefined) user.locale = locale;
+    if (prefs !== undefined) user.prefs = { ...user.prefs, ...prefs };
+    return users;
+  });
   if (!user) return res.status(404).json({ error: 'User not found' });
-  if (locale !== undefined) user.locale = locale;
-  if (prefs !== undefined) user.prefs = { ...user.prefs, ...prefs };
-  await writeStore('users', users);
   return res.json(await identityUser(user));
 });
 
@@ -221,43 +231,54 @@ router.post('/sso/entra', async (req, res) => {
     return res.status(500).json({ error: 'SSO verification failed' });
   }
 
-  const users = await readStore<User>('users');
-  let user = users.find((u) => u.entraOid === claims.oid);
+  // Lookup, link and auto-provision in one transaction: two first sign-ins at the same moment must
+  // not lose a user (who would then hold a valid token for an account that does not exist).
+  type SsoOutcome =
+    | { status: number; error: string }
+    | { user: User; audit: 'linked' | 'provisioned' | null };
+  const outcome = await transaction(async (): Promise<SsoOutcome> => {
+    const users = await readStore<User>('users');
+    const existing = users.find((u) => u.entraOid === claims.oid);
+    if (existing) return { user: existing, audit: null };
 
-  if (!user) {
     const byEmail = users.find((u) => u.email.toLowerCase() === claims.email.toLowerCase());
     if (byEmail) {
       // Refuse if this email is already linked to a different Entra account (takeover guard).
       if (byEmail.entraOid && byEmail.entraOid !== claims.oid) {
-        return res.status(409).json({ error: 'This account is linked to a different Microsoft user' });
+        return { status: 409, error: 'This account is linked to a different Microsoft user' };
       }
       // Link the Entra account to the existing user. Never touch roles/admin/trainer flags.
       byEmail.entraOid = claims.oid;
       await writeStore('users', users);
-      user = byEmail;
-      await auditEvent(asActor(user), 'update', { type: 'user', id: user.id, name: user.email }, { details: 'linked Microsoft account' });
-    } else {
-      // Domain-restricted auto-provision: only emails in the allow-list may create a new member.
-      const domain = claims.email.split('@')[1]?.toLowerCase() ?? '';
-      const allowed = settings.entra.allowedDomains.map((d) => d.toLowerCase());
-      if (!allowed.includes(domain)) {
-        return res.status(403).json({ error: 'Your account is not permitted to sign in' });
-      }
-      user = {
-        id: randomUUID(),
-        email: claims.email,
-        name: claims.name,
-        roleIds: [],
-        orgUnitId: await rootOrgUnitId(),
-        isAdmin: false,
-        isTrainer: false,
-        entraOid: claims.oid,
-        createdAt: new Date().toISOString(),
-      };
-      users.push(user);
-      await writeStore('users', users);
-      await auditEvent(asActor(user), 'create', { type: 'user', id: user.id, name: user.email }, { details: 'auto-provisioned via SSO' });
+      return { user: byEmail, audit: 'linked' };
     }
+    // Domain-restricted auto-provision: only emails in the allow-list may create a new member.
+    const domain = claims.email.split('@')[1]?.toLowerCase() ?? '';
+    const allowed = settings.entra.allowedDomains.map((d) => d.toLowerCase());
+    if (!allowed.includes(domain)) {
+      return { status: 403, error: 'Your account is not permitted to sign in' };
+    }
+    const created: User = {
+      id: randomUUID(),
+      email: claims.email,
+      name: claims.name,
+      roleIds: [],
+      orgUnitId: await rootOrgUnitId(),
+      isAdmin: false,
+      isTrainer: false,
+      entraOid: claims.oid,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(created);
+    await writeStore('users', users);
+    return { user: created, audit: 'provisioned' };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { user } = outcome;
+  if (outcome.audit === 'linked') {
+    await auditEvent(asActor(user), 'update', { type: 'user', id: user.id, name: user.email }, { details: 'linked Microsoft account' });
+  } else if (outcome.audit === 'provisioned') {
+    await auditEvent(asActor(user), 'create', { type: 'user', id: user.id, name: user.email }, { details: 'auto-provisioned via SSO' });
   }
 
   // A disabled account (e.g. imported but not yet activated) cannot sign in via SSO either.

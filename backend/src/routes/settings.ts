@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import type { OrgUnit, Settings, Training } from '../types';
-import { readSettings, readStore, writeSettings, writeStore } from '../services/fileStore';
+import { readSettings, readStore, transaction, updateSettings, writeSettings, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { auditEvent, diffSettings } from '../services/audit';
 import {
@@ -12,7 +12,7 @@ import {
   storeUploadedCredentials,
 } from '../services/tls';
 
-const router = Router();
+const router = asyncRouter();
 
 /** Accept either an array or a comma-separated string; trim, lower-case, drop empties. */
 function sanitizeDomains(input: unknown): string[] {
@@ -40,15 +40,21 @@ router.get('/', authenticate, async (_req, res) => {
 // independent: only the fields present in the body are updated.
 router.put('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   const body = req.body ?? {};
+  // Body-only validation first, so the store lock below is held only for the read-modify-write.
+  if (body.passThreshold !== undefined && !Number.isFinite(Number(body.passThreshold))) {
+    return res.status(400).json({ error: 'passThreshold (0–1) is required' });
+  }
+  if (body.companyName !== undefined && (typeof body.companyName !== 'string' || !body.companyName.trim())) {
+    return res.status(400).json({ error: 'companyName must be a non-empty string' });
+  }
+
+  // Settings and the root org unit are rewritten together in one transaction.
+  const { before, next } = await transaction(async () => {
   const before = await readSettings();
   const next: Settings = { ...before };
 
   if (body.passThreshold !== undefined) {
-    const raw = Number(body.passThreshold);
-    if (!Number.isFinite(raw)) {
-      return res.status(400).json({ error: 'passThreshold (0–1) is required' });
-    }
-    next.passThreshold = Math.min(1, Math.max(0.5, raw));
+    next.passThreshold = Math.min(1, Math.max(0.5, Number(body.passThreshold)));
   }
 
   if (body.revealWrongQuestions !== undefined) {
@@ -58,9 +64,6 @@ router.put('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
 
   // The company name is the root org unit's name — keep the two in sync.
   if (body.companyName !== undefined) {
-    if (typeof body.companyName !== 'string' || !body.companyName.trim()) {
-      return res.status(400).json({ error: 'companyName must be a non-empty string' });
-    }
     next.companyName = body.companyName.trim();
     const orgUnits = await readStore<OrgUnit>('orgUnits');
     const root = orgUnits.find((o) => o.parentId === null) ?? orgUnits[0];
@@ -112,6 +115,8 @@ router.put('/', authenticate, requireAdmin, async (req: AuthRequest, res) => {
   }
 
   await writeSettings(next);
+  return { before, next };
+  });
   await auditEvent(req.user ?? null, 'update', { type: 'settings', name: 'Settings' }, { changes: diffSettings(before, next) });
   return res.json(publicSettings(next));
 });
@@ -136,9 +141,7 @@ router.post('/certificate', authenticate, requireAdmin, async (req: AuthRequest,
   try {
     const { meta } = await storeUploadedCredentials(creds);
     applyCredentials(creds);
-    const settings = await readSettings();
-    settings.tls = meta;
-    await writeSettings(settings);
+    await updateSettings((settings) => ({ ...settings, tls: meta }));
     await auditEvent(
       req.user ?? null,
       'update',
@@ -159,9 +162,7 @@ router.post('/certificate/self-signed', authenticate, requireAdmin, async (req: 
     const creds = await generateSelfSigned();
     applyCredentials(creds);
     const meta = await certMeta(creds.cert, 'self-signed');
-    const settings = await readSettings();
-    settings.tls = meta;
-    await writeSettings(settings);
+    await updateSettings((settings) => ({ ...settings, tls: meta }));
     await auditEvent(
       req.user ?? null,
       'update',

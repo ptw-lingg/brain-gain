@@ -1,4 +1,5 @@
-import { Router, raw } from 'express';
+import { raw } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import type {
@@ -24,6 +25,8 @@ import {
   readStore,
   resolveScormEntry,
   saveMaterial,
+  transaction,
+  updateStore,
   writeStore,
 } from '../services/fileStore';
 import { importScormPackage, ScormImportError } from '../services/scorm/import';
@@ -48,7 +51,7 @@ import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 import { sanitizeFileName, sendAttachment, UUID_RE } from './http';
 
-const router = Router();
+const router = asyncRouter();
 
 // Human-readable audit label for a training: English name, else the first filled language.
 const trainingLabel = (t: Training): string => t.name.en ?? Object.values(t.name)[0] ?? '';
@@ -139,26 +142,18 @@ function clamp(n: unknown, min: number, max: number, fallback: number): number {
 }
 
 /**
- * Read all trainings sorted by their explicit `order`. Legacy records written
- * before ordering existed get backfilled (by current file position) and persisted,
- * so the order field becomes the single source of truth from then on.
+ * Read all trainings sorted by their explicit `order`. Legacy records without one are coerced IN
+ * MEMORY only (by file position) — the persistent backfill is migrateTrainingOrder() at boot. A read
+ * path must never write: it used to, and a GET racing a PUT could revert the PUT.
  */
 async function readOrderedTrainings(): Promise<Training[]> {
   const trainings = await readStore<Training>('trainings');
-  let changed = false;
   trainings.forEach((t, i) => {
-    if (typeof t.order !== 'number' || !Number.isFinite(t.order)) {
-      t.order = i;
-      changed = true;
-    }
+    if (typeof t.order !== 'number' || !Number.isFinite(t.order)) t.order = i;
     // Guard only — the real conversion of legacy materialLinks/materialFiles happens in the boot
     // migration (services/materials.ts); this keeps the field an array no matter what.
-    if (!Array.isArray(t.materials)) {
-      t.materials = [];
-      changed = true;
-    }
+    if (!Array.isArray(t.materials)) t.materials = [];
   });
-  if (changed) await writeStore('trainings', trainings);
   return [...trainings].sort((a, b) => a.order - b.order);
 }
 
@@ -317,17 +312,23 @@ router.post(
 // Everything else on the record is immutable after import (a new build is a new package).
 router.patch('/scorm-packages/:packageId', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
-  const packages = await readStore<ScormPackageRef>('scormPackages');
-  const pkg = packages.find((p) => p.packageId === req.params.packageId);
-  if (!pkg) return res.status(404).json({ error: 'Not found' });
-  if (b.completionRule !== undefined) {
-    if (!['status', 'exit', 'time'].includes(b.completionRule)) {
-      return res.status(400).json({ error: "completionRule must be 'status', 'exit' or 'time'" });
+  let pkg: ScormPackageRef | undefined;
+  let badRule = false;
+  await updateStore<ScormPackageRef>('scormPackages', (packages) => {
+    pkg = packages.find((p) => p.packageId === req.params.packageId);
+    if (!pkg) return null;
+    if (b.completionRule !== undefined) {
+      if (!['status', 'exit', 'time'].includes(b.completionRule)) {
+        badRule = true;
+        return null;
+      }
+      pkg.completionRule = b.completionRule;
     }
-    pkg.completionRule = b.completionRule;
-  }
-  if (b.allowExternal !== undefined) pkg.allowExternal = b.allowExternal === true;
-  await writeStore('scormPackages', packages);
+    if (b.allowExternal !== undefined) pkg.allowExternal = b.allowExternal === true;
+    return packages;
+  });
+  if (!pkg) return res.status(404).json({ error: 'Not found' });
+  if (badRule) return res.status(400).json({ error: "completionRule must be 'status', 'exit' or 'time'" });
   await auditEvent(
     req.user ?? null,
     'update',
@@ -437,30 +438,32 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   }
   // Trainers always own what they create; admins may target any owner.
   const ownerId = req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : req.user!.id;
+  // A new training starts UNPUBLISHED (version 0): any initial content goes into the draft, and
+  // learners see nothing until version 1 is explicitly published.
+  const draftMaterials = sanitizeMaterials(b.materials, MATERIAL_LOCALES);
+  const draftQuestions = sanitizeQuestions(b.questions, MATERIAL_LOCALES);
+  // The card cover, validated against the stored upload (master data — never staged).
+  const preview = await sanitizePreviewImage(b.previewImage ?? null);
+  if (!preview.ok) return res.status(400).json({ error: preview.error });
+  // Read, validate against the current store and append under the store lock.
+  const outcome = await transaction(async (): Promise<{ status: number; error: string } | { training: Training }> => {
   const trainings = await readStore<Training>('trainings');
   // New trainings go to the end of the ordering.
   const maxOrder = trainings.reduce(
     (max, t) => (typeof t.order === 'number' && t.order > max ? t.order : max),
     -1,
   );
-  // A new training starts UNPUBLISHED (version 0): any initial content goes into the draft, and
-  // learners see nothing until version 1 is explicitly published.
-  const draftMaterials = sanitizeMaterials(b.materials, MATERIAL_LOCALES);
-  const draftQuestions = sanitizeQuestions(b.questions, MATERIAL_LOCALES);
   // A staged SCORM package (uploaded before the first save) — id only, validated like PUT does.
   let draftScormId: string | null = null;
   if (typeof b.scormPackageId === 'string' && b.scormPackageId) {
     if (!(await getPackage(b.scormPackageId))) {
-      return res.status(400).json({ error: 'Unknown SCORM package' });
+      return { status: 400, error: 'Unknown SCORM package' };
     }
     if (referencedPackageIds(trainings).has(b.scormPackageId)) {
-      return res.status(409).json({ error: 'This SCORM package belongs to another training' });
+      return { status: 409, error: 'This SCORM package belongs to another training' };
     }
     draftScormId = b.scormPackageId;
   }
-  // The card cover, validated against the stored upload (master data — never staged).
-  const preview = await sanitizePreviewImage(b.previewImage ?? null);
-  if (!preview.ok) return res.status(400).json({ error: preview.error });
   const training: Training = {
     id: randomUUID(),
     name,
@@ -491,6 +494,10 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   };
   trainings.push(training);
   await writeStore('trainings', trainings);
+  return { training };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { training } = outcome;
   await auditEvent(req.user ?? null, 'create', { type: 'training', id: training.id, name: trainingLabel(training) });
   return res.status(201).json(training);
 });
@@ -501,15 +508,17 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
   const raw = (req.body ?? {}).ids;
   const ids = Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : null;
   if (!ids) return res.status(400).json({ error: 'ids must be an array of training ids' });
-  const trainings = await readStore<Training>('trainings');
   const position = new Map(ids.map((id, i) => [id, i]));
-  // Any training not listed (e.g. created concurrently) is appended, keeping its relative order.
-  let tail = ids.length;
-  const reordered = trainings.map((t) => ({
-    ...t,
-    order: position.has(t.id) ? (position.get(t.id) as number) : tail++,
-  }));
-  await writeStore('trainings', reordered);
+  let reordered: Training[] = [];
+  await updateStore<Training>('trainings', (trainings) => {
+    // Any training not listed (e.g. created concurrently) is appended, keeping its relative order.
+    let tail = ids.length;
+    reordered = trainings.map((t) => ({
+      ...t,
+      order: position.has(t.id) ? (position.get(t.id) as number) : tail++,
+    }));
+    return reordered;
+  });
   await auditEvent(req.user ?? null, 'update', { type: 'training' }, { details: `reordered ${ids.length} trainings` });
   return res.json([...reordered].sort((a, b) => a.order - b.order));
 });
@@ -520,9 +529,16 @@ router.put('/reorder', requireAdmin, async (req: AuthRequest, res) => {
 // version until the editor publishes (SR-170).
 router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   const b = req.body ?? {};
+  // Read → validate → write under the store lock, so two editors saving at the same moment (even
+  // different trainings — the store is one file) cannot lose a save. The byte/package cleanup below
+  // needs only the before/after records and runs outside the lock.
+  type PutOutcome =
+    | { status: number; error: string }
+    | { current: Training; updated: Training; candScormId: string | null; nextPreview: MaterialFile | undefined };
+  const outcome = await transaction(async (): Promise<PutOutcome> => {
   const trainings = await readStore<Training>('trainings');
   const idx = trainings.findIndex((t) => t.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  if (idx === -1) return { status: 404, error: 'Not found' };
   const current = trainings[idx];
   // Only admins may reassign ownership.
   const ownerId =
@@ -551,13 +567,13 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
         : current.scormPackageId ?? null;
   if (candScormId && candScormId !== current.scormPackageId && candScormId !== current.draft?.scormPackageId) {
     if (!(await getPackage(candScormId))) {
-      return res.status(400).json({ error: 'Unknown SCORM package' });
+      return { status: 400, error: 'Unknown SCORM package' };
     }
     // One package = one training: a package referenced elsewhere cannot be attached here too
     // (attempt records and GC pin a package to the training it belongs to).
     const others = trainings.filter((t) => t.id !== current.id);
     if (referencedPackageIds(others).has(candScormId)) {
-      return res.status(409).json({ error: 'This SCORM package belongs to another training' });
+      return { status: 409, error: 'This SCORM package belongs to another training' };
     }
   }
   // The card cover: present-or-keep like the other master data; an explicit null removes it. It is
@@ -565,7 +581,7 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   let nextPreview = current.previewImage;
   if (b.previewImage !== undefined) {
     const preview = await sanitizePreviewImage(b.previewImage);
-    if (!preview.ok) return res.status(400).json({ error: preview.error });
+    if (!preview.ok) return { status: 400, error: preview.error };
     nextPreview = preview.file ?? undefined;
   }
   const publishedJson = JSON.stringify([current.materials ?? [], current.questions, current.scormPackageId ?? null]);
@@ -624,13 +640,17 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   if (nextPreview) trainings[idx].previewImage = nextPreview;
   else delete trainings[idx].previewImage;
   await writeStore('trainings', trainings);
+  return { current, updated: trainings[idx], candScormId, nextPreview };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { current, updated, candScormId, nextPreview } = outcome;
   // A draft's file may have been removed or replaced: delete bytes referenced by the OLD draft
   // that neither the new draft nor the published content still uses. Published bytes are never
   // deleted here — PUT cannot change the published content. Best-effort, as before.
   // A replaced or removed cover image is dropped the same way (unless a material still uses it).
   const keptIds = new Set([
-    ...materialFileIds(trainings[idx]),
-    ...draftFileIds(trainings[idx]),
+    ...materialFileIds(updated),
+    ...draftFileIds(updated),
     ...(nextPreview ? [nextPreview.id] : []),
   ]);
   const droppedIds = [
@@ -646,10 +666,10 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   await auditEvent(
     req.user ?? null,
     'update',
-    { type: 'training', id: trainings[idx].id, name: trainingLabel(trainings[idx]) },
-    { changes: diffEntities(current, trainings[idx]) },
+    { type: 'training', id: updated.id, name: trainingLabel(updated) },
+    { changes: diffEntities(current, updated) },
   );
-  return res.json(trainings[idx]);
+  return res.json(updated);
 });
 
 // POST /api/trainings/:id/publish-update  — admin or owning trainer. The explicit step that makes
@@ -682,27 +702,39 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     }
   }
 
+  // Promotion, version bump and update record under the store lock; the mail (slow, external) and
+  // the byte cleanup follow outside it.
+  type PublishOutcome =
+    | { status: number; error: string }
+    | {
+        training: Training;
+        update: TrainingUpdate | null;
+        version: number;
+        oldPublishedIds: string[];
+        oldPublishedScormId: string | undefined;
+      };
+  const outcome = await transaction(async (): Promise<PublishOutcome> => {
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
-  if (!training) return res.status(404).json({ error: 'Not found' });
+  if (!training) return { status: 404, error: 'Not found' };
 
   const currentVersion = versionOf(training);
   // Nobody can have passed an unpublished training (grading is refused at version 0), so an
   // obligation would reach no one — and its update record would claim version 1, breaking the
   // invariant that update records are v2+. The first version is published silently.
   if (kind === 'notify' && currentVersion === 0) {
-    return res.status(400).json({ error: 'not published yet — publish the first version silently' });
+    return { status: 400, error: 'not published yet — publish the first version silently' };
   }
   // A silent publish exists to make a draft live; without one there is nothing it could do.
   if (kind === 'silent' && !training.draft) {
-    return res.status(400).json({ error: 'nothing to publish — no draft' });
+    return { status: 400, error: 'nothing to publish — no draft' };
   }
 
   // A confirm-mode update is discharged by a button click (confirm-materials) — meaningless for a
   // SCORM course, whose new content must actually be run. Judged against the POST-promotion state.
   const nextScormId = training.draft ? training.draft.scormPackageId : training.scormPackageId;
   if (kind === 'notify' && b.mode === 'confirm' && nextScormId) {
-    return res.status(400).json({ error: 'A SCORM course update requires a retake, not a confirmation' });
+    return { status: 400, error: 'A SCORM course update requires a retake, not a confirmation' };
   }
 
   // Promote the draft: it becomes the published content; bytes only the old published version
@@ -739,6 +771,10 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     training.updates = [...(training.updates ?? []), update];
   }
   await writeStore('trainings', trainings);
+  return { training, update, version, oldPublishedIds, oldPublishedScormId };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { training, update, version, oldPublishedIds, oldPublishedScormId } = outcome;
   const newPublishedIds = new Set(materialFileIds(training));
   await Promise.allSettled(
     oldPublishedIds.filter((id) => !newPublishedIds.has(id)).map((id) => deleteMaterial(id)),
@@ -800,15 +836,20 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
 // content: the training reverts to its published state. Bytes only the draft referenced are
 // deleted; the fact (not the content) of the discard is audited.
 router.delete('/:id/draft', requireAdminOrOwner, async (req: AuthRequest, res) => {
-  const trainings = await readStore<Training>('trainings');
-  const training = trainings.find((t) => t.id === req.params.id);
-  if (!training) return res.status(404).json({ error: 'Not found' });
-  if (!training.draft) return res.status(404).json({ error: 'No draft to discard' });
-  const savedAt = training.draft.savedAt;
-  const droppedCandidates = draftFileIds(training);
-  const droppedScormId = training.draft.scormPackageId;
-  delete training.draft;
-  await writeStore('trainings', trainings);
+  const outcome = await transaction(async () => {
+    const trainings = await readStore<Training>('trainings');
+    const training = trainings.find((t) => t.id === req.params.id);
+    if (!training) return { error: 'Not found' };
+    if (!training.draft) return { error: 'No draft to discard' };
+    const savedAt = training.draft.savedAt;
+    const droppedCandidates = draftFileIds(training);
+    const droppedScormId = training.draft.scormPackageId;
+    delete training.draft;
+    await writeStore('trainings', trainings);
+    return { training, savedAt, droppedCandidates, droppedScormId };
+  });
+  if ('error' in outcome) return res.status(404).json({ error: outcome.error });
+  const { training, savedAt, droppedCandidates, droppedScormId } = outcome;
   const publishedIds = new Set(materialFileIds(training));
   await Promise.allSettled(
     droppedCandidates.filter((id) => !publishedIds.has(id)).map((id) => deleteMaterial(id)),
@@ -829,16 +870,23 @@ router.delete('/:id/draft', requireAdminOrOwner, async (req: AuthRequest, res) =
 // update: the pending obligation disappears for everyone (its acks are pruned), but the training
 // version deliberately stays — version numbers are never reused.
 router.delete('/:id/updates/:updateId', requireAdminOrOwner, async (req: AuthRequest, res) => {
-  const trainings = await readStore<Training>('trainings');
-  const training = trainings.find((t) => t.id === req.params.id);
-  if (!training) return res.status(404).json({ error: 'Not found' });
-  const update = (training.updates ?? []).find((u) => u.id === req.params.updateId);
-  if (!update) return res.status(404).json({ error: 'Not found' });
-  training.updates = (training.updates ?? []).filter((u) => u.id !== update.id);
-  await writeStore('trainings', trainings);
-  const acks = await readStore<UpdateAck>('updateAcks');
-  const kept = acks.filter((a) => a.updateId !== update.id);
-  if (kept.length !== acks.length) await writeStore('updateAcks', kept);
+  // Trainings and acks rewritten in one transaction (a confirm-materials landing in between would
+  // otherwise re-create an ack for a withdrawn update).
+  const outcome = await transaction(async () => {
+    const trainings = await readStore<Training>('trainings');
+    const training = trainings.find((t) => t.id === req.params.id);
+    if (!training) return null;
+    const update = (training.updates ?? []).find((u) => u.id === req.params.updateId);
+    if (!update) return null;
+    training.updates = (training.updates ?? []).filter((u) => u.id !== update.id);
+    await writeStore('trainings', trainings);
+    const acks = await readStore<UpdateAck>('updateAcks');
+    const kept = acks.filter((a) => a.updateId !== update.id);
+    if (kept.length !== acks.length) await writeStore('updateAcks', kept);
+    return { training, update };
+  });
+  if (!outcome) return res.status(404).json({ error: 'Not found' });
+  const { training, update } = outcome;
   await auditEvent(
     req.user ?? null,
     'training-update-cancelled',
@@ -850,10 +898,20 @@ router.delete('/:id/updates/:updateId', requireAdminOrOwner, async (req: AuthReq
 
 // DELETE /api/trainings/:id  — admin or owning trainer
 router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
-  const trainings = await readStore<Training>('trainings');
-  const removed = trainings.find((t) => t.id === req.params.id);
+  // The record and its update acknowledgements go in one transaction; the file, package and
+  // attempt cleanup is best-effort and runs afterwards (each with its own serialization).
+  const removed = await transaction(async () => {
+    const trainings = await readStore<Training>('trainings');
+    const found = trainings.find((t) => t.id === req.params.id);
+    if (!found) return null;
+    await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
+    // Drop the training's update acknowledgements too (the prune migration is the safety net).
+    const acks = await readStore<UpdateAck>('updateAcks');
+    const keptAcks = acks.filter((a) => a.trainingId !== found.id);
+    if (keptAcks.length !== acks.length) await writeStore('updateAcks', keptAcks);
+    return found;
+  });
   if (!removed) return res.status(404).json({ error: 'Not found' });
-  await writeStore('trainings', trainings.filter((t) => t.id !== req.params.id));
   // Best-effort cleanup of the deleted training's uploaded files — published AND draft bytes,
   // plus the card's cover image.
   const removedIds = new Set([
@@ -872,10 +930,6 @@ router.delete('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   await Promise.allSettled(
     scormAttempts.filter((a) => a.trainingId === removed.id).map((a) => deleteAttempt(a.id)),
   );
-  // Drop the training's update acknowledgements too (the prune migration is the safety net).
-  const acks = await readStore<UpdateAck>('updateAcks');
-  const keptAcks = acks.filter((a) => a.trainingId !== removed.id);
-  if (keptAcks.length !== acks.length) await writeStore('updateAcks', keptAcks);
   await auditEvent(req.user ?? null, 'delete', { type: 'training', id: removed.id, name: trainingLabel(removed) });
   return res.status(204).end();
 });

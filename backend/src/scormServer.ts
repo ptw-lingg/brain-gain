@@ -16,6 +16,7 @@ import { readScormAttemptFile, readStore, resolveScormEntry } from './services/f
 import { verifyLaunchToken } from './services/scorm/launch';
 import { contentTypeFor } from './services/scorm/mime';
 import { contentSecurityHeaders } from './middleware/securityHeaders';
+import { wrapAsync } from './middleware/asyncRouter';
 import { appOrigin } from './services/scorm/config';
 
 const HTTPS_PORT = Number(process.env.HTTPS_PORT) || Number(process.env.PORT) || 3011;
@@ -60,7 +61,9 @@ export function createScormApp(): express.Express {
   // Explicit: no API lives on this origin, ever — even if a future refactor mounts something here.
   app.use('/api', (_req, res) => void res.status(404).end());
 
-  app.get('/s/:token/*', async (req, res) => {
+  // wrapAsync: a rejection (e.g. an unreadable attempt file) becomes a 500 via the error handler
+  // below instead of an unhandledRejection that would exit the process.
+  app.get('/s/:token/*', wrapAsync(async (req: express.Request, res: express.Response) => {
     const claims = verifyLaunchToken(req.params.token);
     if (!claims) return res.status(403).json({ error: 'Forbidden' });
 
@@ -119,8 +122,14 @@ export function createScormApp(): express.Express {
     return res.sendFile(abs, { dotfiles: 'deny', acceptRanges: true }, (err) => {
       if (err && !res.headersSent) res.status(404).end();
     });
-  });
+  }));
 
   app.use((_req, res) => void res.status(404).end());
+  // Content origin: never a body that could tell package script anything — a bare 500.
+  app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('SCORM content error:', err);
+    if (res.headersSent) return next(err);
+    return res.status(500).end();
+  });
   return app;
 }

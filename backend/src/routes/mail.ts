@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { readSettings } from '../services/fileStore';
 import { authenticate, requireAdmin, requireTrainerOrAdmin, type AuthRequest } from '../middleware/auth';
 import { MailError, isSmtpConfigured, sendMail } from '../services/mail';
 
-const router = Router();
+const router = asyncRouter();
 
 /** Validate, dedupe and lightly sanity-check a recipient list. */
 function recipients(input: unknown): string[] | null {

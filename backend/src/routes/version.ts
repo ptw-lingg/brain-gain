@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { appVersion } from '../services/appVersion';
 import { readDataMeta } from '../services/dataVersion';
 
-const router = Router();
+const router = asyncRouter();
 
 // GET /api/version — admin only. The app version is public on /api/health (every user's About dialog
 // reads it there); this adds the data-version marker with its migration history — the fast answer to

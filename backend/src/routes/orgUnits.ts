@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { randomUUID } from 'crypto';
 import type { JobRole, OrgUnit, TrainingSession, Training, UpdateAck, User } from '../types';
-import { readStore, writeStore } from '../services/fileStore';
+import { readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { acksFor, computeDue, sessionsFor } from '../services/due';
 import { requiredTrainingIdsFor } from '../services/training';
@@ -9,7 +9,7 @@ import { subtreeUnitIds, wouldCreateCycle } from '../services/orgUnits';
 import { auditEvent, diffEntities } from '../services/audit';
 import { toSafeUser } from './auth';
 
-const router = Router();
+const router = asyncRouter();
 
 router.use(authenticate);
 
@@ -68,18 +68,21 @@ router.post('/', requireAdmin, async (req: AuthRequest, res) => {
   if (typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ error: 'name is required' });
   }
-  const orgUnits = await readStore<OrgUnit>('orgUnits');
-  if (parentId != null && !orgUnits.some((o) => o.id === parentId)) {
-    return res.status(400).json({ error: 'parentId does not exist' });
-  }
   const unit: OrgUnit = {
     id: randomUUID(),
     name: name.trim(),
     parentId: typeof parentId === 'string' && parentId ? parentId : null,
     headUserId: typeof headUserId === 'string' ? headUserId : '',
   };
-  orgUnits.push(unit);
-  await writeStore('orgUnits', orgUnits);
+  let badParent = false;
+  await updateStore<OrgUnit>('orgUnits', (orgUnits) => {
+    if (parentId != null && !orgUnits.some((o) => o.id === parentId)) {
+      badParent = true;
+      return null;
+    }
+    return [...orgUnits, unit];
+  });
+  if (badParent) return res.status(400).json({ error: 'parentId does not exist' });
   await auditEvent(req.user ?? null, 'create', { type: 'orgUnit', id: unit.id, name: unit.name });
   return res.status(201).json(unit);
 });
@@ -87,54 +90,73 @@ router.post('/', requireAdmin, async (req: AuthRequest, res) => {
 // PUT /api/org-units/:id — admin only. Rejects parent changes that would create a cycle.
 router.put('/:id', requireAdmin, async (req: AuthRequest, res) => {
   const { name, parentId, headUserId } = req.body ?? {};
-  const orgUnits = await readStore<OrgUnit>('orgUnits');
-  const idx = orgUnits.findIndex((o) => o.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  const current = orgUnits[idx];
-
-  let nextParentId = current.parentId;
-  if (parentId !== undefined) {
-    nextParentId = typeof parentId === 'string' && parentId ? parentId : null;
-    if (nextParentId != null && !orgUnits.some((o) => o.id === nextParentId)) {
-      return res.status(400).json({ error: 'parentId does not exist' });
+  // Boxed: TypeScript does not track assignments made inside the callback.
+  const refused: { value: { status: number; error: string } | null } = { value: null };
+  let current: OrgUnit | undefined;
+  let updated: OrgUnit | undefined;
+  await updateStore<OrgUnit>('orgUnits', (orgUnits) => {
+    const idx = orgUnits.findIndex((o) => o.id === req.params.id);
+    if (idx === -1) {
+      refused.value = { status: 404, error: 'Not found' };
+      return null;
     }
-    if (nextParentId === current.id || wouldCreateCycle(orgUnits, current.id, nextParentId)) {
-      return res.status(400).json({ error: 'A unit cannot be its own ancestor' });
-    }
-  }
+    current = orgUnits[idx];
 
-  orgUnits[idx] = {
-    ...current,
-    name: typeof name === 'string' && name.trim() ? name.trim() : current.name,
-    parentId: nextParentId,
-    headUserId: typeof headUserId === 'string' ? headUserId : current.headUserId,
-  };
-  await writeStore('orgUnits', orgUnits);
-  await auditEvent(req.user ?? null, 'update', { type: 'orgUnit', id: orgUnits[idx].id, name: orgUnits[idx].name }, { changes: diffEntities(current, orgUnits[idx]) });
-  return res.json(orgUnits[idx]);
+    let nextParentId = current.parentId;
+    if (parentId !== undefined) {
+      nextParentId = typeof parentId === 'string' && parentId ? parentId : null;
+      if (nextParentId != null && !orgUnits.some((o) => o.id === nextParentId)) {
+        refused.value = { status: 400, error: 'parentId does not exist' };
+        return null;
+      }
+      if (nextParentId === current.id || wouldCreateCycle(orgUnits, current.id, nextParentId)) {
+        refused.value = { status: 400, error: 'A unit cannot be its own ancestor' };
+        return null;
+      }
+    }
+
+    updated = {
+      ...current,
+      name: typeof name === 'string' && name.trim() ? name.trim() : current.name,
+      parentId: nextParentId,
+      headUserId: typeof headUserId === 'string' ? headUserId : current.headUserId,
+    };
+    orgUnits[idx] = updated;
+    return orgUnits;
+  });
+  if (refused.value) return res.status(refused.value.status).json({ error: refused.value.error });
+  if (!current || !updated) return res.status(404).json({ error: 'Not found' });
+  await auditEvent(req.user ?? null, 'update', { type: 'orgUnit', id: updated.id, name: updated.name }, { changes: diffEntities(current, updated) });
+  return res.json(updated);
 });
 
 // POST /api/org-units/:id/members — admin: move several users into this unit at once.
 // Body: { userIds: string[] }. Unknown ids are ignored; returns how many users actually moved.
 router.post('/:id/members', requireAdmin, async (req: AuthRequest, res) => {
-  const orgUnits = await readStore<OrgUnit>('orgUnits');
-  const unit = orgUnits.find((o) => o.id === req.params.id);
-  if (!unit) return res.status(404).json({ error: 'Not found' });
   const raw = (req.body ?? {}).userIds;
   const userIds = Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : null;
   if (!userIds) return res.status(400).json({ error: 'userIds must be an array' });
-
   const wanted = new Set(userIds);
-  const users = await readStore<User>('users');
-  let moved = 0;
-  for (const u of users) {
-    if (wanted.has(u.id) && u.orgUnitId !== unit.id) {
-      u.orgUnitId = unit.id;
-      moved++;
+
+  // Reads the unit and rewrites users in one transaction.
+  const outcome = await transaction(async () => {
+    const orgUnits = await readStore<OrgUnit>('orgUnits');
+    const unit = orgUnits.find((o) => o.id === req.params.id);
+    if (!unit) return null;
+    const users = await readStore<User>('users');
+    let moved = 0;
+    for (const u of users) {
+      if (wanted.has(u.id) && u.orgUnitId !== unit.id) {
+        u.orgUnitId = unit.id;
+        moved++;
+      }
     }
-  }
+    if (moved) await writeStore('users', users);
+    return { unit, moved };
+  });
+  if (!outcome) return res.status(404).json({ error: 'Not found' });
+  const { unit, moved } = outcome;
   if (moved) {
-    await writeStore('users', users);
     await auditEvent(req.user ?? null, 'update', { type: 'orgUnit', id: unit.id, name: unit.name }, { details: `moved ${moved} member(s)` });
   }
   return res.json({ moved });
@@ -142,20 +164,29 @@ router.post('/:id/members', requireAdmin, async (req: AuthRequest, res) => {
 
 // DELETE /api/org-units/:id — admin only. Blocked while the unit has sub-units or member users.
 router.delete('/:id', requireAdmin, async (req: AuthRequest, res) => {
-  const orgUnits = await readStore<OrgUnit>('orgUnits');
-  const unit = orgUnits.find((o) => o.id === req.params.id);
-  if (!unit) return res.status(404).json({ error: 'Not found' });
-  if (orgUnits.some((o) => o.parentId === unit.id)) {
-    return res.status(409).json({ error: 'This unit has sub-units — move or delete them first' });
-  }
-  const users = await readStore<User>('users');
-  if (users.some((u) => u.orgUnitId === unit.id)) {
-    return res.status(409).json({ error: 'This unit still has members — reassign them first' });
-  }
-  await writeStore(
-    'orgUnits',
-    orgUnits.filter((o) => o.id !== unit.id),
+  // The "no members / no sub-units" checks and the removal share one transaction, so a user moved
+  // into the unit at the same moment cannot end up in a unit that no longer exists.
+  const outcome = await transaction(
+    async (): Promise<{ status: number; error: string } | { unit: OrgUnit }> => {
+      const orgUnits = await readStore<OrgUnit>('orgUnits');
+      const unit = orgUnits.find((o) => o.id === req.params.id);
+      if (!unit) return { status: 404, error: 'Not found' };
+      if (orgUnits.some((o) => o.parentId === unit.id)) {
+        return { status: 409, error: 'This unit has sub-units — move or delete them first' };
+      }
+      const users = await readStore<User>('users');
+      if (users.some((u) => u.orgUnitId === unit.id)) {
+        return { status: 409, error: 'This unit still has members — reassign them first' };
+      }
+      await writeStore(
+        'orgUnits',
+        orgUnits.filter((o) => o.id !== unit.id),
+      );
+      return { unit };
+    },
   );
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { unit } = outcome;
   await auditEvent(req.user ?? null, 'delete', { type: 'orgUnit', id: unit.id, name: unit.name });
   return res.status(204).end();
 });

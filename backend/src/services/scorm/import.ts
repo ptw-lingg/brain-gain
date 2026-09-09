@@ -10,10 +10,9 @@ import JSZip from 'jszip';
 import type { ScormPackageRef } from '../../types';
 import {
   deleteScormPackageFiles,
-  readStore,
   resolveScormEntry,
+  updateStore,
   writeScormEntry,
-  writeStore,
 } from '../fileStore';
 import { PREVIEW_IMAGE_MAX_BYTES } from '../materials';
 import { parseManifest, ScormManifestError } from './manifest';
@@ -241,8 +240,8 @@ export async function importScormPackage(args: {
     allowExternal: false,
   };
 
-  const packages = await readStore<ScormPackageRef>('scormPackages');
-  packages.push(ref);
-  await writeStore('scormPackages', packages);
+  // Under the store lock: two trainers uploading at once must not lose one record (its extracted
+  // tree would then be swept as an orphan).
+  await updateStore<ScormPackageRef>('scormPackages', (packages) => [...packages, ref]);
   return ref;
 }

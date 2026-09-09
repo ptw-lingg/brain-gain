@@ -9,8 +9,10 @@ import {
   listScormAttemptFiles,
   listScormPackageDirs,
   readStore,
+  transaction,
   writeStore,
 } from '../fileStore';
+import { updateAttemptIndex } from './attempts';
 
 // A package uploaded but never attached to a training (the editor was abandoned mid-edit) is
 // swept after a day; an in-progress attempt with no activity for a month is abandoned.
@@ -32,15 +34,21 @@ export async function getPackage(packageId: string): Promise<ScormPackageRef | n
   return packages.find((p) => p.packageId === packageId) ?? null;
 }
 
-/** Delete a package's record and files IF nothing references it any more. Best-effort. */
-export async function deletePackageIfUnreferenced(packageId: string): Promise<boolean> {
-  const trainings = await readStore<Training>('trainings');
-  if (referencedPackageIds(trainings).has(packageId)) return false;
-  const packages = await readStore<ScormPackageRef>('scormPackages');
-  const kept = packages.filter((p) => p.packageId !== packageId);
-  if (kept.length !== packages.length) await writeStore('scormPackages', kept);
-  await deleteScormPackageFiles(packageId);
-  return true;
+/**
+ * Delete a package's record and files IF nothing references it any more. Best-effort. The reference
+ * check and the record removal share one transaction, so a training save that attaches the package
+ * cannot slip in between them.
+ */
+export function deletePackageIfUnreferenced(packageId: string): Promise<boolean> {
+  return transaction(async () => {
+    const trainings = await readStore<Training>('trainings');
+    if (referencedPackageIds(trainings).has(packageId)) return false;
+    const packages = await readStore<ScormPackageRef>('scormPackages');
+    const kept = packages.filter((p) => p.packageId !== packageId);
+    if (kept.length !== packages.length) await writeStore('scormPackages', kept);
+    await deleteScormPackageFiles(packageId);
+    return true;
+  });
 }
 
 export interface GcResult {
@@ -50,10 +58,9 @@ export interface GcResult {
 }
 
 export async function gcScorm(): Promise<GcResult> {
-  const [trainings, packages, attempts] = await Promise.all([
+  const [trainings, packages] = await Promise.all([
     readStore<Training>('trainings'),
     readStore<ScormPackageRef>('scormPackages'),
-    readStore<ScormAttempt>('scormAttempts'),
   ]);
   const referenced = referencedPackageIds(trainings);
   const now = Date.now();
@@ -85,30 +92,35 @@ export async function gcScorm(): Promise<GcResult> {
 
   // 3. Attempts: never-consumed ones whose training or package is gone are dropped; in-progress
   //    ones idle past the window are marked abandoned (kept for diagnostics, files retained).
-  //    Consumed attempts are completion evidence — NEVER touched here.
+  //    Consumed attempts are completion evidence — NEVER touched here. Read AND rewritten inside
+  //    the attempt index's own queue (after a restore this runs against live traffic, and a
+  //    commit's index upsert must not be lost under this rewrite).
   const trainingIds = new Set(trainings.map((t) => t.id));
-  const keptAttempts: ScormAttempt[] = [];
-  let indexChanged = false;
-  for (const a of attempts) {
-    if (a.consumedBySessionId) {
+  let keptAttempts: ScormAttempt[] = [];
+  await updateAttemptIndex(async (attempts) => {
+    keptAttempts = [];
+    let indexChanged = false;
+    for (const a of attempts) {
+      if (a.consumedBySessionId) {
+        keptAttempts.push(a);
+        continue;
+      }
+      if (!trainingIds.has(a.trainingId) || !knownIds.has(a.packageId)) {
+        await deleteScormAttemptFile(a.id);
+        result.attempts += 1;
+        indexChanged = true;
+        continue;
+      }
+      if (a.status === 'in-progress' && now - Date.parse(a.lastActivityAt) > STALE_ATTEMPT_MAX_AGE_MS) {
+        keptAttempts.push({ ...a, status: 'abandoned' });
+        result.attempts += 1;
+        indexChanged = true;
+        continue;
+      }
       keptAttempts.push(a);
-      continue;
     }
-    if (!trainingIds.has(a.trainingId) || !knownIds.has(a.packageId)) {
-      await deleteScormAttemptFile(a.id);
-      result.attempts += 1;
-      indexChanged = true;
-      continue;
-    }
-    if (a.status === 'in-progress' && now - Date.parse(a.lastActivityAt) > STALE_ATTEMPT_MAX_AGE_MS) {
-      keptAttempts.push({ ...a, status: 'abandoned' });
-      result.attempts += 1;
-      indexChanged = true;
-      continue;
-    }
-    keptAttempts.push(a);
-  }
-  if (indexChanged) await writeStore('scormAttempts', keptAttempts);
+    return indexChanged ? keptAttempts : null;
+  });
 
   // 4. Attempt files with no index row (crash between file write and index write).
   const indexIds = new Set(keptAttempts.map((a) => a.id));

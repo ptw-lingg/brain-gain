@@ -7,7 +7,13 @@
 // the browser then MEANS "durably persisted", which is what lets the player promise the learner
 // that an acked save survives a crash. Concurrency: one promise chain per attempt id serializes
 // read-modify-write on the file; a single chain serializes index rewrites (writeStore rewrites the
-// whole file, so unserialized concurrent lifecycle writes would lose records).
+// whole file, so unserialized concurrent lifecycle writes would lose records). The index is the ONE
+// store written outside fileStore's transaction lock — every index write goes through
+// updateAttemptIndex() instead, so a commit is never queued behind a long transaction. Lifecycle
+// entry points (launch, grade) additionally run inside a transaction: launch, so two simultaneous
+// launches cannot both create a fresh attempt; grade, so the session write and the attempt's
+// consumption are one atomic step. Lock order is always transaction → perAttempt → index, never
+// the reverse, and nothing on the perAttempt/index chains takes the transaction lock.
 
 import { randomUUID } from 'crypto';
 import type {
@@ -21,6 +27,7 @@ import {
   deleteScormAttemptFile,
   readScormAttemptFile,
   readStore,
+  transaction,
   writeScormAttemptFile,
   writeStore,
 } from '../fileStore';
@@ -66,6 +73,20 @@ async function upsertIndex(attempt: ScormAttempt): Promise<void> {
   });
 }
 
+/**
+ * Rewrite the attempt index through its queue — the ONLY sanctioned way to write the scormAttempts
+ * store from outside this module (gcScorm). The callback returns the rows to persist, or null to
+ * leave the index untouched.
+ */
+export function updateAttemptIndex(
+  fn: (index: ScormAttempt[]) => Promise<ScormAttempt[] | null> | ScormAttempt[] | null,
+): Promise<void> {
+  return withIndex(async (index) => {
+    const next = await fn(index);
+    if (next !== null) await writeStore('scormAttempts', next);
+  });
+}
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────────────────────────────
 
 export async function loadAttempt(attemptId: string): Promise<ScormAttemptFile | null> {
@@ -78,7 +99,19 @@ export async function loadAttempt(attemptId: string): Promise<ScormAttemptFile |
  * blob whose meaning is specific to one course build; replaying it into a new build is how a
  * learner gets a hard JS error inside their compliance training. Old open attempts are abandoned.
  */
-export async function startOrResumeAttempt(args: {
+export function startOrResumeAttempt(args: {
+  userId: string;
+  training: Training;
+  pkg: ScormPackageRef;
+  preview: boolean;
+  restart?: boolean;
+}): Promise<{ file: ScormAttemptFile; resumed: boolean }> {
+  // Under the store lock: two launches for the same learner and training (two tabs, a double
+  // click) would otherwise both see "nothing resumable" and both create a fresh attempt.
+  return transaction(() => startOrResumeAttemptLocked(args));
+}
+
+async function startOrResumeAttemptLocked(args: {
   userId: string;
   training: Training;
   pkg: ScormPackageRef;
@@ -113,14 +146,18 @@ export async function startOrResumeAttempt(args: {
   }
 
   if (resumable && !restart) {
-    const file = await loadAttempt(resumable.id);
-    if (file) {
-      file.cmi.entry = 'resume';
-      file.attempt.lastActivityAt = new Date().toISOString();
-      file.rev += 1;
-      await perAttempt(resumable.id, () => writeScormAttemptFile(resumable.id, file));
-      return { file, resumed: true };
-    }
+    // Load AND write inside the attempt's queue: loading outside it would let a commit that lands
+    // in between (the course still saving in another tab) be overwritten with the stale copy.
+    const file = await perAttempt(resumable.id, async () => {
+      const current = await loadAttempt(resumable.id);
+      if (!current) return null;
+      current.cmi.entry = 'resume';
+      current.attempt.lastActivityAt = new Date().toISOString();
+      current.rev += 1;
+      await writeScormAttemptFile(resumable.id, current);
+      return current;
+    });
+    if (file) return { file, resumed: true };
     // Index row without a file (crash between writes): fall through and start fresh.
   }
 
@@ -223,19 +260,26 @@ export async function commitAttempt(
  * Close an attempt after grading. 'completed' additionally records the consuming session —
  * completion evidence that is never GC'd; 'failed' closes it so a relaunch starts ab-initio
  * (a failed run's suspend_data would resume the learner onto its results screen).
+ *
+ * Compare-and-set: the transition happens only if the attempt is still open and unconsumed AT THE
+ * MOMENT OF WRITING — not when the caller last looked. Returns false when nothing was changed, so a
+ * second grade request for the same attempt (double click, retry) can be refused instead of
+ * recording a second completion.
  */
 export async function closeAttempt(
   attemptId: string,
   outcome: { status: 'completed'; sessionId: string } | { status: 'failed' | 'abandoned' },
-): Promise<void> {
-  await perAttempt(attemptId, async () => {
+): Promise<boolean> {
+  return perAttempt(attemptId, async () => {
     const file = await loadAttempt(attemptId);
-    if (!file) return;
+    if (!file) return false;
+    if (file.attempt.status !== 'in-progress' || file.attempt.consumedBySessionId) return false;
     file.attempt.status = outcome.status;
     if (outcome.status === 'completed') file.attempt.consumedBySessionId = outcome.sessionId;
     file.rev += 1;
     await writeScormAttemptFile(attemptId, file);
     await upsertIndex(file.attempt);
+    return true;
   });
 }
 

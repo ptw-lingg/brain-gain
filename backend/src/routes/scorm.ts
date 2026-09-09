@@ -2,7 +2,7 @@
 // committing cmi writes. Mounted at /api/sessions/scorm. Everything that authorizes STATE lives
 // here on the app origin: the content origin's launch token only ever authorizes bytes.
 
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { randomBytes } from 'crypto';
 import type { NextFunction, Response } from 'express';
 import type { ScormAttemptFile, Training, User } from '../types';
@@ -16,7 +16,7 @@ import { contentOrigin, SCORM_ENABLED } from '../services/scorm/config';
 import { flattenCmi, readOnlyKeys } from '../scorm/model';
 import { isCmiPatch } from '../scorm/protocol';
 
-const router = Router();
+const router = asyncRouter();
 router.use(authenticate);
 
 interface AttemptRequest extends AuthRequest {

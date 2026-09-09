@@ -15,6 +15,8 @@ import { migrateOrgUnits } from './orgUnits';
 import { migrateQuestions } from './questions';
 import { migrateDurations, migrateMaterials, migrateTrainingTexts } from './materials';
 import { migrateTrainingVersions, pruneUpdateAcks } from './updates';
+import { migrateTrainingOrder } from './training';
+import { transaction } from './fileStore';
 import { gcScorm } from './scorm/packages';
 import { migrateScormThumbnails } from './scorm/thumbnail';
 import { appVersion, BASELINE_DATA_VERSION, compareVersions } from './appVersion';
@@ -35,20 +37,25 @@ export interface RunDataMigrationsOptions {
 
 export async function runDataMigrations(opts: RunDataMigrationsOptions = {}): Promise<void> {
   // ── 1. normalize ─────────────────────────────────────────────────────────────────────────────────
-  await migrateOrgUnits();
-  await migrateQuestions();
-  await migrateMaterials();
-  await migrateDurations();
-  await migrateTrainingTexts();
-  await migrateTrainingVersions();
-  await pruneUpdateAcks();
-  // Packages imported before the cover-candidate field existed get scanned on disk once.
-  await migrateScormThumbnails();
-  // Not a migration in the strict sense, but the same trigger points are exactly right: boot, and
-  // after a restore (which can drop the training a package/attempt belonged to). Sweeps
-  // unreferenced packages, crashed-import directories and stale attempts; never touches consumed
-  // attempts (completion evidence).
-  await gcScorm();
+  // Under the store lock: after a restore this runs against LIVE traffic, and every normalizer is a
+  // read-modify-write of a store a request may be saving at the same moment.
+  await transaction(async () => {
+    await migrateOrgUnits();
+    await migrateQuestions();
+    await migrateMaterials();
+    await migrateDurations();
+    await migrateTrainingTexts();
+    await migrateTrainingVersions();
+    await migrateTrainingOrder();
+    await pruneUpdateAcks();
+    // Packages imported before the cover-candidate field existed get scanned on disk once.
+    await migrateScormThumbnails();
+    // Not a migration in the strict sense, but the same trigger points are exactly right: boot, and
+    // after a restore (which can drop the training a package/attempt belonged to). Sweeps
+    // unreferenced packages, crashed-import directories and stale attempts; never touches consumed
+    // attempts (completion evidence).
+    await gcScorm();
+  });
 
   // ── 2. gate ──────────────────────────────────────────────────────────────────────────────────────
   const app = appVersion();
@@ -79,6 +86,9 @@ export async function runDataMigrations(opts: RunDataMigrationsOptions = {}): Pr
 
   // ── 4. apply, advancing the marker after EACH step ───────────────────────────────────────────────
   const applied: string[] = [];
+  // Under the store lock (the pre-migration backup above deliberately is NOT — createBackup takes
+  // backup.ts's exclusive queue, which must always sit OUTSIDE the store lock).
+  await transaction(async () => {
   for (const step of pending) {
     console.log(`↪  migrating data to ${step.version}: ${step.description}`);
     let result: MigrationResult;
@@ -99,6 +109,7 @@ export async function runDataMigrations(opts: RunDataMigrationsOptions = {}): Pr
     console.log(`   ${result.changed ? 'changed' : 'no change'}${result.details ? ` — ${result.details}` : ''}`);
     applied.push(`${step.version}${result.changed ? '' : ' (no change)'}`);
   }
+  });
   if (compareVersions(pending[pending.length - 1].version, app) < 0) await stampDataVersion(app, 'upgraded');
   // Actor-less: the server upgraded itself. The audit log survives restores, so this evidence outlives
   // the data it describes.

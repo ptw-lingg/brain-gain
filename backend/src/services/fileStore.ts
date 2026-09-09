@@ -1,6 +1,42 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { AsyncLocalStorage } from 'async_hooks';
 import type { Settings } from '../types';
+
+// ── Concurrency model ─────────────────────────────────────────────────────────────────────────────
+// Node is single-threaded, but every `await` is a yield point: two requests that both read a store
+// before either writes it lose one update. Two rules keep the JSON stores consistent:
+//   1. Every read-modify-write runs inside `transaction()` (or its `updateStore`/`updateSettings`
+//      wrappers), which holds ONE process-wide store lock across the callback. One lock — not one per
+//      store — because most mutations touch several stores (a training save cleans up its package,
+//      a graded SCORM attempt writes a session and closes the attempt) and one lock cannot deadlock.
+//      The lock is re-entrant via AsyncLocalStorage: a helper that calls updateStore from inside a
+//      transaction runs inline instead of waiting for itself.
+//   2. Every JSON write goes through `writeJsonAtomic` (temp + rename), so a reader never observes a
+//      half-written file and a crash mid-write never truncates a store. Plain reads therefore need no
+//      lock: they see either the previous or the next complete version.
+// Deliberately OUTSIDE this lock: the SCORM attempt index (services/scorm/attempts.ts owns it through
+// its own queues, and a commit must never wait on a long transaction), the audit log (own append
+// queue) and the backup archive queue (which nests this lock INSIDE it, never the other way round).
+
+const inTransaction = new AsyncLocalStorage<true>();
+let storeQueue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Run `fn` holding the store lock. Callers already inside a transaction run inline (re-entrant).
+ * Keep slow, state-independent work (bcrypt, mail, network) OUTSIDE the callback.
+ */
+export function transaction<T>(fn: () => Promise<T>): Promise<T> {
+  if (inTransaction.getStore()) return fn();
+  const run = storeQueue.then(() => inTransaction.run(true, fn));
+  storeQueue = run.catch(() => undefined); // a failure must not poison the chain
+  return run;
+}
+
+/** True while the caller is inside `transaction()` — for assertions in code that must be locked. */
+export function insideTransaction(): boolean {
+  return inTransaction.getStore() === true;
+}
 
 // Defaults to backend/src/data; override with DATA_DIR (used by the automated test harness to
 // run against an isolated, throwaway data directory).
@@ -45,12 +81,69 @@ export function dataMetaFilePath(): string {
   return path.join(DATA_DIR, DATA_META_FILE);
 }
 
-/** Write JSON via temp+rename so a crash mid-write can never leave a truncated file behind. */
-export async function writeJsonAtomic(target: string, data: unknown, pretty = false): Promise<void> {
+const TMP_SUFFIX = '.tmp';
+let tmpCounter = 0;
+
+/**
+ * Rename, retrying briefly on the transient Windows failures (EPERM/EBUSY/EACCES) that occur when a
+ * virus scanner or indexer still holds the target for a moment. A rename that keeps failing is a real
+ * error and propagates.
+ */
+export async function renameWithRetry(from: string, to: string, attempts = 5): Promise<void> {
+  for (let i = 1; ; i++) {
+    try {
+      await fs.rename(from, to);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (i >= attempts || !['EPERM', 'EBUSY', 'EACCES'].includes(code ?? '')) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 25 * i));
+    }
+  }
+}
+
+/**
+ * Write text via temp+rename so a crash mid-write can never leave a truncated file behind and a
+ * concurrent reader never sees a partial file. The temp name is unique per write (pid + counter), so
+ * two unserialized writers of the same target — e.g. two first-time readStore() initializations —
+ * cannot rename each other's temp file away.
+ */
+export async function writeFileAtomic(target: string, text: string | Buffer): Promise<void> {
   await fs.mkdir(path.dirname(target), { recursive: true });
-  const tmp = `${target}.tmp`;
-  await fs.writeFile(tmp, pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data), 'utf-8');
-  await fs.rename(tmp, target);
+  const tmp = `${target}.${process.pid}.${++tmpCounter}${TMP_SUFFIX}`;
+  try {
+    await fs.writeFile(tmp, text);
+    await renameWithRetry(tmp, target);
+  } catch (err) {
+    await fs.rm(tmp, { force: true }).catch(() => undefined);
+    throw err;
+  }
+}
+
+/** Write JSON via temp+rename (see writeFileAtomic). */
+export async function writeJsonAtomic(target: string, data: unknown, pretty = false): Promise<void> {
+  await writeFileAtomic(target, pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data));
+}
+
+/**
+ * Remove temp files a crash left behind next to the stores (boot-time hygiene). Only the data
+ * directory's top level: attempt files and the marker live elsewhere and are swept by their owners'
+ * orphan handling (gcScorm) or simply overwritten.
+ */
+export async function sweepTempFiles(): Promise<number> {
+  let entries: string[];
+  try {
+    entries = await fs.readdir(DATA_DIR);
+  } catch {
+    return 0;
+  }
+  let removed = 0;
+  for (const name of entries) {
+    if (!name.endsWith(TMP_SUFFIX)) continue;
+    await fs.rm(path.join(DATA_DIR, name), { force: true }).catch(() => undefined);
+    removed += 1;
+  }
+  return removed;
 }
 
 /** The uploaded-material files present on disk (bytes and their `<id>.meta.json` sidecars). */
@@ -90,10 +183,14 @@ function materialPath(id: string): string {
   return path.join(MATERIALS_DIR, id);
 }
 
+/**
+ * Bytes first, sidecar second — both via temp+rename. The sidecar is what makes the upload visible
+ * (readMaterial needs both), so a crash in between leaves orphan bytes, never a half-written
+ * descriptor or a descriptor pointing at truncated bytes.
+ */
 export async function saveMaterial(id: string, bytes: Buffer, meta: StoredMaterialMeta): Promise<void> {
-  await fs.mkdir(MATERIALS_DIR, { recursive: true });
-  await fs.writeFile(materialPath(id), bytes);
-  await fs.writeFile(`${materialPath(id)}.meta.json`, JSON.stringify(meta), 'utf-8');
+  await writeFileAtomic(materialPath(id), bytes);
+  await writeFileAtomic(`${materialPath(id)}.meta.json`, JSON.stringify(meta));
 }
 
 export async function readMaterial(id: string): Promise<{ bytes: Buffer; meta: StoredMaterialMeta } | null> {
@@ -233,6 +330,10 @@ export async function deleteScormAttemptFile(attemptId: string): Promise<void> {
   await fs.rm(scormAttemptPath(attemptId), { force: true });
 }
 
+/**
+ * Read a store. Safe without the lock for DISPLAY: writes are atomic, so the result is always one
+ * complete version. A read that feeds a write must happen inside transaction()/updateStore().
+ */
 export async function readStore<T>(file: ArrayFile): Promise<T[]> {
   await ensureDir();
   try {
@@ -240,16 +341,37 @@ export async function readStore<T>(file: ArrayFile): Promise<T[]> {
     return JSON.parse(raw) as T[];
   } catch (err: unknown) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      await fs.writeFile(filePath(file), '[]', 'utf-8');
+      await writeFileAtomic(filePath(file), '[]');
       return [];
     }
     throw err;
   }
 }
 
+/**
+ * Replace a store's contents atomically. Does NOT take the store lock: the SCORM attempt index is
+ * written through its own queue and must be able to write while a transaction is open (a commit
+ * waiting on the store lock would deadlock a transaction that waits on the commit). Every other
+ * caller reaches this from inside transaction()/updateStore().
+ */
 export async function writeStore<T>(file: ArrayFile, data: T[]): Promise<void> {
   await ensureDir();
-  await fs.writeFile(filePath(file), JSON.stringify(data, null, 2), 'utf-8');
+  await writeJsonAtomic(filePath(file), data, true);
+}
+
+/**
+ * Read-modify-write one store under the store lock. The callback receives the current items and
+ * returns the array to persist, or null to persist nothing (validation failed, nothing changed).
+ * Return values for the caller travel through closure variables, keeping the write decision explicit.
+ */
+export function updateStore<T>(
+  file: ArrayFile,
+  fn: (items: T[]) => T[] | null | Promise<T[] | null>,
+): Promise<void> {
+  return transaction(async () => {
+    const next = await fn(await readStore<T>(file));
+    if (next !== null) await writeStore(file, next);
+  });
 }
 
 // Exported for the 1.3.0 migration step, which prunes stored keys that are not in this shape.
@@ -282,5 +404,15 @@ export async function readSettings(): Promise<Settings> {
 
 export async function writeSettings(data: Settings): Promise<void> {
   await ensureDir();
-  await fs.writeFile(filePath('settings'), JSON.stringify(data, null, 2), 'utf-8');
+  await writeJsonAtomic(filePath('settings'), data, true);
+}
+
+/** Read-modify-write the settings object under the store lock (null = persist nothing). */
+export function updateSettings(
+  fn: (settings: Settings) => Settings | null | Promise<Settings | null>,
+): Promise<void> {
+  return transaction(async () => {
+    const next = await fn(await readSettings());
+    if (next !== null) await writeSettings(next);
+  });
 }

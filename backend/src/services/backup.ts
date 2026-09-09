@@ -42,11 +42,14 @@ import {
   listScormEntries,
   listScormPackageDirs,
   materialFilePath,
+  renameWithRetry,
   resolveScormEntry,
   scormAttemptPath,
   scormPackageDir,
   STORE_FILES,
   storeFilePath,
+  transaction,
+  writeFileAtomic,
   type StoreFile,
 } from './fileStore';
 import { auditFilePath } from './audit';
@@ -134,6 +137,11 @@ const metaPath = (id: string): string => path.join(backupsDir(), `${id}.meta.jso
 
 // Backup and restore rewrite whole files and read the whole data dir, so only one heavy data operation
 // runs at a time — an upload's validation is included so a large archive cannot land mid-restore.
+// Lock order, always: exclusive() OUTSIDE, fileStore.transaction() INSIDE. The archive snapshot and
+// the restore swap take the store lock so no request can write a store between two reads of the
+// snapshot (an inconsistent archive) or write a pre-restore copy over freshly restored data. Nothing
+// inside a transaction may call exclusive() — see migrations.ts, which takes its pre-migration backup
+// before entering the store lock for exactly that reason.
 let queue: Promise<unknown> = Promise.resolve();
 function exclusive<T>(fn: () => Promise<T>): Promise<T> {
   const run = queue.then(fn);
@@ -146,24 +154,6 @@ async function readJson<T>(file: string): Promise<T | null> {
     return JSON.parse(await fs.readFile(file, 'utf-8')) as T;
   } catch {
     return null;
-  }
-}
-
-/**
- * Rename, retrying briefly on the transient Windows failures (EPERM/EBUSY/EACCES) that occur when a
- * virus scanner or indexer still holds the file for a moment. A rename that keeps failing is a real
- * error and propagates.
- */
-async function renameWithRetry(from: string, to: string, attempts = 5): Promise<void> {
-  for (let i = 1; ; i++) {
-    try {
-      await fs.rename(from, to);
-      return;
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      if (i >= attempts || !['EPERM', 'EBUSY', 'EACCES'].includes(code ?? '')) throw err;
-      await new Promise((resolve) => setTimeout(resolve, 25 * i));
-    }
   }
 }
 
@@ -351,15 +341,17 @@ async function writeBackup(bytes: Buffer, source: BackupSource, contents: Backup
     source,
     contents,
   };
+  // Bytes first, sidecar second: the sidecar is what makes the backup listed, so a crash in between
+  // leaves an unlisted zip rather than a listed backup whose bytes are missing.
   await fs.writeFile(zipPath(id), bytes);
-  await fs.writeFile(metaPath(id), JSON.stringify(meta, null, 2), 'utf-8');
+  await writeFileAtomic(metaPath(id), JSON.stringify(meta, null, 2));
   return meta;
 }
 
-/** Snapshot all app data into a new server-side backup. */
+/** Snapshot all app data into a new server-side backup (a consistent snapshot: stores locked). */
 export function createBackup(source: BackupSource = 'manual'): Promise<BackupMeta> {
   return exclusive(async () => {
-    const { bytes, contents } = await buildArchive();
+    const { bytes, contents } = await transaction(buildArchive);
     return writeBackup(bytes, source, contents);
   });
 }
@@ -541,6 +533,9 @@ export function restoreBackup(
     // fine: the route re-runs the migrations right after the restore, which bring it up to date.
     if (compareVersions(dataVersion, appVersion()) > 0) throw new BackupTooNew(dataVersion, appVersion());
 
+    // Snapshot and swap under the store lock: a request handler that read a store before the swap
+    // cannot write its stale copy over the restored data, because every store write waits here.
+    return transaction(async () => {
     // Undo point for the state we are about to overwrite.
     const snapshot = await buildArchive();
     const safety = await writeBackup(snapshot.bytes, 'pre-restore', snapshot.contents);
@@ -625,5 +620,6 @@ export function restoreBackup(
     }
 
     return { meta: stored.meta, safetyBackupId: safety.id, files: stores.map((s) => s.name), materials: contents.materials, dataVersion };
+    });
   });
 }

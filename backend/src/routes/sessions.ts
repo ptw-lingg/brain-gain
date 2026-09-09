@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import { randomUUID } from 'crypto';
 import type { ScormAttemptFile, ScormPackageRef, Training, TrainingSession, UpdateAck, User } from '../types';
-import { readStore, readSettings, writeStore } from '../services/fileStore';
+import { readStore, readSettings, transaction, updateStore, writeStore } from '../services/fileStore';
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { gradeAnswers, isAnswerCorrect } from '../services/questions';
 import { verifyCompletionSignature } from '../services/signature';
@@ -11,7 +11,7 @@ import { getPackage } from '../services/scorm/packages';
 import { scaledScore } from '../scorm/model';
 import { formatTimespan12 } from '../scorm/duration';
 
-const router = Router();
+const router = asyncRouter();
 
 router.use(authenticate);
 
@@ -51,9 +51,12 @@ router.post('/confirm-materials', async (req: AuthRequest, res) => {
     if (update.mode !== 'confirm') {
       return res.status(400).json({ error: 'This update requires a full retake, not a confirmation' });
     }
-    const acks = await readStore<UpdateAck>('updateAcks');
-    // Idempotent: confirming the same update twice is fine and records nothing new.
-    if (!acks.some((a) => a.userId === req.user!.id && a.updateId === updateId)) {
+    // Read-modify-write under the store lock: many learners confirm the same update within the same
+    // minute after a reminder mail, and an ack lost to a concurrent write is a compliance gap.
+    let recorded = false;
+    await updateStore<UpdateAck>('updateAcks', (acks) => {
+      // Idempotent: confirming the same update twice is fine and records nothing new.
+      if (acks.some((a) => a.userId === req.user!.id && a.updateId === updateId)) return null;
       acks.push({
         id: randomUUID(),
         userId: req.user!.id,
@@ -61,7 +64,10 @@ router.post('/confirm-materials', async (req: AuthRequest, res) => {
         updateId,
         confirmedAt: new Date().toISOString(),
       });
-      await writeStore('updateAcks', acks);
+      recorded = true;
+      return acks;
+    });
+    if (recorded) {
       await auditEvent(
         req.user ?? null,
         'training-update-confirmed',
@@ -183,18 +189,28 @@ router.post('/grade', async (req: AuthRequest, res) => {
     const passed = !vetoed && scorePct >= passThreshold;
 
     if (passed) {
-      const sessions = await readStore<TrainingSession>('sessions');
+      const attemptId = scormFile.attempt.id;
       const session: TrainingSession = {
         id: randomUUID(),
         userId: req.user!.id,
         trainingId,
         completedAt: new Date().toISOString(),
         scorePct,
-        scormAttemptId: scormFile.attempt.id,
+        scormAttemptId: attemptId,
       };
-      sessions.push(session);
-      await writeStore('sessions', sessions);
-      await closeAttempt(scormFile.attempt.id, { status: 'completed', sessionId: session.id });
+      // One atomic step under the store lock: consume the attempt (compare-and-set — refused when a
+      // concurrent grade request got there first), THEN record the session. The replay check above
+      // ran before the slow signature verification; only this step is authoritative, so a double
+      // click or a retried request yields exactly one session, never two.
+      const consumed = await transaction(async () => {
+        const closed = await closeAttempt(attemptId, { status: 'completed', sessionId: session.id });
+        if (!closed) return false;
+        const sessions = await readStore<TrainingSession>('sessions');
+        sessions.push(session);
+        await writeStore('sessions', sessions);
+        return true;
+      });
+      if (!consumed) return res.status(409).json({ error: 'This attempt has already been recorded' });
       await auditEvent(
         req.user ?? null,
         'training-completed',
@@ -233,7 +249,6 @@ router.post('/grade', async (req: AuthRequest, res) => {
 
   // Failed attempts are NOT recorded — the training simply stays due.
   if (passed) {
-    const sessions = await readStore<TrainingSession>('sessions');
     const session: TrainingSession = {
       id: randomUUID(),
       userId: req.user!.id,
@@ -241,8 +256,9 @@ router.post('/grade', async (req: AuthRequest, res) => {
       completedAt: new Date().toISOString(),
       scorePct,
     };
-    sessions.push(session);
-    await writeStore('sessions', sessions);
+    // Under the store lock — a completion lost to a concurrent learner's write is the one record
+    // this app exists to keep.
+    await updateStore<TrainingSession>('sessions', (sessions) => [...sessions, session]);
     await auditEvent(
       req.user ?? null,
       'training-completed',

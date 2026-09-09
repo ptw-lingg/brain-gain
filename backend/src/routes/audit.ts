@@ -3,13 +3,13 @@
 // date range); the list adds offset/limit paging because the log grows forever, the CSV export
 // deliberately does not (an export is the whole filtered history).
 
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import type { AuditAction, AuditEntityType, AuditEntry } from '../types';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { readAuditEntries } from '../services/audit';
 import { sendAttachment } from './http';
 
-const router = Router();
+const router = asyncRouter();
 
 router.use(authenticate, requireAdmin);
 

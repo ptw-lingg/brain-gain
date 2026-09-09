@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { asyncRouter } from '../middleware/asyncRouter';
 import bcrypt from 'bcryptjs';
 import { randomBytes, randomUUID } from 'crypto';
 import type { JobRole, OrgUnit, User } from '../types';
-import { readStore, writeStore } from '../services/fileStore';
+import { readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { rootOrgUnitId } from '../services/orgUnits';
 import { auditEvent, diffEntities } from '../services/audit';
@@ -10,7 +10,7 @@ import { toSafeUser } from './auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const router = Router();
+const router = asyncRouter();
 
 router.use(authenticate, requireAdmin);
 
@@ -46,30 +46,37 @@ router.post('/', async (req: AuthRequest, res) => {
   if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'name, email, password are required' });
   }
-  // Membership is required: an explicit unit must exist; if omitted, fall back to the root unit so
-  // the "everyone belongs to exactly one unit" invariant always holds.
-  const orgUnits = await readStore<OrgUnit>('orgUnits');
-  if (orgUnitId !== undefined && (typeof orgUnitId !== 'string' || !orgUnits.some((o) => o.id === orgUnitId))) {
-    return res.status(400).json({ error: 'orgUnitId does not exist' });
-  }
-  const resolvedOrgUnitId = typeof orgUnitId === 'string' && orgUnitId ? orgUnitId : await rootOrgUnitId();
-  const users = await readStore<User>('users');
-  if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-    return res.status(409).json({ error: 'Email already in use' });
-  }
-  const user: User = {
-    id: randomUUID(),
-    name,
-    email,
-    passwordHash: await bcrypt.hash(password, 10),
-    roleIds: Array.isArray(roleIds) ? roleIds : [],
-    orgUnitId: resolvedOrgUnitId,
-    isAdmin: Boolean(isAdmin),
-    isTrainer: Boolean(isTrainer),
-    createdAt: new Date().toISOString(),
-  };
-  users.push(user);
-  await writeStore('users', users);
+  // Hash BEFORE taking the store lock: bcrypt takes ~100 ms and does not depend on store state.
+  const passwordHash = await bcrypt.hash(password, 10);
+  const outcome = await transaction(async (): Promise<{ status: number; error: string } | { user: User }> => {
+    // Membership is required: an explicit unit must exist; if omitted, fall back to the root unit so
+    // the "everyone belongs to exactly one unit" invariant always holds.
+    const orgUnits = await readStore<OrgUnit>('orgUnits');
+    if (orgUnitId !== undefined && (typeof orgUnitId !== 'string' || !orgUnits.some((o) => o.id === orgUnitId))) {
+      return { status: 400, error: 'orgUnitId does not exist' };
+    }
+    const resolvedOrgUnitId = typeof orgUnitId === 'string' && orgUnitId ? orgUnitId : await rootOrgUnitId();
+    const users = await readStore<User>('users');
+    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      return { status: 409, error: 'Email already in use' };
+    }
+    const user: User = {
+      id: randomUUID(),
+      name,
+      email,
+      passwordHash,
+      roleIds: Array.isArray(roleIds) ? roleIds : [],
+      orgUnitId: resolvedOrgUnitId,
+      isAdmin: Boolean(isAdmin),
+      isTrainer: Boolean(isTrainer),
+      createdAt: new Date().toISOString(),
+    };
+    users.push(user);
+    await writeStore('users', users);
+    return { user };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { user } = outcome;
   await auditEvent(req.user ?? null, 'create', { type: 'user', id: user.id, name: user.email });
   return res.status(201).json(toSafeUser(user));
 });
@@ -95,6 +102,11 @@ router.post('/import', async (req: AuthRequest, res) => {
     return res.status(400).json({ error: 'rows must be an array' });
   }
 
+  // The plan is computed and (on commit) applied inside ONE transaction, so the diff the admin
+  // previewed cannot be applied over a users store that changed in between. Audit entries are
+  // collected and appended after the write, keeping the lock free of audit I/O.
+  const auditQueue: (() => Promise<void>)[] = [];
+  const response = await transaction(async () => {
   const users = await readStore<User>('users');
   const roles = await readStore<JobRole>('roles');
   const orgUnits = await readStore<OrgUnit>('orgUnits');
@@ -213,7 +225,9 @@ router.post('/import', async (req: AuthRequest, res) => {
         users.push(created);
         row.activationToken = token; // returned once, to the admin who imported
         dirty = true;
-        await auditEvent(req.user ?? null, 'create', { type: 'user', id: created.id, name: created.email }, { details: 'imported' });
+        auditQueue.push(() =>
+          auditEvent(req.user ?? null, 'create', { type: 'user', id: created.id, name: created.email }, { details: 'imported' }),
+        );
       } else if (row.action === 'update') {
         const u = users.find((x) => x.email.toLowerCase() === row.email.toLowerCase());
         if (u) {
@@ -222,11 +236,14 @@ router.post('/import', async (req: AuthRequest, res) => {
           u.roleIds = row.matchedRoleIds;
           if (row.matchedOrgUnitId) u.orgUnitId = row.matchedOrgUnitId; // only when provided
           dirty = true;
-          await auditEvent(
-            req.user ?? null,
-            'update',
-            { type: 'user', id: u.id, name: u.email },
-            { changes: diffEntities(before, u), details: 'imported' },
+          const changes = diffEntities(before, u);
+          auditQueue.push(() =>
+            auditEvent(
+              req.user ?? null,
+              'update',
+              { type: 'user', id: u.id, name: u.email },
+              { changes, details: 'imported' },
+            ),
           );
         }
       }
@@ -240,47 +257,58 @@ router.post('/import', async (req: AuthRequest, res) => {
     unchanged: plan.filter((r) => r.action === 'unchanged').length,
     error: plan.filter((r) => r.action === 'error').length,
   };
-  return res.json({ committed: commit, summary, rows: plan });
+  return { committed: commit, summary, rows: plan };
+  });
+  for (const emit of auditQueue) await emit();
+  return res.json(response);
 });
 
 // PUT /api/users/:id
 router.put('/:id', async (req: AuthRequest, res) => {
   const { name, email, roleIds, isAdmin, isTrainer, password, orgUnitId } = req.body ?? {};
-  const users = await readStore<User>('users');
-  const idx = users.findIndex((u) => u.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Not found' });
-  const current = users[idx];
-  if (orgUnitId !== undefined) {
-    const orgUnits = await readStore<OrgUnit>('orgUnits');
-    if (typeof orgUnitId !== 'string' || !orgUnits.some((o) => o.id === orgUnitId)) {
-      return res.status(400).json({ error: 'orgUnitId does not exist' });
-    }
-  }
-  const updated: User = {
-    ...current,
-    name: typeof name === 'string' ? name : current.name,
-    email: typeof email === 'string' ? email : current.email,
-    roleIds: Array.isArray(roleIds) ? roleIds : current.roleIds,
-    orgUnitId: typeof orgUnitId === 'string' ? orgUnitId : current.orgUnitId,
-    isAdmin: typeof isAdmin === 'boolean' ? isAdmin : current.isAdmin,
-    isTrainer: typeof isTrainer === 'boolean' ? isTrainer : current.isTrainer,
-    passwordHash:
-      typeof password === 'string' && password.length > 0
-        ? await bcrypt.hash(password, 10)
-        : current.passwordHash,
-  };
-  users[idx] = updated;
-  await writeStore('users', users);
+  // Hash BEFORE taking the store lock (~100 ms, independent of store state).
+  const newHash = typeof password === 'string' && password.length > 0 ? await bcrypt.hash(password, 10) : undefined;
+  const outcome = await transaction(
+    async (): Promise<{ status: number; error: string } | { current: User; updated: User }> => {
+      const users = await readStore<User>('users');
+      const idx = users.findIndex((u) => u.id === req.params.id);
+      if (idx === -1) return { status: 404, error: 'Not found' };
+      const current = users[idx];
+      if (orgUnitId !== undefined) {
+        const orgUnits = await readStore<OrgUnit>('orgUnits');
+        if (typeof orgUnitId !== 'string' || !orgUnits.some((o) => o.id === orgUnitId)) {
+          return { status: 400, error: 'orgUnitId does not exist' };
+        }
+      }
+      const updated: User = {
+        ...current,
+        name: typeof name === 'string' ? name : current.name,
+        email: typeof email === 'string' ? email : current.email,
+        roleIds: Array.isArray(roleIds) ? roleIds : current.roleIds,
+        orgUnitId: typeof orgUnitId === 'string' ? orgUnitId : current.orgUnitId,
+        isAdmin: typeof isAdmin === 'boolean' ? isAdmin : current.isAdmin,
+        isTrainer: typeof isTrainer === 'boolean' ? isTrainer : current.isTrainer,
+        passwordHash: newHash ?? current.passwordHash,
+      };
+      users[idx] = updated;
+      await writeStore('users', users);
+      return { current, updated };
+    },
+  );
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { current, updated } = outcome;
   await auditEvent(req.user ?? null, 'update', { type: 'user', id: updated.id, name: updated.email }, { changes: diffEntities(current, updated) });
   return res.json(toSafeUser(updated));
 });
 
 // DELETE /api/users/:id
 router.delete('/:id', async (req: AuthRequest, res) => {
-  const users = await readStore<User>('users');
-  const removed = users.find((u) => u.id === req.params.id);
+  let removed: User | undefined;
+  await updateStore<User>('users', (users) => {
+    removed = users.find((u) => u.id === req.params.id);
+    return removed ? users.filter((u) => u.id !== req.params.id) : null;
+  });
   if (!removed) return res.status(404).json({ error: 'Not found' });
-  await writeStore('users', users.filter((u) => u.id !== req.params.id));
   await auditEvent(req.user ?? null, 'delete', { type: 'user', id: removed.id, name: removed.email });
   return res.status(204).end();
 });

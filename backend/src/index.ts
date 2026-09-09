@@ -19,6 +19,7 @@ import versionRoutes from './routes/version';
 import { seed } from './seed';
 import { runDataMigrations } from './services/migrations';
 import { initDataVersion } from './services/dataVersion';
+import { sweepTempFiles } from './services/fileStore';
 import { appVersion } from './services/appVersion';
 import { startAutoBackupScheduler } from './services/autoBackup';
 import { ensureCredentials, registerHttpsServer } from './services/tls';
@@ -77,13 +78,25 @@ if (existsSync(distDir)) {
   });
 }
 
-// Generic error handler so unhandled rejections surface as JSON.
+// Generic error handler so handler failures surface as JSON. Async handlers reach it through
+// middleware/asyncRouter.ts (Express 4 would otherwise drop their rejections on the floor). A handler
+// that failed AFTER starting its response cannot be answered again — hand off to Express's default,
+// which closes the connection.
 app.use(
-  (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  (err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    if (res.headersSent) return next(err);
+    return res.status(500).json({ error: 'Internal server error' });
   },
 );
+
+// Last line of defence for a rejection that escaped every handler (a fire-and-forget promise in a
+// service, a timer callback): log it and keep serving. Node's default since v15 is to exit the
+// process, which would turn one bad request into an outage for every user. Ordinary handler errors
+// never reach here — asyncRouter routes them to the middleware above.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection (server keeps running):', reason);
+});
 
 // Bind a server, retrying briefly on EADDRINUSE instead of crashing. During a `tsx watch` reload the
 // previous process may not have released the port yet; retry for a short window, then give up.
@@ -117,6 +130,7 @@ function listenWithRetry(
 // binds (no request can observe half-migrated data). A migration failure — or data written by a
 // newer version — lands in the catch below and exits 1.
 initDataVersion()
+  .then(() => sweepTempFiles()) // temp files a crash mid-write left next to the stores
   .then(() => seed())
   .then(() => runDataMigrations())
   .then(async () => {
