@@ -10,6 +10,17 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-10-09
+
+### Added
+- Audit entries for user role changes (edit and CSV import) record each role as `Name (id)` instead of a
+  bare id, so the audit log reads without cross-referencing the roles store and stays meaningful after a
+  role is renamed or deleted (SYS-AUD-02). Older entries keep their bare ids.
+
+### Changed
+- New SVG favicon replaces the PNG.
+- Settings page: responsive sizing fix for narrow viewports.
+
 ### Fixed
 - **Lost updates under concurrent use.** Every read-modify-write of a JSON store now runs inside
   `fileStore.transaction()` / `updateStore()`, one process-wide re-entrant store lock. Before, two

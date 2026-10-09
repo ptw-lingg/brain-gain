@@ -2,7 +2,7 @@
   "$schema": "./schema/requirements.schema.json",
   "meta": {
     "project": "BrainGain",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "updated": "2026-09-28",
     "description": "Canonical, machine-readable requirements for BrainGain — the single source of truth and the single file handed off to the standalone VeriTrace viewer (which renders the catalog and the controlled documents). BrainGain has no in-app requirements page. Edit here, then run requirements/tools/build.mjs (rebuild catalog + coverage) and sync-tests.mjs (embed live results under testRun).",
     "coverage": {
@@ -1137,11 +1137,11 @@
     {"id":"TC-ffd55f864f","name":"SYS-SSO-03 / VT-007: POST /api/auth/sso/entra returns 503 when SSO is unconfigured","kind":"backend","file":"backend/tests/sso.test.mjs","covers":["SYS-SSO-03","VT-007"]}
   ],
   "testRun": {
-    "ranAt": "2026-09-28T07:41:12.744Z",
+    "ranAt": "2026-10-09T10:01:58.040Z",
     "summary": {
       "total": 533,
-      "passed": 532,
-      "failed": 1,
+      "passed": 533,
+      "failed": 0,
       "skipped": 0,
       "backend": 394,
       "e2e": 139
@@ -1547,7 +1547,7 @@
       "TC-2f7d08619d": "pass",
       "TC-e7efbb3889": "pass",
       "TC-eec1f0fc05": "pass",
-      "TC-14758611a0": "fail",
+      "TC-14758611a0": "pass",
       "TC-8e886b4545": "pass",
       "TC-a2bc035214": "pass",
       "TC-8c6cf60550": "pass",
