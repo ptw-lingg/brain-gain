@@ -66,9 +66,13 @@ test('SYS-AUD-02 / SR-159 / VT-168: creating, updating and deleting a user write
   assert.equal(created.status, 201);
   const id = created.body.id;
 
+  const roles = (await srv.request('GET', '/api/roles', { token: adminToken })).body;
+  const role = roles.find((r) => r.name === 'Lab Technician');
+  assert.ok(role, 'the seeded Lab Technician role exists');
+
   const updated = await srv.request('PUT', `/api/users/${id}`, {
     token: adminToken,
-    body: { name: 'Audit Subject Renamed', password: 'topsecret-pass-2' },
+    body: { name: 'Audit Subject Renamed', password: 'topsecret-pass-2', roleIds: [role.id, 'no-such-role'] },
   });
   assert.equal(updated.status, 200);
 
@@ -88,10 +92,39 @@ test('SYS-AUD-02 / SR-159 / VT-168: creating, updating and deleting a user write
   assert.deepEqual({ from: nameChange.from, to: nameChange.to }, { from: 'Audit Subject', to: 'Audit Subject Renamed' });
   const pwChange = upd.changes.find((c) => c.field === 'password');
   assert.deepEqual({ from: pwChange.from, to: pwChange.to }, { from: '***', to: '***' }, 'the password change is recorded masked');
+  const roleChange = upd.changes.find((c) => c.field === 'roleIds');
+  assert.deepEqual(
+    { from: roleChange.from, to: roleChange.to },
+    { from: [], to: [`Lab Technician (${role.id})`, 'no-such-role'] },
+    'assigned roles are logged as "Name (id)"; an unresolvable id stays bare',
+  );
 
   const raw = rawLog();
   assert.ok(!raw.includes('topsecret-pass-1') && !raw.includes('topsecret-pass-2'), 'no plaintext password on disk');
   assert.ok(!raw.includes('passwordHash'), 'no password hash field on disk');
+});
+
+test('SYS-AUD-02 / SR-159 / VT-168: a committed import update logs the replaced roles as "Name (id)"', async () => {
+  const roles = (await srv.request('GET', '/api/roles', { token: adminToken })).body;
+  const role = roles.find((r) => r.name === 'Lab Technician');
+  const created = await srv.request('POST', '/api/users', {
+    token: adminToken,
+    body: { name: 'Import Subject', email: 'import-subject@example.com', password: 'topsecret-pass-3', roleIds: [role.id] },
+  });
+  assert.equal(created.status, 201);
+
+  const imported = await srv.request('POST', '/api/users/import', {
+    token: adminToken,
+    body: { commit: true, rows: [{ name: 'Import Subject', email: 'import-subject@example.com', roles: [] }] },
+  });
+  assert.equal(imported.status, 200);
+  assert.equal(imported.body.summary.update, 1);
+
+  const { body } = await listAudit('entityType=user&action=update&q=import-subject@example.com');
+  const upd = body.entries.find((e) => e.details === 'imported');
+  assert.ok(upd, 'the import update is audited');
+  const roleChange = upd.changes.find((c) => c.field === 'roleIds');
+  assert.deepEqual({ from: roleChange.from, to: roleChange.to }, { from: [`Lab Technician (${role.id})`], to: [] });
 });
 
 test('SYS-AUD-02 / SR-159 / VT-168: a settings save diffs dot-path fields and never logs the SMTP password; a training edit masks the question key', async () => {

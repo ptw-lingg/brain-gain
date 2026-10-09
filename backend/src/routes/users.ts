@@ -5,7 +5,7 @@ import type { JobRole, OrgUnit, User } from '../types';
 import { readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { rootOrgUnitId } from '../services/orgUnits';
-import { auditEvent, diffEntities } from '../services/audit';
+import { auditEvent, diffEntities, labelIdList } from '../services/audit';
 import { toSafeUser } from './auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,7 +113,8 @@ router.post('/import', async (req: AuthRequest, res) => {
   // New users with no Org Unit value fall back to the root unit (membership invariant).
   const rootUnitId = (orgUnits.find((o) => o.parentId === null) ?? orgUnits[0])?.id;
   const roleByName = new Map(roles.map((r) => [r.name.trim().toLowerCase(), r] as const));
-  const roleName = (id: string): string => roles.find((r) => r.id === id)?.name ?? id;
+  const roleByIdName = (id: string): string | undefined => roles.find((r) => r.id === id)?.name;
+  const roleName = (id: string): string => roleByIdName(id) ?? id;
   const unitByName = new Map(orgUnits.map((o) => [o.name.trim().toLowerCase(), o] as const));
   const unitName = (id: string | undefined): string =>
     orgUnits.find((o) => o.id === id)?.name ?? '';
@@ -236,7 +237,7 @@ router.post('/import', async (req: AuthRequest, res) => {
           u.roleIds = row.matchedRoleIds;
           if (row.matchedOrgUnitId) u.orgUnitId = row.matchedOrgUnitId; // only when provided
           dirty = true;
-          const changes = diffEntities(before, u);
+          const changes = labelIdList(diffEntities(before, u), 'roleIds', roleByIdName);
           auditQueue.push(() =>
             auditEvent(
               req.user ?? null,
@@ -297,7 +298,10 @@ router.put('/:id', async (req: AuthRequest, res) => {
   );
   if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
   const { current, updated } = outcome;
-  await auditEvent(req.user ?? null, 'update', { type: 'user', id: updated.id, name: updated.email }, { changes: diffEntities(current, updated) });
+  // Role assignments are logged as "Name (id)" so the entry reads without a lookup (SYS-AUD-02).
+  const roles = await readStore<JobRole>('roles');
+  const changes = labelIdList(diffEntities(current, updated), 'roleIds', (id) => roles.find((r) => r.id === id)?.name);
+  await auditEvent(req.user ?? null, 'update', { type: 'user', id: updated.id, name: updated.email }, { changes });
   return res.json(toSafeUser(updated));
 });
 

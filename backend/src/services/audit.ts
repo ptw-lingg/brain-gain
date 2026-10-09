@@ -153,6 +153,20 @@ export function diffEntities(beforeRecord: object, afterRecord: object): AuditCh
   return changes;
 }
 
+/** "Name (id)" for a referenced record: the id stays on record, the name makes it readable. */
+export const labelRef = (id: string, name: string | undefined): string => (name ? `${name} (${id})` : id);
+
+/**
+ * Rewrites the before/after values of an id-list field (e.g. user.roleIds) as "Name (id)" labels,
+ * so an entry can be read without cross-referencing the store — and stays meaningful after the
+ * referenced record is renamed or deleted. Ids that resolve to no name stay bare.
+ */
+export function labelIdList(changes: AuditChange[], field: string, nameOf: (id: string) => string | undefined): AuditChange[] {
+  const label = (v: unknown): unknown =>
+    Array.isArray(v) ? v.map((id) => (typeof id === 'string' ? labelRef(id, nameOf(id)) : id)) : v;
+  return changes.map((c) => (c.field === field ? { ...c, from: label(c.from), to: label(c.to) } : c));
+}
+
 // Settings groups whose fields are diffed individually as dot-paths (e.g. 'smtp.host').
 const SETTINGS_GROUPS = ['entra', 'smtp', 'autoBackup'] as const;
 const SETTINGS_REDACT = new Set(['smtp.password']);
