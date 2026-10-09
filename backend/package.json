@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "build": "tsc && npm run sbom",
+    "build": "tsc && npm run build:assets && npm run sbom",
+    "build:assets": "node scripts/copy-assets.mjs",
     "sbom": "cyclonedx-npm --omit dev --mc-type application --output-format JSON --output-reproducible --output-file ../sbom/backend.cdx.json",
     "typecheck": "tsc --noEmit",
     "test": "node --test --test-concurrency=1"
