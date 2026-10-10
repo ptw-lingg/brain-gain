@@ -10,6 +10,21 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.4.1] — 2026-10-09
+
+### Fixed
+- **SCORM courses could not start in a compiled deployment.** `tsc` emits only `.ts` files, so a build
+  made with `npm run build` had no `dist/scorm/shim/` (the content origin's wrapper page and SCORM API
+  shim) and every launch answered `wrapper.html` with a 500 — the course frame stayed blank. Development
+  (`tsx`) and the test suites read the files from `src/`, which hid it. The backend build now copies the
+  non-TypeScript assets from `src/` into `dist/` after `tsc` (`backend/scripts/copy-assets.mjs`, run by
+  `npm run build`; `src/data` is never copied), and a backend test guards the wiring and the copied tree
+  (SYS-SCO-05). An installation built from 1.4.0 can also recover without rebuilding by copying
+  `backend/src/scorm/shim` to `backend/dist/scorm/shim`.
+
+### Data migrations
+- none
+
 ## [1.4.0] — 2026-10-09
 
 ### Added
