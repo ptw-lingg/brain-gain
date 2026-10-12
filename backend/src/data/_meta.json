@@ -1,8 +1,8 @@
 {
   "app": "BrainGain",
-  "dataVersion": "1.3.0",
-  "appVersion": "1.3.0",
-  "migratedAt": "2026-09-07T09:57:29.207Z",
+  "dataVersion": "1.5.0",
+  "appVersion": "1.5.0",
+  "migratedAt": "2026-10-12T11:25:05.113Z",
   "history": [
     {
       "version": "1.2.0",
@@ -16,6 +16,18 @@
       "action": "migrated",
       "changed": true,
       "note": "pruned materialLocales from settings.json"
+    },
+    {
+      "version": "1.4.1",
+      "at": "2026-10-10T13:58:46.248Z",
+      "action": "upgraded",
+      "note": "no migration step was due"
+    },
+    {
+      "version": "1.5.0",
+      "at": "2026-10-12T11:25:05.113Z",
+      "action": "upgraded",
+      "note": "no migration step was due"
     }
   ]
 }
