@@ -22,6 +22,10 @@ step the backend applies at start-up when it finds data written by an older vers
   New endpoints: `POST /api/users/:id/activation-link`, `/activation-email` and `/activate`.
 - **Activation links expire after 14 days** (SR-194). Every new link revokes the previous one at once. An
   expired link answers 410 and the activation page tells the user to ask the administrator for a new one.
+- **Users change their own password** (SR-195). The user menu offers **Change password** to every account
+  that signs in with a password: confirm the current one, choose a new one (at least 8 characters). No email
+  is involved; a forgotten password is still reset by an administrator in the user editor. Accounts that sign
+  in only with Microsoft have no password to change. New endpoint: `PUT /api/auth/password`.
 
 ### Changed
 - `GET /api/users/:id/activation` (which re-served the original token) is replaced by
