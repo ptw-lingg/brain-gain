@@ -39,7 +39,8 @@
     "roleAdmin": "admin",
     "roleTrainer": "trainer",
     "roleMember": "member",
-    "about": "About BrainGain"
+    "about": "About BrainGain",
+    "changePassword": "Change password"
   },
   "about": {
     "title": "About BrainGain",
@@ -864,5 +865,18 @@
     "thirdPartyHint": "This content comes from outside BrainGain. BrainGain never asks for your password inside it.",
     "blockedHint": "Nothing shown? Some sites do not allow being displayed inside another page — use “Open in a new tab”.",
     "pageOf": "Page {n} of {total}"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "submit": "Change password",
+    "success": "Your password has been changed",
+    "errorShort": "The new password must be at least 8 characters",
+    "errorMismatch": "The new passwords do not match",
+    "errorSame": "The new password must differ from the current one",
+    "errorWrongCurrent": "The current password is incorrect",
+    "errorGeneric": "Could not change the password"
   }
 }

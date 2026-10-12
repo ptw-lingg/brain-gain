@@ -10,6 +10,38 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-10-12
+
+### Added
+- **Pending activations can be completed or renewed by an administrator** (SR-193). The Users table badges
+  accounts that are still pending activation, and the user dialog shows an activation panel with three
+  actions: **Copy activation link** (a new link to hand over by any channel — no email server needed),
+  **Send by email** (when SMTP is configured; disabled with the reason otherwise) and **Activate now**
+  (with a password the admin types, keeping the password the account already has, or — when Microsoft
+  sign-in is configured — without one). Every action is audited; the link never reaches the audit log.
+  New endpoints: `POST /api/users/:id/activation-link`, `/activation-email` and `/activate`.
+- **Activation links expire after 14 days** (SR-194). Every new link revokes the previous one at once. An
+  expired link answers 410 and the activation page tells the user to ask the administrator for a new one.
+- **Users change their own password** (SR-195). The user menu offers **Change password** to every account
+  that signs in with a password: confirm the current one, choose a new one (at least 8 characters). No email
+  is involved; a forgotten password is still reset by an administrator in the user editor. Accounts that sign
+  in only with Microsoft have no password to change. New endpoint: `PUT /api/auth/password`.
+
+### Changed
+- `GET /api/users/:id/activation` (which re-served the original token) is replaced by
+  `POST /api/users/:id/activation-link`, which issues a new one.
+- `GET /api/users` also returns `hasPassword` and, for pending accounts, `activationExpiresAt`.
+
+### Fixed
+- **Setting a password for a pending account left it disabled — and locked out for good.** The password
+  was stored, the account stayed disabled, and its activation link stopped working, so nothing in the app
+  could enable it. Saving a password for a pending account now activates it.
+
+### Data migrations
+- none (no version-gated step). A boot normalizer gives activation links issued before 1.5.0 a 14-day
+  window from the upgrade, and drops the already-dead link of a disabled account that holds a password
+  (such an account stays disabled until an administrator uses **Activate now**, which keeps its password).
+
 ## [1.4.1] — 2026-10-09
 
 ### Fixed

@@ -2,14 +2,14 @@
   "$schema": "./schema/requirements.schema.json",
   "meta": {
     "project": "BrainGain",
-    "version": "1.4.1",
+    "version": "1.5.0",
     "updated": "2026-10-12",
     "description": "Canonical, machine-readable requirements for BrainGain — the single source of truth and the single file handed off to the standalone VeriTrace viewer (which renders the catalog and the controlled documents). BrainGain has no in-app requirements page. Edit here, then run requirements/tools/build.mjs (rebuild catalog + coverage) and sync-tests.mjs (embed live results under testRun).",
     "coverage": {
-      "total": 476,
-      "covered": 476,
-      "backend": 339,
-      "e2e": 249,
+      "total": 481,
+      "covered": 481,
+      "backend": 342,
+      "e2e": 253,
       "manual": 132,
       "gaps": []
     },
@@ -59,7 +59,8 @@
       {"id":"preview-image-feature","label":"Training card preview images"},
       {"id":"versioning-feature","label":"Semantic versioning & version-gated data migrations"},
       {"id":"concurrency-feature","label":"Multi-user concurrency safety"},
-      {"id":"activation-admin-feature","label":"Pending-activation administration"}
+      {"id":"activation-admin-feature","label":"Pending-activation administration"},
+      {"id":"password-change-feature","label":"Self-service password change"}
     ],
     "status": [
       {"id":"proposed","label":"Proposed"},
@@ -416,7 +417,10 @@
     {"id":"SR-193","type":"stakeholder","category":"Authentication & Access Control","reqClass":"functional","title":"Administrator completes or renews a pending activation","text":"An administrator shall see which accounts are still pending activation and, for such an account, shall be able to obtain a new activation link to hand over by any channel (no email server needed), send the link by email when email is configured, or enable the account directly — with a password the administrator sets, keeping the password the account already has, or without one when Microsoft sign-in is configured. Setting a password for a pending account in the user editor shall also enable it. Each of these actions shall be recorded in the audit trail; the link itself never shall.","priority":"M","source":"activation-admin-feature","status":"approved","links":[{"type":"relatedTo","target":"SR-025"},{"type":"relatedTo","target":"SR-027"}]},
     {"id":"SR-194","type":"stakeholder","category":"Authentication & Access Control","reqClass":"functional","title":"Activation links expire and can be revoked","text":"An activation link shall stop working 14 days after it was issued, and issuing a new link for the same account shall make the previous one stop working at once. A user opening an expired link shall be told that it has expired and to ask the administrator for a new one. Links handed out before expiry existed shall keep working for 14 days after the upgrade.","priority":"M","source":"activation-admin-feature","status":"approved","links":[{"type":"relatedTo","target":"SR-027"}]},
     {"id":"SYS-USR-04","type":"system","category":"Users, Roles & their UIs","reqClass":"functional","title":"Pending-activation administration endpoints","text":"Admin-only, for an account with isDisabled = true (404 for an unknown id, 409 for an account that is not pending): POST /api/users/:id/activation-link issues a NEW token valid for 14 days — replacing, and so revoking, the previous one — and returns { activationToken, expiresAt }; POST /api/users/:id/activation-email does the same but mails the link (<APP_ORIGIN or https://<Host>>/activate?token=…, German and English text) to the account's address and returns { sentTo, expiresAt } without the token, answering 503 without changing anything when SMTP is not configured and 502 when the SMTP server refused the message; POST /api/users/:id/activate { password? } enables the account (clears isDisabled, the token and its expiry) — a given password (≥ 8 chars, else 400) becomes the account's password, otherwise the account keeps its existing password, and without either it is refused (400) unless Microsoft sign-in is configured. GET /api/users and GET /api/users/:id additionally return hasPassword. Issuing and emailing are audited as 'update' with the link's expiry date, enabling as 'activate' naming the administrator; the token never reaches the audit log.","status":"implemented","links":[{"type":"derivedFrom","target":"SR-193"},{"type":"derivedFrom","target":"SR-194"}],"implementedBy":[{"path":"backend/src/routes/users.ts","symbol":"POST /:id/activation-link, /:id/activation-email, /:id/activate; PUT /:id activation"},{"path":"backend/src/services/activation.ts","symbol":"issueActivation/markActivated"}]},
-    {"id":"SYS-USR-05","type":"system","category":"Users, Roles & their UIs","reqClass":"functional","title":"Pending activation on the Users page","text":"The Users table shall badge a pending account ('pending activation', or 'link expired' once its link has expired). The user dialog of a pending account shall show an activation panel stating until when the current link is valid (or that it expired), with Copy activation link (creates a new link, copies it to the clipboard and also shows it in a read-only field in case the clipboard is blocked), Send by email (disabled, with the reason, when SMTP is not configured) and Activate now (uses the password typed in the dialog, else keeps the account's existing password, else relies on Microsoft sign-in; disabled with a hint when none applies). Under the password field the dialog notes that saving a password activates the account.","status":"implemented","links":[{"type":"derivedFrom","target":"SR-193"}],"implementedBy":[{"path":"frontend/src/pages/UsersPage.vue","symbol":"pending badge + activation panel"},{"path":"frontend/src/pages/ActivatePage.vue","symbol":"expired-link message"},{"path":"frontend/src/pages/UsersImportPage.vue","symbol":"link validity note"}]}
+    {"id":"SYS-USR-05","type":"system","category":"Users, Roles & their UIs","reqClass":"functional","title":"Pending activation on the Users page","text":"The Users table shall badge a pending account ('pending activation', or 'link expired' once its link has expired). The user dialog of a pending account shall show an activation panel stating until when the current link is valid (or that it expired), with Copy activation link (creates a new link, copies it to the clipboard and also shows it in a read-only field in case the clipboard is blocked), Send by email (disabled, with the reason, when SMTP is not configured) and Activate now (uses the password typed in the dialog, else keeps the account's existing password, else relies on Microsoft sign-in; disabled with a hint when none applies). Under the password field the dialog notes that saving a password activates the account.","status":"implemented","links":[{"type":"derivedFrom","target":"SR-193"}],"implementedBy":[{"path":"frontend/src/pages/UsersPage.vue","symbol":"pending badge + activation panel"},{"path":"frontend/src/pages/ActivatePage.vue","symbol":"expired-link message"},{"path":"frontend/src/pages/UsersImportPage.vue","symbol":"link validity note"}]},
+    {"id":"SR-195","type":"stakeholder","category":"Authentication & Access Control","reqClass":"functional","title":"Users change their own password without email","text":"A signed-in user whose account signs in with a password shall be able to change that password in the app by confirming the current one — no email is sent or needed. The new password shall be at least 8 characters and differ from the current one; afterwards only the new password signs in. An account that signs in only with Microsoft has no password to change, an administrator viewing the app as another user shall not change that user's password, and a forgotten password is reset by an administrator. The change shall be recorded in the audit trail without the passwords.","priority":"M","source":"password-change-feature","status":"approved","links":[{"type":"relatedTo","target":"SR-001"}]},
+    {"id":"SYS-AUTH-11","type":"system","category":"Authentication — Email/Password","reqClass":"functional","title":"PUT /api/auth/password — change the own password","text":"PUT /api/auth/password { currentPassword, newPassword } (authenticated) shall verify currentPassword against the caller's passwordHash and replace it with a bcrypt hash of newPassword, answering 204. Both fields are required and newPassword must be ≥ 8 characters and differ from currentPassword (400); a wrong currentPassword answers 400 { code: 'wrong-password' }; an account without a passwordHash (Microsoft sign-in only) answers 409; an impersonation token answers 403. The write re-checks under the store lock that the hash is still the verified one (409 otherwise). An 'update' audit entry with details 'own password changed' names the user as the actor; no password reaches the log. Existing sessions stay valid (stateless JWTs).","status":"implemented","links":[{"type":"derivedFrom","target":"SR-195"}],"implementedBy":[{"path":"backend/src/routes/auth.ts","symbol":"PUT /password"}]},
+    {"id":"SYS-AUTH-12","type":"system","category":"Authentication — Email/Password","reqClass":"functional","title":"Change-password dialog in the user menu","text":"The user menu shall offer 'Change password' when the signed-in account has a local password (hasPassword) and no impersonation is active. It opens a dialog with current, new and confirm fields that checks length, match and difference before sending, shows a wrong current password as such inside the dialog, and on success closes with a confirmation toast.","status":"implemented","links":[{"type":"derivedFrom","target":"SR-195"}],"implementedBy":[{"path":"frontend/src/components/AppLayout.vue","symbol":"user-menu entry"},{"path":"frontend/src/components/ChangePasswordDialog.vue"}]}
   ],
   "tests": [
     {"id":"VT-001","testType":"acceptance","title":"Email/password login","method":"manual","links":[{"type":"validates","target":"SR-001"},{"type":"validates","target":"SR-002"}],"preconditions":"Seeded admin account exists.","steps":["Open /login.","Enter correct admin email + password and submit.","Enter wrong password and submit."],"expected":"Correct credentials sign in and land on the dashboard listing the user's relevant trainings; wrong credentials show an error and do not sign in.","automated":true},
@@ -585,7 +589,9 @@
     {"id":"VT-226","testType":"acceptance","title":"Concurrent users never lose a record","method":"api","links":[{"type":"validates","target":"SR-192"}],"preconditions":"A freshly seeded backend; an admin session.","steps":["Create twelve users with twelve simultaneous requests; list users.","Have eight learners pass the same training with simultaneous grade requests; read each learner's sessions.","Publish a confirm-mode update and have all learners acknowledge it simultaneously; read each learner's due list.","Save two different trainings with simultaneous requests.","Drive one SCORM attempt to passed and submit two grade requests for it at the same moment.","Launch the same SCORM course twice at the same moment.","Inspect the data directory; corrupt roles.json, call GET /api/roles, then GET /api/health."],"expected":"Every acknowledged write is on disk: twelve users, eight sessions, eight cleared updates, both renames. The double grade yields one 200 and one 409 with exactly one session and one audit entry for the attempt; the double launch returns the same attempt id. No .tmp file lingers and every store parses. The corrupt-store request answers a JSON 500 while /api/health stays 200.","automated":true},
     {"id":"VT-227","testType":"acceptance","title":"Administrator hands out, emails or directly enables a pending account","method":"api","links":[{"type":"validates","target":"SR-193"}],"preconditions":"A freshly seeded backend with an admin and a member session; imported pending accounts; SMTP unconfigured, then pointed at a capturing SMTP stub.","steps":["As member and anonymously, call the activation-link, activation-email and activate endpoints; call them for an active account.","Without SMTP, request an activation email; check the current link.","With SMTP configured, request an activation email; follow the link in the captured message.","Activate a pending account with a password; sign in with it; read the audit log.","Activate a pending account without a password, first without and then with Microsoft sign-in configured.","Save a password for a pending account in the user editor; sign in. Save a pending account without a password."],"expected":"Member 403, anonymous 401, active account 409. Without SMTP 503 and the link still works. The email reaches the account with a new link that activates it and revokes the old one. Admin activation enables the account, kills the link, lets the user sign in and records an activate entry naming the admin without the token. Password-less activation is refused without SSO and succeeds with it. Saving a password activates; a plain edit does not.","automated":true},
     {"id":"VT-228","testType":"acceptance","title":"Activation links expire and a new link revokes the old one","method":"api","links":[{"type":"validates","target":"SR-194"}],"preconditions":"A freshly seeded backend; an imported pending account; for the upgrade case, a data directory holding a 1.4.x pending link without expiry and a disabled account with a password and a token.","steps":["Import an account; read its link expiry from the import response and the user list.","Issue a new link; use the old and the new link.","Move the live link past its expiry; open and use it; issue a new link and use it.","Boot on the 1.4.x data directory; inspect both accounts; activate the disabled one without a password."],"expected":"The link is valid for 14 days and the list shows the expiry, never the token. The old link is dead (404/400) once a new one exists. An expired link answers 410 { code: expired } and changes nothing; a renewed link activates. After the upgrade boot the legacy link has 14 days and works, the disabled account with a password has no link, stays disabled, and is enabled by the admin keeping its password.","automated":true},
-    {"id":"VT-229","testType":"acceptance","title":"Pending activation on the Users page","method":"e2e","links":[{"type":"validates","target":"SR-193"}],"preconditions":"Seeded data without SMTP; an admin session; an imported pending account.","steps":["Open Users; find the pending account; open it.","Copy a new activation link; check the old link; open the new link.","For another pending account, try Activate now without a password; enter a password and activate."],"expected":"The row is badged 'pending activation'; the dialog shows the activation panel with the link's validity, Send by email disabled with the reason. Copy creates a new link shown in the panel, the old link is dead and the new one opens the activation page for the account. Activate now is disabled until a password is entered; afterwards the account is activated, the badge is gone and the user can sign in.","automated":true}
+    {"id":"VT-229","testType":"acceptance","title":"Pending activation on the Users page","method":"e2e","links":[{"type":"validates","target":"SR-193"}],"preconditions":"Seeded data without SMTP; an admin session; an imported pending account.","steps":["Open Users; find the pending account; open it.","Copy a new activation link; check the old link; open the new link.","For another pending account, try Activate now without a password; enter a password and activate."],"expected":"The row is badged 'pending activation'; the dialog shows the activation panel with the link's validity, Send by email disabled with the reason. Copy creates a new link shown in the panel, the old link is dead and the new one opens the activation page for the account. Activate now is disabled until a password is entered; afterwards the account is activated, the badge is gone and the user can sign in.","automated":true},
+    {"id":"VT-230","testType":"acceptance","title":"Change the own password through the API","method":"api","links":[{"type":"validates","target":"SR-195"}],"preconditions":"A freshly seeded backend; members with a local password created per test; a Microsoft-only account; an admin impersonation token.","steps":["Change the password with the correct current one; sign in with the old and the new one; read the audit log.","Send a wrong current password, a short new password, an unchanged one, a missing field, and no session.","Change the password as the Microsoft-only account and as an impersonating admin."],"expected":"The change answers 204, only the new password signs in, and an audit entry names the user without any password. Wrong current password 400 with code wrong-password, short/unchanged/missing 400, no session 401 — the password stays. Microsoft-only 409, impersonation 403, the target password unchanged.","automated":true},
+    {"id":"VT-231","testType":"acceptance","title":"Change the own password from the user menu","method":"e2e","links":[{"type":"validates","target":"SR-195"}],"preconditions":"A member with a local password, signed in.","steps":["Open the user menu and choose Change password.","Submit with a wrong current password.","Submit with the correct current password and a new one.","Sign in with the old and the new password."],"expected":"The dialog reports the wrong current password and changes nothing; with the correct one it closes with a confirmation, after which only the new password signs in.","automated":true}
   ],
   "testCases": [
     {"id":"TC-0071e923b0","name":"SYS-SES-01 / SR-050 / VT-050: a member completes the material → quiz → result flow","kind":"e2e","file":"frontend/e2e/sessions-due.spec.ts","covers":["SYS-SES-01","SR-050","VT-050"]},
@@ -597,6 +603,7 @@
     {"id":"TC-021cb29c76","name":"SYS-TLS-07 / SR-111: admin sees the HTTPS/TLS certificate card with active-cert metadata","kind":"e2e","file":"frontend/e2e/tls.spec.ts","covers":["SYS-TLS-07","SR-111"]},
     {"id":"TC-030a736cd7","name":"SYS-BAK-06 / SR-144 / VT-144: restoring a corrupt archive writes nothing","kind":"backend","file":"backend/tests/backup.test.mjs","covers":["SYS-BAK-06","SR-144","VT-144"]},
     {"id":"TC-03ab92d9cf","name":"SYS-AC-03 / VT-045: PUT /api/trainings/:id is admin-or-owner — non-owner trainer → 403","kind":"backend","file":"backend/tests/auth.test.mjs","covers":["SYS-AC-03","VT-045"]},
+    {"id":"TC-04a95d9aca","name":"SYS-AUTH-12 / SYS-AUTH-11 / VT-231 (SR-195): a user changes their own password from the user menu — a wrong current password is refused, then the new one signs in","kind":"e2e","file":"frontend/e2e/password-change.spec.ts","covers":["SYS-AUTH-12","SYS-AUTH-11","VT-231","SR-195"]},
     {"id":"TC-04a9cc4b80","name":"SYS-DATA-07 / SYS-NFR-02 / VT-105: login response carries no passwordHash / entraOid","kind":"backend","file":"backend/tests/data-arch-nfr.test.mjs","covers":["SYS-DATA-07","SYS-NFR-02","VT-105"]},
     {"id":"TC-04ad619cf0","name":"SYS-UI-08 / VT-U13 / SR-096: the users list is in alphabetical order by name","kind":"e2e","file":"frontend/e2e/sorting.spec.ts","covers":["SYS-UI-08","VT-U13","SR-096"]},
     {"id":"TC-06a2be59b0","name":"SYS-UPD-02 / VT-176: publish-update validates mode, deadline and email fields (400) and the training id (404)","kind":"backend","file":"backend/tests/training-updates.test.mjs","covers":["SYS-UPD-02","VT-176"]},
@@ -847,6 +854,7 @@
     {"id":"TC-72b9f2a6ad","name":"SYS-AC-03 / VT-003: POST /api/trainings requires trainer-or-admin → member 403","kind":"backend","file":"backend/tests/auth.test.mjs","covers":["SYS-AC-03","VT-003"]},
     {"id":"TC-7394b62310","name":"SYS-DATA-09 / VT-025 (SR-025): an imported user is a disabled Member with no password + an activation token","kind":"backend","file":"backend/tests/users-import.test.mjs","covers":["SYS-DATA-09","VT-025","SR-025"]},
     {"id":"TC-73ab1b51ce","name":"SYS-DATA-03 / VT-103: a created job role round-trips through the JSON store","kind":"backend","file":"backend/tests/data-arch-nfr.test.mjs","covers":["SYS-DATA-03","VT-103"]},
+    {"id":"TC-74543e157a","name":"SYS-AUTH-11 / VT-230 (SR-195): a signed-in user changes their own password with the current one; the old password stops working","kind":"backend","file":"backend/tests/password-change.test.mjs","covers":["SYS-AUTH-11","VT-230","SR-195"]},
     {"id":"TC-746cee160a","name":"SYS-TRN-01 / VT-051 / VT-105: a non-owner (member) receives the PUBLIC shape — correctIndices stripped","kind":"backend","file":"backend/tests/trainings.test.mjs","covers":["SYS-TRN-01","VT-051","VT-105"]},
     {"id":"TC-75267ae956","name":"SYS-SCO-08 / SR-178: commits are owner-only (404 for anyone else) and validate the patch shape","kind":"backend","file":"backend/tests/scorm-runtime.test.mjs","covers":["SYS-SCO-08","SR-178"]},
     {"id":"TC-753fb4316d","name":"SYS-ORG-01 / VT-125 (SR-124): admin creates, updates and deletes an org unit; member may read only","kind":"backend","file":"backend/tests/org-units.test.mjs","covers":["SYS-ORG-01","VT-125","SR-124"]},
@@ -957,6 +965,7 @@
     {"id":"TC-a4feaf4072","name":"SYS-TRN-20 / SR-185 / VT-219: a trainer uploads a preview image in the Basics section and saving needs no publish step","kind":"e2e","file":"frontend/e2e/preview-image.spec.ts","covers":["SYS-TRN-20","SR-185","VT-219"]},
     {"id":"TC-a500b8c12d","name":"SYS-USR-04 / SYS-AUD-03 / VT-227 (SR-193): the admin activates a pending account directly with a password; the link dies and the activation is audited","kind":"backend","file":"backend/tests/user-activation.test.mjs","covers":["SYS-USR-04","SYS-AUD-03","VT-227","SR-193"]},
     {"id":"TC-a53e384188","name":"SYS-UPD-03 / VT-177: with several pending updates the earliest deadline governs, and acking a newer confirm update never clears an older retake update","kind":"backend","file":"backend/tests/training-updates.test.mjs","covers":["SYS-UPD-03","VT-177"]},
+    {"id":"TC-a5c6327a80","name":"SYS-AUTH-11 / VT-230 (SR-195): an account without a local password (Microsoft sign-in only) gets 409, and an impersonating admin gets 403","kind":"backend","file":"backend/tests/password-change.test.mjs","covers":["SYS-AUTH-11","VT-230","SR-195"]},
     {"id":"TC-a6120ec5eb","name":"SYS-SCO-07 / VT-200: 1.2 lesson_status maps onto the completion+success pair and reads back in 1.2 vocabulary","kind":"backend","file":"backend/tests/scorm-model.test.mjs","covers":["SYS-SCO-07","VT-200"]},
     {"id":"TC-a65664ac95","name":"SYS-SES-07 / SR-151 / VT-153: a failing learner sees which questions were wrong — and only those","kind":"e2e","file":"frontend/e2e/wrong-questions.spec.ts","covers":["SYS-SES-07","SR-151","VT-153"]},
     {"id":"TC-a68a821fc6","name":"SYS-SCO-10 / SR-180 / VT-202: a passed course + signature creates exactly one session, and none before signing","kind":"e2e","file":"frontend/e2e/scorm-playback.spec.ts","covers":["SYS-SCO-10","SR-180","VT-202"]},
@@ -1010,6 +1019,7 @@
     {"id":"TC-bb6fdcd7ba","name":"SYS-UPD-07 / SR-170 / VT-183: a learner never receives the draft — every learner read serves the published content only","kind":"backend","file":"backend/tests/training-drafts.test.mjs","covers":["SYS-UPD-07","SR-170","VT-183"]},
     {"id":"TC-bd20d36d78","name":"SYS-SCO-15 / SR-185 / VT-219: a SCORM package with a cover picture is OFFERED as preview image — applied only on the trainer's click","kind":"e2e","file":"frontend/e2e/preview-image.spec.ts","covers":["SYS-SCO-15","SR-185","VT-219"]},
     {"id":"TC-bd4995e0b4","name":"SYS-BAK-07 / SR-140 / VT-140: the archive holds every JSON store plus material files, and a manifest","kind":"backend","file":"backend/tests/backup.test.mjs","covers":["SYS-BAK-07","SR-140","VT-140"]},
+    {"id":"TC-bd6ac43f8b","name":"SYS-AUTH-11 / VT-230 (SR-195): a wrong current password, a short or unchanged new password and a missing session are refused and change nothing","kind":"backend","file":"backend/tests/password-change.test.mjs","covers":["SYS-AUTH-11","VT-230","SR-195"]},
     {"id":"TC-bddc34aa03","name":"SYS-OVS-01 / VT-070: after a member passes a quiz, oversight flips that trainee to \"up-to-date\"","kind":"backend","file":"backend/tests/dashboard-oversight.test.mjs","covers":["SYS-OVS-01","VT-070"]},
     {"id":"TC-bec674f220","name":"SYS-TRN-20 / SR-045: deleting a training removes its preview image bytes","kind":"backend","file":"backend/tests/training-preview-image.test.mjs","covers":["SYS-TRN-20","SR-045"]},
     {"id":"TC-bed3a50792","name":"SYS-SES-09 / SR-155 / VT-162: the learner takes the quiz in their language, with a language flag where it is missing","kind":"e2e","file":"frontend/e2e/questions-locale.spec.ts","covers":["SYS-SES-09","SR-155","VT-162"]},
@@ -1156,14 +1166,14 @@
     {"id":"TC-ffd55f864f","name":"SYS-SSO-03 / VT-007: POST /api/auth/sso/entra returns 503 when SSO is unconfigured","kind":"backend","file":"backend/tests/sso.test.mjs","covers":["SYS-SSO-03","VT-007"]}
   ],
   "testRun": {
-    "ranAt": "2026-10-09T10:01:58.040Z",
+    "ranAt": "2026-10-12T11:46:26.082Z",
     "summary": {
-      "total": 533,
-      "passed": 533,
+      "total": 548,
+      "passed": 548,
       "failed": 0,
       "skipped": 0,
-      "backend": 394,
-      "e2e": 139
+      "backend": 406,
+      "e2e": 142
     },
     "results": {
       "TC-09ad08ee9d": "pass",
@@ -1223,6 +1233,8 @@
       "TC-86d0311a1e": "pass",
       "TC-48b39f8fe6": "pass",
       "TC-568d82e106": "pass",
+      "TC-aea86d4d21": "pass",
+      "TC-d4fdfbaf70": "pass",
       "TC-5123be5c8d": "pass",
       "TC-2172563c01": "pass",
       "TC-80726aed68": "pass",
@@ -1308,6 +1320,9 @@
       "TC-97d8bda3df": "pass",
       "TC-2a92bd374c": "pass",
       "TC-53fed49a10": "pass",
+      "TC-74543e157a": "pass",
+      "TC-bd6ac43f8b": "pass",
+      "TC-a5c6327a80": "pass",
       "TC-3a047ee24d": "pass",
       "TC-d334ef3ce9": "pass",
       "TC-690a780dbb": "pass",
@@ -1518,6 +1533,15 @@
       "TC-58982881f6": "pass",
       "TC-90055969b7": "pass",
       "TC-f20488005e": "pass",
+      "TC-a877e32063": "pass",
+      "TC-79b73e52c2": "pass",
+      "TC-61811b4e68": "pass",
+      "TC-338dc92e0e": "pass",
+      "TC-6ae27c6df0": "pass",
+      "TC-a500b8c12d": "pass",
+      "TC-c54cd1f4a0": "pass",
+      "TC-225f05400a": "pass",
+      "TC-87256182a8": "pass",
       "TC-8732e126de": "pass",
       "TC-0d83187f33": "pass",
       "TC-a4f286f603": "pass",
@@ -1526,8 +1550,6 @@
       "TC-25f4065fe8": "pass",
       "TC-2a1a626121": "pass",
       "TC-a4f715c802": "pass",
-      "TC-49e031665f": "pass",
-      "TC-9bbd7f06f3": "pass",
       "TC-ab364033d0": "pass",
       "TC-6cc61761eb": "pass",
       "TC-54a00eacc6": "pass",
@@ -1617,6 +1639,7 @@
       "TC-baad489fb7": "pass",
       "TC-2f8f768404": "pass",
       "TC-e2ec0a3401": "pass",
+      "TC-04a95d9aca": "pass",
       "TC-a4feaf4072": "pass",
       "TC-f6814029f4": "pass",
       "TC-1389575371": "pass",
@@ -1687,6 +1710,8 @@
       "TC-2694884d02": "pass",
       "TC-1e51283b8e": "pass",
       "TC-489c29a935": "pass",
+      "TC-30b13ba82c": "pass",
+      "TC-57ef3ba285": "pass",
       "TC-362b9fabf7": "pass",
       "TC-ec773eba7b": "pass",
       "TC-8de8ecbafa": "pass",
