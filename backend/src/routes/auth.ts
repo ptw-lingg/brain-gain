@@ -175,6 +175,53 @@ router.put('/me', authenticate, async (req: AuthRequest, res) => {
   return res.json(await identityUser(user));
 });
 
+// PUT /api/auth/password  { currentPassword, newPassword }  — a signed-in user changes their own
+// password, proving the current one (SR-195). No email is involved: this is the self-service path when
+// sign-in is by local password; an account without one (Microsoft sign-in only) is refused with 409,
+// and a forgotten password is reset by an administrator in the user editor. Refused while
+// impersonating — the token carries the TARGET's identity. Existing sessions stay valid (stateless
+// JWTs); the change is audited, the passwords never are.
+router.put('/password', authenticate, async (req: AuthRequest, res) => {
+  if (req.user?.impersonatorId) {
+    return res.status(403).json({ error: 'The password cannot be changed while impersonating' });
+  }
+  const { currentPassword, newPassword } = req.body ?? {};
+  if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+    return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'The new password must be at least 8 characters' });
+  }
+  if (newPassword === currentPassword) {
+    return res.status(400).json({ error: 'The new password must differ from the current one' });
+  }
+  const users = await readStore<User>('users');
+  const found = users.find((u) => u.id === req.user?.id);
+  if (!found) return res.status(404).json({ error: 'User not found' });
+  if (!found.passwordHash) {
+    return res.status(409).json({ error: 'This account signs in with Microsoft and has no password to change' });
+  }
+  if (!(await bcrypt.compare(currentPassword, found.passwordHash))) {
+    return res.status(400).json({ error: 'The current password is incorrect', code: 'wrong-password' });
+  }
+  // Hash BEFORE taking the store lock; the write re-checks that the password is still the verified one.
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  const verifiedHash = found.passwordHash;
+  let changed: User | undefined;
+  await updateStore<User>('users', (all) => {
+    const u = all.find((x) => x.id === req.user?.id);
+    if (!u || u.passwordHash !== verifiedHash) return null; // changed meanwhile — refuse, don't clobber
+    u.passwordHash = passwordHash;
+    changed = u;
+    return all;
+  });
+  if (!changed) return res.status(409).json({ error: 'The password was changed meanwhile — please try again' });
+  await auditEvent(req.user ?? null, 'update', { type: 'user', id: changed.id, name: changed.email }, {
+    details: 'own password changed',
+  });
+  return res.status(204).end();
+});
+
 // POST /api/auth/impersonate/:userId  — admin starts a "view as" session.
 // Issues a token carrying the TARGET user's identity & flags (so every endpoint and guard
 // renders exactly what they would see), plus the impersonator's id for audit + nesting guard.

@@ -2,11 +2,12 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Eye, Info, Languages, LogOut, X } from 'lucide-vue-next';
+import { Eye, Info, KeyRound, Languages, LogOut, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useLayoutStore } from '@/stores/layout';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
 import AboutDialog from './AboutDialog.vue';
+import ChangePasswordDialog from './ChangePasswordDialog.vue';
 import AppSidebar from './AppSidebar.vue';
 import BrainGainLogo from './BrainGainLogo.vue';
 import LocaleFlag from './LocaleFlag.vue';
@@ -77,6 +78,15 @@ const aboutOpen = ref(false);
 function openAbout(): void {
   menuOpen.value = false;
   aboutOpen.value = true;
+}
+
+// Self-service password change — only for accounts that sign in with a local password (an SSO-only
+// account has none), and never while viewing the app as another user.
+const passwordOpen = ref(false);
+const canChangePassword = computed(() => !!auth.user?.hasPassword && !auth.isImpersonating);
+function openChangePassword(): void {
+  menuOpen.value = false;
+  passwordOpen.value = true;
 }
 
 function onDocClick(e: MouseEvent): void {
@@ -181,6 +191,16 @@ function logout(): void {
             </button>
 
             <button
+              v-if="canChangePassword"
+              class="flex w-full items-center gap-2 border-b border-line px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-petrol-50 hover:text-ink"
+              role="menuitem"
+              data-testid="change-password-open"
+              @click="openChangePassword"
+            >
+              <KeyRound class="h-4 w-4" /> {{ t('nav.changePassword') }}
+            </button>
+
+            <button
               class="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-ink-muted transition hover:bg-petrol-50 hover:text-ink"
               role="menuitem"
               @click="logout"
@@ -230,5 +250,6 @@ function logout(): void {
     </div>
 
     <AboutDialog v-if="aboutOpen" @close="aboutOpen = false" />
+    <ChangePasswordDialog v-if="passwordOpen" @close="passwordOpen = false" />
   </div>
 </template>
