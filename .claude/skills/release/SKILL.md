@@ -93,3 +93,14 @@ Tell the user what existing installations will do on their first start of `<targ
 the marker. Rollback = restore the pre-migration backup **while still on the new version**, then check
 out the previous tag — or `ALLOW_DATA_DOWNGRADE=1` in an emergency. Deployments upgrade with
 `git checkout v<target>` (INSTALLATION.md §12).
+
+## 8. Package the distributable
+
+```bash
+npm run package        # node tools/package-release.mjs — builds v<target> in a temp worktree
+```
+
+Produces `release/braingain-<target>.tgz` (+ `.sha256`): compiled backend, built SPA and production
+`node_modules` — the target needs only Node.js, no build and no network. Never contains data. The bundle
+is boot-checked before packing; `node tools/package-release.mjs --smoke <extracted dir>` re-checks an
+extracted bundle. Run it after tagging (it builds from the tag, not the working tree).
