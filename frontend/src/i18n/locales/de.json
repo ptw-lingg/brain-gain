@@ -70,7 +70,8 @@
     "submitting": "Aktivierung läuft…",
     "errorShort": "Das Passwort muss mindestens 8 Zeichen lang sein",
     "errorMismatch": "Die Passwörter stimmen nicht überein",
-    "errorActivate": "Ihr Konto konnte nicht aktiviert werden"
+    "errorActivate": "Ihr Konto konnte nicht aktiviert werden",
+    "expiredLink": "Dieser Aktivierungslink ist abgelaufen. Bitten Sie Ihre Administration um einen neuen."
   },
   "dashboard": {
     "greetingMorning": "Guten Morgen, {name}",
@@ -465,8 +466,33 @@
       "saveError": "Benutzer konnte nicht gespeichert werden",
       "impersonateError": "Ansicht als dieser Benutzer nicht möglich",
       "deleted": "Benutzer gelöscht",
-      "deleteError": "Benutzer konnte nicht gelöscht werden"
-    }
+      "deleteError": "Benutzer konnte nicht gelöscht werden",
+      "linkCopied": "Neuer Aktivierungslink kopiert",
+      "linkCreated": "Neuer Aktivierungslink erstellt — unten kopieren",
+      "linkError": "Aktivierungslink konnte nicht erstellt werden",
+      "linkSent": "Aktivierungs-E-Mail an {email} gesendet",
+      "sendError": "Die E-Mail konnte nicht gesendet werden — kopieren Sie stattdessen den Link",
+      "activated": "Konto aktiviert",
+      "activateError": "Das Konto konnte nicht aktiviert werden"
+    },
+    "pending": "Aktivierung ausstehend",
+    "linkExpired": "Link abgelaufen",
+    "pendingTitle": "Aktivierung ausstehend",
+    "pendingText": "Dieses Konto kann sich erst nach der Aktivierung anmelden.",
+    "pendingLinkValid": "Der aktuelle Aktivierungslink ist gültig bis {date}.",
+    "pendingLinkExpired": "Der Aktivierungslink ist am {date} abgelaufen.",
+    "pendingNoLink": "Es gibt keinen gültigen Aktivierungslink.",
+    "pendingRevokeNote": "Kopieren oder Senden erzeugt einen neuen Link, 14 Tage gültig. Der bisherige Link funktioniert dann nicht mehr.",
+    "copyLink": "Aktivierungslink kopieren",
+    "sendLink": "Per E-Mail senden",
+    "smtpMissing": "E-Mail ist nicht eingerichtet — kopieren Sie den Link und senden Sie ihn selbst.",
+    "activateNow": "Jetzt aktivieren",
+    "activateHintPassword": "Jetzt aktivieren verwendet das oben eingegebene Passwort.",
+    "activateHintKeep": "Jetzt aktivieren behält das aktuelle Passwort des Kontos.",
+    "activateHintSso": "Ohne Passwort meldet sich der Benutzer mit Microsoft an.",
+    "activateHintNeedPassword": "Geben Sie oben ein Passwort ein, um das Konto zu aktivieren.",
+    "passwordActivates": "Das Speichern eines Passworts aktiviert dieses Konto.",
+    "linkLabel": "Aktivierungslink"
   },
   "usersImport": {
     "back": "Benutzer",
@@ -518,7 +544,8 @@
       "importError": "Benutzer konnten nicht importiert werden",
       "copied": "{label} kopiert",
       "copyError": "Kopieren in die Zwischenablage nicht möglich"
-    }
+    },
+    "activationExpiry": "Links sind 14 Tage gültig. Einen neuen Link können Sie jederzeit auf der Seite des Benutzers erzeugen."
   },
   "settings": {
     "title": "Einstellungen",

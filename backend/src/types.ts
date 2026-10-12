@@ -176,6 +176,9 @@ export interface User {
   // One-time secret for the activation link; present only while the account is pending, removed
   // on activation. Like passwordHash, it is a secret and never leaves the server in a SafeUser.
   activationToken?: string;
+  // When the activation link stops working (ISO); set with every token, removed with it. Not a secret
+  // — the admin's user list shows it (services/activation.ts).
+  activationExpiresAt?: string;
   // Profile locale (UI language, en/de) — set the first time the user touches the language switch
   // (PUT /api/auth/me); absent until then, the client falls back to its own detection. Also the
   // default material language in a training session.

@@ -2,8 +2,10 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus } from 'lucide-vue-next';
+import axios from 'axios';
+import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus, Clock, Link2, Mail, UserCheck } from 'lucide-vue-next';
 import client from '@/api/client';
+import { formatDate } from '@/utils/display';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
 import type { JobRole, OrgUnit, SafeUser } from '@/types';
@@ -63,6 +65,102 @@ async function load(): Promise<void> {
   }
 }
 
+// ── Pending activation (SR-193 / SR-194) ──────────────────────────────────────────────────────────
+// What the panel may offer: emailing needs SMTP, activating without a password needs Microsoft SSO.
+const smtpReady = ref(false);
+const ssoReady = ref(false);
+const issuedLink = ref(''); // the link just created for the open account — shown as a copy fallback
+const busy = ref(false);
+
+async function loadIntegrations(): Promise<void> {
+  const [s, sso] = await Promise.allSettled([
+    client.get<{ smtp?: { enabled?: boolean; host?: string; fromAddress?: string } }>('/settings'),
+    client.get<{ enabled: boolean }>('/auth/sso/config'),
+  ]);
+  const m = s.status === 'fulfilled' ? s.value.data.smtp : undefined;
+  smtpReady.value = Boolean(m?.enabled && m.host?.trim() && m.fromAddress?.trim());
+  ssoReady.value = sso.status === 'fulfilled' && sso.value.data.enabled === true;
+}
+
+function linkExpired(u: SafeUser): boolean {
+  return !u.activationExpiresAt || Date.parse(u.activationExpiresAt) <= Date.now();
+}
+
+const canActivate = computed(
+  () => !!draft.value && (!!draft.value.password || !!draft.value.hasPassword || ssoReady.value),
+);
+const activateHint = computed(() => {
+  const d = draft.value;
+  if (!d) return '';
+  if (d.password) return t('users.activateHintPassword');
+  if (d.hasPassword) return t('users.activateHintKeep');
+  return ssoReady.value ? t('users.activateHintSso') : t('users.activateHintNeedPassword');
+});
+
+/** Mirror a change onto the list row, so the badge is right without a reload. */
+function syncRow(id: string, patch: Partial<SafeUser>): void {
+  const row = users.value.find((u) => u.id === id);
+  if (row) Object.assign(row, patch);
+}
+
+const apiError = (e: unknown, fallback: string): string =>
+  (axios.isAxiosError(e) && typeof e.response?.data?.error === 'string' && e.response.data.error) || fallback;
+
+async function copyActivationLink(): Promise<void> {
+  const d = draft.value;
+  if (!d?.id) return;
+  busy.value = true;
+  try {
+    const { data } = await client.post<{ activationToken: string; expiresAt: string }>(`/users/${d.id}/activation-link`);
+    issuedLink.value = `${location.origin}/activate?token=${data.activationToken}`;
+    d.activationExpiresAt = data.expiresAt;
+    syncRow(d.id, { activationExpiresAt: data.expiresAt });
+    try {
+      await navigator.clipboard.writeText(issuedLink.value);
+      toast.success(t('users.toasts.linkCopied'));
+    } catch {
+      toast.success(t('users.toasts.linkCreated')); // clipboard blocked — the link is shown in the panel
+    }
+  } catch {
+    toast.error(t('users.toasts.linkError'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function emailActivationLink(): Promise<void> {
+  const d = draft.value;
+  if (!d?.id) return;
+  busy.value = true;
+  try {
+    const { data } = await client.post<{ sentTo: string; expiresAt: string }>(`/users/${d.id}/activation-email`);
+    issuedLink.value = ''; // a link shown earlier was just replaced — it no longer works
+    d.activationExpiresAt = data.expiresAt;
+    syncRow(d.id, { activationExpiresAt: data.expiresAt });
+    toast.success(t('users.toasts.linkSent', { email: data.sentTo }));
+  } catch (e) {
+    toast.error(apiError(e, t('users.toasts.sendError')));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function activateNow(): Promise<void> {
+  const d = draft.value;
+  if (!d?.id) return;
+  busy.value = true;
+  try {
+    await client.post(`/users/${d.id}/activate`, d.password ? { password: d.password } : {});
+    toast.success(t('users.toasts.activated'));
+    close();
+    await load();
+  } catch (e) {
+    toast.error(apiError(e, t('users.toasts.activateError')));
+  } finally {
+    busy.value = false;
+  }
+}
+
 function roleNames(ids: string[]): string {
   return (
     ids
@@ -100,6 +198,7 @@ const lastOpenedId = ref<string | null>(null);
 function openEdit(u: SafeUser): void {
   lastOpenedId.value = u.id;
   draft.value = { ...JSON.parse(JSON.stringify(u)), password: '' };
+  issuedLink.value = '';
   isNew.value = false;
   confirmDelete.value = false;
 }
@@ -141,7 +240,8 @@ async function save(): Promise<void> {
       toast.success(t('users.toasts.created'));
     } else {
       await client.put(`/users/${d.id}`, d);
-      toast.success(t('users.toasts.updated'));
+      // A password saved for a pending account activates it (the server does that).
+      toast.success(d.isDisabled && d.password ? t('users.toasts.activated') : t('users.toasts.updated'));
     }
     close();
     await load();
@@ -175,6 +275,7 @@ async function remove(): Promise<void> {
 }
 
 onMounted(load);
+onMounted(loadIntegrations);
 </script>
 
 <template>
@@ -220,7 +321,16 @@ onMounted(load);
             :data-selected="lastOpenedId === u.id ? 'true' : undefined"
             @click="openEdit(u)"
           >
-            <td class="px-5 py-3 text-sm font-semibold text-ink">{{ u.name }}</td>
+            <td class="px-5 py-3 text-sm font-semibold text-ink">
+              {{ u.name }}
+              <span
+                v-if="u.isDisabled"
+                class="pill pill-col ml-2 bg-amber-100 text-amber-700"
+                data-testid="user-pending-badge"
+              >
+                <Clock class="h-3 w-3" /> {{ linkExpired(u) ? t('users.linkExpired') : t('users.pending') }}
+              </span>
+            </td>
             <td class="px-5 py-3 font-mono text-xs text-ink-muted">{{ u.email }}</td>
             <td class="hidden px-5 py-3 font-mono text-xs text-ink-light lg:table-cell">
               {{ orgUnitName(u.orgUnitId) }}
@@ -281,6 +391,9 @@ onMounted(load);
           <label class="flex flex-col gap-1">
             <span class="form-label">{{ isNew ? t('users.passwordNew') : t('users.passwordEdit') }}</span>
             <PasswordInput v-model="draft.password" autocomplete="new-password" />
+            <span v-if="!isNew && draft.isDisabled" class="font-mono text-[11px] text-amber-700">
+              {{ t('users.passwordActivates') }}
+            </span>
           </label>
 
           <label class="flex flex-col gap-1">
@@ -290,6 +403,63 @@ onMounted(load);
             </select>
           </label>
           </div>
+
+          <!-- Pending activation: the account cannot sign in yet. Copy or email a NEW link (the old one
+               dies), or enable the account directly. -->
+          <section
+            v-if="!isNew && draft.isDisabled"
+            class="rounded-lg border border-amber-200 bg-amber-50 p-4"
+            data-testid="pending-panel"
+          >
+            <div class="flex items-center gap-2 text-sm font-semibold text-amber-800">
+              <Clock class="h-4 w-4" /> {{ t('users.pendingTitle') }}
+            </div>
+            <p class="mt-1 font-mono text-xs text-amber-800">
+              {{ t('users.pendingText') }}
+              {{
+                !draft.activationExpiresAt
+                  ? t('users.pendingNoLink')
+                  : linkExpired(draft)
+                    ? t('users.pendingLinkExpired', { date: formatDate(draft.activationExpiresAt) })
+                    : t('users.pendingLinkValid', { date: formatDate(draft.activationExpiresAt) })
+              }}
+            </p>
+            <p class="mt-1 font-mono text-[11px] text-amber-700">{{ t('users.pendingRevokeNote') }}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button class="btn-ghost btn-sm" :disabled="busy" data-testid="pending-copy-link" @click="copyActivationLink">
+                <Link2 class="h-4 w-4" /> {{ t('users.copyLink') }}
+              </button>
+              <button
+                class="btn-ghost btn-sm"
+                :disabled="busy || !smtpReady"
+                :title="smtpReady ? undefined : t('users.smtpMissing')"
+                data-testid="pending-send-link"
+                @click="emailActivationLink"
+              >
+                <Mail class="h-4 w-4" /> {{ t('users.sendLink') }}
+              </button>
+              <button
+                class="btn-primary btn-sm"
+                :disabled="busy || !canActivate"
+                data-testid="pending-activate"
+                @click="activateNow"
+              >
+                <UserCheck class="h-4 w-4" /> {{ t('users.activateNow') }}
+              </button>
+            </div>
+            <p v-if="!smtpReady" class="mt-2 font-mono text-[11px] text-ink-light">{{ t('users.smtpMissing') }}</p>
+            <p class="mt-1 font-mono text-[11px] text-ink-light" data-testid="pending-activate-hint">{{ activateHint }}</p>
+            <label v-if="issuedLink" class="mt-3 flex flex-col gap-1">
+              <span class="form-label">{{ t('users.linkLabel') }}</span>
+              <input
+                :value="issuedLink"
+                readonly
+                class="bg-input font-mono text-xs"
+                data-testid="pending-link"
+                @focus="($event.target as HTMLInputElement).select()"
+              />
+            </label>
+          </section>
 
           <div class="flex gap-4">
             <label class="flex items-center gap-2 font-mono text-sm text-ink-muted">

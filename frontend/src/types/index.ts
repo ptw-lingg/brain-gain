@@ -198,6 +198,7 @@ export interface SafeUser {
   isHead?: boolean; // derived: true when this user heads at least one org unit (drives "My Team")
   hasPassword?: boolean; // derived: whether a local password exists (drives the signature dialog)
   isDisabled?: boolean; // true while an imported account is pending activation (cannot sign in)
+  activationExpiresAt?: string; // ISO — when the pending account's activation link stops working
   // Persisted profile locale (UI language, en/de); absent until the user first picks a language.
   // Applied at sign-in and used as the default material language in a training session.
   locale?: string;

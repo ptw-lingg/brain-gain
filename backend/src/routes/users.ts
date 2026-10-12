@@ -1,8 +1,11 @@
 import { asyncRouter } from '../middleware/asyncRouter';
 import bcrypt from 'bcryptjs';
-import { randomBytes, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import type { JobRole, OrgUnit, User } from '../types';
-import { readStore, transaction, updateStore, writeStore } from '../services/fileStore';
+import { readSettings, readStore, transaction, updateStore, writeStore } from '../services/fileStore';
+import { issueActivation, markActivated } from '../services/activation';
+import { MailError, isSmtpConfigured, sendMail } from '../services/mail';
+import { isEntraConfigured } from '../services/entra';
 import { authenticate, requireAdmin, type AuthRequest } from '../middleware/auth';
 import { rootOrgUnitId } from '../services/orgUnits';
 import { auditEvent, diffEntities, labelIdList } from '../services/audit';
@@ -14,10 +17,14 @@ const router = asyncRouter();
 
 router.use(authenticate, requireAdmin);
 
+// The admin's view of a user: SafeUser plus whether a local password exists — the pending-activation
+// panel needs it to tell whether "Activate now" can keep the account's current password.
+const adminUser = (u: User) => ({ ...toSafeUser(u), hasPassword: Boolean(u.passwordHash) });
+
 // GET /api/users
 router.get('/', async (_req, res) => {
   const users = await readStore<User>('users');
-  res.json(users.map(toSafeUser));
+  res.json(users.map(adminUser));
 });
 
 // GET /api/users/:id
@@ -25,19 +32,121 @@ router.get('/:id', async (req, res) => {
   const users = await readStore<User>('users');
   const user = users.find((u) => u.id === req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found' });
-  return res.json(toSafeUser(user));
+  return res.json(adminUser(user));
 });
 
-// GET /api/users/:id/activation — admin re-fetches the one-time activation token for a still-pending
-// user (disabled, no password yet), so a lost link can be re-handed-out without recreating the account.
-router.get('/:id/activation', async (req, res) => {
-  const users = await readStore<User>('users');
-  const user = users.find((u) => u.id === req.params.id);
-  if (!user) return res.status(404).json({ error: 'Not found' });
-  if (!user.isDisabled || user.passwordHash || !user.activationToken) {
-    return res.status(409).json({ error: 'This account is not pending activation' });
+// ── Pending activation (SR-193 / SR-194) ─────────────────────────────────────────────────────────
+// A disabled account is "pending activation". The admin can hand out a new link, email it (SMTP), or
+// enable the account directly. Every new link replaces — and so revokes — the previous one.
+
+const NOT_PENDING = 'This account is not pending activation';
+
+/** The origin users reach the app at — the base of an emailed link (APP_ORIGIN behind a proxy/Vite). */
+function publicOrigin(req: AuthRequest): string {
+  return (process.env.APP_ORIGIN ?? `https://${req.headers.host ?? 'localhost'}`).replace(/\/+$/, '');
+}
+
+/** Issue a new link for a pending account under the store lock. */
+async function rotateActivation(
+  id: string,
+): Promise<{ status: number; error: string } | { user: User; token: string; expiresAt: string }> {
+  return transaction(async () => {
+    const users = await readStore<User>('users');
+    const user = users.find((u) => u.id === id);
+    if (!user) return { status: 404, error: 'Not found' };
+    if (!user.isDisabled) return { status: 409, error: NOT_PENDING };
+    const { token, expiresAt } = issueActivation(user);
+    await writeStore('users', users);
+    return { user, token, expiresAt };
+  });
+}
+
+// POST /api/users/:id/activation-link — a NEW one-time link for a pending account, to copy and hand
+// out (works without SMTP). The token is returned to the admin only; the previous link stops working.
+router.post('/:id/activation-link', async (req: AuthRequest, res) => {
+  const out = await rotateActivation(req.params.id);
+  if ('error' in out) return res.status(out.status).json({ error: out.error });
+  await auditEvent(req.user ?? null, 'update', { type: 'user', id: out.user.id, name: out.user.email }, {
+    details: `activation link issued (valid until ${out.expiresAt.slice(0, 10)})`,
+  });
+  return res.json({ activationToken: out.token, expiresAt: out.expiresAt });
+});
+
+// POST /api/users/:id/activation-email — email a NEW link to the pending account's address. 503 when
+// SMTP is not configured (nothing changes then); 502 when the server refused the message (the link was
+// already rotated — copy it instead). The token never appears in the response.
+router.post('/:id/activation-email', async (req: AuthRequest, res) => {
+  const settings = await readSettings();
+  if (!isSmtpConfigured(settings)) {
+    return res.status(503).json({ error: 'Email is not configured. Copy the activation link instead.' });
   }
-  return res.json({ activationToken: user.activationToken });
+  const out = await rotateActivation(req.params.id);
+  if ('error' in out) return res.status(out.status).json({ error: out.error });
+  const link = `${publicOrigin(req)}/activate?token=${out.token}`;
+  const until = new Date(out.expiresAt);
+  const company = settings.companyName?.trim() || 'BrainGain';
+  try {
+    await sendMail(settings, {
+      to: [out.user.email],
+      subject: `BrainGain: Konto aktivieren / Activate your account`,
+      text: [
+        `Hallo ${out.user.name},`,
+        '',
+        `für Sie wurde ein BrainGain-Konto bei ${company} angelegt. Öffnen Sie diesen Link und legen Sie ein Passwort fest:`,
+        link,
+        `Der Link ist gültig bis ${until.toLocaleDateString('de-DE')} und kann nur einmal verwendet werden.`,
+        '',
+        '---',
+        '',
+        `Hello ${out.user.name},`,
+        '',
+        `a BrainGain account has been created for you at ${company}. Open this link and choose a password:`,
+        link,
+        `The link is valid until ${out.expiresAt.slice(0, 10)} and can be used only once.`,
+      ].join('\n'),
+    });
+  } catch (err) {
+    if (!(err instanceof MailError)) console.error('Activation email error:', err);
+    return res.status(502).json({ error: 'The email could not be sent. Check the SMTP settings or copy the link instead.' });
+  }
+  await auditEvent(req.user ?? null, 'update', { type: 'user', id: out.user.id, name: out.user.email }, {
+    details: `activation link emailed (valid until ${out.expiresAt.slice(0, 10)})`,
+  });
+  return res.json({ sentTo: out.user.email, expiresAt: out.expiresAt });
+});
+
+// POST /api/users/:id/activate { password? } — the admin enables a pending account directly. With a
+// password (≥ 8 chars) it becomes the account's password; without one the account keeps the password
+// it already has, or — when it has none — signs in with Microsoft, which must then be configured.
+router.post('/:id/activate', async (req: AuthRequest, res) => {
+  const { password } = req.body ?? {};
+  if (password !== undefined && password !== '' && (typeof password !== 'string' || password.length < 8)) {
+    return res.status(400).json({ error: 'The password must be at least 8 characters' });
+  }
+  const newHash = typeof password === 'string' && password ? await bcrypt.hash(password, 10) : undefined;
+  const ssoReady = isEntraConfigured(await readSettings());
+  const outcome = await transaction(async (): Promise<{ status: number; error: string } | { user: User }> => {
+    const users = await readStore<User>('users');
+    const user = users.find((u) => u.id === req.params.id);
+    if (!user) return { status: 404, error: 'Not found' };
+    if (!user.isDisabled) return { status: 409, error: NOT_PENDING };
+    if (!newHash && !user.passwordHash && !ssoReady) {
+      return {
+        status: 400,
+        error: 'Set a password: this account has none and Microsoft sign-in is not configured',
+      };
+    }
+    if (newHash) user.passwordHash = newHash;
+    markActivated(user);
+    await writeStore('users', users);
+    return { user };
+  });
+  if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
+  const { user } = outcome;
+  await auditEvent(req.user ?? null, 'activate', { type: 'user', id: user.id, name: user.email }, {
+    details: newHash ? 'activated by an administrator (password set)' : 'activated by an administrator',
+  });
+  return res.json(adminUser(user));
 });
 
 // POST /api/users  — admin creates a user
@@ -138,6 +247,7 @@ router.post('/import', async (req: AuthRequest, res) => {
       orgUnit?: { from: string; to: string };
     };
     activationToken?: string; // set only on a committed create
+    activationExpiresAt?: string; // ISO — when that link stops working
   };
 
   const plan: PlanRow[] = rawRows.map((raw, index) => {
@@ -210,7 +320,6 @@ router.post('/import', async (req: AuthRequest, res) => {
     let dirty = false;
     for (const row of plan) {
       if (row.action === 'create') {
-        const token = randomBytes(32).toString('base64url');
         const created: User = {
           id: randomUUID(),
           email: row.email,
@@ -220,11 +329,12 @@ router.post('/import', async (req: AuthRequest, res) => {
           isAdmin: false,
           isTrainer: false,
           isDisabled: true,
-          activationToken: token,
           createdAt: now,
         };
+        const { token, expiresAt } = issueActivation(created);
         users.push(created);
         row.activationToken = token; // returned once, to the admin who imported
+        row.activationExpiresAt = expiresAt;
         dirty = true;
         auditQueue.push(() =>
           auditEvent(req.user ?? null, 'create', { type: 'user', id: created.id, name: created.email }, { details: 'imported' }),
@@ -291,6 +401,9 @@ router.put('/:id', async (req: AuthRequest, res) => {
         isTrainer: typeof isTrainer === 'boolean' ? isTrainer : current.isTrainer,
         passwordHash: newHash ?? current.passwordHash,
       };
+      // Setting a password for a pending account IS activating it — before 1.5.0 the password was
+      // stored but the account stayed disabled, and its link died with it (no way back in).
+      if (newHash && updated.isDisabled) markActivated(updated);
       users[idx] = updated;
       await writeStore('users', users);
       return { current, updated };
@@ -302,7 +415,12 @@ router.put('/:id', async (req: AuthRequest, res) => {
   const roles = await readStore<JobRole>('roles');
   const changes = labelIdList(diffEntities(current, updated), 'roleIds', (id) => roles.find((r) => r.id === id)?.name);
   await auditEvent(req.user ?? null, 'update', { type: 'user', id: updated.id, name: updated.email }, { changes });
-  return res.json(toSafeUser(updated));
+  if (current.isDisabled && !updated.isDisabled) {
+    await auditEvent(req.user ?? null, 'activate', { type: 'user', id: updated.id, name: updated.email }, {
+      details: 'activated by an administrator (password set)',
+    });
+  }
+  return res.json(adminUser(updated));
 });
 
 // DELETE /api/users/:id

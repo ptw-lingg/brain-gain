@@ -375,6 +375,7 @@ onMounted(loadRoles);
             <p class="mt-0.5 font-mono text-xs text-ink-light">
               {{ t('usersImport.activationSubtitle') }}
             </p>
+            <p class="mt-0.5 font-mono text-xs text-ink-light">{{ t('usersImport.activationExpiry') }}</p>
           </div>
           <button class="btn-ghost" @click="copyAllLinks"><Copy class="h-4 w-4" /> {{ t('usersImport.copyAllLinks') }}</button>
         </div>

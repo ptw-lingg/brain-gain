@@ -7,6 +7,7 @@ import { UI_LOCALES } from '../services/locales';
 import { rootOrgUnitId } from '../services/orgUnits';
 import { authenticate, requireAdmin, signToken, type AuthRequest } from '../middleware/auth';
 import { auditEvent } from '../services/audit';
+import { activationLinkState, findByActivationToken, markActivated } from '../services/activation';
 import {
   EntraAuthError,
   authority,
@@ -73,15 +74,18 @@ router.post('/login', async (req, res) => {
   return res.json({ token, user: await identityUser(user) });
 });
 
+const LINK_INVALID = 'This activation link is invalid or has already been used';
+const LINK_EXPIRED = 'This activation link has expired. Ask your administrator for a new one.';
+
 // GET /api/auth/activate/:token  — public: validate a pending-account activation link and return the
 // minimal identity the activation page shows ("Set a password for {email}"). No secret leaves here.
+// An expired link answers 410 { code: 'expired' } so the page can say so instead of "invalid".
 router.get('/activate/:token', async (req, res) => {
   const users = await readStore<User>('users');
-  const user = users.find((u) => !!u.activationToken && u.activationToken === req.params.token);
-  // Only a still-pending account (disabled, no password) has a live link.
-  if (!user || !user.isDisabled || user.passwordHash) {
-    return res.status(404).json({ error: 'This activation link is invalid or has already been used' });
-  }
+  const user = findByActivationToken(users, req.params.token);
+  const state = activationLinkState(user);
+  if (state === 'expired') return res.status(410).json({ error: LINK_EXPIRED, code: 'expired' });
+  if (state !== 'live' || !user) return res.status(404).json({ error: LINK_INVALID });
   return res.json({ email: user.email, name: user.name });
 });
 
@@ -97,19 +101,22 @@ router.post('/activate', async (req, res) => {
   // Hash BEFORE taking the store lock: bcrypt takes ~100 ms and does not depend on store state.
   const passwordHash = await bcrypt.hash(password, 10);
   let user: User | undefined;
+  // Widened on purpose: assigned inside the callback, so TS must not narrow it to the initializer.
+  let state = 'invalid' as ReturnType<typeof activationLinkState>;
   await updateStore<User>('users', (users) => {
-    const idx = users.findIndex((u) => !!u.activationToken && u.activationToken === token);
-    const found = idx === -1 ? undefined : users[idx];
-    // A spent or bogus token (or an already-active account) fails with the same generic message.
-    if (!found || !found.isDisabled || found.passwordHash) return null;
+    const found = findByActivationToken(users, token);
+    state = activationLinkState(found);
+    // A spent, bogus, replaced or expired token (or an already-active account) changes nothing.
+    if (state !== 'live' || !found) return null;
     found.passwordHash = passwordHash;
-    found.isDisabled = false;
-    delete found.activationToken;
+    markActivated(found);
     user = found;
     return users;
   });
   if (!user) {
-    return res.status(400).json({ error: 'This activation link is invalid or has already been used' });
+    return state === 'expired'
+      ? res.status(410).json({ error: LINK_EXPIRED, code: 'expired' })
+      : res.status(400).json({ error: LINK_INVALID });
   }
   await auditEvent(asActor(user), 'activate', { type: 'auth', id: user.id, name: user.email });
 

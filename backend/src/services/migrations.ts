@@ -16,6 +16,7 @@ import { migrateQuestions } from './questions';
 import { migrateDurations, migrateMaterials, migrateTrainingTexts } from './materials';
 import { migrateTrainingVersions, pruneUpdateAcks } from './updates';
 import { migrateTrainingOrder } from './training';
+import { migrateActivations } from './activation';
 import { transaction } from './fileStore';
 import { gcScorm } from './scorm/packages';
 import { migrateScormThumbnails } from './scorm/thumbnail';
@@ -48,6 +49,9 @@ export async function runDataMigrations(opts: RunDataMigrationsOptions = {}): Pr
     await migrateTrainingVersions();
     await migrateTrainingOrder();
     await pruneUpdateAcks();
+    // Activation links issued before they expired get an expiry; dead links of disabled accounts
+    // that already hold a password are dropped (services/activation.ts).
+    await migrateActivations();
     // Packages imported before the cover-candidate field existed get scanned on disk once.
     await migrateScormThumbnails();
     // Not a migration in the strict sense, but the same trigger points are exactly right: boot, and

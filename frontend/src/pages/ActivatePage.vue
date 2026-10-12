@@ -19,6 +19,7 @@ const token = String(route.query.token ?? '');
 const checking = ref(true); // validating the link on mount
 const accountEmail = ref('');
 const linkValid = ref(false);
+const linkExpired = ref(false); // 410 { code: 'expired' } — say so, instead of "invalid"
 
 const password = ref('');
 const confirm = ref('');
@@ -36,8 +37,9 @@ onMounted(async () => {
     );
     accountEmail.value = data.email;
     linkValid.value = true;
-  } catch {
+  } catch (e: unknown) {
     linkValid.value = false;
+    linkExpired.value = axios.isAxiosError(e) && e.response?.status === 410;
   } finally {
     checking.value = false;
   }
@@ -85,8 +87,8 @@ async function submit(): Promise<void> {
       </div>
 
       <div v-else-if="!linkValid" class="mt-8 text-center">
-        <p class="font-mono text-sm text-rose-600">
-          {{ t('activate.invalidLink') }}
+        <p class="font-mono text-sm text-rose-600" data-testid="activate-link-error">
+          {{ linkExpired ? t('activate.expiredLink') : t('activate.invalidLink') }}
         </p>
         <RouterLink to="/login" class="btn-ghost mt-4 inline-flex">{{ t('activate.backToSignIn') }}</RouterLink>
       </div>

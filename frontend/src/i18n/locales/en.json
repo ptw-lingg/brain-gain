@@ -70,7 +70,8 @@
     "submitting": "Activating…",
     "errorShort": "Password must be at least 8 characters",
     "errorMismatch": "Passwords do not match",
-    "errorActivate": "Could not activate your account"
+    "errorActivate": "Could not activate your account",
+    "expiredLink": "This activation link has expired. Ask your administrator for a new one."
   },
   "dashboard": {
     "greetingMorning": "Good morning, {name}",
@@ -465,8 +466,33 @@
       "saveError": "Could not save user",
       "impersonateError": "Could not view as this user",
       "deleted": "User deleted",
-      "deleteError": "Could not delete user"
-    }
+      "deleteError": "Could not delete user",
+      "linkCopied": "New activation link copied",
+      "linkCreated": "New activation link created — copy it below",
+      "linkError": "Could not create an activation link",
+      "linkSent": "Activation email sent to {email}",
+      "sendError": "The email could not be sent — copy the link instead",
+      "activated": "Account activated",
+      "activateError": "Could not activate the account"
+    },
+    "pending": "pending activation",
+    "linkExpired": "link expired",
+    "pendingTitle": "Pending activation",
+    "pendingText": "This account cannot sign in until it is activated.",
+    "pendingLinkValid": "The current activation link is valid until {date}.",
+    "pendingLinkExpired": "The activation link expired on {date}.",
+    "pendingNoLink": "There is no valid activation link.",
+    "pendingRevokeNote": "Copying or emailing creates a new link, valid for 14 days. The previous link stops working.",
+    "copyLink": "Copy activation link",
+    "sendLink": "Send by email",
+    "smtpMissing": "Email is not configured — copy the link and send it yourself.",
+    "activateNow": "Activate now",
+    "activateHintPassword": "Activate now uses the password entered above.",
+    "activateHintKeep": "Activate now keeps the account's current password.",
+    "activateHintSso": "Without a password, the user signs in with Microsoft.",
+    "activateHintNeedPassword": "Enter a password above to activate the account.",
+    "passwordActivates": "Saving a password activates this account.",
+    "linkLabel": "Activation link"
   },
   "usersImport": {
     "back": "Users",
@@ -518,7 +544,8 @@
       "importError": "Could not import users",
       "copied": "{label} copied",
       "copyError": "Could not copy to clipboard"
-    }
+    },
+    "activationExpiry": "Links are valid for 14 days. You can issue a new one from the user's page at any time."
   },
   "settings": {
     "title": "Settings",
