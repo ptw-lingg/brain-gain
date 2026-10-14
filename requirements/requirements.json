@@ -2,7 +2,7 @@
   "$schema": "./schema/requirements.schema.json",
   "meta": {
     "project": "BrainGain",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "updated": "2026-10-14",
     "description": "Canonical, machine-readable requirements for BrainGain — the single source of truth and the single file handed off to the standalone VeriTrace viewer (which renders the catalog and the controlled documents). BrainGain has no in-app requirements page. Edit here, then run requirements/tools/build.mjs (rebuild catalog + coverage) and sync-tests.mjs (embed live results under testRun).",
     "coverage": {
@@ -796,6 +796,7 @@
     {"id":"TC-58f354e6ec","name":"SYS-UPD-07 / VT-183: PUT stages content while metadata goes live; content equal to published clears the draft; an unchanged draft keeps its savedAt","kind":"backend","file":"backend/tests/training-drafts.test.mjs","covers":["SYS-UPD-07","VT-183"]},
     {"id":"TC-594d3c882b","name":"SYS-TRN-09 / VT-040: cycle and window controls are editable in the training form","kind":"e2e","file":"frontend/e2e/trainings.spec.ts","covers":["SYS-TRN-09","VT-040"]},
     {"id":"TC-59933c6bab","name":"SYS-TRN-14 / SR-149 / VT-149: a trainer switches an existing question to single choice and the radio key persists","kind":"e2e","file":"frontend/e2e/questions-single.spec.ts","covers":["SYS-TRN-14","SR-149","VT-149"]},
+    {"id":"TC-59bb6828aa","name":"SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response in the fragment is relayed by the bridge instead of booting the app","kind":"e2e","file":"frontend/e2e/sso-popup-bridge.spec.ts","covers":["SYS-SSO-10","VT-006"]},
     {"id":"TC-5a1e34ce2b","name":"SYS-UI-03 — PTW logo renders cleanly at 32/48/256 px (visual)","kind":"manual","covers":["SYS-UI-03"],"manual":{"steps":["Render the logo at 32, 48 and 256 px (light variant) and on the black app bar (white variant).","Confirm the red triangle and PTW lettering stay crisp and legible."],"expected":"The PTW logo renders cleanly and recognizably at all sizes, on light and dark surfaces.","rationale":"Visual crispness of an SVG across sizes is a design judgement."}},
     {"id":"TC-5ab18b5a56","name":"SYS-DATA-11 / VT-154: a variant holds exactly one content — an uploaded file wins over a url","kind":"backend","file":"backend/tests/materials-locale.test.mjs","covers":["SYS-DATA-11","VT-154"]},
     {"id":"TC-5bbe135287","name":"SYS-SSO-03 / VT-007: once configured, POST /api/auth/sso/entra returns 400 when idToken is missing/invalid","kind":"backend","file":"backend/tests/sso.test.mjs","covers":["SYS-SSO-03","VT-007"]},
@@ -1009,7 +1010,6 @@
     {"id":"TC-b6068b8983","name":"SYS-SCO-12 / SR-181 / VT-207: the app origin sends a strict CSP and refuses to be framed","kind":"e2e","file":"frontend/e2e/scorm-isolation.spec.ts","covers":["SYS-SCO-12","SR-181","VT-207"]},
     {"id":"TC-b63efd9484","name":"SYS-TRN-07 / VT-047: order set via reorder is respected on /trainings/mine for the member","kind":"backend","file":"backend/tests/trainings.test.mjs","covers":["SYS-TRN-07","VT-047"]},
     {"id":"TC-b650381351","name":"SYS-BAK-07 / SR-140 / VT-140: every JSON store on disk is in the archive — a new store cannot be silently omitted","kind":"backend","file":"backend/tests/backup.test.mjs","covers":["SYS-BAK-07","SR-140","VT-140"]},
-    {"id":"TC-b6959b4c41","name":"SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response (${where}) is relayed by the bridge instead of booting the app","kind":"e2e","file":"frontend/e2e/sso-popup-bridge.spec.ts","covers":["SYS-SSO-10","VT-006"]},
     {"id":"TC-b7f75ef8e9","name":"SYS-MAIL-01: POST /api/mail/test returns 503 while SMTP is disabled","kind":"backend","file":"backend/tests/mail.test.mjs","covers":["SYS-MAIL-01"]},
     {"id":"TC-b8014dfcac","name":"SYS-DATA-11: link variants are sanitized — junk coerced, empty and unknown-locale variants dropped","kind":"backend","file":"backend/tests/trainings.test.mjs","covers":["SYS-DATA-11"]},
     {"id":"TC-b81e51d153","name":"SYS-AC-01: /api/users without a token returns 401, not 403 (authenticate runs first)","kind":"backend","file":"backend/tests/auth.test.mjs","covers":["SYS-AC-01"]},
@@ -1062,6 +1062,7 @@
     {"id":"TC-c9e77d7c18","name":"SYS-UI-07 / VT-U12 / SR-095: expandable lists start collapsed and open one entry at a time","kind":"e2e","file":"frontend/e2e/list-controls.spec.ts","covers":["SYS-UI-07","VT-U12","SR-095"]},
     {"id":"TC-cb4e14c74e","name":"SYS-TRN-13 / VT-U14: a newly added question is expanded so it can be filled in straight away","kind":"e2e","file":"frontend/e2e/trainings.spec.ts","covers":["SYS-TRN-13","VT-U14"]},
     {"id":"TC-cb906cce05","name":"SYS-VER-07 / SR-189 / VT-223: a data directory written by a newer version refuses to boot and names both versions","kind":"backend","file":"backend/tests/versioning.test.mjs","covers":["SYS-VER-07","SR-189","VT-223"]},
+    {"id":"TC-cd736e6ba0","name":"SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response in the query is relayed by the bridge instead of booting the app","kind":"e2e","file":"frontend/e2e/sso-popup-bridge.spec.ts","covers":["SYS-SSO-10","VT-006"]},
     {"id":"TC-cd96854280","name":"SYS-DOC-01 — build.mjs writes testCases catalog + meta.coverage (build-check)","kind":"manual","covers":["SYS-DOC-01"],"manual":{"steps":["Run node requirements/tools/build.mjs then --check.","Confirm testCases[] + meta.coverage are written to requirements.json, and --check fails on drift."],"expected":"build.mjs produces the catalog + coverage in requirements.json and --check detects drift.","rationale":"This is a build-tooling output check, not application behavior."}},
     {"id":"TC-ce64883906","name":"SYS-SES-12 / SR-173 / VT-187: a test-less training completes through the signed empty grading","kind":"backend","file":"backend/tests/completion-signature.test.mjs","covers":["SYS-SES-12","SR-173","VT-187"]},
     {"id":"TC-cf71eb6d11","name":"SYS-DOC-08 — sync-tests.mjs embeds per-test pass/fail/skip + run date under testRun (build-check)","kind":"manual","covers":["SYS-DOC-08"],"manual":{"steps":["Run node requirements/tools/sync-tests.mjs.","Confirm requirements.json gains a testRun block with ranAt, a summary (total/passed/failed/skipped), and per-test-case results; build.mjs --check then passes it through unchanged."],"expected":"sync-tests.mjs runs the suites and embeds per-test results plus a run date under testRun.","rationale":"This is a build-tooling output check, not application behavior."}},
@@ -1170,14 +1171,14 @@
     {"id":"TC-ffd55f864f","name":"SYS-SSO-03 / VT-007: POST /api/auth/sso/entra returns 503 when SSO is unconfigured","kind":"backend","file":"backend/tests/sso.test.mjs","covers":["SYS-SSO-03","VT-007"]}
   ],
   "testRun": {
-    "ranAt": "2026-10-12T11:46:26.082Z",
+    "ranAt": "2026-10-14T13:38:26.882Z",
     "summary": {
-      "total": 548,
-      "passed": 548,
+      "total": 552,
+      "passed": 552,
       "failed": 0,
       "skipped": 0,
       "backend": 406,
-      "e2e": 142
+      "e2e": 146
     },
     "results": {
       "TC-09ad08ee9d": "pass",
@@ -1678,6 +1679,10 @@
       "TC-70e8b9924e": "pass",
       "TC-b17cd0bfc4": "pass",
       "TC-04ad619cf0": "pass",
+      "TC-cd736e6ba0": "pass",
+      "TC-59bb6828aa": "pass",
+      "TC-34f00b70b4": "pass",
+      "TC-34ea4c413b": "pass",
       "TC-dc23e6d7e8": "pass",
       "TC-35a86bfbb6": "pass",
       "TC-29c07b8124": "pass",

@@ -10,6 +10,22 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.5.1] — 2026-10-14
+
+### Fixed
+- **Microsoft sign-in never completed.** The sign-in popup returns to BrainGain with Microsoft's answer in
+  the address; since msal-browser 4 that page has to pass the answer back to the main window itself. BrainGain
+  started inside the popup instead, its router sent the popup to the login page and the answer was lost — the
+  popup kept showing the login page. This affected both "Sign in with Microsoft" and the Microsoft
+  re-confirmation when signing off a completed training. A page carrying a sign-in answer now relays it and
+  closes instead of starting the app (SYS-SSO-10; same fix as MyDesk and SnagTag).
+- **Clearer Microsoft sign-in errors.** A failure on Microsoft's side now shows its AADSTS code on the login
+  page and in the sign-off message instead of a bare "failed", and closing the popup is no longer reported
+  as an error when signing off a training.
+
+### Data migrations
+- none
+
 ## [1.5.0] — 2026-10-12
 
 ### Added
