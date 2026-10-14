@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // Microsoft sign-in (msal-browser 5): the popup returns to the app's origin with the authorisation
 // response in the URL, and that page must relay it to the main window through MSAL's redirect bridge
@@ -10,19 +10,25 @@ import { test, expect } from '@playwright/test';
 // response-shaped URL whose state no MSAL instance issued. What must hold: the app does NOT boot
 // (no redirect to /login, no login form), and the bridge's refusal is said in words.
 
-test.describe('Microsoft sign-in popup bridge', () => {
-  for (const where of ['query', 'fragment'] as const) {
-    test(`SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response (${where}) is relayed by the bridge instead of booting the app`, async ({ page }) => {
-      const response = 'code=not-a-real-code&state=not-a-real-state';
-      await page.goto(where === 'query' ? `/?${response}` : `/#${response}`);
+/** Open the page the popup lands on with a response-shaped URL; assert the bridge ran, not the app. */
+async function expectRelayedNotBooted(page: Page, url: string): Promise<void> {
+  await page.goto(url);
+  // The bridge rejects a state it never issued — and says so, instead of a blank page.
+  await expect(page.locator('body')).toContainText('Microsoft sign-in could not be completed');
+  // The app did not boot: no router redirect to /login, no sign-in form.
+  expect(new URL(page.url()).pathname).toBe('/');
+  await expect(page.locator('input[type="email"]')).toHaveCount(0);
+}
 
-      // The bridge rejects a state it never issued — and says so, instead of a blank page.
-      await expect(page.locator('body')).toContainText('Microsoft sign-in could not be completed');
-      // The app did not boot: no router redirect to /login, no sign-in form.
-      expect(new URL(page.url()).pathname).toBe('/');
-      await expect(page.locator('input[type="email"]')).toHaveCount(0);
-    });
-  }
+// Titles are literal (no template strings): the requirements tooling maps tests by their static title.
+test.describe('Microsoft sign-in popup bridge', () => {
+  test('SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response in the query is relayed by the bridge instead of booting the app', async ({ page }) => {
+    await expectRelayedNotBooted(page, '/?code=not-a-real-code&state=not-a-real-state');
+  });
+
+  test('SYS-SSO-10 / VT-006: a URL carrying a Microsoft auth response in the fragment is relayed by the bridge instead of booting the app', async ({ page }) => {
+    await expectRelayedNotBooted(page, '/#code=not-a-real-code&state=not-a-real-state');
+  });
 
   test('SYS-SSO-10: without an auth response the app boots as usual', async ({ page }) => {
     await page.goto('/');
