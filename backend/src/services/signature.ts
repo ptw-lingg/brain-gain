@@ -71,8 +71,11 @@ export async function verifyCompletionSignature(
     const payload = jwt.decode(r.entraIdToken);
     const iat =
       payload && typeof payload === 'object' && typeof payload.iat === 'number' ? payload.iat : 0;
-    if (!iat || Date.now() / 1000 - iat > MAX_TOKEN_AGE_SEC) {
-      return { ok: false, reason: 'stale Microsoft sign-in' };
+    const ageSec = Math.round(Date.now() / 1000 - iat);
+    if (!iat || ageSec > MAX_TOKEN_AGE_SEC) {
+      // The age is diagnostic: a token judged stale seconds after an interactive login points at a
+      // server clock running ahead, not at a cached token.
+      return { ok: false, reason: iat ? `stale Microsoft sign-in (issued ${ageSec} s ago, limit ${MAX_TOKEN_AGE_SEC} s)` : 'stale Microsoft sign-in (no iat)' };
     }
     return linkEntraOid ? { ok: true, method: 'microsoft', linkEntraOid } : { ok: true, method: 'microsoft' };
   }

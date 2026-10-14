@@ -10,6 +10,21 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.5.2] — 2026-10-14
+
+### Fixed
+- **Confirming a completed training with Microsoft failed for password accounts.** The confirmation
+  demanded that the Microsoft account was already linked to the BrainGain account, but that link is only
+  created by signing *in* with Microsoft. Anyone who signed in with their password and then chose
+  "Confirm with Microsoft" was told their credentials were not correct. The first Microsoft confirmation
+  is now accepted when the Microsoft email is the account's own email (the same rule the Microsoft sign-in
+  uses), links the account at that moment and records the link in the audit trail; from then on only
+  that Microsoft account confirms for it. A Microsoft identity already linked to a different account is
+  still refused (SYS-SES-12).
+
+### Data migrations
+- none
+
 ## [1.5.1] — 2026-10-14
 
 ### Fixed
