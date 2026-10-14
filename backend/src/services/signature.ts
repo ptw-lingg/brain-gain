@@ -8,11 +8,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { Settings, User } from '../types';
 import { EntraAuthError, isEntraConfigured, verifyEntraIdToken } from './entra';
+import { consumeSignatureChallenge } from './signatureChallenge';
 
-// A Microsoft re-authentication must be FRESH — MSAL is asked for an interactive login
-// (prompt: 'login'), and a token older than this is refused so a silently reused cached token
-// can never count as a re-confirmation.
-const MAX_TOKEN_AGE_SEC = 300;
+// A Microsoft re-authentication must be FRESH. Freshness is proven by the one-time challenge nonce the
+// token must echo (signatureChallenge.ts) — MSAL is asked for an interactive login (prompt: 'login')
+// with that nonce. The token age is only a loose sanity bound on top: Entra backdates `iat` by up to
+// five minutes, so a strict five-minute window refused every genuinely fresh token.
+const MAX_TOKEN_AGE_SEC = 600;
 
 export type SignatureMethod = 'password' | 'microsoft';
 
@@ -69,6 +71,11 @@ export async function verifyCompletionSignature(
       linkEntraOid = claims.oid;
     }
     const payload = jwt.decode(r.entraIdToken);
+    // The token must echo a challenge this server issued to this user for this confirmation.
+    const nonce = payload && typeof payload === 'object' && typeof payload.nonce === 'string' ? payload.nonce : '';
+    if (!nonce || !consumeSignatureChallenge(nonce, user.id)) {
+      return { ok: false, reason: 'Microsoft sign-in does not answer a current confirmation challenge' };
+    }
     const iat =
       payload && typeof payload === 'object' && typeof payload.iat === 'number' ? payload.iat : 0;
     const ageSec = Math.round(Date.now() / 1000 - iat);

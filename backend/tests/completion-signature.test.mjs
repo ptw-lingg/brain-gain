@@ -38,6 +38,13 @@ const listAudit = (qs) => srv.request('GET', `/api/audit?${qs}`, { token: adminT
 
 const mint = (opts = {}) => idp.mintIdToken({ tenantId: TENANT, clientId: CLIENT, ...opts });
 
+// The one-time nonce a Microsoft confirmation must echo (POST /api/sessions/signature-challenge).
+const challenge = async (token) => {
+  const r = await srv.request('POST', '/api/sessions/signature-challenge', { token });
+  assert.equal(r.status, 200, 'signature challenge issued');
+  return r.body.nonce;
+};
+
 before(async () => {
   idp = await startFakeEntra();
   srv = await startTestServer({ env: { ENTRA_AUTHORITY_BASE: idp.base } });
@@ -162,10 +169,10 @@ test('SYS-SES-12 / SR-173 / VT-187: an SSO-linked account signs with a fresh Mic
   const pw = await grade(quizTraining.id, { answers: [[0]], reauth: { password: 'anything' } }, ssoToken);
   assert.equal(pw.status, 403, 'no local password → the password path is refused');
 
-  // A fresh token bound to the linked oid signs the completion.
+  // A fresh token bound to the linked oid and echoing the challenge signs the completion.
   const fresh = await grade(
     quizTraining.id,
-    { answers: [[0]], reauth: { entraIdToken: mint({ claims: { oid: SSO_OID, email: 'sso.user@braingain.app' } }) } },
+    { answers: [[0]], reauth: { entraIdToken: mint({ claims: { oid: SSO_OID, email: 'sso.user@braingain.app', nonce: await challenge(ssoToken) } }) } },
     ssoToken,
   );
   assert.equal(fresh.status, 200);
@@ -184,14 +191,15 @@ test('SYS-SES-12 / VT-187: a stale or foreign Microsoft token never signs a comp
   });
   const ssoToken = ssoLogin.body.token;
 
-  // Valid but STALE (issued 15 minutes ago, not yet expired): a cached token is not a re-confirmation.
+  // Valid, echoing a live challenge, but STALE (issued 15 minutes ago, not yet expired): refused by
+  // the sanity bound even though the nonce is right.
   const stale = await grade(
     quizTraining.id,
     {
       answers: [[0]],
       reauth: {
         entraIdToken: mint({
-          claims: { oid: SSO_OID, email: 'sso.user@braingain.app', iat: Math.floor(Date.now() / 1000) - 900 },
+          claims: { oid: SSO_OID, email: 'sso.user@braingain.app', nonce: await challenge(ssoToken), iat: Math.floor(Date.now() / 1000) - 900 },
           expiresIn: '30m',
         }),
       },
@@ -199,6 +207,23 @@ test('SYS-SES-12 / VT-187: a stale or foreign Microsoft token never signs a comp
     ssoToken,
   );
   assert.equal(stale.status, 403, 'stale token → refused');
+
+  // Entra backdates `iat` by up to five minutes: a token that LOOKS 6½ minutes old but answers the
+  // challenge is what a genuinely fresh Microsoft login produces — it must sign.
+  const backdated = await grade(
+    quizTraining.id,
+    {
+      answers: [[0]],
+      reauth: {
+        entraIdToken: mint({
+          claims: { oid: SSO_OID, email: 'sso.user@braingain.app', nonce: await challenge(ssoToken), iat: Math.floor(Date.now() / 1000) - 390 },
+          expiresIn: '30m',
+        }),
+      },
+    },
+    ssoToken,
+  );
+  assert.equal(backdated.status, 200, `a token within Entra's backdating allowance signs: ${JSON.stringify(backdated.body)}`);
 
   // Valid and fresh but for a DIFFERENT Microsoft account: someone else's identity never signs.
   const foreign = await grade(
@@ -235,7 +260,7 @@ test('SYS-SES-12 / SR-173 / VT-187: an unlinked password account confirms with M
 
   const first = await grade(
     quizTraining.id,
-    { answers: [[0]], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'Pat.Password@braingain.app' } }) } },
+    { answers: [[0]], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'Pat.Password@braingain.app', nonce: await challenge(pat.token) } }) } },
     pat.token,
   );
   assert.equal(first.status, 200, `first Microsoft confirmation of a password account is accepted: ${JSON.stringify(first.body)}`);
@@ -261,10 +286,48 @@ test('SYS-SES-12 / SR-173 / VT-187: an unlinked password account confirms with M
   // …while the linked one still does.
   const again = await grade(
     noQuizTraining.id,
-    { answers: [], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'pat.password@braingain.app' } }) } },
+    { answers: [], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'pat.password@braingain.app', nonce: await challenge(pat.token) } }) } },
     pat.token,
   );
   assert.equal(again.status, 200, 'the linked Microsoft account keeps signing');
+});
+
+// ───────────────────────── the challenge nonce proves freshness ─────────────────────────
+// The token's timestamps cannot (Entra backdates iat); only a nonce this server issued to this user,
+// unexpired and unused, does. Everything below is a valid, fresh, correctly bound token.
+
+test('SYS-SES-12 / SR-173 / VT-187: a Microsoft token signs only when it echoes a live challenge issued to the acting user — none, a reused one and another user\'s are refused', async () => {
+  const ssoLogin = await srv.request('POST', '/api/auth/sso/entra', {
+    body: { idToken: mint({ claims: { oid: SSO_OID, email: 'sso.user@braingain.app' } }) },
+  });
+  const ssoToken = ssoLogin.body.token;
+  const bound = (nonce) => ({ answers: [], reauth: { entraIdToken: mint({ claims: { oid: SSO_OID, email: 'sso.user@braingain.app', ...(nonce ? { nonce } : {}) } }) } });
+
+  const none = await grade(noQuizTraining.id, bound(undefined), ssoToken);
+  assert.equal(none.status, 403, 'no nonce → refused');
+  const madeUp = await grade(noQuizTraining.id, bound('not-issued-by-the-server'), ssoToken);
+  assert.equal(madeUp.status, 403, 'a nonce the server never issued → refused');
+
+  // Someone else's challenge (the seeded member's) never signs for the SSO user — and trying does
+  // not burn it for its owner.
+  const membersNonce = await challenge(memberToken);
+  const foreign = await grade(noQuizTraining.id, bound(membersNonce), ssoToken);
+  assert.equal(foreign.status, 403, "another user's nonce → refused");
+  const ownerStillHasIt = await grade(noQuizTraining.id, { answers: [], reauth: { password: 'user123' } });
+  assert.equal(ownerStillHasIt.status, 200, '(the member itself is unaffected)');
+
+  // A live nonce signs exactly once.
+  const nonce = await challenge(ssoToken);
+  const first = await grade(noQuizTraining.id, bound(nonce), ssoToken);
+  assert.equal(first.status, 200, 'live nonce → signed');
+  const reuse = await grade(noQuizTraining.id, bound(nonce), ssoToken);
+  assert.equal(reuse.status, 403, 'the same nonce a second time → refused');
+
+  const audit = await listAudit('action=login-failed');
+  assert.ok(
+    audit.body.entries.some((e) => /does not answer a current confirmation challenge/.test(e.details ?? '')),
+    'the missing/foreign-challenge refusal is audited with its reason',
+  );
 });
 
 test('SYS-SES-12 / VT-187: an unlinked account is refused a Microsoft identity with another email, or one already linked to a different user', async () => {

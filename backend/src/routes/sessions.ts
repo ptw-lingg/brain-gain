@@ -5,6 +5,7 @@ import { readStore, readSettings, transaction, updateStore, writeStore } from '.
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { gradeAnswers, isAnswerCorrect } from '../services/questions';
 import { verifyCompletionSignature } from '../services/signature';
+import { issueSignatureChallenge } from '../services/signatureChallenge';
 import { auditEvent } from '../services/audit';
 import { attemptCompletionSatisfied, closeAttempt, commitAttempt, loadAttempt } from '../services/scorm/attempts';
 import { getPackage } from '../services/scorm/packages';
@@ -89,6 +90,14 @@ router.post('/confirm-materials', async (req: AuthRequest, res) => {
 // Every submission requires a completion signature (SR-173): the body carries `reauth` — the
 // ACTING user's password, or a fresh Microsoft ID token for SSO-linked accounts. The verified
 // method is recorded with the completion in the audit trail.
+// POST /api/sessions/signature-challenge — a one-time nonce for a Microsoft completion signature.
+// The browser passes it into the Microsoft login request; /grade accepts an ID token only when it
+// echoes a nonce issued here to the acting user (services/signatureChallenge.ts). Keyed to the ACTING
+// account, so an impersonating admin's challenge cannot sign for the target either.
+router.post('/signature-challenge', (req: AuthRequest, res) => {
+  res.json(issueSignatureChallenge(req.user!.id));
+});
+
 router.post('/grade', async (req: AuthRequest, res) => {
   const { trainingId, answers, scormAttemptId, reauth } = req.body ?? {};
   if (typeof trainingId !== 'string' || (!Array.isArray(answers) && typeof scormAttemptId !== 'string')) {

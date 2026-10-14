@@ -45,12 +45,13 @@ export async function signInWithEntra(config: EntraConfig): Promise<string> {
 
 /**
  * Re-authenticate for a completion signature: FORCE a fresh interactive Microsoft sign-in
- * (prompt: 'login' — no cached session counts) and return the new ID token. The backend verifies
- * it, checks it belongs to the acting account, and refuses stale tokens.
+ * (prompt: 'login' — no cached session counts) carrying the server-issued challenge `nonce`, and
+ * return the new ID token. Microsoft echoes the nonce in the token; the backend accepts the token
+ * only for a challenge it issued to the acting account, once — which is what proves freshness.
  */
-export async function reauthWithEntra(config: EntraConfig): Promise<string> {
+export async function reauthWithEntra(config: EntraConfig, nonce: string): Promise<string> {
   const msal = await getMsal(config);
-  const result = await msal.loginPopup({ scopes: ['openid', 'profile', 'email'], prompt: 'login' });
+  const result = await msal.loginPopup({ scopes: ['openid', 'profile', 'email'], prompt: 'login', nonce });
   return result.idToken;
 }
 

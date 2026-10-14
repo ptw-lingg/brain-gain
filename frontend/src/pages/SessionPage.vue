@@ -266,6 +266,13 @@ async function confirmMaterials(reauth?: Reauth): Promise<void> {
   }
 }
 
+// The one-time nonce the Microsoft re-login must echo so the server can tell it was minted for THIS
+// confirmation (the token's own timestamps cannot prove freshness — see services/signatureChallenge).
+async function signatureChallenge(): Promise<string> {
+  const { data } = await client.post<{ nonce: string }>('/sessions/signature-challenge');
+  return data.nonce;
+}
+
 // A failed Microsoft re-login: a closed popup stays silent (the dialog is still open to retry), a
 // Microsoft-side failure names its AADSTS code, anything else is the generic confirmation failure.
 function reportReauthFailure(e: unknown): void {
@@ -279,7 +286,7 @@ async function confirmWithMicrosoft(): Promise<void> {
   if (!ssoConfig.value) return;
   signing.value = true;
   try {
-    const idToken = await reauthWithEntra(ssoConfig.value);
+    const idToken = await reauthWithEntra(ssoConfig.value, await signatureChallenge());
     await confirmMaterials({ entraIdToken: idToken });
   } catch (e) {
     reportReauthFailure(e);
@@ -447,7 +454,7 @@ async function submitWithMicrosoft(): Promise<void> {
   if (!ssoConfig.value) return;
   signing.value = true;
   try {
-    const idToken = await reauthWithEntra(ssoConfig.value);
+    const idToken = await reauthWithEntra(ssoConfig.value, await signatureChallenge());
     await submit({ entraIdToken: idToken });
   } catch (e) {
     reportReauthFailure(e);
