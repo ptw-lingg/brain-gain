@@ -17,19 +17,23 @@ const MAX_TOKEN_AGE_SEC = 300;
 export type SignatureMethod = 'password' | 'microsoft';
 
 export type SignatureCheck =
-  | { ok: true; method: SignatureMethod }
+  // `linkEntraOid`: the acting account had no Microsoft link yet and this fresh sign-in (same email)
+  // established one — the caller persists it, exactly as the SSO login links by email.
+  | { ok: true; method: SignatureMethod; linkEntraOid?: string }
   // `reason` goes to the audit trail only — clients get a generic message (no oracle).
   | { ok: false; reason: string };
 
 /**
  * Verify the re-authentication payload (`{ password }` or `{ entraIdToken }`) against the acting
- * user's account. Infra errors (e.g. an unreachable JWKS endpoint) are thrown, not mapped to a
- * failed signature — the caller surfaces them as a 500.
+ * user's account. `allUsers` is consulted only to refuse a Microsoft identity that is already linked
+ * to a DIFFERENT account. Infra errors (e.g. an unreachable JWKS endpoint) are thrown, not mapped to
+ * a failed signature — the caller surfaces them as a 500.
  */
 export async function verifyCompletionSignature(
   user: User,
   reauth: unknown,
   settings: Settings,
+  allUsers: readonly User[] = [],
 ): Promise<SignatureCheck> {
   const r = (typeof reauth === 'object' && reauth !== null ? reauth : {}) as Record<string, unknown>;
 
@@ -48,10 +52,21 @@ export async function verifyCompletionSignature(
       if (err instanceof EntraAuthError) return { ok: false, reason: 'Microsoft token rejected' };
       throw err;
     }
-    // Identity binding: the token must belong to the Microsoft account LINKED to the acting user —
-    // any other (even valid) Microsoft sign-in is someone else's identity.
-    if (!user.entraOid || claims.oid !== user.entraOid) {
-      return { ok: false, reason: 'Microsoft account does not match this user' };
+    // Identity binding. A linked account must present ITS Microsoft account — any other (even valid)
+    // sign-in is someone else's identity. An account that has only ever used its password has no
+    // link yet; then the same rule the SSO login applies when it links decides: the Microsoft email
+    // must be this account's email, and that Microsoft identity must not belong to another account.
+    let linkEntraOid: string | undefined;
+    if (user.entraOid) {
+      if (claims.oid !== user.entraOid) return { ok: false, reason: 'Microsoft account does not match this user' };
+    } else {
+      if (claims.email.toLowerCase() !== user.email.toLowerCase()) {
+        return { ok: false, reason: 'Microsoft account does not match this user' };
+      }
+      if (allUsers.some((u) => u.id !== user.id && u.entraOid === claims.oid)) {
+        return { ok: false, reason: 'Microsoft account is linked to a different user' };
+      }
+      linkEntraOid = claims.oid;
     }
     const payload = jwt.decode(r.entraIdToken);
     const iat =
@@ -59,7 +74,7 @@ export async function verifyCompletionSignature(
     if (!iat || Date.now() / 1000 - iat > MAX_TOKEN_AGE_SEC) {
       return { ok: false, reason: 'stale Microsoft sign-in' };
     }
-    return { ok: true, method: 'microsoft' };
+    return linkEntraOid ? { ok: true, method: 'microsoft', linkEntraOid } : { ok: true, method: 'microsoft' };
   }
 
   return { ok: false, reason: 'missing credentials' };

@@ -157,7 +157,7 @@ router.post('/grade', async (req: AuthRequest, res) => {
   if (!actingUser) return res.status(404).json({ error: 'User not found' });
   let signature;
   try {
-    signature = await verifyCompletionSignature(actingUser, reauth, settings);
+    signature = await verifyCompletionSignature(actingUser, reauth, settings, users);
   } catch (err) {
     console.error('Completion signature verification error:', err);
     return res.status(500).json({ error: 'Identity confirmation failed — please try again' });
@@ -173,6 +173,25 @@ router.post('/grade', async (req: AuthRequest, res) => {
       { details: `completion signature rejected (${signature.reason}) — training "${trainingName}"` },
     );
     return res.status(403).json({ error: 'Identity confirmation failed — please check your credentials' });
+  }
+  // First Microsoft confirmation of a password account: persist the link the signature established
+  // (same outcome as linking at SSO sign-in), so later confirmations bind to this oid. Under the
+  // store lock, and only while the account is still unlinked — a concurrent SSO sign-in wins.
+  if (signature.linkEntraOid) {
+    const oid = signature.linkEntraOid;
+    let linked = false;
+    await updateStore<User>('users', (all) => {
+      const u = all.find((x) => x.id === actingUser.id);
+      if (!u || u.entraOid || all.some((x) => x.entraOid === oid)) return null;
+      u.entraOid = oid;
+      linked = true;
+      return all;
+    });
+    if (linked) {
+      await auditEvent(req.user ?? null, 'update', { type: 'user', id: actingUser.id, name: actingUser.email }, {
+        details: 'linked Microsoft account (completion signature)',
+      });
+    }
   }
 
   const { passThreshold, revealWrongQuestions } = settings;

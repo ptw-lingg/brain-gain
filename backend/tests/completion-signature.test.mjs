@@ -218,3 +218,81 @@ test('SYS-SES-12 / VT-187: a stale or foreign Microsoft token never signs a comp
     'the mismatch refusal is audited',
   );
 });
+
+// ───────────────────────── a password account's FIRST Microsoft confirmation ─────────────────────────
+// An account that has only ever used its password carries no Microsoft link. Its first Microsoft
+// confirmation is accepted on the rule the SSO login applies when it links (same email), and the
+// link is persisted so later confirmations bind to that Microsoft account (SYS-SES-12, SR-173).
+
+test('SYS-SES-12 / SR-173 / VT-187: an unlinked password account confirms with Microsoft under its own email — the completion is signed and the account becomes linked', async () => {
+  const created = await srv.request('POST', '/api/users', {
+    token: adminToken,
+    body: { name: 'Pat Password', email: 'pat.password@braingain.app', password: 'patpass123', roleIds: [] },
+  });
+  assert.equal(created.status, 201);
+  const pat = await login('pat.password@braingain.app', 'patpass123');
+  const PAT_OID = '44444444-4444-4444-4444-444444444444';
+
+  const first = await grade(
+    quizTraining.id,
+    { answers: [[0]], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'Pat.Password@braingain.app' } }) } },
+    pat.token,
+  );
+  assert.equal(first.status, 200, `first Microsoft confirmation of a password account is accepted: ${JSON.stringify(first.body)}`);
+  assert.equal(first.body.passed, true);
+
+  const audit = await listAudit(`q=${encodeURIComponent('pat.password@braingain.app')}`);
+  assert.ok(
+    audit.body.entries.some((e) => /linked Microsoft account \(completion signature\)/.test(e.details ?? '')),
+    'the link established by the signature is audited',
+  );
+  assert.ok(
+    audit.body.entries.some((e) => e.action === 'training-completed' && /signed: microsoft/.test(e.details ?? '')),
+    'the completion is recorded as Microsoft-signed',
+  );
+
+  // The account is linked now: the same email from a DIFFERENT Microsoft account no longer signs.
+  const other = await grade(
+    noQuizTraining.id,
+    { answers: [], reauth: { entraIdToken: mint({ claims: { email: 'pat.password@braingain.app' } }) } },
+    pat.token,
+  );
+  assert.equal(other.status, 403, 'after linking, only the linked Microsoft account signs');
+  // …while the linked one still does.
+  const again = await grade(
+    noQuizTraining.id,
+    { answers: [], reauth: { entraIdToken: mint({ claims: { oid: PAT_OID, email: 'pat.password@braingain.app' } }) } },
+    pat.token,
+  );
+  assert.equal(again.status, 200, 'the linked Microsoft account keeps signing');
+});
+
+test('SYS-SES-12 / VT-187: an unlinked account is refused a Microsoft identity with another email, or one already linked to a different user', async () => {
+  // Make sure the SSO user (SSO_OID) exists — a Microsoft identity that belongs to someone else.
+  const sso = await srv.request('POST', '/api/auth/sso/entra', {
+    body: { idToken: mint({ claims: { oid: SSO_OID, email: 'sso.user@braingain.app' } }) },
+  });
+  assert.equal(sso.status, 200);
+
+  // The seeded member has a password and no link. Someone else's email never signs for them…
+  const otherEmail = await grade(
+    noQuizTraining.id,
+    { answers: [], reauth: { entraIdToken: mint({ claims: { email: 'someone.else@braingain.app' } }) } },
+  );
+  assert.equal(otherEmail.status, 403, 'different email → refused');
+  // …and neither does a Microsoft account that is already linked to another BrainGain user, even
+  // when its token claims the member's email.
+  const takenOid = await grade(
+    noQuizTraining.id,
+    { answers: [], reauth: { entraIdToken: mint({ claims: { oid: SSO_OID, email: 'user@braingain.app' } }) } },
+  );
+  assert.equal(takenOid.status, 403, 'oid linked to a different user → refused');
+
+  const member = await srv.request('GET', `/api/users/${memberId}`, { token: adminToken });
+  assert.equal(member.body.hasPassword, true);
+  const audit = await listAudit('action=login-failed');
+  assert.ok(
+    audit.body.entries.some((e) => /linked to a different user/.test(e.details ?? '')),
+    'the taken-identity refusal is audited with its reason',
+  );
+});
