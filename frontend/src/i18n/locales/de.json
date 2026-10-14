@@ -58,7 +58,8 @@
     "or": "oder",
     "signInWithMicrosoft": "Mit Microsoft anmelden",
     "errorMicrosoft": "Microsoft-Anmeldung fehlgeschlagen",
-    "errorLogin": "Anmeldung fehlgeschlagen"
+    "errorLogin": "Anmeldung fehlgeschlagen",
+    "errorMicrosoftDetail": "Microsoft-Anmeldung fehlgeschlagen ({detail}). Ihre Administration kann diesen Code in Microsoft Entra nachschlagen."
   },
   "activate": {
     "title": "Konto aktivieren",
@@ -136,7 +137,8 @@
       "microsoft": "Mit Microsoft bestätigen",
       "failed": "Identitätsbestätigung fehlgeschlagen — bitte prüfen Sie Ihre Zugangsdaten.",
       "error": "Der Test konnte nicht abgegeben werden — bitte versuchen Sie es erneut.",
-      "unavailable": "Ihr Konto hat kein Passwort und Microsoft-Anmeldung ist nicht verfügbar — wenden Sie sich an Ihre Administration."
+      "unavailable": "Ihr Konto hat kein Passwort und Microsoft-Anmeldung ist nicht verfügbar — wenden Sie sich an Ihre Administration.",
+      "failedMicrosoft": "Bestätigung über Microsoft fehlgeschlagen ({detail}). Ihre Administration kann diesen Code in Microsoft Entra nachschlagen."
     },
     "update": {
       "retakeBanner": "Diese Schulung wurde aktualisiert — bitte absolvieren Sie sie bis {date} erneut (Material und Test).",

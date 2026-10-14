@@ -18,7 +18,7 @@ import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useLayoutStore } from '@/stores/layout';
 import { useToastStore } from '@/stores/toast';
-import { reauthWithEntra, type EntraConfig } from '@/auth/msal';
+import { entraFailure, reauthWithEntra, type EntraConfig } from '@/auth/msal';
 import ContentViewer from '@/components/ContentViewer.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
@@ -266,6 +266,14 @@ async function confirmMaterials(reauth?: Reauth): Promise<void> {
   }
 }
 
+// A failed Microsoft re-login: a closed popup stays silent (the dialog is still open to retry), a
+// Microsoft-side failure names its AADSTS code, anything else is the generic confirmation failure.
+function reportReauthFailure(e: unknown): void {
+  const failure = entraFailure(e);
+  if (failure === 'cancelled') return;
+  toast.error(failure ? t('session.signature.failedMicrosoft', { detail: failure }) : t('session.signature.failed'));
+}
+
 // Test-less completion signed via a fresh Microsoft re-login instead of a password.
 async function confirmWithMicrosoft(): Promise<void> {
   if (!ssoConfig.value) return;
@@ -273,8 +281,8 @@ async function confirmWithMicrosoft(): Promise<void> {
   try {
     const idToken = await reauthWithEntra(ssoConfig.value);
     await confirmMaterials({ entraIdToken: idToken });
-  } catch {
-    toast.error(t('session.signature.failed'));
+  } catch (e) {
+    reportReauthFailure(e);
   } finally {
     signing.value = false;
   }
@@ -441,8 +449,8 @@ async function submitWithMicrosoft(): Promise<void> {
   try {
     const idToken = await reauthWithEntra(ssoConfig.value);
     await submit({ entraIdToken: idToken });
-  } catch {
-    toast.error(t('session.signature.failed'));
+  } catch (e) {
+    reportReauthFailure(e);
   } finally {
     signing.value = false;
   }

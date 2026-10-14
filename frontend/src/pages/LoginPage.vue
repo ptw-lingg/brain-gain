@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Loader2 } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import client from '@/api/client';
-import { signInWithEntra, type EntraConfig } from '@/auth/msal';
+import { entraFailure, signInWithEntra, type EntraConfig } from '@/auth/msal';
 import BrainGainLogo from '@/components/BrainGainLogo.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 
@@ -38,15 +38,6 @@ onMounted(async () => {
   }
 });
 
-/** True when MSAL reports the user closed/cancelled the popup — not a real error. */
-function isUserCancellation(e: unknown): boolean {
-  const code = (e as { errorCode?: unknown })?.errorCode;
-  return (
-    typeof code === 'string' &&
-    ['user_cancelled', 'popup_window_error', 'interaction_in_progress'].includes(code)
-  );
-}
-
 async function loginWithMicrosoft(): Promise<void> {
   if (!ssoConfig.value) return;
   error.value = '';
@@ -56,9 +47,16 @@ async function loginWithMicrosoft(): Promise<void> {
     await auth.loginWithEntra(idToken);
     router.push('/dashboard');
   } catch (e: unknown) {
+    // A closed popup is not an error; Microsoft's own failures are named (AADSTS code) so people look
+    // in the right place; our backend's refusals keep the server's message.
+    const failure = entraFailure(e);
     if (axios.isAxiosError(e)) {
       error.value = e.response?.data?.error ?? t('login.errorMicrosoft');
-    } else if (!isUserCancellation(e)) {
+    } else if (failure === 'cancelled') {
+      // nothing to say
+    } else if (failure) {
+      error.value = t('login.errorMicrosoftDetail', { detail: failure });
+    } else {
       error.value = t('login.errorMicrosoft');
     }
   } finally {

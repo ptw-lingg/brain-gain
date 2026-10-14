@@ -58,7 +58,8 @@
     "or": "or",
     "signInWithMicrosoft": "Sign in with Microsoft",
     "errorMicrosoft": "Microsoft sign-in failed",
-    "errorLogin": "Login failed"
+    "errorLogin": "Login failed",
+    "errorMicrosoftDetail": "Microsoft sign-in failed ({detail}). Your administrator can look up this code in Microsoft Entra."
   },
   "activate": {
     "title": "Activate your account",
@@ -136,7 +137,8 @@
       "microsoft": "Confirm with Microsoft",
       "failed": "Identity confirmation failed — please check your credentials.",
       "error": "The test could not be submitted — please try again.",
-      "unavailable": "Your account has no password and Microsoft sign-in is not available — contact your administrator."
+      "unavailable": "Your account has no password and Microsoft sign-in is not available — contact your administrator.",
+      "failedMicrosoft": "Microsoft confirmation failed ({detail}). Your administrator can look up this code in Microsoft Entra."
     },
     "update": {
       "retakeBanner": "This training was updated — please retake it (materials and test) by {date}.",

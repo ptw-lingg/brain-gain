@@ -54,6 +54,21 @@ export async function reauthWithEntra(config: EntraConfig): Promise<string> {
   return result.idToken;
 }
 
+/**
+ * Classify a failed Microsoft popup for the message the user sees:
+ *   'cancelled' → the user closed or abandoned the popup (or one is already open) — say nothing;
+ *   a string    → MSAL's own error: Microsoft's AADSTS code when present, else MSAL's errorCode — so a
+ *                 consent, tenant or registration problem is named instead of a bare "failed";
+ *   null        → not an MSAL error (e.g. our backend refused the token) — the caller's own message.
+ */
+export function entraFailure(e: unknown): 'cancelled' | string | null {
+  const err = e as { errorCode?: unknown; errorMessage?: unknown; response?: unknown };
+  if (typeof err?.errorCode !== 'string' || err.response) return null;
+  if (['user_cancelled', 'popup_window_error', 'interaction_in_progress'].includes(err.errorCode)) return 'cancelled';
+  const message = typeof err.errorMessage === 'string' ? err.errorMessage : '';
+  return message.match(/AADSTS\d+/)?.[0] ?? err.errorCode;
+}
+
 /** Best-effort local cache clear (no full Microsoft sign-out). Safe to call when SSO was never used. */
 export async function signOutEntra(): Promise<void> {
   if (!msalPromise) return;
