@@ -23,6 +23,9 @@ const error = ref('');
 const ssoEnabled = ref(false);
 const ssoConfig = ref<EntraConfig | null>(null);
 const ssoLoading = ref(false);
+// While Microsoft sign-in is active the password form is the administrators' emergency door, folded
+// away behind a link (SR-196); without SSO it is the only door and shown as before.
+const showLocal = ref(false);
 
 onMounted(async () => {
   try {
@@ -91,34 +94,14 @@ async function submit(): Promise<void> {
         <p class="font-mono text-xs text-ink-light">{{ t('common.tagline') }}</p>
       </div>
 
-      <form class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
-        <label class="flex flex-col gap-1">
-          <span class="form-label">{{ t('common.email') }}</span>
-          <input v-model="email" type="email" autocomplete="username" class="bg-input" required />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="form-label">{{ t('common.password') }}</span>
-          <PasswordInput v-model="password" autocomplete="current-password" required />
-        </label>
-
-        <p v-if="error" class="font-mono text-xs text-rose-600">{{ error }}</p>
-
-        <button type="submit" class="btn-primary mt-2 w-full" :disabled="loading">
-          <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
-          {{ loading ? t('login.signingIn') : t('login.signIn') }}
-        </button>
-      </form>
-
+      <!-- With Microsoft sign-in active it is THE way in — one big button — and the password form is the
+           administrators' emergency door, folded away. Without SSO the password form is the only door. -->
       <template v-if="ssoEnabled">
-        <div class="my-5 flex items-center gap-3">
-          <div class="h-px flex-1 bg-line" />
-          <span class="font-mono text-[10px] uppercase tracking-wider text-ink-light">{{ t('login.or') }}</span>
-          <div class="h-px flex-1 bg-line" />
-        </div>
         <button
           type="button"
-          class="btn-ghost w-full"
+          class="btn-primary mt-8 w-full text-base"
           :disabled="ssoLoading"
+          data-testid="sso-button"
           @click="loginWithMicrosoft"
         >
           <Loader2 v-if="ssoLoading" class="h-4 w-4 animate-spin" />
@@ -130,7 +113,41 @@ async function submit(): Promise<void> {
           </svg>
           {{ ssoLoading ? t('login.signingIn') : t('login.signInWithMicrosoft') }}
         </button>
+        <p v-if="error && !showLocal" class="mt-3 font-mono text-xs text-rose-600">{{ error }}</p>
+        <button
+          type="button"
+          class="mt-6 block w-full text-center font-mono text-xs text-ink-light underline-offset-2 hover:underline"
+          data-testid="login-break-glass"
+          @click="showLocal = !showLocal"
+        >
+          {{ t('login.breakGlass') }}
+        </button>
       </template>
+
+      <form
+        v-if="!ssoEnabled || showLocal"
+        class="mt-8 flex flex-col gap-4"
+        :class="ssoEnabled ? 'border-t border-line pt-5' : ''"
+        data-testid="login-form"
+        @submit.prevent="submit"
+      >
+        <p v-if="ssoEnabled" class="font-mono text-xs text-ink-light">{{ t('login.localHint') }}</p>
+        <label class="flex flex-col gap-1">
+          <span class="form-label">{{ t('common.email') }}</span>
+          <input v-model="email" type="email" autocomplete="username" class="bg-input" required />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="form-label">{{ t('common.password') }}</span>
+          <PasswordInput v-model="password" autocomplete="current-password" required />
+        </label>
+
+        <p v-if="error" class="font-mono text-xs text-rose-600">{{ error }}</p>
+
+        <button type="submit" :class="ssoEnabled ? 'btn-ghost mt-2 w-full' : 'btn-primary mt-2 w-full'" :disabled="loading">
+          <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+          {{ loading ? t('login.signingIn') : t('login.signIn') }}
+        </button>
+      </form>
     </div>
   </div>
 </template>

@@ -10,6 +10,18 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-10-15
+
+### Changed
+- **Password sign-in is reserved for administrators while Microsoft sign-in is active** (SR-196). With
+  Microsoft sign-in configured, the sign-in page shows "Sign in with Microsoft" as the one way in; the
+  email/password form is folded behind "Emergency access for administrators" and the server refuses a
+  password sign-in by anyone who is not an administrator, even with the correct password (recorded in the
+  audit trail with the reason). Without Microsoft sign-in, password sign-in works for everyone as before.
+
+### Data migrations
+- none
+
 ## [1.5.2] — 2026-10-14
 
 ### Fixed

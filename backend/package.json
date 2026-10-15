@@ -1,7 +1,7 @@
 {
   "name": "braingain-backend",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "BrainGain backend — Express + TypeScript, JSON file storage",
   "scripts": {
     "dev": "tsx watch src/index.ts",

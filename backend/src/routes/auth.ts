@@ -64,6 +64,15 @@ router.post('/login', async (req, res) => {
     await auditEvent(null, 'login-failed', { type: 'auth', name: email }, { details: 'invalid credentials or disabled account' });
     return res.status(401).json({ error: 'Invalid email or password' });
   }
+  // While Microsoft sign-in is active, the password form is the administrators' emergency door only
+  // (SR-196): everyone else signs in with Microsoft. The password was correct, so the refusal names
+  // the account in the audit trail — the response stays generic (no enumeration of who is admin).
+  if (!user.isAdmin && isEntraConfigured(await readSettings())) {
+    await auditEvent(null, 'login-failed', { type: 'auth', id: user.id, name: user.email }, {
+      details: 'password sign-in is reserved for administrators while Microsoft sign-in is active',
+    });
+    return res.status(401).json({ error: 'Invalid email or password' });
+  }
   const token = signToken({
     id: user.id,
     email: user.email,
