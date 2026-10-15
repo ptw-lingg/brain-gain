@@ -13,14 +13,19 @@ step the backend applies at start-up when it finds data written by an older vers
 ## [1.5.2] — 2026-10-14
 
 ### Fixed
-- **Confirming a completed training with Microsoft failed for password accounts.** The confirmation
-  demanded that the Microsoft account was already linked to the BrainGain account, but that link is only
-  created by signing *in* with Microsoft. Anyone who signed in with their password and then chose
-  "Confirm with Microsoft" was told their credentials were not correct. The first Microsoft confirmation
-  is now accepted when the Microsoft email is the account's own email (the same rule the Microsoft sign-in
-  uses), links the account at that moment and records the link in the audit trail; from then on only
-  that Microsoft account confirms for it. A Microsoft identity already linked to a different account is
-  still refused (SYS-SES-12).
+- **"Confirm with Microsoft" when completing a training always failed with "credentials not correct".**
+  Microsoft issues its sign-in tokens with an issue time up to five minutes in the past, and BrainGain
+  refused any token older than five minutes as a stale sign-in — so every genuinely fresh Microsoft
+  re-login was rejected. Freshness is no longer judged by the clock: for each confirmation the server
+  issues a one-time code, the Microsoft login carries it, and the server accepts only a token that
+  answers the code it issued to that user (valid five minutes, usable once). A ten-minute age limit
+  remains as a sanity check, and the audit entry now states the computed token age when it applies
+  (SYS-SES-12).
+- **Confirming with Microsoft also failed for accounts that had never signed in with Microsoft.** The
+  confirmation demanded an existing link between the BrainGain and the Microsoft account, which only a
+  Microsoft *sign-in* creates. The first Microsoft confirmation of such an account is now accepted when
+  the Microsoft email is the account's own email, links the account at that moment (recorded in the
+  audit trail) and from then on only that Microsoft account confirms for it (SYS-SES-12).
 
 ### Data migrations
 - none
