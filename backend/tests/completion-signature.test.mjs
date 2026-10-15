@@ -252,7 +252,9 @@ test('SYS-SES-12 / VT-187: a stale or foreign Microsoft token never signs a comp
 test('SYS-SES-12 / SR-173 / VT-187: an unlinked password account confirms with Microsoft under its own email — the completion is signed and the account becomes linked', async () => {
   const created = await srv.request('POST', '/api/users', {
     token: adminToken,
-    body: { name: 'Pat Password', email: 'pat.password@braingain.app', password: 'patpass123', roleIds: [] },
+    // An administrator: with SSO configured (as in this file) only admins can still sign in with a
+    // password (SR-196) — exactly who reaches a Microsoft confirmation with an unlinked account.
+    body: { name: 'Pat Password', email: 'pat.password@braingain.app', password: 'patpass123', roleIds: [], isAdmin: true },
   });
   assert.equal(created.status, 201);
   const pat = await login('pat.password@braingain.app', 'patpass123');
