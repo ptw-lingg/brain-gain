@@ -123,3 +123,35 @@ test('SYS-SSO-03/04 / VT-007: a malformed idToken is rejected (cannot be verifie
   assert.ok(res.status >= 400, 'a bogus idToken is never accepted');
   assert.equal(res.body?.token, undefined, 'no app token is issued for an unverifiable idToken');
 });
+
+// ───────────────────────── SYS-AUTH-13 / VT-232 (SR-196): password sign-in is admin-only while SSO is active ─────────────────────────
+// With Microsoft sign-in configured the password form is the administrators' emergency door; every
+// other account must use Microsoft. Without SSO, password sign-in is open to every active account.
+
+test('SYS-AUTH-13 / VT-232 (SR-196): while Microsoft sign-in is configured, only administrators can sign in with a password; the member is refused and audited', async () => {
+  const sso = await srv.request('PUT', '/api/settings', {
+    token: adminToken,
+    body: { entra: { enabled: true, tenantId: '00000000-0000-0000-0000-000000000001', clientId: '00000000-0000-0000-0000-000000000002', allowedDomains: [] } },
+  });
+  assert.equal(sso.status, 200, 'SSO configured');
+  try {
+    const member = await srv.request('POST', '/api/auth/login', { body: { email: 'user@braingain.app', password: 'user123' } });
+    assert.equal(member.status, 401, 'a member with the correct password is refused while SSO is active');
+    assert.equal(member.body.error, 'Invalid email or password', 'the response stays generic');
+    const trainer = await srv.request('POST', '/api/auth/login', { body: { email: 'trainer@braingain.app', password: 'trainer123' } });
+    assert.equal(trainer.status, 401, 'a trainer is refused too — only administrators keep the password door');
+    const admin = await srv.request('POST', '/api/auth/login', { body: { email: 'admin@braingain.app', password: 'admin123' } });
+    assert.equal(admin.status, 200, 'an administrator still signs in with the password');
+
+    const audit = await srv.request('GET', `/api/audit?action=login-failed&q=${encodeURIComponent('user@braingain.app')}`, { token: adminToken });
+    assert.ok(
+      audit.body.entries.some((e) => /reserved for administrators while Microsoft sign-in is active/.test(e.details ?? '')),
+      'the refusal is audited with its real reason (the password was correct)',
+    );
+  } finally {
+    const off = await srv.request('PUT', '/api/settings', { token: adminToken, body: { entra: { enabled: false, tenantId: '', clientId: '', allowedDomains: [] } } });
+    assert.equal(off.status, 200);
+  }
+  const memberAgain = await srv.request('POST', '/api/auth/login', { body: { email: 'user@braingain.app', password: 'user123' } });
+  assert.equal(memberAgain.status, 200, 'with SSO off, the member signs in with the password as before');
+});

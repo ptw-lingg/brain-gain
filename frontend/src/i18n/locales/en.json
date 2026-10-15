@@ -59,7 +59,9 @@
     "signInWithMicrosoft": "Sign in with Microsoft",
     "errorMicrosoft": "Microsoft sign-in failed",
     "errorLogin": "Login failed",
-    "errorMicrosoftDetail": "Microsoft sign-in failed ({detail}). Your administrator can look up this code in Microsoft Entra."
+    "errorMicrosoftDetail": "Microsoft sign-in failed ({detail}). Your administrator can look up this code in Microsoft Entra.",
+    "breakGlass": "Emergency access for administrators",
+    "localHint": "Sign in with Microsoft is the regular way in. This form is for administrators only."
   },
   "activate": {
     "title": "Activate your account",

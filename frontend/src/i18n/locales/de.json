@@ -59,7 +59,9 @@
     "signInWithMicrosoft": "Mit Microsoft anmelden",
     "errorMicrosoft": "Microsoft-Anmeldung fehlgeschlagen",
     "errorLogin": "Anmeldung fehlgeschlagen",
-    "errorMicrosoftDetail": "Microsoft-Anmeldung fehlgeschlagen ({detail}). Ihre Administration kann diesen Code in Microsoft Entra nachschlagen."
+    "errorMicrosoftDetail": "Microsoft-Anmeldung fehlgeschlagen ({detail}). Ihre Administration kann diesen Code in Microsoft Entra nachschlagen.",
+    "breakGlass": "Notfallzugang für Administratoren",
+    "localHint": "Die reguläre Anmeldung erfolgt mit Microsoft. Dieses Formular ist nur für Administratoren."
   },
   "activate": {
     "title": "Konto aktivieren",
