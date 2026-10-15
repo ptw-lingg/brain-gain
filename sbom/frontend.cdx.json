@@ -96,9 +96,9 @@
     "component": {
       "type": "application",
       "name": "braingain-frontend",
-      "version": "1.5.2",
-      "bom-ref": "braingain-frontend@1.5.2",
-      "purl": "pkg:npm/braingain-frontend@1.5.2",
+      "version": "1.6.0",
+      "bom-ref": "braingain-frontend@1.6.0",
+      "purl": "pkg:npm/braingain-frontend@1.6.0",
       "properties": [
         {
           "name": "cdx:npm:package:path",
@@ -123,7 +123,7 @@
       "name": "msal-browser",
       "group": "@azure",
       "version": "5.11.0",
-      "bom-ref": "braingain-frontend@1.5.2|@azure/msal-browser@5.11.0",
+      "bom-ref": "braingain-frontend@1.6.0|@azure/msal-browser@5.11.0",
       "author": "Microsoft",
       "description": "Microsoft Authentication Library for js",
       "licenses": [
@@ -179,7 +179,7 @@
       "name": "msal-common",
       "group": "@azure",
       "version": "16.6.2",
-      "bom-ref": "braingain-frontend@1.5.2|@azure/msal-common@16.6.2",
+      "bom-ref": "braingain-frontend@1.6.0|@azure/msal-common@16.6.2",
       "author": "Microsoft",
       "description": "Microsoft Authentication Library for js",
       "licenses": [
@@ -235,7 +235,7 @@
       "name": "helper-string-parser",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "braingain-frontend@1.5.2|@babel/helper-string-parser@7.29.7",
+      "bom-ref": "braingain-frontend@1.6.0|@babel/helper-string-parser@7.29.7",
       "author": "The Babel Team",
       "description": "A utility package to parse strings",
       "licenses": [
@@ -291,7 +291,7 @@
       "name": "helper-validator-identifier",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "braingain-frontend@1.5.2|@babel/helper-validator-identifier@7.29.7",
+      "bom-ref": "braingain-frontend@1.6.0|@babel/helper-validator-identifier@7.29.7",
       "author": "The Babel Team",
       "description": "Validate identifier/keywords name",
       "licenses": [
@@ -347,7 +347,7 @@
       "name": "parser",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "braingain-frontend@1.5.2|@babel/parser@7.29.7",
+      "bom-ref": "braingain-frontend@1.6.0|@babel/parser@7.29.7",
       "author": "The Babel Team",
       "description": "A JavaScript parser",
       "licenses": [
@@ -403,7 +403,7 @@
       "name": "types",
       "group": "@babel",
       "version": "7.29.7",
-      "bom-ref": "braingain-frontend@1.5.2|@babel/types@7.29.7",
+      "bom-ref": "braingain-frontend@1.6.0|@babel/types@7.29.7",
       "author": "The Babel Team",
       "description": "Babel Types is a Lodash-esque utility library for AST nodes",
       "licenses": [
@@ -459,7 +459,7 @@
       "name": "core-base",
       "group": "@intlify",
       "version": "10.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|@intlify/core-base@10.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|@intlify/core-base@10.0.8",
       "author": "kazuya kawaguchi",
       "description": "@intlify/core-base",
       "licenses": [
@@ -515,7 +515,7 @@
       "name": "message-compiler",
       "group": "@intlify",
       "version": "10.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|@intlify/message-compiler@10.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|@intlify/message-compiler@10.0.8",
       "author": "kazuya kawaguchi",
       "description": "@intlify/message-compiler",
       "licenses": [
@@ -571,7 +571,7 @@
       "name": "shared",
       "group": "@intlify",
       "version": "10.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|@intlify/shared@10.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|@intlify/shared@10.0.8",
       "author": "kazuya kawaguchi",
       "description": "@intlify/shared",
       "licenses": [
@@ -627,7 +627,7 @@
       "name": "sourcemap-codec",
       "group": "@jridgewell",
       "version": "1.5.5",
-      "bom-ref": "braingain-frontend@1.5.2|@jridgewell/sourcemap-codec@1.5.5",
+      "bom-ref": "braingain-frontend@1.6.0|@jridgewell/sourcemap-codec@1.5.5",
       "author": "Justin Ridgewell",
       "description": "Encode/decode sourcemap mappings",
       "licenses": [
@@ -679,7 +679,7 @@
       "name": "canvas-win32-x64-msvc",
       "group": "@napi-rs",
       "version": "1.0.0",
-      "bom-ref": "braingain-frontend@1.5.2|@napi-rs/canvas-win32-x64-msvc@1.0.0",
+      "bom-ref": "braingain-frontend@1.6.0|@napi-rs/canvas-win32-x64-msvc@1.0.0",
       "description": "Canvas for Node.js with skia backend",
       "scope": "optional",
       "licenses": [
@@ -735,7 +735,7 @@
       "name": "canvas",
       "group": "@napi-rs",
       "version": "1.0.0",
-      "bom-ref": "braingain-frontend@1.5.2|@napi-rs/canvas@1.0.0",
+      "bom-ref": "braingain-frontend@1.6.0|@napi-rs/canvas@1.0.0",
       "description": "Canvas for Node.js with skia backend",
       "scope": "optional",
       "licenses": [
@@ -791,7 +791,7 @@
       "name": "ciphers",
       "group": "@noble",
       "version": "1.3.0",
-      "bom-ref": "braingain-frontend@1.5.2|@noble/ciphers@1.3.0",
+      "bom-ref": "braingain-frontend@1.6.0|@noble/ciphers@1.3.0",
       "author": "Paul Miller",
       "description": "Audited & minimal JS implementation of Salsa20, ChaCha and AES",
       "licenses": [
@@ -847,7 +847,7 @@
       "name": "hashes",
       "group": "@noble",
       "version": "1.8.0",
-      "bom-ref": "braingain-frontend@1.5.2|@noble/hashes@1.8.0",
+      "bom-ref": "braingain-frontend@1.6.0|@noble/hashes@1.8.0",
       "author": "Paul Miller",
       "description": "Audited & minimal 0-dependency JS implementation of SHA, RIPEMD, BLAKE, HMAC, HKDF, PBKDF & Scrypt",
       "licenses": [
@@ -903,7 +903,7 @@
       "name": "helpers",
       "group": "@swc",
       "version": "0.5.23",
-      "bom-ref": "braingain-frontend@1.5.2|@swc/helpers@0.5.23",
+      "bom-ref": "braingain-frontend@1.6.0|@swc/helpers@0.5.23",
       "author": "강동윤",
       "description": "External helpers for the swc project.",
       "licenses": [
@@ -955,7 +955,7 @@
       "name": "node",
       "group": "@types",
       "version": "20.19.41",
-      "bom-ref": "braingain-frontend@1.5.2|@types/node@20.19.41",
+      "bom-ref": "braingain-frontend@1.6.0|@types/node@20.19.41",
       "description": "TypeScript definitions for node",
       "licenses": [
         {
@@ -1006,7 +1006,7 @@
       "name": "pdfkit",
       "group": "@types",
       "version": "0.17.6",
-      "bom-ref": "braingain-frontend@1.5.2|@types/pdfkit@0.17.6",
+      "bom-ref": "braingain-frontend@1.6.0|@types/pdfkit@0.17.6",
       "description": "TypeScript definitions for pdfkit",
       "licenses": [
         {
@@ -1057,7 +1057,7 @@
       "name": "pdfmake",
       "group": "@types",
       "version": "0.3.3",
-      "bom-ref": "braingain-frontend@1.5.2|@types/pdfmake@0.3.3",
+      "bom-ref": "braingain-frontend@1.6.0|@types/pdfmake@0.3.3",
       "description": "TypeScript definitions for pdfmake",
       "licenses": [
         {
@@ -1108,7 +1108,7 @@
       "name": "compiler-core",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/compiler-core@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/compiler-core@3.5.35",
       "author": "Evan You",
       "description": "@vue/compiler-core",
       "licenses": [
@@ -1160,7 +1160,7 @@
       "name": "compiler-dom",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/compiler-dom@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/compiler-dom@3.5.35",
       "author": "Evan You",
       "description": "@vue/compiler-dom",
       "licenses": [
@@ -1212,7 +1212,7 @@
       "name": "compiler-sfc",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/compiler-sfc@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/compiler-sfc@3.5.35",
       "author": "Evan You",
       "description": "@vue/compiler-sfc",
       "licenses": [
@@ -1264,7 +1264,7 @@
       "name": "compiler-ssr",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/compiler-ssr@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/compiler-ssr@3.5.35",
       "author": "Evan You",
       "description": "@vue/compiler-ssr",
       "licenses": [
@@ -1316,7 +1316,7 @@
       "name": "devtools-api",
       "group": "@vue",
       "version": "6.6.4",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/devtools-api@6.6.4",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/devtools-api@6.6.4",
       "author": "Guillaume Chau",
       "description": "Interact with the Vue devtools from the page",
       "licenses": [
@@ -1368,7 +1368,7 @@
       "name": "reactivity",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/reactivity@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/reactivity@3.5.35",
       "author": "Evan You",
       "description": "@vue/reactivity",
       "licenses": [
@@ -1420,7 +1420,7 @@
       "name": "runtime-core",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/runtime-core@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/runtime-core@3.5.35",
       "author": "Evan You",
       "description": "@vue/runtime-core",
       "licenses": [
@@ -1472,7 +1472,7 @@
       "name": "runtime-dom",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/runtime-dom@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/runtime-dom@3.5.35",
       "author": "Evan You",
       "description": "@vue/runtime-dom",
       "licenses": [
@@ -1524,7 +1524,7 @@
       "name": "server-renderer",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/server-renderer@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/server-renderer@3.5.35",
       "author": "Evan You",
       "description": "@vue/server-renderer",
       "licenses": [
@@ -1576,7 +1576,7 @@
       "name": "shared",
       "group": "@vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|@vue/shared@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|@vue/shared@3.5.35",
       "author": "Evan You",
       "description": "internal utils shared across @vue packages",
       "licenses": [
@@ -1627,7 +1627,7 @@
       "type": "library",
       "name": "agent-base",
       "version": "6.0.2",
-      "bom-ref": "braingain-frontend@1.5.2|agent-base@6.0.2",
+      "bom-ref": "braingain-frontend@1.6.0|agent-base@6.0.2",
       "author": "Nathan Rajlich",
       "description": "Turn a function into an `http.Agent` instance",
       "licenses": [
@@ -1682,7 +1682,7 @@
       "type": "library",
       "name": "asynckit",
       "version": "0.4.0",
-      "bom-ref": "braingain-frontend@1.5.2|asynckit@0.4.0",
+      "bom-ref": "braingain-frontend@1.6.0|asynckit@0.4.0",
       "author": "Alex Indigo",
       "description": "Minimal async jobs utility library, with streams support",
       "licenses": [
@@ -1733,7 +1733,7 @@
       "type": "library",
       "name": "axios",
       "version": "1.16.1",
-      "bom-ref": "braingain-frontend@1.5.2|axios@1.16.1",
+      "bom-ref": "braingain-frontend@1.6.0|axios@1.16.1",
       "author": "Matt Zabriskie",
       "description": "Promise based HTTP client for the browser and node.js",
       "licenses": [
@@ -1784,7 +1784,7 @@
       "type": "library",
       "name": "base64-js",
       "version": "0.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|base64-js@0.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|base64-js@0.0.8",
       "author": "T. Jameson Little",
       "description": "Base64 encoding/decoding in pure JS",
       "licenses": [
@@ -1839,7 +1839,7 @@
       "type": "library",
       "name": "brotli",
       "version": "1.3.3",
-      "bom-ref": "braingain-frontend@1.5.2|brotli@1.3.3",
+      "bom-ref": "braingain-frontend@1.6.0|brotli@1.3.3",
       "author": "Devon Govett",
       "description": "A port of the Brotli compression algorithm as used in WOFF2",
       "licenses": [
@@ -1890,7 +1890,7 @@
           "type": "library",
           "name": "base64-js",
           "version": "1.5.1",
-          "bom-ref": "braingain-frontend@1.5.2|brotli@1.3.3|base64-js@1.5.1",
+          "bom-ref": "braingain-frontend@1.6.0|brotli@1.3.3|base64-js@1.5.1",
           "author": "T. Jameson Little",
           "description": "Base64 encoding/decoding in pure JS",
           "licenses": [
@@ -1943,7 +1943,7 @@
       "type": "library",
       "name": "browserify-zlib",
       "version": "0.2.0",
-      "bom-ref": "braingain-frontend@1.5.2|browserify-zlib@0.2.0",
+      "bom-ref": "braingain-frontend@1.6.0|browserify-zlib@0.2.0",
       "author": "Devon Govett",
       "description": "Full zlib module for the browser",
       "licenses": [
@@ -1994,7 +1994,7 @@
       "type": "library",
       "name": "call-bind-apply-helpers",
       "version": "1.0.2",
-      "bom-ref": "braingain-frontend@1.5.2|call-bind-apply-helpers@1.0.2",
+      "bom-ref": "braingain-frontend@1.6.0|call-bind-apply-helpers@1.0.2",
       "author": "Jordan Harband",
       "description": "Helper functions around Function call/apply/bind, for use in `call-bind`",
       "licenses": [
@@ -2049,7 +2049,7 @@
       "type": "library",
       "name": "clone",
       "version": "2.1.2",
-      "bom-ref": "braingain-frontend@1.5.2|clone@2.1.2",
+      "bom-ref": "braingain-frontend@1.6.0|clone@2.1.2",
       "author": "Paul Vorbach",
       "description": "deep cloning of objects and arrays",
       "licenses": [
@@ -2104,7 +2104,7 @@
       "type": "library",
       "name": "combined-stream",
       "version": "1.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|combined-stream@1.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|combined-stream@1.0.8",
       "author": "Felix Geisendörfer",
       "description": "A stream that emits multiple other streams one after another.",
       "licenses": [
@@ -2159,7 +2159,7 @@
       "type": "library",
       "name": "csstype",
       "version": "3.2.3",
-      "bom-ref": "braingain-frontend@1.5.2|csstype@3.2.3",
+      "bom-ref": "braingain-frontend@1.6.0|csstype@3.2.3",
       "author": "Fredrik Nicol",
       "description": "Strict TypeScript and Flow types for style based on MDN data",
       "licenses": [
@@ -2210,7 +2210,7 @@
       "type": "library",
       "name": "debug",
       "version": "4.4.3",
-      "bom-ref": "braingain-frontend@1.5.2|debug@4.4.3",
+      "bom-ref": "braingain-frontend@1.6.0|debug@4.4.3",
       "author": "Josh Junon",
       "description": "Lightweight debugging utility for Node.js and the browser",
       "licenses": [
@@ -2265,7 +2265,7 @@
       "type": "library",
       "name": "delayed-stream",
       "version": "1.0.0",
-      "bom-ref": "braingain-frontend@1.5.2|delayed-stream@1.0.0",
+      "bom-ref": "braingain-frontend@1.6.0|delayed-stream@1.0.0",
       "author": "Felix Geisendörfer",
       "description": "Buffers events from a stream until you are ready to handle them.",
       "licenses": [
@@ -2320,7 +2320,7 @@
       "type": "library",
       "name": "dfa",
       "version": "1.2.0",
-      "bom-ref": "braingain-frontend@1.5.2|dfa@1.2.0",
+      "bom-ref": "braingain-frontend@1.6.0|dfa@1.2.0",
       "author": "Devon Govett",
       "description": "A state machine compiler",
       "licenses": [
@@ -2371,7 +2371,7 @@
       "type": "library",
       "name": "dunder-proto",
       "version": "1.0.1",
-      "bom-ref": "braingain-frontend@1.5.2|dunder-proto@1.0.1",
+      "bom-ref": "braingain-frontend@1.6.0|dunder-proto@1.0.1",
       "author": "Jordan Harband",
       "description": "If available, the `Object.prototype.__proto__` accessor and mutator, call-bound",
       "licenses": [
@@ -2426,7 +2426,7 @@
       "type": "library",
       "name": "entities",
       "version": "7.0.1",
-      "bom-ref": "braingain-frontend@1.5.2|entities@7.0.1",
+      "bom-ref": "braingain-frontend@1.6.0|entities@7.0.1",
       "author": "Felix Boehm",
       "description": "Encode & decode XML and HTML entities with ease & speed",
       "licenses": [
@@ -2481,7 +2481,7 @@
       "type": "library",
       "name": "es-define-property",
       "version": "1.0.1",
-      "bom-ref": "braingain-frontend@1.5.2|es-define-property@1.0.1",
+      "bom-ref": "braingain-frontend@1.6.0|es-define-property@1.0.1",
       "author": "Jordan Harband",
       "description": "`Object.defineProperty`, but not IE 8's broken one.",
       "licenses": [
@@ -2536,7 +2536,7 @@
       "type": "library",
       "name": "es-errors",
       "version": "1.3.0",
-      "bom-ref": "braingain-frontend@1.5.2|es-errors@1.3.0",
+      "bom-ref": "braingain-frontend@1.6.0|es-errors@1.3.0",
       "author": "Jordan Harband",
       "description": "A simple cache for a few of the JS Error constructors.",
       "licenses": [
@@ -2591,7 +2591,7 @@
       "type": "library",
       "name": "es-object-atoms",
       "version": "1.1.2",
-      "bom-ref": "braingain-frontend@1.5.2|es-object-atoms@1.1.2",
+      "bom-ref": "braingain-frontend@1.6.0|es-object-atoms@1.1.2",
       "author": "Jordan Harband",
       "description": "ES Object-related atoms: Object, ToObject, RequireObjectCoercible",
       "licenses": [
@@ -2646,7 +2646,7 @@
       "type": "library",
       "name": "es-set-tostringtag",
       "version": "2.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|es-set-tostringtag@2.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|es-set-tostringtag@2.1.0",
       "author": "Jordan Harband",
       "description": "A helper to optimistically set Symbol.toStringTag, when possible.",
       "licenses": [
@@ -2701,7 +2701,7 @@
       "type": "library",
       "name": "estree-walker",
       "version": "2.0.2",
-      "bom-ref": "braingain-frontend@1.5.2|estree-walker@2.0.2",
+      "bom-ref": "braingain-frontend@1.6.0|estree-walker@2.0.2",
       "author": "Rich Harris",
       "description": "Traverse an ESTree-compliant AST",
       "licenses": [
@@ -2752,7 +2752,7 @@
       "type": "library",
       "name": "fast-deep-equal",
       "version": "3.1.3",
-      "bom-ref": "braingain-frontend@1.5.2|fast-deep-equal@3.1.3",
+      "bom-ref": "braingain-frontend@1.6.0|fast-deep-equal@3.1.3",
       "author": "Evgeny Poberezkin",
       "description": "Fast deep equal",
       "licenses": [
@@ -2803,7 +2803,7 @@
       "type": "library",
       "name": "flag-icons",
       "version": "7.5.0",
-      "bom-ref": "braingain-frontend@1.5.2|flag-icons@7.5.0",
+      "bom-ref": "braingain-frontend@1.6.0|flag-icons@7.5.0",
       "author": "Panayiotis Lipiridis",
       "licenses": [
         {
@@ -2853,7 +2853,7 @@
       "type": "library",
       "name": "follow-redirects",
       "version": "1.16.0",
-      "bom-ref": "braingain-frontend@1.5.2|follow-redirects@1.16.0",
+      "bom-ref": "braingain-frontend@1.6.0|follow-redirects@1.16.0",
       "author": "Ruben Verborgh",
       "description": "HTTP and HTTPS modules that follow redirects.",
       "licenses": [
@@ -2908,7 +2908,7 @@
       "type": "library",
       "name": "fontkit",
       "version": "2.0.4",
-      "bom-ref": "braingain-frontend@1.5.2|fontkit@2.0.4",
+      "bom-ref": "braingain-frontend@1.6.0|fontkit@2.0.4",
       "author": "Devon Govett",
       "description": "An advanced font engine for Node and the browser",
       "licenses": [
@@ -2959,7 +2959,7 @@
       "type": "library",
       "name": "form-data",
       "version": "4.0.5",
-      "bom-ref": "braingain-frontend@1.5.2|form-data@4.0.5",
+      "bom-ref": "braingain-frontend@1.6.0|form-data@4.0.5",
       "author": "Felix Geisendörfer",
       "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications.",
       "licenses": [
@@ -3014,7 +3014,7 @@
       "type": "library",
       "name": "function-bind",
       "version": "1.1.2",
-      "bom-ref": "braingain-frontend@1.5.2|function-bind@1.1.2",
+      "bom-ref": "braingain-frontend@1.6.0|function-bind@1.1.2",
       "author": "Raynos",
       "description": "Implementation of Function.prototype.bind",
       "licenses": [
@@ -3065,7 +3065,7 @@
       "type": "library",
       "name": "get-intrinsic",
       "version": "1.3.0",
-      "bom-ref": "braingain-frontend@1.5.2|get-intrinsic@1.3.0",
+      "bom-ref": "braingain-frontend@1.6.0|get-intrinsic@1.3.0",
       "author": "Jordan Harband",
       "description": "Get and robustly cache all JS language-level intrinsics at first require time",
       "licenses": [
@@ -3120,7 +3120,7 @@
       "type": "library",
       "name": "get-proto",
       "version": "1.0.1",
-      "bom-ref": "braingain-frontend@1.5.2|get-proto@1.0.1",
+      "bom-ref": "braingain-frontend@1.6.0|get-proto@1.0.1",
       "author": "Jordan Harband",
       "description": "Robustly get the [[Prototype]] of an object",
       "licenses": [
@@ -3175,7 +3175,7 @@
       "type": "library",
       "name": "gopd",
       "version": "1.2.0",
-      "bom-ref": "braingain-frontend@1.5.2|gopd@1.2.0",
+      "bom-ref": "braingain-frontend@1.6.0|gopd@1.2.0",
       "author": "Jordan Harband",
       "description": "`Object.getOwnPropertyDescriptor`, but accounts for IE's broken implementation.",
       "licenses": [
@@ -3230,7 +3230,7 @@
       "type": "library",
       "name": "has-symbols",
       "version": "1.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|has-symbols@1.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|has-symbols@1.1.0",
       "author": "Jordan Harband",
       "description": "Determine if the JS environment has Symbol support. Supports spec, or shams.",
       "licenses": [
@@ -3285,7 +3285,7 @@
       "type": "library",
       "name": "has-tostringtag",
       "version": "1.0.2",
-      "bom-ref": "braingain-frontend@1.5.2|has-tostringtag@1.0.2",
+      "bom-ref": "braingain-frontend@1.6.0|has-tostringtag@1.0.2",
       "author": "Jordan Harband",
       "description": "Determine if the JS environment has `Symbol.toStringTag` support. Supports spec, or shams.",
       "licenses": [
@@ -3340,7 +3340,7 @@
       "type": "library",
       "name": "hasown",
       "version": "2.0.4",
-      "bom-ref": "braingain-frontend@1.5.2|hasown@2.0.4",
+      "bom-ref": "braingain-frontend@1.6.0|hasown@2.0.4",
       "author": "Jordan Harband",
       "description": "A robust, ES3 compatible, \"has own property\" predicate.",
       "licenses": [
@@ -3395,7 +3395,7 @@
       "type": "library",
       "name": "https-proxy-agent",
       "version": "5.0.1",
-      "bom-ref": "braingain-frontend@1.5.2|https-proxy-agent@5.0.1",
+      "bom-ref": "braingain-frontend@1.6.0|https-proxy-agent@5.0.1",
       "author": "Nathan Rajlich",
       "description": "An HTTP(s) proxy `http.Agent` implementation for HTTPS",
       "licenses": [
@@ -3450,7 +3450,7 @@
       "type": "library",
       "name": "js-md5",
       "version": "0.8.3",
-      "bom-ref": "braingain-frontend@1.5.2|js-md5@0.8.3",
+      "bom-ref": "braingain-frontend@1.6.0|js-md5@0.8.3",
       "author": "Chen, Yi-Cyuan",
       "description": "A simple MD5 hash function for JavaScript supports UTF-8 encoding.",
       "licenses": [
@@ -3501,7 +3501,7 @@
       "type": "library",
       "name": "linebreak",
       "version": "1.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|linebreak@1.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|linebreak@1.1.0",
       "author": "Devon Govett",
       "description": "An implementation of the Unicode Line Breaking Algorithm (UAX #14)",
       "licenses": [
@@ -3552,7 +3552,7 @@
       "type": "library",
       "name": "lucide-vue-next",
       "version": "0.400.0",
-      "bom-ref": "braingain-frontend@1.5.2|lucide-vue-next@0.400.0",
+      "bom-ref": "braingain-frontend@1.6.0|lucide-vue-next@0.400.0",
       "author": "Eric Fennis",
       "description": "A Lucide icon library package for Vue 3 applications",
       "licenses": [
@@ -3603,7 +3603,7 @@
       "type": "library",
       "name": "magic-string",
       "version": "0.30.21",
-      "bom-ref": "braingain-frontend@1.5.2|magic-string@0.30.21",
+      "bom-ref": "braingain-frontend@1.6.0|magic-string@0.30.21",
       "author": "Rich Harris",
       "description": "Modify strings, generate sourcemaps",
       "licenses": [
@@ -3654,7 +3654,7 @@
       "type": "library",
       "name": "math-intrinsics",
       "version": "1.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|math-intrinsics@1.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|math-intrinsics@1.1.0",
       "author": "Jordan Harband",
       "description": "ES Math-related intrinsics and helpers, robustly cached.",
       "licenses": [
@@ -3709,7 +3709,7 @@
       "type": "library",
       "name": "mime-db",
       "version": "1.52.0",
-      "bom-ref": "braingain-frontend@1.5.2|mime-db@1.52.0",
+      "bom-ref": "braingain-frontend@1.6.0|mime-db@1.52.0",
       "description": "Media Type Database",
       "licenses": [
         {
@@ -3763,7 +3763,7 @@
       "type": "library",
       "name": "mime-types",
       "version": "2.1.35",
-      "bom-ref": "braingain-frontend@1.5.2|mime-types@2.1.35",
+      "bom-ref": "braingain-frontend@1.6.0|mime-types@2.1.35",
       "description": "The ultimate javascript content-type utility.",
       "licenses": [
         {
@@ -3817,7 +3817,7 @@
       "type": "library",
       "name": "ms",
       "version": "2.1.3",
-      "bom-ref": "braingain-frontend@1.5.2|ms@2.1.3",
+      "bom-ref": "braingain-frontend@1.6.0|ms@2.1.3",
       "description": "Tiny millisecond conversion utility",
       "licenses": [
         {
@@ -3867,7 +3867,7 @@
       "type": "library",
       "name": "nanoid",
       "version": "3.3.12",
-      "bom-ref": "braingain-frontend@1.5.2|nanoid@3.3.12",
+      "bom-ref": "braingain-frontend@1.6.0|nanoid@3.3.12",
       "author": "Andrey Sitnik",
       "description": "A tiny (116 bytes), secure URL-friendly unique string ID generator",
       "licenses": [
@@ -3922,7 +3922,7 @@
       "type": "library",
       "name": "pako",
       "version": "1.0.11",
-      "bom-ref": "braingain-frontend@1.5.2|pako@1.0.11",
+      "bom-ref": "braingain-frontend@1.6.0|pako@1.0.11",
       "description": "zlib port to javascript - fast, modularized, with browser support",
       "licenses": [
         {
@@ -3970,7 +3970,7 @@
       "type": "library",
       "name": "pdfjs-dist",
       "version": "6.0.227",
-      "bom-ref": "braingain-frontend@1.5.2|pdfjs-dist@6.0.227",
+      "bom-ref": "braingain-frontend@1.6.0|pdfjs-dist@6.0.227",
       "description": "Generic build of Mozilla's PDF.js library.",
       "licenses": [
         {
@@ -4024,7 +4024,7 @@
       "type": "library",
       "name": "pdfkit",
       "version": "0.18.0",
-      "bom-ref": "braingain-frontend@1.5.2|pdfkit@0.18.0",
+      "bom-ref": "braingain-frontend@1.6.0|pdfkit@0.18.0",
       "author": "Devon Govett",
       "description": "A PDF generation library for Node.js",
       "licenses": [
@@ -4075,7 +4075,7 @@
       "type": "library",
       "name": "pdfmake",
       "version": "0.3.9",
-      "bom-ref": "braingain-frontend@1.5.2|pdfmake@0.3.9",
+      "bom-ref": "braingain-frontend@1.6.0|pdfmake@0.3.9",
       "author": "Bartek Pampuch",
       "description": "Client/server side PDF printing in pure JavaScript",
       "licenses": [
@@ -4130,7 +4130,7 @@
       "type": "library",
       "name": "picocolors",
       "version": "1.1.1",
-      "bom-ref": "braingain-frontend@1.5.2|picocolors@1.1.1",
+      "bom-ref": "braingain-frontend@1.6.0|picocolors@1.1.1",
       "author": "Alexey Raspopov",
       "description": "The tiniest and the fastest library for terminal output formatting with ANSI colors",
       "licenses": [
@@ -4181,7 +4181,7 @@
       "type": "library",
       "name": "pinia",
       "version": "2.3.1",
-      "bom-ref": "braingain-frontend@1.5.2|pinia@2.3.1",
+      "bom-ref": "braingain-frontend@1.6.0|pinia@2.3.1",
       "author": "Eduardo San Martin Morote",
       "description": "Intuitive, type safe and flexible Store for Vue",
       "licenses": [
@@ -4232,7 +4232,7 @@
       "type": "library",
       "name": "png-js",
       "version": "1.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|png-js@1.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|png-js@1.1.0",
       "author": "Devon Govett",
       "description": "A PNG decoder in JavaScript",
       "purl": "pkg:npm/png-js@1.1.0",
@@ -4275,7 +4275,7 @@
       "type": "library",
       "name": "postcss",
       "version": "8.5.15",
-      "bom-ref": "braingain-frontend@1.5.2|postcss@8.5.15",
+      "bom-ref": "braingain-frontend@1.6.0|postcss@8.5.15",
       "author": "Andrey Sitnik",
       "description": "Tool for transforming styles with JS plugins",
       "licenses": [
@@ -4330,7 +4330,7 @@
       "type": "library",
       "name": "proxy-from-env",
       "version": "2.1.0",
-      "bom-ref": "braingain-frontend@1.5.2|proxy-from-env@2.1.0",
+      "bom-ref": "braingain-frontend@1.6.0|proxy-from-env@2.1.0",
       "author": "Rob Wu",
       "description": "Offers getProxyForUrl to get the proxy URL for a URL, respecting the *_PROXY (e.g. HTTP_PROXY) and NO_PROXY environment variables.",
       "licenses": [
@@ -4385,7 +4385,7 @@
       "type": "library",
       "name": "restructure",
       "version": "3.0.2",
-      "bom-ref": "braingain-frontend@1.5.2|restructure@3.0.2",
+      "bom-ref": "braingain-frontend@1.6.0|restructure@3.0.2",
       "author": "Devon Govett",
       "description": "Declaratively encode and decode binary data",
       "licenses": [
@@ -4436,7 +4436,7 @@
       "type": "library",
       "name": "sax",
       "version": "1.6.0",
-      "bom-ref": "braingain-frontend@1.5.2|sax@1.6.0",
+      "bom-ref": "braingain-frontend@1.6.0|sax@1.6.0",
       "author": "Isaac Z. Schlueter",
       "description": "An evented streaming XML parser in JavaScript",
       "licenses": [
@@ -4491,7 +4491,7 @@
       "type": "library",
       "name": "source-map-js",
       "version": "1.2.1",
-      "bom-ref": "braingain-frontend@1.5.2|source-map-js@1.2.1",
+      "bom-ref": "braingain-frontend@1.6.0|source-map-js@1.2.1",
       "author": "Valentin 7rulnik Semirulnik",
       "description": "Generates and consumes source maps",
       "licenses": [
@@ -4546,7 +4546,7 @@
       "type": "library",
       "name": "tiny-inflate",
       "version": "1.0.3",
-      "bom-ref": "braingain-frontend@1.5.2|tiny-inflate@1.0.3",
+      "bom-ref": "braingain-frontend@1.6.0|tiny-inflate@1.0.3",
       "author": "Devon Govett",
       "description": "A tiny inflate implementation",
       "licenses": [
@@ -4597,7 +4597,7 @@
       "type": "library",
       "name": "tslib",
       "version": "2.8.1",
-      "bom-ref": "braingain-frontend@1.5.2|tslib@2.8.1",
+      "bom-ref": "braingain-frontend@1.6.0|tslib@2.8.1",
       "author": "Microsoft Corp.",
       "description": "Runtime library for TypeScript helper functions",
       "licenses": [
@@ -4648,7 +4648,7 @@
       "type": "library",
       "name": "typescript",
       "version": "5.9.3",
-      "bom-ref": "braingain-frontend@1.5.2|typescript@5.9.3",
+      "bom-ref": "braingain-frontend@1.6.0|typescript@5.9.3",
       "author": "Microsoft Corp.",
       "description": "TypeScript is a language for application scale JavaScript development",
       "licenses": [
@@ -4707,7 +4707,7 @@
       "type": "library",
       "name": "undici-types",
       "version": "6.21.0",
-      "bom-ref": "braingain-frontend@1.5.2|undici-types@6.21.0",
+      "bom-ref": "braingain-frontend@1.6.0|undici-types@6.21.0",
       "description": "A stand-alone types package for Undici",
       "licenses": [
         {
@@ -4757,7 +4757,7 @@
       "type": "library",
       "name": "unicode-properties",
       "version": "1.4.1",
-      "bom-ref": "braingain-frontend@1.5.2|unicode-properties@1.4.1",
+      "bom-ref": "braingain-frontend@1.6.0|unicode-properties@1.4.1",
       "author": "Devon Govett",
       "description": "Provides fast access to unicode character properties",
       "licenses": [
@@ -4808,7 +4808,7 @@
           "type": "library",
           "name": "base64-js",
           "version": "1.5.1",
-          "bom-ref": "braingain-frontend@1.5.2|unicode-properties@1.4.1|base64-js@1.5.1",
+          "bom-ref": "braingain-frontend@1.6.0|unicode-properties@1.4.1|base64-js@1.5.1",
           "author": "T. Jameson Little",
           "description": "Base64 encoding/decoding in pure JS",
           "licenses": [
@@ -4861,7 +4861,7 @@
       "type": "library",
       "name": "unicode-trie",
       "version": "2.0.0",
-      "bom-ref": "braingain-frontend@1.5.2|unicode-trie@2.0.0",
+      "bom-ref": "braingain-frontend@1.6.0|unicode-trie@2.0.0",
       "author": "Devon Govett",
       "description": "Unicode Trie data structure for fast character metadata lookup, ported from ICU",
       "licenses": [
@@ -4912,7 +4912,7 @@
           "type": "library",
           "name": "pako",
           "version": "0.2.9",
-          "bom-ref": "braingain-frontend@1.5.2|unicode-trie@2.0.0|pako@0.2.9",
+          "bom-ref": "braingain-frontend@1.6.0|unicode-trie@2.0.0|pako@0.2.9",
           "description": "zlib port to javascript - fast, modularized, with browser support",
           "licenses": [
             {
@@ -4964,7 +4964,7 @@
       "type": "library",
       "name": "vue-demi",
       "version": "0.14.10",
-      "bom-ref": "braingain-frontend@1.5.2|vue-demi@0.14.10",
+      "bom-ref": "braingain-frontend@1.6.0|vue-demi@0.14.10",
       "author": "Anthony Fu",
       "licenses": [
         {
@@ -5018,7 +5018,7 @@
       "type": "library",
       "name": "vue-i18n",
       "version": "10.0.8",
-      "bom-ref": "braingain-frontend@1.5.2|vue-i18n@10.0.8",
+      "bom-ref": "braingain-frontend@1.6.0|vue-i18n@10.0.8",
       "author": "kazuya kawaguchi",
       "description": "Internationalization plugin for Vue.js",
       "licenses": [
@@ -5073,7 +5073,7 @@
       "type": "library",
       "name": "vue-router",
       "version": "4.6.4",
-      "bom-ref": "braingain-frontend@1.5.2|vue-router@4.6.4",
+      "bom-ref": "braingain-frontend@1.6.0|vue-router@4.6.4",
       "author": "Eduardo San Martin Morote",
       "licenses": [
         {
@@ -5123,7 +5123,7 @@
       "type": "library",
       "name": "vue",
       "version": "3.5.35",
-      "bom-ref": "braingain-frontend@1.5.2|vue@3.5.35",
+      "bom-ref": "braingain-frontend@1.6.0|vue@3.5.35",
       "author": "Evan You",
       "description": "The progressive JavaScript framework for building modern web UI.",
       "licenses": [
@@ -5174,7 +5174,7 @@
       "type": "library",
       "name": "xmldoc",
       "version": "2.0.3",
-      "bom-ref": "braingain-frontend@1.5.2|xmldoc@2.0.3",
+      "bom-ref": "braingain-frontend@1.6.0|xmldoc@2.0.3",
       "author": "Nick Farina",
       "description": "A lightweight XML Document class for JavaScript.",
       "licenses": [
@@ -5228,543 +5228,543 @@
   ],
   "dependencies": [
     {
-      "ref": "braingain-frontend@1.5.2",
+      "ref": "braingain-frontend@1.6.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@azure/msal-browser@5.11.0",
-        "braingain-frontend@1.5.2|@types/pdfmake@0.3.3",
-        "braingain-frontend@1.5.2|axios@1.16.1",
-        "braingain-frontend@1.5.2|flag-icons@7.5.0",
-        "braingain-frontend@1.5.2|lucide-vue-next@0.400.0",
-        "braingain-frontend@1.5.2|pdfjs-dist@6.0.227",
-        "braingain-frontend@1.5.2|pdfmake@0.3.9",
-        "braingain-frontend@1.5.2|pinia@2.3.1",
-        "braingain-frontend@1.5.2|vue-i18n@10.0.8",
-        "braingain-frontend@1.5.2|vue-router@4.6.4",
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|@azure/msal-browser@5.11.0",
+        "braingain-frontend@1.6.0|@types/pdfmake@0.3.3",
+        "braingain-frontend@1.6.0|axios@1.16.1",
+        "braingain-frontend@1.6.0|flag-icons@7.5.0",
+        "braingain-frontend@1.6.0|lucide-vue-next@0.400.0",
+        "braingain-frontend@1.6.0|pdfjs-dist@6.0.227",
+        "braingain-frontend@1.6.0|pdfmake@0.3.9",
+        "braingain-frontend@1.6.0|pinia@2.3.1",
+        "braingain-frontend@1.6.0|vue-i18n@10.0.8",
+        "braingain-frontend@1.6.0|vue-router@4.6.4",
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@azure/msal-browser@5.11.0",
+      "ref": "braingain-frontend@1.6.0|@azure/msal-browser@5.11.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@azure/msal-common@16.6.2"
+        "braingain-frontend@1.6.0|@azure/msal-common@16.6.2"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@azure/msal-common@16.6.2"
+      "ref": "braingain-frontend@1.6.0|@azure/msal-common@16.6.2"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@babel/helper-string-parser@7.29.7"
+      "ref": "braingain-frontend@1.6.0|@babel/helper-string-parser@7.29.7"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@babel/helper-validator-identifier@7.29.7"
+      "ref": "braingain-frontend@1.6.0|@babel/helper-validator-identifier@7.29.7"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@babel/parser@7.29.7",
+      "ref": "braingain-frontend@1.6.0|@babel/parser@7.29.7",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@babel/types@7.29.7"
+        "braingain-frontend@1.6.0|@babel/types@7.29.7"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@babel/types@7.29.7",
+      "ref": "braingain-frontend@1.6.0|@babel/types@7.29.7",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@babel/helper-string-parser@7.29.7",
-        "braingain-frontend@1.5.2|@babel/helper-validator-identifier@7.29.7"
+        "braingain-frontend@1.6.0|@babel/helper-string-parser@7.29.7",
+        "braingain-frontend@1.6.0|@babel/helper-validator-identifier@7.29.7"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@intlify/core-base@10.0.8",
+      "ref": "braingain-frontend@1.6.0|@intlify/core-base@10.0.8",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@intlify/message-compiler@10.0.8",
-        "braingain-frontend@1.5.2|@intlify/shared@10.0.8"
+        "braingain-frontend@1.6.0|@intlify/message-compiler@10.0.8",
+        "braingain-frontend@1.6.0|@intlify/shared@10.0.8"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@intlify/message-compiler@10.0.8",
+      "ref": "braingain-frontend@1.6.0|@intlify/message-compiler@10.0.8",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@intlify/shared@10.0.8",
-        "braingain-frontend@1.5.2|source-map-js@1.2.1"
+        "braingain-frontend@1.6.0|@intlify/shared@10.0.8",
+        "braingain-frontend@1.6.0|source-map-js@1.2.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@intlify/shared@10.0.8"
+      "ref": "braingain-frontend@1.6.0|@intlify/shared@10.0.8"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@jridgewell/sourcemap-codec@1.5.5"
+      "ref": "braingain-frontend@1.6.0|@jridgewell/sourcemap-codec@1.5.5"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@napi-rs/canvas-win32-x64-msvc@1.0.0"
+      "ref": "braingain-frontend@1.6.0|@napi-rs/canvas-win32-x64-msvc@1.0.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@napi-rs/canvas@1.0.0",
+      "ref": "braingain-frontend@1.6.0|@napi-rs/canvas@1.0.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@napi-rs/canvas-win32-x64-msvc@1.0.0"
+        "braingain-frontend@1.6.0|@napi-rs/canvas-win32-x64-msvc@1.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@noble/ciphers@1.3.0"
+      "ref": "braingain-frontend@1.6.0|@noble/ciphers@1.3.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@noble/hashes@1.8.0"
+      "ref": "braingain-frontend@1.6.0|@noble/hashes@1.8.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@swc/helpers@0.5.23",
+      "ref": "braingain-frontend@1.6.0|@swc/helpers@0.5.23",
       "dependsOn": [
-        "braingain-frontend@1.5.2|tslib@2.8.1"
+        "braingain-frontend@1.6.0|tslib@2.8.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@types/node@20.19.41",
+      "ref": "braingain-frontend@1.6.0|@types/node@20.19.41",
       "dependsOn": [
-        "braingain-frontend@1.5.2|undici-types@6.21.0"
+        "braingain-frontend@1.6.0|undici-types@6.21.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@types/pdfkit@0.17.6",
+      "ref": "braingain-frontend@1.6.0|@types/pdfkit@0.17.6",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@types/node@20.19.41"
+        "braingain-frontend@1.6.0|@types/node@20.19.41"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@types/pdfmake@0.3.3",
+      "ref": "braingain-frontend@1.6.0|@types/pdfmake@0.3.3",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@types/node@20.19.41",
-        "braingain-frontend@1.5.2|@types/pdfkit@0.17.6"
+        "braingain-frontend@1.6.0|@types/node@20.19.41",
+        "braingain-frontend@1.6.0|@types/pdfkit@0.17.6"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/compiler-core@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/compiler-core@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@babel/parser@7.29.7",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35",
-        "braingain-frontend@1.5.2|entities@7.0.1",
-        "braingain-frontend@1.5.2|estree-walker@2.0.2",
-        "braingain-frontend@1.5.2|source-map-js@1.2.1"
+        "braingain-frontend@1.6.0|@babel/parser@7.29.7",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.6.0|entities@7.0.1",
+        "braingain-frontend@1.6.0|estree-walker@2.0.2",
+        "braingain-frontend@1.6.0|source-map-js@1.2.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/compiler-dom@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/compiler-dom@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/compiler-core@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35"
+        "braingain-frontend@1.6.0|@vue/compiler-core@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/compiler-sfc@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/compiler-sfc@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@babel/parser@7.29.7",
-        "braingain-frontend@1.5.2|@vue/compiler-core@3.5.35",
-        "braingain-frontend@1.5.2|@vue/compiler-dom@3.5.35",
-        "braingain-frontend@1.5.2|@vue/compiler-ssr@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35",
-        "braingain-frontend@1.5.2|estree-walker@2.0.2",
-        "braingain-frontend@1.5.2|magic-string@0.30.21",
-        "braingain-frontend@1.5.2|postcss@8.5.15",
-        "braingain-frontend@1.5.2|source-map-js@1.2.1"
+        "braingain-frontend@1.6.0|@babel/parser@7.29.7",
+        "braingain-frontend@1.6.0|@vue/compiler-core@3.5.35",
+        "braingain-frontend@1.6.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.6.0|@vue/compiler-ssr@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.6.0|estree-walker@2.0.2",
+        "braingain-frontend@1.6.0|magic-string@0.30.21",
+        "braingain-frontend@1.6.0|postcss@8.5.15",
+        "braingain-frontend@1.6.0|source-map-js@1.2.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/compiler-ssr@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/compiler-ssr@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/compiler-dom@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35"
+        "braingain-frontend@1.6.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/devtools-api@6.6.4"
+      "ref": "braingain-frontend@1.6.0|@vue/devtools-api@6.6.4"
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/reactivity@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/reactivity@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35"
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/runtime-core@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/runtime-core@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/reactivity@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35"
+        "braingain-frontend@1.6.0|@vue/reactivity@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/runtime-dom@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/runtime-dom@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/reactivity@3.5.35",
-        "braingain-frontend@1.5.2|@vue/runtime-core@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35",
-        "braingain-frontend@1.5.2|csstype@3.2.3"
+        "braingain-frontend@1.6.0|@vue/reactivity@3.5.35",
+        "braingain-frontend@1.6.0|@vue/runtime-core@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.6.0|csstype@3.2.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/server-renderer@3.5.35",
+      "ref": "braingain-frontend@1.6.0|@vue/server-renderer@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/compiler-ssr@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35",
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|@vue/compiler-ssr@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|@vue/shared@3.5.35"
+      "ref": "braingain-frontend@1.6.0|@vue/shared@3.5.35"
     },
     {
-      "ref": "braingain-frontend@1.5.2|agent-base@6.0.2",
+      "ref": "braingain-frontend@1.6.0|agent-base@6.0.2",
       "dependsOn": [
-        "braingain-frontend@1.5.2|debug@4.4.3"
+        "braingain-frontend@1.6.0|debug@4.4.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|asynckit@0.4.0"
+      "ref": "braingain-frontend@1.6.0|asynckit@0.4.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|axios@1.16.1",
+      "ref": "braingain-frontend@1.6.0|axios@1.16.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|follow-redirects@1.16.0",
-        "braingain-frontend@1.5.2|form-data@4.0.5",
-        "braingain-frontend@1.5.2|https-proxy-agent@5.0.1",
-        "braingain-frontend@1.5.2|proxy-from-env@2.1.0"
+        "braingain-frontend@1.6.0|follow-redirects@1.16.0",
+        "braingain-frontend@1.6.0|form-data@4.0.5",
+        "braingain-frontend@1.6.0|https-proxy-agent@5.0.1",
+        "braingain-frontend@1.6.0|proxy-from-env@2.1.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|base64-js@0.0.8"
+      "ref": "braingain-frontend@1.6.0|base64-js@0.0.8"
     },
     {
-      "ref": "braingain-frontend@1.5.2|brotli@1.3.3",
+      "ref": "braingain-frontend@1.6.0|brotli@1.3.3",
       "dependsOn": [
-        "braingain-frontend@1.5.2|brotli@1.3.3|base64-js@1.5.1"
+        "braingain-frontend@1.6.0|brotli@1.3.3|base64-js@1.5.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|brotli@1.3.3|base64-js@1.5.1"
+      "ref": "braingain-frontend@1.6.0|brotli@1.3.3|base64-js@1.5.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|browserify-zlib@0.2.0",
+      "ref": "braingain-frontend@1.6.0|browserify-zlib@0.2.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|pako@1.0.11"
+        "braingain-frontend@1.6.0|pako@1.0.11"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|call-bind-apply-helpers@1.0.2",
+      "ref": "braingain-frontend@1.6.0|call-bind-apply-helpers@1.0.2",
       "dependsOn": [
-        "braingain-frontend@1.5.2|es-errors@1.3.0",
-        "braingain-frontend@1.5.2|function-bind@1.1.2"
+        "braingain-frontend@1.6.0|es-errors@1.3.0",
+        "braingain-frontend@1.6.0|function-bind@1.1.2"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|clone@2.1.2"
+      "ref": "braingain-frontend@1.6.0|clone@2.1.2"
     },
     {
-      "ref": "braingain-frontend@1.5.2|combined-stream@1.0.8",
+      "ref": "braingain-frontend@1.6.0|combined-stream@1.0.8",
       "dependsOn": [
-        "braingain-frontend@1.5.2|delayed-stream@1.0.0"
+        "braingain-frontend@1.6.0|delayed-stream@1.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|csstype@3.2.3"
+      "ref": "braingain-frontend@1.6.0|csstype@3.2.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|debug@4.4.3",
+      "ref": "braingain-frontend@1.6.0|debug@4.4.3",
       "dependsOn": [
-        "braingain-frontend@1.5.2|ms@2.1.3"
+        "braingain-frontend@1.6.0|ms@2.1.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|delayed-stream@1.0.0"
+      "ref": "braingain-frontend@1.6.0|delayed-stream@1.0.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|dfa@1.2.0"
+      "ref": "braingain-frontend@1.6.0|dfa@1.2.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|dunder-proto@1.0.1",
+      "ref": "braingain-frontend@1.6.0|dunder-proto@1.0.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|call-bind-apply-helpers@1.0.2",
-        "braingain-frontend@1.5.2|es-errors@1.3.0",
-        "braingain-frontend@1.5.2|gopd@1.2.0"
+        "braingain-frontend@1.6.0|call-bind-apply-helpers@1.0.2",
+        "braingain-frontend@1.6.0|es-errors@1.3.0",
+        "braingain-frontend@1.6.0|gopd@1.2.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|entities@7.0.1"
+      "ref": "braingain-frontend@1.6.0|entities@7.0.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|es-define-property@1.0.1"
+      "ref": "braingain-frontend@1.6.0|es-define-property@1.0.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|es-errors@1.3.0"
+      "ref": "braingain-frontend@1.6.0|es-errors@1.3.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|es-object-atoms@1.1.2",
+      "ref": "braingain-frontend@1.6.0|es-object-atoms@1.1.2",
       "dependsOn": [
-        "braingain-frontend@1.5.2|es-errors@1.3.0"
+        "braingain-frontend@1.6.0|es-errors@1.3.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|es-set-tostringtag@2.1.0",
+      "ref": "braingain-frontend@1.6.0|es-set-tostringtag@2.1.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|es-errors@1.3.0",
-        "braingain-frontend@1.5.2|get-intrinsic@1.3.0",
-        "braingain-frontend@1.5.2|has-tostringtag@1.0.2",
-        "braingain-frontend@1.5.2|hasown@2.0.4"
+        "braingain-frontend@1.6.0|es-errors@1.3.0",
+        "braingain-frontend@1.6.0|get-intrinsic@1.3.0",
+        "braingain-frontend@1.6.0|has-tostringtag@1.0.2",
+        "braingain-frontend@1.6.0|hasown@2.0.4"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|estree-walker@2.0.2"
+      "ref": "braingain-frontend@1.6.0|estree-walker@2.0.2"
     },
     {
-      "ref": "braingain-frontend@1.5.2|fast-deep-equal@3.1.3"
+      "ref": "braingain-frontend@1.6.0|fast-deep-equal@3.1.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|flag-icons@7.5.0"
+      "ref": "braingain-frontend@1.6.0|flag-icons@7.5.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|follow-redirects@1.16.0"
+      "ref": "braingain-frontend@1.6.0|follow-redirects@1.16.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|fontkit@2.0.4",
+      "ref": "braingain-frontend@1.6.0|fontkit@2.0.4",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@swc/helpers@0.5.23",
-        "braingain-frontend@1.5.2|brotli@1.3.3",
-        "braingain-frontend@1.5.2|clone@2.1.2",
-        "braingain-frontend@1.5.2|dfa@1.2.0",
-        "braingain-frontend@1.5.2|fast-deep-equal@3.1.3",
-        "braingain-frontend@1.5.2|restructure@3.0.2",
-        "braingain-frontend@1.5.2|tiny-inflate@1.0.3",
-        "braingain-frontend@1.5.2|unicode-properties@1.4.1",
-        "braingain-frontend@1.5.2|unicode-trie@2.0.0"
+        "braingain-frontend@1.6.0|@swc/helpers@0.5.23",
+        "braingain-frontend@1.6.0|brotli@1.3.3",
+        "braingain-frontend@1.6.0|clone@2.1.2",
+        "braingain-frontend@1.6.0|dfa@1.2.0",
+        "braingain-frontend@1.6.0|fast-deep-equal@3.1.3",
+        "braingain-frontend@1.6.0|restructure@3.0.2",
+        "braingain-frontend@1.6.0|tiny-inflate@1.0.3",
+        "braingain-frontend@1.6.0|unicode-properties@1.4.1",
+        "braingain-frontend@1.6.0|unicode-trie@2.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|form-data@4.0.5",
+      "ref": "braingain-frontend@1.6.0|form-data@4.0.5",
       "dependsOn": [
-        "braingain-frontend@1.5.2|asynckit@0.4.0",
-        "braingain-frontend@1.5.2|combined-stream@1.0.8",
-        "braingain-frontend@1.5.2|es-set-tostringtag@2.1.0",
-        "braingain-frontend@1.5.2|hasown@2.0.4",
-        "braingain-frontend@1.5.2|mime-types@2.1.35"
+        "braingain-frontend@1.6.0|asynckit@0.4.0",
+        "braingain-frontend@1.6.0|combined-stream@1.0.8",
+        "braingain-frontend@1.6.0|es-set-tostringtag@2.1.0",
+        "braingain-frontend@1.6.0|hasown@2.0.4",
+        "braingain-frontend@1.6.0|mime-types@2.1.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|function-bind@1.1.2"
+      "ref": "braingain-frontend@1.6.0|function-bind@1.1.2"
     },
     {
-      "ref": "braingain-frontend@1.5.2|get-intrinsic@1.3.0",
+      "ref": "braingain-frontend@1.6.0|get-intrinsic@1.3.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|call-bind-apply-helpers@1.0.2",
-        "braingain-frontend@1.5.2|es-define-property@1.0.1",
-        "braingain-frontend@1.5.2|es-errors@1.3.0",
-        "braingain-frontend@1.5.2|es-object-atoms@1.1.2",
-        "braingain-frontend@1.5.2|function-bind@1.1.2",
-        "braingain-frontend@1.5.2|get-proto@1.0.1",
-        "braingain-frontend@1.5.2|gopd@1.2.0",
-        "braingain-frontend@1.5.2|has-symbols@1.1.0",
-        "braingain-frontend@1.5.2|hasown@2.0.4",
-        "braingain-frontend@1.5.2|math-intrinsics@1.1.0"
+        "braingain-frontend@1.6.0|call-bind-apply-helpers@1.0.2",
+        "braingain-frontend@1.6.0|es-define-property@1.0.1",
+        "braingain-frontend@1.6.0|es-errors@1.3.0",
+        "braingain-frontend@1.6.0|es-object-atoms@1.1.2",
+        "braingain-frontend@1.6.0|function-bind@1.1.2",
+        "braingain-frontend@1.6.0|get-proto@1.0.1",
+        "braingain-frontend@1.6.0|gopd@1.2.0",
+        "braingain-frontend@1.6.0|has-symbols@1.1.0",
+        "braingain-frontend@1.6.0|hasown@2.0.4",
+        "braingain-frontend@1.6.0|math-intrinsics@1.1.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|get-proto@1.0.1",
+      "ref": "braingain-frontend@1.6.0|get-proto@1.0.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|dunder-proto@1.0.1",
-        "braingain-frontend@1.5.2|es-object-atoms@1.1.2"
+        "braingain-frontend@1.6.0|dunder-proto@1.0.1",
+        "braingain-frontend@1.6.0|es-object-atoms@1.1.2"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|gopd@1.2.0"
+      "ref": "braingain-frontend@1.6.0|gopd@1.2.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|has-symbols@1.1.0"
+      "ref": "braingain-frontend@1.6.0|has-symbols@1.1.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|has-tostringtag@1.0.2",
+      "ref": "braingain-frontend@1.6.0|has-tostringtag@1.0.2",
       "dependsOn": [
-        "braingain-frontend@1.5.2|has-symbols@1.1.0"
+        "braingain-frontend@1.6.0|has-symbols@1.1.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|hasown@2.0.4",
+      "ref": "braingain-frontend@1.6.0|hasown@2.0.4",
       "dependsOn": [
-        "braingain-frontend@1.5.2|function-bind@1.1.2"
+        "braingain-frontend@1.6.0|function-bind@1.1.2"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|https-proxy-agent@5.0.1",
+      "ref": "braingain-frontend@1.6.0|https-proxy-agent@5.0.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|agent-base@6.0.2",
-        "braingain-frontend@1.5.2|debug@4.4.3"
+        "braingain-frontend@1.6.0|agent-base@6.0.2",
+        "braingain-frontend@1.6.0|debug@4.4.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|js-md5@0.8.3"
+      "ref": "braingain-frontend@1.6.0|js-md5@0.8.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|linebreak@1.1.0",
+      "ref": "braingain-frontend@1.6.0|linebreak@1.1.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|base64-js@0.0.8",
-        "braingain-frontend@1.5.2|unicode-trie@2.0.0"
+        "braingain-frontend@1.6.0|base64-js@0.0.8",
+        "braingain-frontend@1.6.0|unicode-trie@2.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|lucide-vue-next@0.400.0",
+      "ref": "braingain-frontend@1.6.0|lucide-vue-next@0.400.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|magic-string@0.30.21",
+      "ref": "braingain-frontend@1.6.0|magic-string@0.30.21",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@jridgewell/sourcemap-codec@1.5.5"
+        "braingain-frontend@1.6.0|@jridgewell/sourcemap-codec@1.5.5"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|math-intrinsics@1.1.0"
+      "ref": "braingain-frontend@1.6.0|math-intrinsics@1.1.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|mime-db@1.52.0"
+      "ref": "braingain-frontend@1.6.0|mime-db@1.52.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|mime-types@2.1.35",
+      "ref": "braingain-frontend@1.6.0|mime-types@2.1.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|mime-db@1.52.0"
+        "braingain-frontend@1.6.0|mime-db@1.52.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|ms@2.1.3"
+      "ref": "braingain-frontend@1.6.0|ms@2.1.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|nanoid@3.3.12"
+      "ref": "braingain-frontend@1.6.0|nanoid@3.3.12"
     },
     {
-      "ref": "braingain-frontend@1.5.2|pako@1.0.11"
+      "ref": "braingain-frontend@1.6.0|pako@1.0.11"
     },
     {
-      "ref": "braingain-frontend@1.5.2|pdfjs-dist@6.0.227",
+      "ref": "braingain-frontend@1.6.0|pdfjs-dist@6.0.227",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@napi-rs/canvas@1.0.0"
+        "braingain-frontend@1.6.0|@napi-rs/canvas@1.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|pdfkit@0.18.0",
+      "ref": "braingain-frontend@1.6.0|pdfkit@0.18.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@noble/ciphers@1.3.0",
-        "braingain-frontend@1.5.2|@noble/hashes@1.8.0",
-        "braingain-frontend@1.5.2|fontkit@2.0.4",
-        "braingain-frontend@1.5.2|js-md5@0.8.3",
-        "braingain-frontend@1.5.2|linebreak@1.1.0",
-        "braingain-frontend@1.5.2|png-js@1.1.0"
+        "braingain-frontend@1.6.0|@noble/ciphers@1.3.0",
+        "braingain-frontend@1.6.0|@noble/hashes@1.8.0",
+        "braingain-frontend@1.6.0|fontkit@2.0.4",
+        "braingain-frontend@1.6.0|js-md5@0.8.3",
+        "braingain-frontend@1.6.0|linebreak@1.1.0",
+        "braingain-frontend@1.6.0|png-js@1.1.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|pdfmake@0.3.9",
+      "ref": "braingain-frontend@1.6.0|pdfmake@0.3.9",
       "dependsOn": [
-        "braingain-frontend@1.5.2|linebreak@1.1.0",
-        "braingain-frontend@1.5.2|pdfkit@0.18.0",
-        "braingain-frontend@1.5.2|xmldoc@2.0.3"
+        "braingain-frontend@1.6.0|linebreak@1.1.0",
+        "braingain-frontend@1.6.0|pdfkit@0.18.0",
+        "braingain-frontend@1.6.0|xmldoc@2.0.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|picocolors@1.1.1"
+      "ref": "braingain-frontend@1.6.0|picocolors@1.1.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|pinia@2.3.1",
+      "ref": "braingain-frontend@1.6.0|pinia@2.3.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/devtools-api@6.6.4",
-        "braingain-frontend@1.5.2|typescript@5.9.3",
-        "braingain-frontend@1.5.2|vue-demi@0.14.10",
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.6.0|typescript@5.9.3",
+        "braingain-frontend@1.6.0|vue-demi@0.14.10",
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|png-js@1.1.0",
+      "ref": "braingain-frontend@1.6.0|png-js@1.1.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|browserify-zlib@0.2.0"
+        "braingain-frontend@1.6.0|browserify-zlib@0.2.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|postcss@8.5.15",
+      "ref": "braingain-frontend@1.6.0|postcss@8.5.15",
       "dependsOn": [
-        "braingain-frontend@1.5.2|nanoid@3.3.12",
-        "braingain-frontend@1.5.2|picocolors@1.1.1",
-        "braingain-frontend@1.5.2|source-map-js@1.2.1"
+        "braingain-frontend@1.6.0|nanoid@3.3.12",
+        "braingain-frontend@1.6.0|picocolors@1.1.1",
+        "braingain-frontend@1.6.0|source-map-js@1.2.1"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|proxy-from-env@2.1.0"
+      "ref": "braingain-frontend@1.6.0|proxy-from-env@2.1.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|restructure@3.0.2"
+      "ref": "braingain-frontend@1.6.0|restructure@3.0.2"
     },
     {
-      "ref": "braingain-frontend@1.5.2|sax@1.6.0"
+      "ref": "braingain-frontend@1.6.0|sax@1.6.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|source-map-js@1.2.1"
+      "ref": "braingain-frontend@1.6.0|source-map-js@1.2.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|tiny-inflate@1.0.3"
+      "ref": "braingain-frontend@1.6.0|tiny-inflate@1.0.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|tslib@2.8.1"
+      "ref": "braingain-frontend@1.6.0|tslib@2.8.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|typescript@5.9.3"
+      "ref": "braingain-frontend@1.6.0|typescript@5.9.3"
     },
     {
-      "ref": "braingain-frontend@1.5.2|undici-types@6.21.0"
+      "ref": "braingain-frontend@1.6.0|undici-types@6.21.0"
     },
     {
-      "ref": "braingain-frontend@1.5.2|unicode-properties@1.4.1",
+      "ref": "braingain-frontend@1.6.0|unicode-properties@1.4.1",
       "dependsOn": [
-        "braingain-frontend@1.5.2|unicode-properties@1.4.1|base64-js@1.5.1",
-        "braingain-frontend@1.5.2|unicode-trie@2.0.0"
+        "braingain-frontend@1.6.0|unicode-properties@1.4.1|base64-js@1.5.1",
+        "braingain-frontend@1.6.0|unicode-trie@2.0.0"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|unicode-properties@1.4.1|base64-js@1.5.1"
+      "ref": "braingain-frontend@1.6.0|unicode-properties@1.4.1|base64-js@1.5.1"
     },
     {
-      "ref": "braingain-frontend@1.5.2|unicode-trie@2.0.0",
+      "ref": "braingain-frontend@1.6.0|unicode-trie@2.0.0",
       "dependsOn": [
-        "braingain-frontend@1.5.2|tiny-inflate@1.0.3",
-        "braingain-frontend@1.5.2|unicode-trie@2.0.0|pako@0.2.9"
+        "braingain-frontend@1.6.0|tiny-inflate@1.0.3",
+        "braingain-frontend@1.6.0|unicode-trie@2.0.0|pako@0.2.9"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|unicode-trie@2.0.0|pako@0.2.9"
+      "ref": "braingain-frontend@1.6.0|unicode-trie@2.0.0|pako@0.2.9"
     },
     {
-      "ref": "braingain-frontend@1.5.2|vue-demi@0.14.10",
+      "ref": "braingain-frontend@1.6.0|vue-demi@0.14.10",
       "dependsOn": [
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|vue-i18n@10.0.8",
+      "ref": "braingain-frontend@1.6.0|vue-i18n@10.0.8",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@intlify/core-base@10.0.8",
-        "braingain-frontend@1.5.2|@intlify/shared@10.0.8",
-        "braingain-frontend@1.5.2|@vue/devtools-api@6.6.4",
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|@intlify/core-base@10.0.8",
+        "braingain-frontend@1.6.0|@intlify/shared@10.0.8",
+        "braingain-frontend@1.6.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|vue-router@4.6.4",
+      "ref": "braingain-frontend@1.6.0|vue-router@4.6.4",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/devtools-api@6.6.4",
-        "braingain-frontend@1.5.2|vue@3.5.35"
+        "braingain-frontend@1.6.0|@vue/devtools-api@6.6.4",
+        "braingain-frontend@1.6.0|vue@3.5.35"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|vue@3.5.35",
+      "ref": "braingain-frontend@1.6.0|vue@3.5.35",
       "dependsOn": [
-        "braingain-frontend@1.5.2|@vue/compiler-dom@3.5.35",
-        "braingain-frontend@1.5.2|@vue/compiler-sfc@3.5.35",
-        "braingain-frontend@1.5.2|@vue/runtime-dom@3.5.35",
-        "braingain-frontend@1.5.2|@vue/server-renderer@3.5.35",
-        "braingain-frontend@1.5.2|@vue/shared@3.5.35",
-        "braingain-frontend@1.5.2|typescript@5.9.3"
+        "braingain-frontend@1.6.0|@vue/compiler-dom@3.5.35",
+        "braingain-frontend@1.6.0|@vue/compiler-sfc@3.5.35",
+        "braingain-frontend@1.6.0|@vue/runtime-dom@3.5.35",
+        "braingain-frontend@1.6.0|@vue/server-renderer@3.5.35",
+        "braingain-frontend@1.6.0|@vue/shared@3.5.35",
+        "braingain-frontend@1.6.0|typescript@5.9.3"
       ]
     },
     {
-      "ref": "braingain-frontend@1.5.2|xmldoc@2.0.3",
+      "ref": "braingain-frontend@1.6.0|xmldoc@2.0.3",
       "dependsOn": [
-        "braingain-frontend@1.5.2|sax@1.6.0"
+        "braingain-frontend@1.6.0|sax@1.6.0"
       ]
     }
   ]
