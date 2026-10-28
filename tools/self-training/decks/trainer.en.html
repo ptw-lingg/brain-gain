@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>BrainGain for Trainers</title>
+<link rel="stylesheet" href="deck.css" />
+</head>
+<body>
+
+<!-- 1 ─ title -->
+<section class="slide title">
+  <img class="logo" src="../../../frontend/public/ptw-logo-white.svg" alt="PTW" />
+  <div class="kicker">Self-training · for trainers who author trainings</div>
+  <h1>BrainGain for Trainers</h1>
+  <p>Creating a training with materials and a quiz, importing a SCORM course, working with drafts and published versions, and following up with your trainees.</p>
+  <div class="meta">PTW-Freiburg GmbH · BrainGain · about 45 minutes · assumes you know the trainee side</div>
+</section>
+
+<!-- 2 ─ your role -->
+<section class="slide">
+  <div class="head"><h1>Your role as a trainer</h1><span class="chapter">Overview</span></div>
+  <div class="body single">
+    <p class="lead">A trainer owns trainings. An administrator decides who must take them. Both sides meet in the job roles.</p>
+    <div class="two">
+      <div class="card">
+        <h3>You — Trainer</h3>
+        <ul>
+          <li><b>Trainings</b> page: create and edit the trainings you own, upload materials, write the quiz or attach a SCORM course.</li>
+          <li><b>Publish</b> versions: the first one makes a training visible, later ones can oblige trainees to retake or confirm.</li>
+          <li><b>Trainees</b> page: see who must take your trainings and who is due; send reminder emails.</li>
+          <li>You are the contact shown to trainees inside your trainings.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Administrator</h3>
+        <ul>
+          <li>Sees and edits <b>all</b> trainings, sets the owner, orders the list, exports the Training Plan PDF.</li>
+          <li>Manages <b>users</b>, <b>job roles</b> (which trainings a role requires) and <b>org units</b>.</li>
+          <li>Settings: pass threshold, email (SMTP), Microsoft sign-in, backups.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">Trainees see a training only when (a) version 1 is published and (b) one of their job roles requires it.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 3 ─ lifecycle -->
+<section class="slide">
+  <div class="head"><h1>The life of a training</h1><span class="chapter">Overview</span></div>
+  <div class="body single">
+    <div class="flow">
+      <div class="step"><h4>Create</h4><p>Name, schedule, content. <b>Version 0</b> — invisible to trainees.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h4>Draft</h4><p>Every save of materials, quiz or package is staged, never live.</p></div>
+      <div class="arrow">→</div>
+      <div class="step hot"><h4>Publish v1</h4><p>Silently — nobody has taken it yet. Trainees can start.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h4>Edit again</h4><p>Changes become a new draft; trainees keep seeing v1.</p></div>
+      <div class="arrow">→</div>
+      <div class="step hot"><h4>Publish v2…</h4><p>Notify (retake / confirm by a deadline) or silently.</p></div>
+    </div>
+    <ul class="points" style="margin-top:18px">
+      <li><b>Master data is live immediately.</b> Name, description, category, duration, owner, schedule and preview image are saved directly — they are not content.</li>
+      <li><b>Content is versioned.</b> Materials, quiz questions and the SCORM package go through draft → publish. The version number only ever goes up.</li>
+      <li><b>Trainees are graded against the published version.</b> Running sessions are never changed under their feet.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 4 ─ section -->
+<section class="slide section">
+  <div class="num">Part 1</div>
+  <h1>Creating a training</h1>
+  <p>The Trainings page, basics, schedule and the content type.</p>
+</section>
+
+<!-- 5 ─ trainings page -->
+<section class="slide">
+  <div class="head"><h1>The Trainings page</h1><span class="chapter">Part 1 · Creating a training</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/trainings.png" alt="Trainings page with version, draft and SCORM pills" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Add Training</b> opens the editor for a new training. Click a row to edit an existing one.</li>
+        <li><b>Version 1 · date</b> — the published version and when it went live.</li>
+        <li><span class="pill blue">Draft</span> — unpublished content changes exist; trainees still see the last published version.</li>
+        <li><span class="pill amber">Not published</span> — version 0; trainees cannot see or start it.</li>
+        <li><span class="pill gray">SCORM course</span> — delivered by an imported course; the package is material and test in one.</li>
+        <li>Administrators additionally drag rows to <b>reorder</b> (the order is used everywhere) and export the <b>Training Plan</b>.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 6 ─ basics -->
+<section class="slide">
+  <div class="head"><h1>Basics</h1><span class="chapter">Part 1 · Creating a training</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Name</b> per language — English and German fields; at least one is required. Trainees see the name in their language, falling back to English.</li>
+        <li><b>Category</b> (e.g. Safety, Compliance) groups trainings on the dashboard and tints the card.</li>
+        <li><b>Description</b> — one or two sentences shown on the card. Say what the training is for.</li>
+        <li><b>Duration (minutes)</b> — honest estimate; the dashboard adds these up for the trainee.</li>
+        <li><b>Owner (trainer)</b> — administrators can hand a training to another trainer.</li>
+        <li><b>Preview image</b> — optional cover for the card. Landscape, scaled to 800 × 450 px; PNG, JPEG, WebP or GIF.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/editor-basics.png" alt="Training editor: Basics section" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 7 ─ schedule -->
+<section class="slide">
+  <div class="head"><h1>Schedule: when is it due?</h1><span class="chapter">Part 1 · Creating a training</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/editor-schedule.png" alt="Training editor: Schedule section" /></div>
+    </div>
+    <div class="col narrow">
+      <table class="t">
+        <tr><th>Field</th><th>Effect for the trainee</th></tr>
+        <tr><td><b>Repeat every</b> (1–5 years)</td><td>How long a passing result stays valid. The next due date = last pass + this cycle.</td></tr>
+        <tr><td><b>Window opens</b> (0–3 months before)</td><td>From this point the card says <span class="pill rose">Due now · by date</span> — the trainee may take it early without losing time.</td></tr>
+        <tr><td><b>Grace</b> (0–3 months after)</td><td>After the due date plus grace the card turns <span class="pill rose">Overdue</span>.</td></tr>
+      </table>
+      <div class="callout small">A training never passed is simply <b>Due now</b> — the schedule only matters from the first pass on. Changing the schedule applies immediately to everyone.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 8 ─ content type -->
+<section class="slide">
+  <div class="head"><h1>Content type: choose how you teach</h1><span class="chapter">Part 1 · Creating a training</span></div>
+  <div class="body single">
+    <div class="two">
+      <div class="card">
+        <h3>Material &amp; quiz</h3>
+        <p>Learning materials to study (files or links, per language) plus the built-in test, graded by BrainGain against the pass threshold.</p>
+        <ul>
+          <li>Fastest way to a training: a PDF and five questions.</li>
+          <li>Materials open in the built-in viewer (PDF, video, image) or externally.</li>
+          <li>Per-language variants, English as fallback.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>SCORM course</h3>
+        <p>An interactive course exported from an authoring tool (Articulate, Captivate, iSpring, …). It carries its own content <b>and</b> its own test and reports the result to BrainGain.</p>
+        <ul>
+          <li>Runs inside BrainGain; progress is saved and resumable.</li>
+          <li>The quiz editor is disabled while a package is attached.</li>
+          <li>One language per package.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">You can switch later: removing the package re-activates the quiz questions; attaching one hides them. Either way the change is a draft until you publish.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 9 ─ section -->
+<section class="slide section">
+  <div class="num">Part 2</div>
+  <h1>A simple training: material &amp; quiz</h1>
+  <p>Uploading materials, writing good questions, and what “Save” really does.</p>
+</section>
+
+<!-- 10 ─ materials -->
+<section class="slide">
+  <div class="head"><h1>Learning material</h1><span class="chapter">Part 2 · Material &amp; quiz</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Add material</b> creates a group with one row per language (EN, DE).</div></li>
+        <li><span class="n">2</span><div>Per language: a <b>label</b> and either a <b>link</b> (https://…) or an <b>uploaded file</b>. Any file type is allowed; a file wins over a link.</div></li>
+        <li><span class="n">3</span><div>Fill in the languages you have — blank languages are simply not offered. English is the fallback when the trainee's language is missing.</div></li>
+        <li><span class="n">4</span><div>Order materials with the <b>arrows</b> — trainees see them in this order.</div></li>
+      </ul>
+      <div class="callout small"><b>What trainees see:</b> PDFs, videos and images open in BrainGain's viewer. Links to web pages open in a new tab. Other files (DOCX, XLSX, ZIP…) download.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/editor-materials.png" alt="Training editor: Learning material section" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 11 ─ quiz -->
+<section class="slide">
+  <div class="head"><h1>Quiz questions</h1><span class="chapter">Part 2 · Material &amp; quiz</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/editor-questions.png" alt="Training editor: Quiz questions section" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Add question</b>, write the text per language, add options, and <b>tick every correct answer</b> — at least one.</li>
+        <li><b>Single choice</b> (radio buttons) needs exactly one correct answer. <b>Multiple choice</b> (checkboxes) is graded as the exact set.</li>
+        <li>Each question collapses to a summary: type · options · correct count. Reorder with the arrows.</li>
+      </ul>
+      <div class="card"><h3>Writing good questions</h3><ul>
+        <li>One question per key point of the material; 5–12 questions is plenty.</li>
+        <li>Four options, distractors plausible but clearly wrong after reading.</li>
+        <li>Remember the pass threshold (default 80 %): with 5 questions, one mistake already fails.</li>
+        <li>The answer key never leaves the server — trainees only ever see which questions were wrong, if the admin enabled that.</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 12 ─ save = draft -->
+<section class="slide">
+  <div class="head"><h1>Save stages a draft — it publishes nothing</h1><span class="chapter">Part 2 · Material &amp; quiz</span></div>
+  <div class="body single">
+    <div class="cards">
+      <div class="card"><h3>Save</h3><p>Master data goes live at once. Content changes (materials, questions, package) are stored as a <b>draft</b> — a complete snapshot of what you are preparing.</p></div>
+      <div class="card"><h3>Trainees</h3><p>Keep seeing and being graded against the <b>last published version</b>. A training with version 0 stays invisible.</p></div>
+      <div class="card"><h3>The Draft pill</h3><p>Appears on the Trainings page while unpublished changes exist. Opening the editor shows the draft content, not the published one.</p></div>
+      <div class="card"><h3>Discard draft</h3><p>In the publish dialog (<b>Versions</b> button). Throws the draft away; the published content stands.</p></div>
+    </div>
+    <div class="callout">After a save that changed content, BrainGain offers the publish dialog right away. <b>Skip — keep as draft</b> is fine: finish your work over several sessions and publish once.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 13 ─ section -->
+<section class="slide section">
+  <div class="num">Part 3</div>
+  <h1>Publishing</h1>
+  <p>Going live, notifying trainees, managing versions.</p>
+</section>
+
+<!-- 14 ─ publish dialog -->
+<section class="slide">
+  <div class="head"><h1>The publish dialog</h1><span class="chapter">Part 3 · Publishing</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/publish.png" alt="Publish a new version dialog" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Publish and notify</b> — everyone who already completed the training gets an obligation with a <b>deadline</b> and an email. Choose what they must do:
+          <ul style="margin:6px 0 0;padding-left:18px"><li><b>Retake the training</b> — materials and test; the new pass restarts their cycle.</li><li><b>Review and confirm the materials</b> — no test; their cycle is unchanged.</li></ul></li>
+        <li><b>Publish silently</b> — the draft goes live as the next version; nobody is notified, nothing becomes due. Right for typos and small fixes.</li>
+        <li>The <b>Note to trainees</b> and the email preview can be edited before sending.</li>
+      </ul>
+      <div class="callout small">The <b>first</b> version is always published silently — nobody has taken it yet. Emails need SMTP configured by the administrator.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 15 ─ versions -->
+<section class="slide">
+  <div class="head"><h1>Versions</h1><span class="chapter">Part 3 · Publishing</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">The <b>Versions</b> button in the editor opens the same dialog for a training without pending changes.</p>
+      <ul class="points">
+        <li>It lists the <b>published versions</b> with their deadlines and lets you <b>Withdraw</b> a notified update that was a mistake — the obligation disappears for everyone.</li>
+        <li>Without a draft, publishing <b>re-announces</b> the current content: useful to oblige a retake after a policy change without touching the material.</li>
+        <li>Version numbers only ever increase; withdrawing never reuses a number.</li>
+        <li>Every publish, withdraw and discard is written to the audit trail with your name.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/versions.png" alt="Versions dialog of a published training" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 16 ─ section -->
+<section class="slide section">
+  <div class="num">Part 4</div>
+  <h1>SCORM courses</h1>
+  <p>Importing an interactive course and choosing its completion rule.</p>
+</section>
+
+<!-- 17 ─ scorm requirements -->
+<section class="slide">
+  <div class="head"><h1>What BrainGain accepts</h1><span class="chapter">Part 4 · SCORM courses</span></div>
+  <div class="body single">
+    <p class="lead">SCORM is the standard export format of e-learning authoring tools. Export your course as a <b>SCORM 1.2</b> or <b>SCORM 2004</b> package — a .zip with an <b>imsmanifest.xml</b> — and upload it in the editor.</p>
+    <div class="two">
+      <div class="card"><h3><span class="pill green">Accepted</span></h3><ul>
+        <li>SCORM 1.2, SCORM 2004 (3rd/4th edition)</li>
+        <li>Exactly one launchable lesson (<b>single SCO</b>)</li>
+        <li>Up to 500 MB unpacked, up to 2000 files</li>
+        <li>Exports from Articulate Storyline/Rise, Adobe Captivate, iSpring, and similar tools</li>
+      </ul></div>
+      <div class="card"><h3><span class="pill rose">Refused</span></h3><ul>
+        <li>No imsmanifest.xml — not a SCORM package</li>
+        <li>Several lessons (multi-SCO) — export as a single SCO</li>
+        <li>cmi5 / xAPI packages — export as SCORM instead</li>
+        <li>Encrypted zips, unsafe paths, symbolic links, suspiciously inflating archives</li>
+        <li>A launch file that is not an HTML page</li>
+      </ul></div>
+    </div>
+    <div class="callout small">A refused package shows the exact reason in the editor. Fix the export in the authoring tool and upload again.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 18 ─ import -->
+<section class="slide">
+  <div class="head"><h1>Importing a package</h1><span class="chapter">Part 4 · SCORM courses</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div>Set the content type to <b>SCORM course</b>.</div></li>
+        <li><span class="n">2</span><div>Click <b>Upload SCORM package (.zip)</b>. The upload is checked and unpacked on the server.</div></li>
+        <li><span class="n">3</span><div>The <b>manifest card</b> shows what was found: version, title, launch file, mastery score, file count, unpacked size.</div></li>
+        <li><span class="n">4</span><div>If the package carries a cover picture, BrainGain offers it as the training's <b>preview image</b>.</div></li>
+        <li><span class="n">5</span><div><b>Save</b>, then <b>publish</b> — the package is content and goes through the draft like materials.</div></li>
+      </ul>
+      <div class="callout small"><b>Replace package</b> for a new course build; <b>Remove package</b> brings the quiz questions back.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/editor-scorm.png" alt="Training editor: SCORM course section with manifest card" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 19 ─ scorm options -->
+<section class="slide">
+  <div class="head"><h1>Completion rule and options</h1><span class="chapter">Part 4 · SCORM courses</span></div>
+  <div class="body single">
+    <p class="lead">BrainGain decides <b>on the server</b> when a trainee may finish and sign. Pick the rule that matches how your course reports:</p>
+    <table class="t">
+      <tr><th style="width:360px">Rule</th><th>Use when</th></tr>
+      <tr><td><b>When the course reports completed/passed</b> <span class="pill green">recommended</span></td><td>The course sets its status correctly (the normal case for Articulate, Captivate, iSpring exports). A reported “failed” lets the trainee start a new attempt.</td></tr>
+      <tr><td><b>When the course was finished cleanly, whatever it reports</b></td><td>The course never reports completion (stays “incomplete” forever) but does terminate cleanly at the end.</td></tr>
+      <tr><td><b>After the training duration of measured activity</b></td><td>The course reports nothing at all. BrainGain measures the time the trainee actually spends in the content, against the training's duration.</td></tr>
+    </table>
+    <div class="two" style="margin-top:4px">
+      <div class="callout warn"><b>Allow the course to contact external servers</b> — off by default. Only enable it if the package needs it (e.g. streams video from a CDN); it lets third-party content talk to the internet.</div>
+      <div class="callout small"><b>Single language</b> — a package has no per-language variants; use a course with its own language switch or one training per language. <b>Accessibility</b> inside the course is the author's responsibility. <b>Show attempts (diagnostics)</b> lists what each learner's attempt reported — your first stop when “nothing happens”.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 20 ─ scorm for trainees -->
+<section class="slide">
+  <div class="head"><h1>What your trainees experience</h1><span class="chapter">Part 4 · SCORM courses</span></div>
+  <div class="body single">
+    <div class="cards">
+      <div class="card"><h3>Start launches the course</h3><p>No material list — the course opens directly, labelled as third-party content.</p></div>
+      <div class="card"><h3>Progress is saved</h3><p>Every write the course makes is stored server-side. <b>Exit and continue later</b> resumes; <b>Start over</b> discards.</p></div>
+      <div class="card"><h3>Finish and sign</h3><p>Once your completion rule is met, <b>Finish and sign completion</b> appears — the usual identity confirmation. The reported score is shown.</p></div>
+      <div class="card"><h3>Versions are pinned</h3><p>Publishing fixes the course version; attempts that are already running finish on the version they started with.</p></div>
+    </div>
+    <div class="callout warn">“Review and confirm the materials” is <b>not available</b> for SCORM trainings — new course content must be run, so a notified update is always a retake.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 21 ─ section -->
+<section class="slide section">
+  <div class="num">Part 5</div>
+  <h1>Following up</h1>
+  <p>Who must take your training, reminders, and how trainees get assigned.</p>
+</section>
+
+<!-- 22 ─ trainees -->
+<section class="slide">
+  <div class="head"><h1>The Trainees page</h1><span class="chapter">Part 5 · Following up</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/trainees.png" alt="Trainees page" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li>One block per training you own: <b>everyone whose job roles require it</b>, with their status and due date.</li>
+        <li><b>Only show due / overdue</b> narrows the list to the people who must act.</li>
+        <li><b>Email trainees</b> sends a reminder to the due people of one training; <b>Email everyone</b> covers all your trainings. Subject and text are editable.</li>
+      </ul>
+      <div class="callout small">Emails need the SMTP server configured in <b>Settings</b> — an administrator's job. Until then the button tells you so.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 23 ─ roles -->
+<section class="slide">
+  <div class="head"><h1>How trainees get your training</h1><span class="chapter">Part 5 · Following up</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">You never assign people directly. An administrator adds your training to the <b>job roles</b> that require it; every user with that role sees it.</p>
+      <ul class="points">
+        <li>A user's required trainings are the union of all their roles — no duplicates.</li>
+        <li>Users belong to <b>org units</b>; unit heads see their people's status on <b>My Team</b> and can export the Training Status Report.</li>
+        <li>After publishing version 1, tell your administrator which roles must take the training.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/roles.png" alt="Job Roles page (administrator)" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+<!-- 24 ─ checklist -->
+<section class="slide">
+  <div class="head"><h1>Checklist before you publish</h1><span class="chapter">Ready for the test</span></div>
+  <div class="body">
+    <div class="col">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Basics complete</b> — name in the languages you serve, category, honest duration, description.</div></li>
+        <li><span class="n">2</span><div><b>Schedule fits the requirement</b> — cycle, window, grace.</div></li>
+        <li><span class="n">3</span><div><b>Materials open</b> — click each one in the editor's preview; labels say what the file is.</div></li>
+        <li><span class="n">4</span><div><b>Quiz is fair</b> — every question answerable from the material; correct answers ticked; threshold in mind.</div></li>
+        <li><span class="n">5</span><div><b>SCORM</b> — manifest card plausible, completion rule chosen, external access off unless needed.</div></li>
+        <li><span class="n">6</span><div><b>Publish</b> — v1 silently; later versions notify only when trainees really must act.</div></li>
+        <li><span class="n">7</span><div><b>Roles</b> — ask the administrator to add the training to the right job roles.</div></li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="card" style="background:var(--petrol-50)">
+        <h3>Now: the test</h3>
+        <p>Close this viewer with <b>‹ Back</b>, click <b>Start test →</b>, confirm the materials and answer the questions.</p>
+        <p style="margin-top:10px"><b>12 questions</b> · single and multiple choice · unlimited attempts</p>
+      </div>
+      <div class="callout small">Want to try things out? Create a training, keep it at version 0 — nobody sees it until you publish.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
+</section>
+
+</body>
+</html>

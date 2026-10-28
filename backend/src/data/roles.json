@@ -356,5 +356,21 @@
       "ec867de7-dd70-42d2-b156-309041f8fcc1",
       "b6d07e12-fcf4-4353-b828-1f26afa36f7b"
     ]
+  },
+  {
+    "id": "b4f5c740-51dc-4f49-b7c1-ab3d1bc6766b",
+    "name": "Trainer",
+    "description": "",
+    "trainingIds": [
+      "b7a1e0c0-0002-4000-8000-00000000a002"
+    ]
+  },
+  {
+    "id": "db7c2c31-971f-4b75-82c5-5973d618f2d4",
+    "name": "Trainee",
+    "description": "",
+    "trainingIds": [
+      "b7a1e0c0-0001-4000-8000-00000000a001"
+    ]
   }
 ]

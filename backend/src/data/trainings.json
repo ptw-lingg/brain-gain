@@ -1075,5 +1075,1225 @@
       "size": 47990,
       "type": "image/jpeg"
     }
+  },
+  {
+    "id": "b7a1e0c0-0001-4000-8000-00000000a001",
+    "name": {
+      "en": "BrainGain for Trainees",
+      "de": "BrainGain für Trainees"
+    },
+    "description": {
+      "en": "How to use BrainGain as a learner: signing in, reading your training dashboard, working through the materials, passing the test and signing your completion.",
+      "de": "BrainGain als Lernende/r nutzen: anmelden, das Schulungs-Dashboard lesen, die Materialien durcharbeiten, den Test bestehen und den Abschluss signieren."
+    },
+    "durationMinutes": 20,
+    "category": {
+      "en": "BrainGain",
+      "de": "BrainGain"
+    },
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 3,
+    "windowBeforeMonths": 2,
+    "windowAfterMonths": 1,
+    "order": 22,
+    "materials": [
+      {
+        "id": "b7a1e0c0-0001-4000-8000-a00000000001",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "BrainGain for Trainees — slides",
+            "file": {
+              "id": "b7a1e0c0-0001-4000-8000-f00000000001",
+              "name": "braingain-for-trainees.pdf",
+              "size": 2305962,
+              "type": "application/pdf"
+            }
+          },
+          {
+            "locale": "de",
+            "label": "BrainGain für Trainees — Folien",
+            "file": {
+              "id": "b7a1e0c0-0001-4000-8000-f00000000002",
+              "name": "braingain-fuer-trainees.pdf",
+              "size": 2356930,
+              "type": "application/pdf"
+            }
+          }
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000001",
+        "text": {
+          "en": "What is the regular way to sign in to BrainGain?",
+          "de": "Wie meldet man sich regulär bei BrainGain an?"
+        },
+        "options": [
+          {
+            "en": "A link your trainer sends you for every training",
+            "de": "Über einen Link, den der Trainer für jede Schulung schickt"
+          },
+          {
+            "en": "Sign in with Microsoft",
+            "de": "Mit Microsoft anmelden"
+          },
+          {
+            "en": "There is no sign-in — the dashboard is public",
+            "de": "Es gibt keine Anmeldung — das Dashboard ist öffentlich"
+          },
+          {
+            "en": "The email and password form on the login page",
+            "de": "Über das E-Mail/Passwort-Formular auf der Anmeldeseite"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000002",
+        "text": {
+          "en": "Who decides which trainings appear on your dashboard?",
+          "de": "Wer bestimmt, welche Schulungen auf Ihrem Dashboard erscheinen?"
+        },
+        "options": [
+          {
+            "en": "The trainings required by your job roles, assigned by an administrator",
+            "de": "Die Schulungen, die Ihre Funktionen verlangen — zugewiesen von einem Administrator"
+          },
+          {
+            "en": "Your unit head picks them per month",
+            "de": "Ihre Bereichsleitung wählt sie monatlich aus"
+          },
+          {
+            "en": "Everyone sees every training",
+            "de": "Alle sehen alle Schulungen"
+          },
+          {
+            "en": "You pick them yourself from a catalog",
+            "de": "Sie wählen sie selbst aus einem Katalog"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000003",
+        "text": {
+          "en": "A training card shows \"Due now\". What does that mean?",
+          "de": "Eine Schulungskarte zeigt „Jetzt fällig“. Was bedeutet das?"
+        },
+        "options": [
+          {
+            "en": "Only your trainer can see it",
+            "de": "Nur Ihr Trainer kann sie sehen"
+          },
+          {
+            "en": "You have never taken it, or its repeat cycle has come around — complete it now",
+            "de": "Sie haben sie noch nie bestanden oder der Wiederholungszyklus ist erreicht — jetzt absolvieren"
+          },
+          {
+            "en": "The training was deleted",
+            "de": "Die Schulung wurde gelöscht"
+          },
+          {
+            "en": "You already passed it this year",
+            "de": "Sie haben sie dieses Jahr bereits bestanden"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000004",
+        "text": {
+          "en": "Which statuses can a training card show?",
+          "de": "Welche Status kann eine Schulungskarte anzeigen?"
+        },
+        "options": [
+          {
+            "en": "Up to date",
+            "de": "Aktuell"
+          },
+          {
+            "en": "Archived",
+            "de": "Archiviert"
+          },
+          {
+            "en": "Overdue",
+            "de": "Überfällig"
+          },
+          {
+            "en": "Due now",
+            "de": "Jetzt fällig"
+          },
+          {
+            "en": "Updated",
+            "de": "Aktualisiert"
+          }
+        ],
+        "correctIndices": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000005",
+        "text": {
+          "en": "What happens before the test starts?",
+          "de": "Was passiert, bevor der Test beginnt?"
+        },
+        "options": [
+          {
+            "en": "Your trainer must unlock the test by email",
+            "de": "Ihr Trainer muss den Test per E-Mail freischalten"
+          },
+          {
+            "en": "You download every material first; the app checks it",
+            "de": "Sie laden zuerst jedes Material herunter; die App prüft das"
+          },
+          {
+            "en": "You confirm that you are aware of all materials and have reviewed them",
+            "de": "Sie bestätigen, dass Sie alle Materialien kennen und durchgesehen haben"
+          },
+          {
+            "en": "Nothing — the test opens immediately",
+            "de": "Nichts — der Test öffnet sich sofort"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000006",
+        "text": {
+          "en": "What does a multiple-choice question require to count as correct?",
+          "de": "Wann gilt eine Mehrfachauswahl-Frage als richtig beantwortet?"
+        },
+        "options": [
+          {
+            "en": "At least one correct answer ticked",
+            "de": "Mindestens eine richtige Antwort angekreuzt"
+          },
+          {
+            "en": "Any answer, as long as something is ticked",
+            "de": "Irgendeine Antwort, Hauptsache etwas ist angekreuzt"
+          },
+          {
+            "en": "The first option is always correct",
+            "de": "Die erste Option ist immer richtig"
+          },
+          {
+            "en": "Exactly the full set of correct answers — no more, no less",
+            "de": "Genau die vollständige Menge der richtigen Antworten — nicht mehr, nicht weniger"
+          }
+        ],
+        "correctIndices": [
+          3
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000007",
+        "text": {
+          "en": "What must you do when you submit the test?",
+          "de": "Was müssen Sie tun, wenn Sie den Test abgeben?"
+        },
+        "options": [
+          {
+            "en": "Print the result",
+            "de": "Das Ergebnis ausdrucken"
+          },
+          {
+            "en": "Wait for the administrator to approve",
+            "de": "Auf die Freigabe durch den Administrator warten"
+          },
+          {
+            "en": "Confirm your identity with your password or a fresh Microsoft sign-in",
+            "de": "Ihre Identität mit Ihrem Passwort oder einer erneuten Microsoft-Anmeldung bestätigen"
+          },
+          {
+            "en": "Enter your trainer’s name",
+            "de": "Den Namen Ihres Trainers eingeben"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000008",
+        "text": {
+          "en": "You did not reach the pass threshold. What is true?",
+          "de": "Sie haben die Bestehensgrenze nicht erreicht. Was trifft zu?"
+        },
+        "options": [
+          {
+            "en": "The training is locked for 30 days",
+            "de": "Die Schulung ist 30 Tage gesperrt"
+          },
+          {
+            "en": "Your administrator is notified automatically",
+            "de": "Ihr Administrator wird automatisch benachrichtigt"
+          },
+          {
+            "en": "Your previous completion is deleted",
+            "de": "Ihr bisheriger Abschluss wird gelöscht"
+          },
+          {
+            "en": "The failed attempt is not recorded and you can retry right away",
+            "de": "Der fehlgeschlagene Versuch wird nicht gespeichert und Sie können sofort erneut antreten"
+          }
+        ],
+        "correctIndices": [
+          3
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000009",
+        "text": {
+          "en": "A training you already completed shows \"Updated\". Which actions can it require?",
+          "de": "Eine bereits abgeschlossene Schulung zeigt „Aktualisiert“. Welche Aktionen kann sie verlangen?"
+        },
+        "options": [
+          {
+            "en": "Review the materials and confirm",
+            "de": "Das Material sichten und bestätigen"
+          },
+          {
+            "en": "Retake the training (materials and test)",
+            "de": "Die Schulung erneut absolvieren (Material und Test)"
+          },
+          {
+            "en": "Sign in again with a new password",
+            "de": "Sich mit einem neuen Passwort erneut anmelden"
+          },
+          {
+            "en": "Delete and recreate your account",
+            "de": "Ihr Konto löschen und neu anlegen"
+          }
+        ],
+        "correctIndices": [
+          0,
+          1
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "b7a1e0c0-0001-4000-8000-b00000000010",
+        "text": {
+          "en": "Where do you find the contact of the trainer responsible for a training?",
+          "de": "Wo finden Sie den Kontakt des für eine Schulung verantwortlichen Trainers?"
+        },
+        "options": [
+          {
+            "en": "Nowhere — trainers are anonymous",
+            "de": "Nirgends — Trainer sind anonym"
+          },
+          {
+            "en": "In the materials confirmation dialog and on the result page",
+            "de": "Im Dialog zur Materialbestätigung und auf der Ergebnisseite"
+          },
+          {
+            "en": "In the Settings page",
+            "de": "Auf der Einstellungsseite"
+          },
+          {
+            "en": "Only in the Users list",
+            "de": "Nur in der Benutzerliste"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      }
+    ],
+    "version": 1,
+    "publishedAt": "2026-10-28T15:44:27.821Z",
+    "updates": [],
+    "createdAt": "2026-10-27T14:52:38.921Z"
+  },
+  {
+    "id": "b7a1e0c0-0002-4000-8000-00000000a002",
+    "name": {
+      "en": "BrainGain for Trainers",
+      "de": "BrainGain für Trainer"
+    },
+    "description": {
+      "en": "Authoring trainings in BrainGain: creating a training with materials and a quiz, importing a SCORM course, working with drafts and published versions, and following up with your trainees.",
+      "de": "Schulungen in BrainGain erstellen: eine Schulung mit Materialien und Quiz anlegen, einen SCORM-Kurs importieren, mit Entwürfen und veröffentlichten Versionen arbeiten und die Teilnehmenden im Blick behalten."
+    },
+    "durationMinutes": 45,
+    "category": {
+      "en": "BrainGain",
+      "de": "BrainGain"
+    },
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 3,
+    "windowBeforeMonths": 2,
+    "windowAfterMonths": 1,
+    "order": 23,
+    "materials": [
+      {
+        "id": "b7a1e0c0-0002-4000-8000-a00000000001",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "BrainGain for Trainers — slides",
+            "file": {
+              "id": "b7a1e0c0-0002-4000-8000-f00000000001",
+              "name": "braingain-for-trainers.pdf",
+              "size": 1775634,
+              "type": "application/pdf"
+            }
+          },
+          {
+            "locale": "de",
+            "label": "BrainGain für Trainer — Folien",
+            "file": {
+              "id": "b7a1e0c0-0002-4000-8000-f00000000002",
+              "name": "braingain-fuer-trainer.pdf",
+              "size": 1862420,
+              "type": "application/pdf"
+            }
+          }
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000001",
+        "text": {
+          "en": "You changed the quiz of a published training and clicked Save, but did not publish. What do trainees see?",
+          "de": "Sie haben das Quiz einer veröffentlichten Schulung geändert und gespeichert, aber nicht veröffentlicht. Was sehen die Teilnehmenden?"
+        },
+        "options": [
+          {
+            "en": "Your new quiz immediately",
+            "de": "Sofort Ihr neues Quiz"
+          },
+          {
+            "en": "Nothing — the training disappears until you publish",
+            "de": "Nichts — die Schulung verschwindet bis zur Veröffentlichung"
+          },
+          {
+            "en": "The last published version — your change is staged as a draft",
+            "de": "Die zuletzt veröffentlichte Version — Ihre Änderung liegt als Entwurf bereit"
+          },
+          {
+            "en": "A warning that the training is being edited",
+            "de": "Einen Hinweis, dass die Schulung gerade bearbeitet wird"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000002",
+        "text": {
+          "en": "A training card says \"Not published\" (version 0). What does that mean for trainees?",
+          "de": "Eine Schulung zeigt „Unveröffentlicht“ (Version 0). Was heißt das für die Teilnehmenden?"
+        },
+        "options": [
+          {
+            "en": "They can study the materials but not take the test",
+            "de": "Sie können die Materialien lernen, aber den Test nicht machen"
+          },
+          {
+            "en": "They see it only if it is due",
+            "de": "Sie sehen sie nur, wenn sie fällig ist"
+          },
+          {
+            "en": "They cannot see or start the training until version 1 is published",
+            "de": "Sie können die Schulung weder sehen noch starten, bis Version 1 veröffentlicht ist"
+          },
+          {
+            "en": "They can complete it by confirmation",
+            "de": "Sie können sie per Bestätigung abschließen"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000003",
+        "text": {
+          "en": "Which content types can a BrainGain training have?",
+          "de": "Welche Inhaltstypen kann eine BrainGain-Schulung haben?"
+        },
+        "options": [
+          {
+            "en": "Classroom attendance list",
+            "de": "Anwesenheitsliste für Präsenzschulungen"
+          },
+          {
+            "en": "Material & quiz",
+            "de": "Material & Test"
+          },
+          {
+            "en": "Video call",
+            "de": "Videokonferenz"
+          },
+          {
+            "en": "SCORM course",
+            "de": "SCORM-Kurs"
+          }
+        ],
+        "correctIndices": [
+          1,
+          3
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000004",
+        "text": {
+          "en": "Which SCORM packages does BrainGain accept?",
+          "de": "Welche SCORM-Pakete akzeptiert BrainGain?"
+        },
+        "options": [
+          {
+            "en": "Any zip file that contains HTML",
+            "de": "Jede ZIP-Datei, die HTML enthält"
+          },
+          {
+            "en": "SCORM 1.2 or SCORM 2004 packages with a single launchable lesson (single SCO)",
+            "de": "SCORM-1.2- oder SCORM-2004-Pakete mit genau einer startbaren Lektion (Single SCO)"
+          },
+          {
+            "en": "Multi-SCO packages with several lessons",
+            "de": "Multi-SCO-Pakete mit mehreren Lektionen"
+          },
+          {
+            "en": "cmi5 / xAPI packages",
+            "de": "cmi5-/xAPI-Pakete"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000005",
+        "text": {
+          "en": "Which reasons make BrainGain refuse a SCORM package?",
+          "de": "Aus welchen Gründen lehnt BrainGain ein SCORM-Paket ab?"
+        },
+        "options": [
+          {
+            "en": "No imsmanifest.xml in the zip",
+            "de": "Keine imsmanifest.xml im ZIP"
+          },
+          {
+            "en": "An encrypted zip archive",
+            "de": "Ein verschlüsseltes ZIP-Archiv"
+          },
+          {
+            "en": "A package larger than 10 MB",
+            "de": "Ein Paket größer als 10 MB"
+          },
+          {
+            "en": "More than 500 MB unpacked",
+            "de": "Mehr als 500 MB entpackt"
+          },
+          {
+            "en": "Several launchable lessons (multi-SCO)",
+            "de": "Mehrere startbare Lektionen (Multi-SCO)"
+          }
+        ],
+        "correctIndices": [
+          0,
+          1,
+          3,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000006",
+        "text": {
+          "en": "Which publish option creates an obligation with a deadline and emails everyone who already completed the training?",
+          "de": "Welche Veröffentlichungsoption erzeugt eine Pflicht mit Frist und benachrichtigt alle, die die Schulung bereits abgeschlossen haben, per E-Mail?"
+        },
+        "options": [
+          {
+            "en": "Publish silently",
+            "de": "Still veröffentlichen"
+          },
+          {
+            "en": "Save",
+            "de": "Speichern"
+          },
+          {
+            "en": "Discard draft",
+            "de": "Entwurf verwerfen"
+          },
+          {
+            "en": "Publish and notify",
+            "de": "Veröffentlichen und benachrichtigen"
+          }
+        ],
+        "correctIndices": [
+          3
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000007",
+        "text": {
+          "en": "When you publish and notify, which mode restarts the trainees’ regular repeat cycle once they comply?",
+          "de": "Welcher Modus beim Veröffentlichen mit Benachrichtigung startet den regulären Wiederholungszyklus der Teilnehmenden neu?"
+        },
+        "options": [
+          {
+            "en": "Retake the training — the new passing result restarts the cycle",
+            "de": "Schulung erneut absolvieren — das Bestehen startet den Zyklus neu"
+          },
+          {
+            "en": "Neither mode touches the cycle",
+            "de": "Keiner der Modi berührt den Zyklus"
+          },
+          {
+            "en": "Review and confirm the materials — the cycle is unchanged",
+            "de": "Material sichten und bestätigen — der Zyklus bleibt unverändert"
+          },
+          {
+            "en": "Both modes restart the cycle",
+            "de": "Beide Modi starten den Zyklus neu"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000008",
+        "text": {
+          "en": "A material has only an English file and a trainee uses BrainGain in German. What happens?",
+          "de": "Ein Material hat nur eine englische Datei und ein Teilnehmer nutzt BrainGain auf Deutsch. Was passiert?"
+        },
+        "options": [
+          {
+            "en": "The English variant is offered — English is the fallback language",
+            "de": "Die englische Variante wird angeboten — Englisch ist die Rückfallsprache"
+          },
+          {
+            "en": "The training cannot be published",
+            "de": "Die Schulung kann nicht veröffentlicht werden"
+          },
+          {
+            "en": "BrainGain translates the file automatically",
+            "de": "BrainGain übersetzt die Datei automatisch"
+          },
+          {
+            "en": "The material is hidden for that trainee",
+            "de": "Das Material wird für diesen Teilnehmer ausgeblendet"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000009",
+        "text": {
+          "en": "For which kind of SCORM course is the completion rule \"after the training duration of measured activity\" meant?",
+          "de": "Für welche Art SCORM-Kurs ist die Abschlussregel „nach der Schulungsdauer gemessener Aktivität“ gedacht?"
+        },
+        "options": [
+          {
+            "en": "Courses that report nothing at all back to the LMS",
+            "de": "Kurse, die dem LMS gar nichts zurückmelden"
+          },
+          {
+            "en": "Every course — it is the recommended default",
+            "de": "Jeden Kurs — es ist die empfohlene Voreinstellung"
+          },
+          {
+            "en": "Courses longer than 60 minutes",
+            "de": "Kurse, die länger als 60 Minuten dauern"
+          },
+          {
+            "en": "Courses with a mastery score",
+            "de": "Kurse mit einer Bestehensgrenze (Mastery Score)"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000010",
+        "text": {
+          "en": "How does a training reach the trainees who must take it?",
+          "de": "Wie gelangt eine Schulung zu den Personen, die sie absolvieren müssen?"
+        },
+        "options": [
+          {
+            "en": "An administrator adds it to the job roles that require it",
+            "de": "Ein Administrator fügt sie den Funktionen hinzu, die sie verlangen"
+          },
+          {
+            "en": "Trainees subscribe to it themselves",
+            "de": "Die Personen abonnieren sie selbst"
+          },
+          {
+            "en": "The trainer picks trainees one by one in the editor",
+            "de": "Der Trainer wählt die Personen einzeln im Editor aus"
+          },
+          {
+            "en": "Every published training is mandatory for everyone",
+            "de": "Jede veröffentlichte Schulung ist für alle verpflichtend"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000011",
+        "text": {
+          "en": "Where can a trainer send reminder emails to people who are due, and what must be set up first?",
+          "de": "Wo kann ein Trainer Erinnerungs-E-Mails an fällige Personen senden, und was muss vorher eingerichtet sein?"
+        },
+        "options": [
+          {
+            "en": "On the Users page — no setup needed",
+            "de": "Auf der Seite „Benutzer“ — ohne Einrichtung"
+          },
+          {
+            "en": "On the Trainees page — once an administrator has configured SMTP in Settings",
+            "de": "Auf der Seite „Teilnehmer“ — sobald ein Administrator SMTP in den Einstellungen konfiguriert hat"
+          },
+          {
+            "en": "In the Audit trail",
+            "de": "Im Audit-Trail"
+          },
+          {
+            "en": "In the training editor — once a deadline is set",
+            "de": "Im Schulungseditor — sobald eine Frist gesetzt ist"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "b7a1e0c0-0002-4000-8000-b00000000012",
+        "text": {
+          "en": "Which statements about the training schedule are correct?",
+          "de": "Welche Aussagen zum Zeitplan einer Schulung sind richtig?"
+        },
+        "options": [
+          {
+            "en": "The schedule only affects the first attempt",
+            "de": "Der Zeitplan betrifft nur den ersten Versuch"
+          },
+          {
+            "en": "\"Grace\" is the number of months after the due date before a training counts as overdue",
+            "de": "„Kulanz“ sind die Monate nach dem Fälligkeitsdatum, bevor eine Schulung als überfällig gilt"
+          },
+          {
+            "en": "\"Repeat every\" sets how many years a passing result stays valid",
+            "de": "„Wiederholung (Jahre)“ legt fest, wie viele Jahre ein bestandenes Ergebnis gültig bleibt"
+          },
+          {
+            "en": "\"Window opens\" lets trainees take the training some months before the due date",
+            "de": "„Fenster öffnet“ erlaubt, die Schulung einige Monate vor dem Fälligkeitsdatum zu absolvieren"
+          }
+        ],
+        "correctIndices": [
+          1,
+          2,
+          3
+        ],
+        "type": "multiple"
+      }
+    ],
+    "version": 1,
+    "publishedAt": "2026-10-28T15:43:29.849Z",
+    "updates": [],
+    "createdAt": "2026-10-27T14:52:38.921Z"
+  },
+  {
+    "id": "c1a5e0c0-0001-4000-8000-00000000a001",
+    "name": {
+      "en": "AA Jira Issue Management System (IMS)",
+      "de": "AA Jira Issue Management System (IMS)"
+    },
+    "description": {
+      "en": "How defects and improvements are reported, validated, assessed, approved, implemented and closed in the Jira Issue Management System — workflow, roles and records.",
+      "de": "Wie Defects und Improvements im Jira Issue Management System gemeldet, geprüft, bewertet, freigegeben, umgesetzt und abgeschlossen werden — Workflow, Rollen und Nachweise."
+    },
+    "durationMinutes": 25,
+    "category": {
+      "en": "Product Life Cycle",
+      "de": "Product Life Cycle"
+    },
+    "ownerId": "3352c8fd-c0fa-41e2-b466-0880c0b23570",
+    "cycleYears": 1,
+    "windowBeforeMonths": 1,
+    "windowAfterMonths": 3,
+    "order": 24,
+    "materials": [
+      {
+        "id": "c1a5e0c0-0001-4000-8000-a00000000001",
+        "variants": [
+          {
+            "locale": "en",
+            "label": "Jira Issue Management System — slides",
+            "file": {
+              "id": "c1a5e0c0-0001-4000-8000-f00000000001",
+              "name": "jira-issue-management-system.pdf",
+              "size": 312173,
+              "type": "application/pdf"
+            }
+          },
+          {
+            "locale": "de",
+            "label": "Jira Issue Management System — Folien",
+            "file": {
+              "id": "c1a5e0c0-0001-4000-8000-f00000000002",
+              "name": "jira-issue-management-system.de.pdf",
+              "size": 318091,
+              "type": "application/pdf"
+            }
+          }
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000001",
+        "text": {
+          "en": "Who may report an issue in the Jira Issue Management System?",
+          "de": "Wer darf im Jira Issue Management System ein Issue melden?"
+        },
+        "options": [
+          {
+            "en": "Only members of R&D",
+            "de": "Nur Mitarbeitende der Entwicklung"
+          },
+          {
+            "en": "All employees — everyone has reporter-level access",
+            "de": "Alle Mitarbeitenden — jeder hat Reporter-Rechte"
+          },
+          {
+            "en": "Only the Quality Manager",
+            "de": "Nur der Quality Manager"
+          },
+          {
+            "en": "Only Project Leads",
+            "de": "Nur Project Leads"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000002",
+        "text": {
+          "en": "Which work types does the IMS support?",
+          "de": "Welche Work Types unterstützt das IMS?"
+        },
+        "options": [
+          {
+            "en": "Change Request",
+            "de": "Change Request"
+          },
+          {
+            "en": "Improvement",
+            "de": "Improvement"
+          },
+          {
+            "en": "Epic",
+            "de": "Epic"
+          },
+          {
+            "en": "CAPA",
+            "de": "CAPA"
+          },
+          {
+            "en": "Defect",
+            "de": "Defect"
+          }
+        ],
+        "correctIndices": [
+          1,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000003",
+        "text": {
+          "en": "Which fields are mandatory in the creation dialog?",
+          "de": "Welche Felder sind im Dialog zum Anlegen Pflicht?"
+        },
+        "options": [
+          {
+            "en": "Severity",
+            "de": "Severity"
+          },
+          {
+            "en": "Work type",
+            "de": "Work type"
+          },
+          {
+            "en": "Risk level",
+            "de": "Risk level"
+          },
+          {
+            "en": "Summary",
+            "de": "Summary"
+          },
+          {
+            "en": "Product",
+            "de": "Product"
+          }
+        ],
+        "correctIndices": [
+          1,
+          3,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000004",
+        "text": {
+          "en": "You report an issue but do not know the Project Lead of the product. Whom do you assign?",
+          "de": "Du meldest ein Issue, kennst aber den Project Lead des Produkts nicht. Wen trägst du als Assignee ein?"
+        },
+        "options": [
+          {
+            "en": "The Director Research & Development",
+            "de": "Den Director Research & Development"
+          },
+          {
+            "en": "The Quality Manager",
+            "de": "Den Quality Manager"
+          },
+          {
+            "en": "Yourself",
+            "de": "Dich selbst"
+          },
+          {
+            "en": "Nobody — the issue stays unassigned for good",
+            "de": "Niemanden — das Issue bleibt dauerhaft ohne Assignee"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000005",
+        "text": {
+          "en": "What is the essential difference between the defect and the improvement workflow?",
+          "de": "Was ist der wesentliche Unterschied zwischen dem Defect- und dem Improvement-Workflow?"
+        },
+        "options": [
+          {
+            "en": "Improvements skip the Validity Check",
+            "de": "Improvements überspringen den Validity Check"
+          },
+          {
+            "en": "Defects are closed by the Quality Manager",
+            "de": "Defects werden vom Quality Manager geschlossen"
+          },
+          {
+            "en": "The improvement workflow has no Risk Assessment state",
+            "de": "Der Improvement-Workflow hat keinen Status Risk Assessment"
+          },
+          {
+            "en": "Improvements need no Project Lead",
+            "de": "Improvements brauchen keinen Project Lead"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000006",
+        "text": {
+          "en": "The Project Lead performs the Validity Check. Which criteria make an issue valid?",
+          "de": "Der Project Lead führt den Validity Check durch. Welche Kriterien machen ein Issue gültig?"
+        },
+        "options": [
+          {
+            "en": "Steps to reproduce are provided",
+            "de": "Schritte zum Nachstellen sind angegeben"
+          },
+          {
+            "en": "Supporting evidence demonstrates the issue",
+            "de": "Nachweise belegen das Problem"
+          },
+          {
+            "en": "The reporter has already proposed a fix",
+            "de": "Der Reporter hat bereits eine Lösung vorgeschlagen"
+          },
+          {
+            "en": "The description is clear and complete",
+            "de": "Die Beschreibung ist klar und vollständig"
+          },
+          {
+            "en": "Expected and actual behaviour are clearly defined",
+            "de": "Erwartetes und tatsächliches Verhalten sind klar beschrieben"
+          }
+        ],
+        "correctIndices": [
+          0,
+          1,
+          3,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000007",
+        "text": {
+          "en": "During the Validity Check the information is not sufficient to decide. What happens?",
+          "de": "Beim Validity Check reichen die Informationen für eine Entscheidung nicht aus. Was passiert?"
+        },
+        "options": [
+          {
+            "en": "Improve Issue: the issue goes back to New and is assigned to the Reporter",
+            "de": "Improve Issue: Das Issue geht zurück nach New und wird dem Reporter zugewiesen"
+          },
+          {
+            "en": "The issue is closed as Invalid",
+            "de": "Das Issue wird als Invalid geschlossen"
+          },
+          {
+            "en": "The issue moves on to Context Assessment anyway",
+            "de": "Das Issue geht trotzdem ins Context Assessment"
+          },
+          {
+            "en": "The Quality Manager decides",
+            "de": "Der Quality Manager entscheidet"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000008",
+        "text": {
+          "en": "Who performs the Context Assessment, and what does it record among other things?",
+          "de": "Wer führt das Context Assessment durch, und was wird dabei unter anderem festgehalten?"
+        },
+        "options": [
+          {
+            "en": "The Project Lead — the Change Request",
+            "de": "Der Project Lead — den Change Request"
+          },
+          {
+            "en": "The Reporter — a proposed solution",
+            "de": "Der Reporter — einen Lösungsvorschlag"
+          },
+          {
+            "en": "The Product Manager — impact, affected versions, frequency, a Priority, and the Q-Request ID if a released product is affected",
+            "de": "Der Product Manager — Auswirkung, betroffene Versionen, Häufigkeit, eine Priority und die Q-Request-ID, wenn ein freigegebenes Produkt betroffen ist"
+          },
+          {
+            "en": "The Quality Manager — the residual risk",
+            "de": "Der Quality Manager — das Restrisiko"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000009",
+        "text": {
+          "en": "Which items must be complete before the Quality Manager may approve a defect?",
+          "de": "Was muss vollständig vorliegen, bevor der Quality Manager einen Defect freigeben darf?"
+        },
+        "options": [
+          {
+            "en": "Overall risk level calculated",
+            "de": "Gesamtrisiko berechnet"
+          },
+          {
+            "en": "The fix is already implemented and tested",
+            "de": "Der Fix ist bereits umgesetzt und getestet"
+          },
+          {
+            "en": "Acceptance criteria and planned mitigation documented",
+            "de": "Akzeptanzkriterien und geplante Maßnahmen dokumentiert"
+          },
+          {
+            "en": "Residual risk clearly stated",
+            "de": "Restrisiko klar benannt"
+          },
+          {
+            "en": "Supporting evidence and reference links attached",
+            "de": "Nachweise und Referenzen angehängt"
+          }
+        ],
+        "correctIndices": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "type": "multiple"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000010",
+        "text": {
+          "en": "The Quality Manager sends a defect back with \"Improve Issue\". What must the comment contain?",
+          "de": "Der Quality Manager schickt einen Defect mit „Improve Issue“ zurück. Was muss der Kommentar enthalten?"
+        },
+        "options": [
+          {
+            "en": "An actionable, bulleted checklist of the missing or unclear items",
+            "de": "Eine umsetzbare Checkliste mit Aufzählungspunkten zu den fehlenden oder unklaren Punkten"
+          },
+          {
+            "en": "The new risk level",
+            "de": "Das neue Risikoniveau"
+          },
+          {
+            "en": "Nothing — a comment is optional",
+            "de": "Nichts — ein Kommentar ist optional"
+          },
+          {
+            "en": "Only the word \"rejected\"",
+            "de": "Nur das Wort „abgelehnt“"
+          }
+        ],
+        "correctIndices": [
+          0
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000011",
+        "text": {
+          "en": "What is required before an approved issue may be implemented?",
+          "de": "Was ist nötig, bevor ein freigegebenes Issue umgesetzt werden darf?"
+        },
+        "options": [
+          {
+            "en": "A new Q-Request",
+            "de": "Ein neuer Q-Request"
+          },
+          {
+            "en": "Nothing — the Backlog state is enough",
+            "de": "Nichts — der Status Backlog genügt"
+          },
+          {
+            "en": "Approval by the Reporter",
+            "de": "Die Zustimmung des Reporters"
+          },
+          {
+            "en": "A Change Request according to SOP-10.12 Change Management",
+            "de": "Ein Change Request nach SOP-10.12 Change Management"
+          }
+        ],
+        "correctIndices": [
+          3
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000012",
+        "text": {
+          "en": "New information arises about a closed issue. What happens?",
+          "de": "Zu einem geschlossenen Issue gibt es neue Informationen. Was passiert?"
+        },
+        "options": [
+          {
+            "en": "The Reporter reopens it to New",
+            "de": "Der Reporter öffnet es wieder nach New"
+          },
+          {
+            "en": "The Project Lead reopens it and it returns to Context Assessment",
+            "de": "Der Project Lead öffnet es wieder, und es geht zurück ins Context Assessment"
+          },
+          {
+            "en": "The Quality Manager reopens it to Risk Assessment",
+            "de": "Der Quality Manager öffnet es wieder nach Risk Assessment"
+          },
+          {
+            "en": "A new issue must always be created; closed issues cannot change",
+            "de": "Es muss immer ein neues Issue angelegt werden; geschlossene Issues sind unveränderlich"
+          }
+        ],
+        "correctIndices": [
+          1
+        ],
+        "type": "single"
+      },
+      {
+        "id": "c1a5e0c0-0001-4000-8000-b00000000013",
+        "text": {
+          "en": "How do you move an issue to its next state?",
+          "de": "Wie bringst du ein Issue in den nächsten Status?"
+        },
+        "options": [
+          {
+            "en": "Drag the issue on the board only — comments are not needed",
+            "de": "Das Issue nur auf dem Board verschieben — Kommentare sind unnötig"
+          },
+          {
+            "en": "Send an email to the Project Lead",
+            "de": "Eine E-Mail an den Project Lead schicken"
+          },
+          {
+            "en": "Choose the transition (the Status field is read-only), update the assignee and explain the decision in a comment",
+            "de": "Transition wählen (das Feld Status ist schreibgeschützt), Assignee anpassen und die Entscheidung im Kommentar begründen"
+          },
+          {
+            "en": "Edit the Status field directly",
+            "de": "Das Feld Status direkt bearbeiten"
+          }
+        ],
+        "correctIndices": [
+          2
+        ],
+        "type": "single"
+      }
+    ],
+    "version": 2,
+    "publishedAt": "2026-10-28T15:50:00.445Z",
+    "updates": [],
+    "createdAt": "2026-10-28T15:37:07.591Z"
   }
 ]

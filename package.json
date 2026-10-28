@@ -9,6 +9,7 @@
     "e2e": "npm --prefix frontend run e2e",
     "sbom": "npm --prefix backend run sbom && npm --prefix frontend run sbom",
     "verify": "node tools/sync-version.mjs --check && node requirements/tools/build.mjs && node requirements/tools/sync-tests.mjs && node requirements/tools/build.mjs --check && node requirements/tools/drift-check.mjs",
-    "package": "node tools/package-release.mjs"
+    "package": "node tools/package-release.mjs",
+    "self-training": "node tools/self-training/build.mjs"
   }
 }

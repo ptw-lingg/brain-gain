@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Jira Issue Management System (IMS)</title>
+<link rel="stylesheet" href="../../self-training/decks/deck.css" />
+<style>
+  .wf { width: 100%; height: auto; }
+  .wf text { font-family: 'Open Sans', 'Segoe UI', sans-serif; }
+  table.t td:first-child { white-space: nowrap; }
+  table.t.compact td, table.t.compact th { padding-top: 5px; padding-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<!-- 1 ─ Titel -->
+<section class="slide title">
+  <img class="logo" src="../../../frontend/public/ptw-logo-white.svg" alt="PTW" />
+  <div class="kicker">Schulung zur Arbeitsanweisung · AA Jira Issue Management System</div>
+  <h1>Jira Issue Management System (IMS)</h1>
+  <p>Wie Defects und Improvements im Jira-Projekt „Issue Management“ gemeldet, geprüft, bewertet, freigegeben, umgesetzt und abgeschlossen werden.</p>
+  <div class="meta">PTW-Freiburg GmbH · Grundlage: AA Jira Issue Management System Rev. 001/06.2026 (roXtra 181298) · ca. 25 Minuten</div>
+</section>
+
+<!-- 2 ─ Was das IMS ist -->
+<section class="slide">
+  <div class="head"><h1>Was das IMS ist</h1><span class="chapter">Überblick</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">Das IMS ist das validierte Jira-Projekt, in dem jeder Defect und jedes Improvement unserer Hard- und Softwareprodukte erfasst und entschieden wird. Es ersetzt das Fehlermanagement in Mantis.</p>
+      <ul class="points">
+        <li><b>Jeder kann melden.</b> Alle Mitarbeitenden haben in Jira Reporter-Rechte.</li>
+        <li><b>Zwei Work Types.</b> <i>Defect</i> — ein Problem; <i>Improvement</i> — eine Verbesserung an einem bestehenden Produkt.</li>
+        <li><b>Fester Ablauf.</b> Jedes Issue durchläuft definierte Status; jeden Übergang führt eine festgelegte Rolle aus.</li>
+        <li><b>Nachweisfähig.</b> Risikobewertung, Rückverfolgbarkeit und Dokumentation von der Meldung bis zum Abschluss — gemäß ISO 13485, ISO 14971 und IEC 62304.</li>
+      </ul>
+      <div class="callout"><b>Post-Market-Themen</b> (z. B. Kundenrückmeldungen) laufen über SOP-21.09 Rückmeldungen. Den auslösenden Q-Request im Issue verlinken.</div>
+    </div>
+    <div class="col narrow">
+      <div class="card"><h3>Wo</h3><p>Jira-Projekt <b>Issue Management (IM)</b>, Board 682 auf ptwdosimetry.atlassian.net.</p></div>
+      <div class="card"><h3>Maßgebliche Dokumente</h3><ul>
+        <li>AA Jira Issue Management System</li>
+        <li>AA Software Problem Resolution</li>
+        <li>SOP-10.11 Software Development Life Cycle</li>
+        <li>SOP-10.12 Change Management</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 3 ─ Begriffe und Rollen -->
+<section class="slide">
+  <div class="head"><h1>Begriffe und Rollen</h1><span class="chapter">Überblick</span></div>
+  <div class="body">
+    <div class="col">
+      <table class="t">
+        <tr><th>Begriff</th><th>Bedeutung</th></tr>
+        <tr><td>Issue / Ticket</td><td>Jiras Oberbegriff für ein Arbeitselement — hier ein Defect oder ein Improvement.</td></tr>
+        <tr><td>Defect</td><td>Arbeitselement, das ein Problem beschreibt.</td></tr>
+        <tr><td>Improvement</td><td>Arbeitselement, das Eigenschaften eines bestehenden Produkts verbessert.</td></tr>
+        <tr><td>Software-Problem</td><td>Abweichung von einer Anforderungs- oder Designspezifikation (AA Software Problem Resolution).</td></tr>
+        <tr><td>RAT / SRAT</td><td>Risk Analysis Table / Security Risk Analysis Table.</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr><th>Rolle</th><th>Hauptaufgabe</th></tr>
+        <tr><td>Reporter (alle)</td><td>Legt Issues an, beantwortet Rückfragen, bessert das Issue nach, wenn es zurückkommt.</td></tr>
+        <tr><td>Project Lead (PL)</td><td>Validity Check; startet und schließt die Umsetzung; kann wieder öffnen.</td></tr>
+        <tr><td>Product Manager (PM)</td><td>Context Assessment; fordert die Risikobewertung an, schickt zurück oder lehnt ab.</td></tr>
+        <tr><td>Quality Manager (QM)</td><td>Risk Assessment von Defects; gibt frei oder schickt zurück. Offizieller Titel: Risk Manager.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 4 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 1</div>
+  <h1>Ein Issue melden</h1>
+  <p>Für alle: einen Defect oder ein Improvement so anlegen, dass es ohne Rückfragen bewertet werden kann.</p>
+</section>
+
+<!-- 5 ─ Anlegen -->
+<section class="slide">
+  <div class="head"><h1>Ein Issue anlegen</h1><span class="chapter">Teil 1 · Melden</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div>Das <b>Issue-Management-Board</b> in Jira öffnen und auf den roten Button <b>Create</b> klicken.</div></li>
+        <li><span class="n">2</span><div><b>Work type</b> wählen: Defect oder Improvement.</div></li>
+        <li><span class="n">3</span><div>Die Pflichtfelder <b>Summary</b> (was passiert, wo) und <b>Product</b> (betroffenes Produkt) ausfüllen.</div></li>
+        <li><span class="n">4</span><div>Als <b>Assignee</b> den Project Lead des Produkts eintragen. Unbekannt? Den <b>Director Research &amp; Development</b> eintragen.</div></li>
+        <li><span class="n">5</span><div><b>Create</b> klicken — das Issue startet im Status <span class="pill gray">New</span>, der Assignee wird benachrichtigt.</div></li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../assets/create-dialog.png" alt="Jira-Dialog Create Defect mit Work type, Summary und Product als Pflichtfeldern" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 6 ─ Gutes Issue -->
+<section class="slide">
+  <div class="head"><h1>Was ein gutes Issue ausmacht</h1><span class="chapter">Teil 1 · Melden</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">Der Project Lead prüft jedes neue Issue anhand von vier Kriterien. Gib gleich alle Informationen an, dann kommt es nicht zu dir zurück.</p>
+      <table class="t">
+        <tr><th>Kriterium</th><th>Gültig, wenn …</th></tr>
+        <tr><td>Beschreibung</td><td>klar und vollständig</td></tr>
+        <tr><td>Reproduzierbarkeit</td><td>Schritte zum Nachstellen angegeben sind</td></tr>
+        <tr><td>Soll vs. Ist</td><td>erwartetes und tatsächliches Verhalten klar beschrieben sind</td></tr>
+        <tr><td>Nachweise</td><td>Screenshots, Logs o. Ä. das Problem belegen</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <div class="card"><h3>Vorlagen nutzen</h3><p>Description, Reproducibility, System Environment und Context Assessment haben eine Vorlage, die zeigt, was einzutragen ist.</p></div>
+      <div class="card"><h3>Referenzen ergänzen</h3><ul>
+        <li>Q-Request, wenn das Issue aus einer Rückmeldung stammt</li>
+        <li>ID oder Link aus dem Projekt-Tool, falls vorhanden</li>
+        <li>Mantis-ID bei aus Mantis übernommenen Issues</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 7 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 2</div>
+  <h1>Der Workflow</h1>
+  <p>Status, Übergänge und wer das Issue weiterbringt.</p>
+</section>
+
+<!-- 8 ─ Workflow-Diagramm -->
+<section class="slide">
+  <div class="head"><h1>Status und Übergänge</h1><span class="chapter">Teil 2 · Workflow</span></div>
+  <div class="body single">
+    <svg class="wf" viewBox="0 0 1240 420" role="img" aria-label="IMS-Workflow: New, Validity Check, Context Assessment, Risk Assessment (nur Defects), Backlog, In Progress, Closed">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#14595c"/></marker>
+        <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker>
+        <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#be123c"/></marker>
+      </defs>
+      <g font-size="15" font-weight="600" text-anchor="middle">
+        <rect x="10" y="150" width="130" height="56" rx="6" fill="#ecf4f4" stroke="#14595c" stroke-width="2"/><text x="75" y="183" fill="#0a3638">New</text>
+        <rect x="220" y="150" width="150" height="56" rx="6" fill="#ecf4f4" stroke="#14595c" stroke-width="2"/><text x="295" y="183" fill="#0a3638">Validity Check</text>
+        <rect x="450" y="150" width="170" height="56" rx="6" fill="#ecf4f4" stroke="#14595c" stroke-width="2"/><text x="535" y="183" fill="#0a3638">Context Assessment</text>
+        <rect x="700" y="150" width="160" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4"/><text x="780" y="176" fill="#7c2d12">Risk Assessment</text><text x="780" y="196" font-size="12" font-weight="400" fill="#7c2d12">nur Defects</text>
+        <rect x="940" y="150" width="130" height="56" rx="6" fill="#ecf4f4" stroke="#14595c" stroke-width="2"/><text x="1005" y="183" fill="#0a3638">Backlog</text>
+        <rect x="940" y="310" width="130" height="56" rx="6" fill="#ecf4f4" stroke="#14595c" stroke-width="2"/><text x="1005" y="343" fill="#0a3638">In Progress</text>
+        <rect x="450" y="310" width="170" height="56" rx="6" fill="#0e4a4d" stroke="#0e4a4d" stroke-width="2"/><text x="535" y="343" fill="#ffffff">Closed</text>
+      </g>
+      <g font-size="12" fill="#46595a" text-anchor="middle">
+        <text x="75" y="120" fill="#0a3638" font-weight="600">Report Issue</text><text x="75" y="136">Reporter</text>
+        <line x1="140" y1="178" x2="218" y2="178" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="180" y="140">Validate</text><text x="180" y="154">Issue · PL</text>
+        <line x1="370" y1="178" x2="448" y2="178" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="410" y="140">Request</text><text x="410" y="154">Context · PL</text>
+        <line x1="620" y1="178" x2="698" y2="178" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="660" y="140">Request</text><text x="660" y="154">Risk · PM</text>
+        <line x1="860" y1="178" x2="938" y2="178" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="900" y="140">Approve</text><text x="900" y="154">Issue · QM</text>
+        <path d="M 580 150 C 650 60, 920 60, 990 148" fill="none" stroke="#14595c" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+        <text x="785" y="72" fill="#14595c" font-weight="600">Improvement: PM schiebt direkt in den Backlog</text>
+        <line x1="1005" y1="206" x2="1005" y2="308" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="1055" y="252">Resolve</text><text x="1055" y="266">Issue · PL</text>
+        <line x1="940" y1="338" x2="622" y2="338" stroke="#14595c" stroke-width="2" marker-end="url(#ar)"/>
+        <text x="780" y="328">Close Issue · PL</text>
+        <path d="M 270 206 C 270 250, 75 250, 75 208" fill="none" stroke="#b45309" stroke-width="1.6" marker-end="url(#ag)"/>
+        <path d="M 475 206 C 475 270, 95 270, 85 208" fill="none" stroke="#b45309" stroke-width="1.6" marker-end="url(#ag)"/>
+        <path d="M 760 206 C 760 290, 110 290, 95 208" fill="none" stroke="#b45309" stroke-width="1.6" marker-end="url(#ag)"/>
+        <text x="200" y="302" fill="#b45309" font-weight="600">Improve Issue → zurück nach New, an den Reporter</text>
+        <path d="M 330 206 C 350 330, 400 338, 448 338" fill="none" stroke="#be123c" stroke-width="1.6" marker-end="url(#ax)"/>
+        <line x1="535" y1="206" x2="535" y2="308" stroke="#be123c" stroke-width="1.6" marker-end="url(#ax)"/>
+        <text x="320" y="392" fill="#be123c" font-weight="600">Reject Issue (PL oder PM) → Closed</text>
+        <line x1="600" y1="310" x2="600" y2="208" stroke="#14595c" stroke-width="1.6" stroke-dasharray="3 4" marker-end="url(#ar)"/>
+        <text x="612" y="236" text-anchor="start" fill="#14595c" font-weight="600">Reopen · PL</text>
+      </g>
+    </svg>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 9 ─ Übergangstabelle -->
+<section class="slide">
+  <div class="head"><h1>Wer das Issue weitergibt — und an wen</h1><span class="chapter">Teil 2 · Workflow</span></div>
+  <div class="body">
+    <div class="col wide">
+      <table class="t compact">
+        <tr><th>Von</th><th>Transition</th><th>Nach</th><th>Durch</th><th>Neuer Assignee</th></tr>
+        <tr><td>—</td><td>Report Issue</td><td>New</td><td>Reporter</td><td>Project Lead</td></tr>
+        <tr><td>New</td><td>Validate Issue</td><td>Validity Check</td><td>PL</td><td>PL</td></tr>
+        <tr><td>Validity Check</td><td>Request Context Assessment</td><td>Context Assessment</td><td>PL</td><td>Product Manager</td></tr>
+        <tr><td>Context Assessment</td><td>Request Risk Assessment</td><td>Risk Assessment</td><td>PM</td><td>Quality Manager</td></tr>
+        <tr><td>Risk Assessment</td><td>Approve Issue</td><td>Backlog</td><td>QM</td><td>PL</td></tr>
+        <tr><td>Backlog</td><td>Resolve Issue</td><td>In Progress</td><td>PL</td><td>PL</td></tr>
+        <tr><td>In Progress</td><td>Close Issue</td><td>Closed</td><td>PL</td><td>PL</td></tr>
+        <tr><td>Closed</td><td>Reopen Issue</td><td>Context Assessment</td><td>PL</td><td>PL</td></tr>
+        <tr><td>VC · CA · RA</td><td>Improve Issue</td><td>New</td><td>PL · PM · QM</td><td>Reporter</td></tr>
+        <tr><td>VC · CA</td><td>Reject Issue</td><td>Closed</td><td>PL · PM</td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <div class="callout"><b>Transitions statt Status.</b> Das Feld Status ist schreibgeschützt — ein Issue bewegst du, indem du eine Transition wählst. Außer dem Melden ist jede Transition der Rolle PL, PM oder QM vorbehalten.</div>
+      <div class="callout small"><b>Assignee immer mitändern</b>, damit die nächste verantwortliche Person benachrichtigt wird.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 10 ─ Defect oder Improvement -->
+<section class="slide">
+  <div class="head"><h1>Defect oder Improvement?</h1><span class="chapter">Teil 2 · Workflow</span></div>
+  <div class="body">
+    <div class="col">
+      <div class="cards">
+        <div class="card"><h3>Defect</h3><p>Etwas funktioniert nicht wie spezifiziert oder vorgesehen.</p><ul>
+          <li>Voller Ablauf inkl. <b>Risk Assessment</b> durch den QM</li>
+          <li>Felder Safety und Security Risk Assessment sichtbar</li>
+          <li>Severity: Critical · Major · Minor</li>
+        </ul></div>
+        <div class="card"><h3>Improvement</h3><p>Ein bestehendes Produkt soll besser werden.</p><ul>
+          <li>Gleicher Ablauf, aber <b>ohne Risk Assessment</b></li>
+          <li>PM schiebt es von Context Assessment direkt in den Backlog</li>
+          <li>Felder zur Risikobewertung ausgeblendet</li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="col narrow">
+      <div class="callout">Falschen Typ gewählt? Bei <b>Validate Issue</b> kann der Project Lead noch zwischen Defect und Improvement wechseln.</div>
+      <div class="card"><h3>Weitere Felder</h3><ul>
+        <li>Medical Device (Yes/No)</li>
+        <li>Change Request · Quality Request</li>
+        <li>AE Link (Aligned Elements)</li>
+        <li>Mantis ID</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 11 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 3</div>
+  <h1>Bewertung nach Rollen</h1>
+  <p>Was Project Lead, Product Manager und Quality Manager prüfen und entscheiden.</p>
+</section>
+
+<!-- 12 ─ PL Validity Check -->
+<section class="slide">
+  <div class="head"><h1>Project Lead: Validity Check</h1><span class="chapter">Teil 3 · Rollen</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">Wenn du ein neues Issue aufnimmst, setze es zuerst auf <b>Validity Check</b> — so sehen alle, dass es bearbeitet wird. Dann prüfe die vier Kriterien (Beschreibung, Reproduzierbarkeit, Soll vs. Ist, Nachweise).</p>
+      <table class="t">
+        <tr><th>Ergebnis</th><th>Transition</th><th>Folge</th></tr>
+        <tr><td>Gültig</td><td>Request Context Assessment</td><td>Context Assessment, an den PM</td></tr>
+        <tr><td>Zu wenig Information</td><td>Improve Issue</td><td>New, an den Reporter</td></tr>
+        <tr><td>Ungültig / obsolet</td><td>Reject Issue, Resolution „Invalid“</td><td>Closed</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <div class="shot"><img src="../assets/dropdown-validity.png" alt="Transition-Menü im Status Validity Check" /></div>
+      <div class="callout small">Die Resolution <b>Invalid</b> löst eine Automation aus: Das Ticket wird entzogen (kein Assignee) und geschlossen.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 13 ─ PM Context Assessment -->
+<section class="slide">
+  <div class="head"><h1>Product Manager: Context Assessment</h1><span class="chapter">Teil 3 · Rollen</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">Der PM beurteilt, wie das Issue zu Produkt und Anwendung passt, und dokumentiert das Ergebnis im Feld Context Assessment.</p>
+      <ul class="points">
+        <li><b>Bewerten:</b> Auswirkung auf ein freigegebenes Produkt, auf Usability und Betrieb; betroffene Versionen; Reproduzierbarkeit; Häufigkeit; betroffene Anwender oder Systeme; alle angehängten Nachweise.</li>
+        <li><b>Dokumentieren:</b> alle Pflichtfelder, eine Zusammenfassung der wesentlichen Erkenntnisse, die <b>Priority</b> und die <b>Q-Request-ID</b>, wenn ein freigegebenes Produkt betroffen ist.</li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <table class="t">
+        <tr><th>Ergebnis</th><th>Nächster Status</th></tr>
+        <tr><td>Defect, bewertet</td><td>Risk Assessment → QM</td></tr>
+        <tr><td>Improvement, vertretbar</td><td>Backlog</td></tr>
+        <tr><td>Angaben fehlen</td><td>New → Reporter</td></tr>
+        <tr><td>Nicht gültig</td><td>Closed (Invalid)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 14 ─ QM Risk Assessment -->
+<section class="slide">
+  <div class="head"><h1>Quality Manager: Risk Assessment</h1><span class="chapter">Teil 3 · Rollen</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">Nur bei Defects. Der QM bewertet das Risiko im Hinblick auf die Produkteigenschaften und die Zweckbestimmung.</p>
+      <ul class="points">
+        <li><b>Bewerten:</b> Auswirkung auf Safety und Security; Auswirkung auf RAT und SRAT; neue oder zusätzliche Risiken; technische und anwendungsbezogene Risiken.</li>
+        <li><b>Voraussetzung für die Freigabe:</b> Gesamtrisiko berechnet; Akzeptanzkriterien und geplante Maßnahmen dokumentiert; Restrisiko klar benannt; alle Nachweise und Referenzen angehängt.</li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <table class="t">
+        <tr><th>Ergebnis</th><th>Nächster Status</th></tr>
+        <tr><td>Vertretbar</td><td>Approve Issue → Backlog, zurück an den PL</td></tr>
+        <tr><td>Angaben fehlen</td><td>Improve Issue → New, Reporter</td></tr>
+      </table>
+      <div class="callout small">Zurückschicken? Der Kommentar muss eine <b>umsetzbare Checkliste mit Aufzählungspunkten</b> enthalten, was fehlt — bei Bedarf PL oder PM taggen.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 15 ─ Umsetzung -->
+<section class="slide">
+  <div class="head"><h1>Umsetzung und Abschluss</h1><span class="chapter">Teil 3 · Rollen</span></div>
+  <div class="body">
+    <div class="col">
+      <div class="flow" style="flex-direction:column;gap:10px">
+        <div class="step"><h4>Backlog</h4><p>Keine offenen Fragen — bereit für das Entwicklungsteam.</p></div>
+        <div class="step"><h4>In Progress</h4><p>Der PL setzt das Issue auf In Progress, sobald die Entwicklung beginnt. Für die Umsetzung braucht es einen <b>Change Request</b> nach SOP-10.12 — dessen Nummer ins Feld Change Request eintragen (und ggf. die Q-Request-Nummer).</p></div>
+        <div class="step hot"><h4>Closed</h4><p>Der PL schließt nach Bestätigung: Verifikation abgeschlossen · alle Akzeptanzkriterien erfüllt · Nachweise verlinkt.</p></div>
+      </div>
+    </div>
+    <div class="col narrow">
+      <div class="card"><h3>Wieder öffnen</h3><p>Neue Informationen zu einem geschlossenen Issue? Der PL öffnet es wieder — es geht zurück ins <b>Context Assessment</b>.</p></div>
+      <div class="card"><h3>Kein Fix vorgesehen?</h3><p>Die Begründung in die Beschreibung oder einen Kommentar schreiben.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 16 ─ Nachweise -->
+<section class="slide">
+  <div class="head"><h1>Kommentare, Aufzeichnungen, Rückverfolgbarkeit</h1><span class="chapter">Teil 3 · Rollen</span></div>
+  <div class="body">
+    <div class="col">
+      <ul class="points">
+        <li><b>Jeden Übergang kommentieren.</b> Die Entscheidung im Feld Comments begründen; Personen mit <span class="kbd">@Name</span> erwähnen — sie werden benachrichtigt.</li>
+        <li><b>Alles im Issue.</b> Alle risikorelevanten Informationen gehören ins Jira-Issue: Felder, Anhänge, Kommentare.</li>
+        <li><b>Gelenkte Dokumente verlinken:</b> FMEA, RAT, SRAT, Usability-Dokumentation, Q-Request, Change Request.</li>
+        <li><b>Beim Abschluss:</b> den Eintrag im Entwicklungstool verlinken, der den Fix dokumentiert, dazu Testnachweise und wichtige Entscheidungen.</li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="shot"><img src="../assets/comments.png" alt="Feld Comments eines Jira-Tickets" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+<!-- 17 ─ Zusammenfassung -->
+<section class="slide">
+  <div class="head"><h1>Das Wichtigste</h1><span class="chapter">Zusammenfassung</span></div>
+  <div class="body">
+    <div class="col">
+      <ul class="steps">
+        <li><span class="n">1</span><div>Alle Mitarbeitenden können und sollen Defects und Improvements im IMS melden.</div></li>
+        <li><span class="n">2</span><div>Work type, Summary und Product sind Pflicht; den Project Lead eintragen (sonst Director R&amp;D) und Nachweise anhängen.</div></li>
+        <li><span class="n">3</span><div>Ablauf: New → Validity Check (PL) → Context Assessment (PM) → Risk Assessment (QM, nur Defects) → Backlog → In Progress → Closed.</div></li>
+        <li><span class="n">4</span><div>Improve Issue schickt es an den Reporter zurück; Reject Issue schließt es als Invalid.</div></li>
+        <li><span class="n">5</span><div>Keine Umsetzung ohne Change Request; Abschluss nur mit Verifikation, erfüllten Akzeptanzkriterien und verlinkten Nachweisen.</div></li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="card"><h3>Weiterlesen</h3><ul>
+        <li>roXtra 181298 — AA Jira Issue Management System</li>
+        <li>roXtra 177290 — Workflow and Role concept</li>
+        <li>roXtra 156541 — AA Software Problem Resolution</li>
+        <li>Confluence QM/RA — Issue Management System</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Jira Issue Management System</span><span class="page"></span></div>
+</section>
+
+</body>
+</html>

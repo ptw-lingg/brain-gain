@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>BrainGain for Trainees</title>
+<link rel="stylesheet" href="deck.css" />
+</head>
+<body>
+
+<!-- 1 ─ title -->
+<section class="slide title">
+  <img class="logo" src="../../../frontend/public/ptw-logo-white.svg" alt="PTW" />
+  <div class="kicker">Self-training · for everyone who takes trainings</div>
+  <h1>BrainGain for Trainees</h1>
+  <p>Grow what you know. How to sign in, read your training dashboard, work through the materials, pass the test and sign your completion.</p>
+  <div class="meta">PTW-Freiburg GmbH · BrainGain · about 20 minutes</div>
+</section>
+
+<!-- 2 ─ what BrainGain is -->
+<section class="slide">
+  <div class="head"><h1>What BrainGain is</h1><span class="chapter">Overview</span></div>
+  <div class="body">
+    <div class="col">
+      <p class="lead">BrainGain manages the mandatory trainings of our company. It tells you which trainings you must take, when they are due, and records the evidence that you completed them.</p>
+      <ul class="points">
+        <li><b>Assigned through job roles.</b> An administrator gives you one or more job roles. Every role requires a set of trainings — those appear on your dashboard.</li>
+        <li><b>Material → test → result.</b> Each training has learning materials and a short test. The test is graded on the server; passing is recorded.</li>
+        <li><b>Recurring.</b> Trainings repeat every one to five years. BrainGain computes when each one is due for you.</li>
+        <li><b>Evidence, not paperwork.</b> Your materials confirmation and your signed test result replace paper attendance lists.</li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="flow" style="flex-direction:column;gap:10px">
+        <div class="step"><h4>1 · Sign in</h4><p>With your Microsoft account.</p></div>
+        <div class="step"><h4>2 · Pick a due training</h4><p>Dashboard “My Trainings”.</p></div>
+        <div class="step"><h4>3 · Study the materials</h4><p>Open them in BrainGain, confirm you reviewed them.</p></div>
+        <div class="step hot"><h4>4 · Pass the test</h4><p>Sign the completion with your password or Microsoft.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 3 ─ section -->
+<section class="slide section">
+  <div class="num">Part 1</div>
+  <h1>Getting in</h1>
+  <p>Signing in and understanding your dashboard.</p>
+</section>
+
+<!-- 4 ─ sign in -->
+<section class="slide">
+  <div class="head"><h1>Signing in</h1><span class="chapter">Part 1 · Getting in</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div>Open the BrainGain address in your browser (your administrator or the invitation email tells you which one).</div></li>
+        <li><span class="n">2</span><div>Click <b>Sign in with Microsoft</b> and use your PTW account. No separate BrainGain password is needed.</div></li>
+        <li><span class="n">3</span><div>You land on <b>My Trainings</b> — your personal dashboard.</div></li>
+      </ul>
+      <div class="callout"><b>Emergency access for administrators</b> opens an email/password form. While Microsoft sign-in is active that form only works for administrators — ignore it as a trainee.</div>
+      <div class="callout small">Installations without Microsoft sign-in show the email/password form directly. If you received an <b>activation link</b>, open it, choose a password and you are signed in.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/login-sso.png" alt="Login page with Sign in with Microsoft" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 5 ─ dashboard -->
+<section class="slide">
+  <div class="head"><h1>Your dashboard: My Trainings</h1><span class="chapter">Part 1 · Getting in</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/dashboard.png" alt="My Trainings dashboard" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Summary line</b> — how many trainings are assigned to you, how many are due now, and the total time they take.</div></li>
+        <li><span class="n">2</span><div><b>One card per training</b> — category, description, how often it repeats and how long it takes.</div></li>
+        <li><span class="n">3</span><div><b>Status pill</b> on the card (next slide) tells you whether you must act.</div></li>
+        <li><span class="n">4</span><div><b>Start</b> opens the training. Search and the <b>Only show due trainings</b> filter help when you have many.</div></li>
+      </ul>
+      <div class="callout small">A card marked <b>In preparation</b> cannot be started yet — its trainer has not published the first version.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 6 ─ due statuses -->
+<section class="slide">
+  <div class="head"><h1>Reading the status pill</h1><span class="chapter">Part 1 · Getting in</span></div>
+  <div class="body single">
+    <p class="lead">Every training has a repeat cycle (for example yearly). Around the due date a window opens in which you can take it; after a grace period it counts as overdue.</p>
+    <table class="t">
+      <tr><th style="width:220px">Pill</th><th>Meaning</th><th style="width:300px">What to do</th></tr>
+      <tr><td><span class="pill rose">Due now</span></td><td>You have never passed this training, or its repeat cycle has come around.</td><td>Take it now.</td></tr>
+      <tr><td><span class="pill rose">Due now · by date</span></td><td>The window is open; the date is when the current cycle ends.</td><td>Take it before the date.</td></tr>
+      <tr><td><span class="pill rose">Overdue</span></td><td>The due date and the grace period have passed.</td><td>Take it immediately — your unit head sees this too.</td></tr>
+      <tr><td><span class="pill green">Up to date · Next due date</span></td><td>You passed; the next due date is shown. You can still open the training to review the materials.</td><td>Nothing to do.</td></tr>
+      <tr><td><span class="pill blue">Updated · by date</span></td><td>The trainer published new content and asks everyone who already passed to act on it by the date.</td><td>Retake, or review and confirm — the training tells you which.</td></tr>
+      <tr><td><span class="pill amber">In preparation</span></td><td>The training exists but has no published version yet.</td><td>Wait — you cannot start it.</td></tr>
+    </table>
+    <div class="callout small"><b>Tip:</b> the filter <b>Only show due trainings</b> hides everything green. BrainGain remembers the setting for you.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 7 ─ section -->
+<section class="slide section">
+  <div class="num">Part 2</div>
+  <h1>Taking a training</h1>
+  <p>Materials, confirmation, test, signature, result.</p>
+</section>
+
+<!-- 8 ─ materials -->
+<section class="slide">
+  <div class="head"><h1>Step 1 · Study the materials</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead"><b>Start</b> on a card opens the training. The first page lists its learning materials.</p>
+      <ul class="points">
+        <li><b>Click a material to open it.</b> PDFs, videos and images open inside BrainGain. Web pages open in a new browser tab. Other files download and open in your installed apps.</li>
+        <li><b>Languages.</b> Materials are offered in your language. A small flag marks a material that is only available in another language.</li>
+        <li><b>Read everything.</b> The test is built from these materials, and you will confirm that you reviewed them all.</li>
+        <li>Then click <b>Start test →</b>. A training without a test shows <b>Complete training →</b> instead.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/session-material.png" alt="Material step of a training session" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 9 ─ viewer -->
+<section class="slide">
+  <div class="head"><h1>The built-in viewer</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/viewer.png" alt="In-app material viewer" /></div>
+    </div>
+    <div class="col narrow">
+      <p class="lead">Uploaded PDFs, videos and images open in a viewer that fills the page. The controls are icons with tooltips:</p>
+      <ul class="points">
+        <li><b>‹ Back</b> returns to the material list.</li>
+        <li><b>Download</b> saves the file to your computer.</li>
+        <li><b>Open in new tab</b> appears for linked content that may not display inside BrainGain.</li>
+        <li><b>Full tab</b> enlarges the viewer to the whole browser tab — the same control shrinks it again.</li>
+      </ul>
+      <div class="callout small">PDF slides like these are shown page by page — scroll down to read on.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 10 ─ confirm -->
+<section class="slide">
+  <div class="head"><h1>Step 2 · Confirm the materials</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">Before any test starts, BrainGain asks you to confirm that you are aware of all materials and have reviewed them.</p>
+      <ul class="points">
+        <li>The confirmation is <b>recorded in the audit trail in your name</b> — it is part of the training evidence.</li>
+        <li>The dialog shows the <b>responsible trainer</b> with an email link. Questions about the content? Ask before you confirm.</li>
+        <li>For a training <b>without a test</b>, this confirmation completes the training. That is why the dialog then also asks for your password or a Microsoft confirmation.</li>
+      </ul>
+      <div class="callout warn">Only confirm what is true. If you have not reviewed a material yet, cancel, open it, and come back.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/confirm-materials.png" alt="Confirm the training materials dialog" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 11 ─ quiz -->
+<section class="slide">
+  <div class="head"><h1>Step 3 · Take the test</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/quiz.png" alt="The test with single-choice questions" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Single choice</b> questions use round radio buttons — exactly one answer is correct.</li>
+        <li><b>Multiple choice</b> questions use square checkboxes — tick <b>every</b> correct answer. A question counts as correct only when your selection matches the full set: no missing, no extra ticks.</li>
+        <li>Answer every question, then click <b>Submit test</b> at the bottom.</li>
+      </ul>
+      <div class="callout small">The pass threshold is set by your administrator — typically <b>80 %</b> of the questions. The result page tells you the exact number.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 12 ─ signature -->
+<section class="slide">
+  <div class="head"><h1>Step 4 · Sign your completion</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">Submitting the test is recorded in your name — like a signature on a paper attendance list. So BrainGain asks you to confirm it is really you.</p>
+      <ul class="points">
+        <li>Enter <b>your password</b> and click <b>Confirm &amp; submit</b>, or</li>
+        <li>click <b>Confirm with Microsoft</b> for a fresh Microsoft sign-in (accounts without a password).</li>
+        <li>A wrong password does not lose your answers — the dialog simply asks again.</li>
+      </ul>
+      <div class="callout">This step is what makes your completion valid evidence. Never let somebody else confirm in your name.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/signature.png" alt="Confirm your identity dialog" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 13 ─ result -->
+<section class="slide">
+  <div class="head"><h1>Step 5 · The result</h1><span class="chapter">Part 2 · Taking a training</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/result.png" alt="Result page: passed" /></div>
+    </div>
+    <div class="col narrow">
+      <div class="card"><h3><span class="pill green">Passed</span></h3><p>Your score and the threshold are shown. The completion is stored with date and time; the card turns <b>Up to date</b> with the next due date.</p></div>
+      <div class="card"><h3><span class="pill rose">Not passed</span></h3><p>Failed attempts are <b>not recorded</b>. Click <b>Retry test</b> as often as you need — the training stays due until you pass. Depending on the settings, the questions you answered wrong are listed (never the correct answers).</p></div>
+      <div class="callout small">Stuck on a question? The result page shows the trainer's contact.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 14 ─ section -->
+<section class="slide section">
+  <div class="num">Part 3</div>
+  <h1>Special cases</h1>
+  <p>Updated trainings, SCORM courses, your account.</p>
+</section>
+
+<!-- 15 ─ updates -->
+<section class="slide">
+  <div class="head"><h1>When a training you passed is updated</h1><span class="chapter">Part 3 · Special cases</span></div>
+  <div class="body single">
+    <p class="lead">Trainers can publish new content for a training. If they decide that everyone who already passed must act on it, your card shows <span class="pill blue">Updated · by date</span>, you get an email, and the training opens with a banner.</p>
+    <div class="two">
+      <div class="card">
+        <h3>“Please retake it (materials and test) by …”</h3>
+        <p>Go through the training again like the first time: materials, confirmation, test, signature. The new passing result also <b>restarts your regular cycle</b>.</p>
+      </div>
+      <div class="card">
+        <h3>“Please review the materials and confirm by …”</h3>
+        <p>Open the updated materials, then click <b>Confirm updated materials →</b> and confirm. No test. Your regular cycle is <b>unchanged</b>; the card returns to Up to date.</p>
+      </div>
+    </div>
+    <div class="callout warn">Miss the deadline and the pill turns <b>Update overdue</b> — treat it like an overdue training.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 16 ─ scorm -->
+<section class="slide">
+  <div class="head"><h1>Interactive courses (SCORM)</h1><span class="chapter">Part 3 · Special cases</span></div>
+  <div class="body single">
+    <p class="lead">Some trainings are delivered as an imported interactive course instead of materials plus a test. The course is both the material and the test.</p>
+    <div class="cards">
+      <div class="card"><h3>It opens straight away</h3><p>Clicking Start launches the course inside BrainGain. There is no material list; the course guides you.</p></div>
+      <div class="card"><h3>Progress is saved</h3><p>The title line shows <b>Saved …</b> after each step. <b>Exit and continue later</b> lets you resume where you left off. <b>Start over</b> discards the progress.</p></div>
+      <div class="card"><h3>Finish and sign</h3><p>When the course reports that you are done, the button <b>Finish and sign completion</b> appears — the same identity confirmation as for a test.</p></div>
+      <div class="card"><h3>Third-party content</h3><p>The course is not BrainGain's own UI. It never needs your password — if it asks for credentials, stop and tell your trainer.</p></div>
+    </div>
+    <div class="callout small">Finished the course but nothing happens? It may not report completion correctly — contact the responsible trainer.</div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 17 ─ account -->
+<section class="slide">
+  <div class="head"><h1>Your account menu</h1><span class="chapter">Part 3 · Special cases</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/en/user-menu.png" alt="User menu with language, password and logout" /></div>
+    </div>
+    <div class="col narrow">
+      <p class="lead">Click your initials in the top-right corner.</p>
+      <ul class="points">
+        <li><b>Language</b> — switch the interface between English and German. Materials follow your choice when available.</li>
+        <li><b>Change password</b> — for accounts that sign in with a password.</li>
+        <li><b>About BrainGain</b> — version information.</li>
+        <li><b>Log out</b> — always on shared computers.</li>
+      </ul>
+      <div class="card"><h3>Who to ask</h3><ul><li><b>Content of a training</b> → the trainer shown in the confirmation and result dialogs.</li><li><b>Missing or wrong trainings, access</b> → your administrator (job roles decide what you see).</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+<!-- 18 ─ summary -->
+<section class="slide">
+  <div class="head"><h1>Summary</h1><span class="chapter">Ready for the test</span></div>
+  <div class="body">
+    <div class="col">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Sign in with Microsoft.</b> The password form is for administrators.</div></li>
+        <li><span class="n">2</span><div><b>My Trainings</b> shows what your job roles require. Red pills need action; green ones are fine.</div></li>
+        <li><span class="n">3</span><div><b>Open every material</b>, then confirm that you reviewed them.</div></li>
+        <li><span class="n">4</span><div><b>Take the test.</b> Multiple choice means the full set of correct answers.</div></li>
+        <li><span class="n">5</span><div><b>Sign</b> with your password or Microsoft. Failed attempts are not recorded — retry.</div></li>
+        <li><span class="n">6</span><div><b>Updated</b> trainings ask you to retake or to confirm — by a deadline.</div></li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="card" style="background:var(--petrol-50)">
+        <h3>Now: the test</h3>
+        <p>Close this viewer with <b>‹ Back</b>, click <b>Start test →</b>, confirm the materials and answer the questions. Everything you need is in these slides.</p>
+        <p style="margin-top:10px"><b>10 questions</b> · single and multiple choice · unlimited attempts</p>
+      </div>
+      <div class="callout small">You can reopen this training any time from your dashboard to review the slides.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain for Trainees</span><span class="page"></span></div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>BrainGain für Trainer</title>
+<link rel="stylesheet" href="deck.css" />
+</head>
+<body>
+
+<!-- 1 ─ Titel -->
+<section class="slide title">
+  <img class="logo" src="../../../frontend/public/ptw-logo-white.svg" alt="PTW" />
+  <div class="kicker">Selbstschulung · für Trainer, die Schulungen erstellen</div>
+  <h1>BrainGain für Trainer</h1>
+  <p>Eine Schulung mit Material und Quiz anlegen, einen SCORM-Kurs importieren, mit Entwürfen und veröffentlichten Versionen arbeiten und die Teilnehmenden im Blick behalten.</p>
+  <div class="meta">PTW-Freiburg GmbH · BrainGain · etwa 45 Minuten · setzt die Trainee-Schulung voraus</div>
+</section>
+
+<!-- 2 ─ Rolle -->
+<section class="slide">
+  <div class="head"><h1>Ihre Rolle als Trainer</h1><span class="chapter">Überblick</span></div>
+  <div class="body single">
+    <p class="lead">Ein Trainer verantwortet Schulungen. Ein Administrator entscheidet, wer sie absolvieren muss. Beide Seiten treffen sich in den Funktionen (Jobrollen).</p>
+    <div class="two">
+      <div class="card">
+        <h3>Sie — Trainer</h3>
+        <ul>
+          <li>Seite <b>Schulungen</b>: eigene Schulungen anlegen und bearbeiten, Material hochladen, Quiz schreiben oder SCORM-Kurs anhängen.</li>
+          <li><b>Versionen veröffentlichen</b>: die erste macht eine Schulung sichtbar, spätere können Teilnehmende zum erneuten Absolvieren oder Bestätigen verpflichten.</li>
+          <li>Seite <b>Teilnehmer</b>: sehen, wer Ihre Schulungen absolvieren muss und wer fällig ist; Erinnerungs-E-Mails senden.</li>
+          <li>Sie sind der Kontakt, der Teilnehmenden in Ihren Schulungen angezeigt wird.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Administrator</h3>
+        <ul>
+          <li>Sieht und bearbeitet <b>alle</b> Schulungen, setzt den Verantwortlichen, ordnet die Liste, exportiert den Schulungsplan als PDF.</li>
+          <li>Verwaltet <b>Benutzer</b>, <b>Funktionen</b> (welche Schulungen eine Funktion verlangt) und <b>Organisationseinheiten</b>.</li>
+          <li>Einstellungen: Bestehensgrenze, E-Mail (SMTP), Microsoft-Anmeldung, Backups.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">Teilnehmende sehen eine Schulung nur, wenn (a) Version 1 veröffentlicht ist und (b) eine ihrer Funktionen sie verlangt.</div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 3 ─ Lebenszyklus -->
+<section class="slide">
+  <div class="head"><h1>Das Leben einer Schulung</h1><span class="chapter">Überblick</span></div>
+  <div class="body single">
+    <div class="flow">
+      <div class="step"><h4>Anlegen</h4><p>Name, Zeitplan, Inhalt. <b>Version 0</b> — für Teilnehmende unsichtbar.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h4>Entwurf</h4><p>Jedes Speichern von Material, Quiz oder Paket wird bereitgelegt, nie live geschaltet.</p></div>
+      <div class="arrow">→</div>
+      <div class="step hot"><h4>Version 1 veröffentlichen</h4><p>Still — niemand hat sie bisher absolviert. Teilnehmende können starten.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><h4>Erneut bearbeiten</h4><p>Änderungen werden zum neuen Entwurf; Teilnehmende sehen weiter Version 1.</p></div>
+      <div class="arrow">→</div>
+      <div class="step hot"><h4>Version 2… veröffentlichen</h4><p>Mit Benachrichtigung (erneut absolvieren / bestätigen bis Frist) oder still.</p></div>
+    </div>
+    <ul class="points" style="margin-top:18px">
+      <li><b>Grunddaten sind sofort live.</b> Name, Beschreibung, Kategorie, Dauer, Verantwortlicher, Zeitplan und Vorschaubild werden direkt gespeichert — sie sind kein Inhalt.</li>
+      <li><b>Inhalt ist versioniert.</b> Material, Quizfragen und das SCORM-Paket laufen über Entwurf → Veröffentlichung. Die Versionsnummer steigt nur.</li>
+      <li><b>Teilnehmende werden gegen die veröffentlichte Version bewertet.</b> Laufende Sitzungen ändern sich nie unter ihren Händen.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 4 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 1</div>
+  <h1>Eine Schulung anlegen</h1>
+  <p>Die Seite Schulungen, Grunddaten, Zeitplan und Inhaltstyp.</p>
+</section>
+
+<!-- 5 ─ Seite Schulungen -->
+<section class="slide">
+  <div class="head"><h1>Die Seite Schulungen</h1><span class="chapter">Teil 1 · Eine Schulung anlegen</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/trainings.png" alt="Seite Schulungen mit Versions-, Entwurfs- und SCORM-Etiketten" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Schulung hinzufügen</b> öffnet den Editor für eine neue Schulung. Ein Klick auf eine Zeile bearbeitet eine bestehende.</li>
+        <li><b>Version 1 · Datum</b> — die veröffentlichte Version und wann sie live ging.</li>
+        <li><span class="pill blue">Entwurf</span> — es gibt unveröffentlichte Inhaltsänderungen; Teilnehmende sehen noch die zuletzt veröffentlichte Version.</li>
+        <li><span class="pill amber">Unveröffentlicht</span> — Version 0; Teilnehmende können sie weder sehen noch starten.</li>
+        <li><span class="pill gray">SCORM-Kurs</span> — wird durch einen importierten Kurs vermittelt; das Paket ist Material und Test zugleich.</li>
+        <li>Administratoren können zusätzlich Zeilen per Ziehen <b>umsortieren</b> (die Reihenfolge gilt überall) und den <b>Schulungsplan</b> exportieren.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 6 ─ Grunddaten -->
+<section class="slide">
+  <div class="head"><h1>Grunddaten</h1><span class="chapter">Teil 1 · Eine Schulung anlegen</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Name</b> pro Sprache — Felder für Deutsch und Englisch; mindestens eines ist Pflicht. Teilnehmende sehen den Namen in ihrer Sprache, ersatzweise Englisch.</li>
+        <li><b>Kategorie</b> (z. B. Sicherheit, Compliance) gruppiert Schulungen auf dem Dashboard und färbt die Karte.</li>
+        <li><b>Beschreibung</b> — ein, zwei Sätze auf der Karte. Sagen Sie, wofür die Schulung ist.</li>
+        <li><b>Dauer (Minuten)</b> — ehrliche Schätzung; das Dashboard summiert sie für die Teilnehmenden.</li>
+        <li><b>Verantwortlich (Trainer)</b> — Administratoren können eine Schulung an einen anderen Trainer übergeben.</li>
+        <li><b>Vorschaubild</b> — optionales Titelbild der Karte. Querformat, verkleinert auf 800 × 450 px; PNG, JPEG, WebP oder GIF.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/editor-basics.png" alt="Schulungseditor: Abschnitt Grunddaten" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 7 ─ Zeitplan -->
+<section class="slide">
+  <div class="head"><h1>Zeitplan: Wann ist sie fällig?</h1><span class="chapter">Teil 1 · Eine Schulung anlegen</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/editor-schedule.png" alt="Schulungseditor: Abschnitt Zeitplan" /></div>
+    </div>
+    <div class="col narrow">
+      <table class="t">
+        <tr><th>Feld</th><th>Wirkung für Teilnehmende</th></tr>
+        <tr><td><b>Wiederholung</b> (1–5 Jahre)</td><td>Wie lange ein bestandenes Ergebnis gültig bleibt. Nächste Fälligkeit = letztes Bestehen + dieser Zyklus.</td></tr>
+        <tr><td><b>Fenster öffnet</b> (0–3 Monate vorher)</td><td>Ab hier zeigt die Karte <span class="pill rose">Jetzt fällig · bis Datum</span> — die Schulung kann vorgezogen werden, ohne Zeit zu verlieren.</td></tr>
+        <tr><td><b>Kulanz</b> (0–3 Monate danach)</td><td>Nach Fälligkeitsdatum plus Kulanz wird die Karte <span class="pill rose">Überfällig</span>.</td></tr>
+      </table>
+      <div class="callout small">Eine nie bestandene Schulung ist einfach <b>Jetzt fällig</b> — der Zeitplan greift erst ab dem ersten Bestehen. Eine Änderung des Zeitplans gilt sofort für alle.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 8 ─ Inhaltstyp -->
+<section class="slide">
+  <div class="head"><h1>Inhaltstyp: Wie wollen Sie vermitteln?</h1><span class="chapter">Teil 1 · Eine Schulung anlegen</span></div>
+  <div class="body single">
+    <div class="two">
+      <div class="card">
+        <h3>Material &amp; Test</h3>
+        <p>Lernmaterial zum Durcharbeiten (Dateien oder Links, pro Sprache) plus der eingebaute Test, den BrainGain gegen die Bestehensgrenze bewertet.</p>
+        <ul>
+          <li>Schnellster Weg zu einer Schulung: ein PDF und fünf Fragen.</li>
+          <li>Material öffnet sich im eingebauten Viewer (PDF, Video, Bild) oder extern.</li>
+          <li>Varianten pro Sprache, Englisch als Rückfall.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>SCORM-Kurs</h3>
+        <p>Ein interaktiver Kurs, exportiert aus einem Autorenwerkzeug (Articulate, Captivate, iSpring, …). Er bringt Inhalt <b>und</b> Test selbst mit und meldet das Ergebnis an BrainGain.</p>
+        <ul>
+          <li>Läuft in BrainGain; Fortschritt wird gespeichert und ist fortsetzbar.</li>
+          <li>Der Quiz-Editor ist deaktiviert, solange ein Paket angehängt ist.</li>
+          <li>Eine Sprache pro Paket.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">Sie können später wechseln: Paket entfernen aktiviert die Quizfragen wieder; ein Paket anhängen blendet sie aus. In beiden Fällen ist die Änderung ein Entwurf, bis Sie veröffentlichen.</div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 9 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 2</div>
+  <h1>Eine einfache Schulung: Material &amp; Test</h1>
+  <p>Material hochladen, gute Fragen schreiben, und was „Speichern“ wirklich tut.</p>
+</section>
+
+<!-- 10 ─ Material -->
+<section class="slide">
+  <div class="head"><h1>Lernmaterial</h1><span class="chapter">Teil 2 · Material &amp; Test</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Material hinzufügen</b> erzeugt eine Gruppe mit einer Zeile pro Sprache (DE, EN).</div></li>
+        <li><span class="n">2</span><div>Pro Sprache: eine <b>Bezeichnung</b> und entweder ein <b>Link</b> (https://…) oder eine <b>hochgeladene Datei</b>. Jeder Dateityp ist erlaubt; eine Datei gewinnt gegenüber einem Link.</div></li>
+        <li><span class="n">3</span><div>Füllen Sie die Sprachen aus, die Sie haben — leere Sprachen werden einfach nicht angeboten. Englisch ist der Rückfall, wenn die Sprache der Teilnehmenden fehlt.</div></li>
+        <li><span class="n">4</span><div>Ordnen Sie Material mit den <b>Pfeilen</b> — Teilnehmende sehen es in dieser Reihenfolge.</div></li>
+      </ul>
+      <div class="callout small"><b>Was Teilnehmende sehen:</b> PDFs, Videos und Bilder öffnen sich in BrainGains Viewer. Links auf Webseiten öffnen einen neuen Tab. Andere Dateien (DOCX, XLSX, ZIP …) werden heruntergeladen.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/editor-materials.png" alt="Schulungseditor: Abschnitt Lernmaterial" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 11 ─ Quiz -->
+<section class="slide">
+  <div class="head"><h1>Quizfragen</h1><span class="chapter">Teil 2 · Material &amp; Test</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/editor-questions.png" alt="Schulungseditor: Abschnitt Quizfragen" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Frage hinzufügen</b>, Text pro Sprache schreiben, Optionen ergänzen und <b>jede richtige Antwort ankreuzen</b> — mindestens eine.</li>
+        <li><b>Single Choice</b> (Auswahlknöpfe) braucht genau eine richtige Antwort. <b>Multiple Choice</b> (Kästchen) wird als exakte Menge bewertet.</li>
+        <li>Jede Frage klappt zu einer Zusammenfassung zusammen: Typ · Optionen · Anzahl richtig. Umsortieren mit den Pfeilen.</li>
+      </ul>
+      <div class="card"><h3>Gute Fragen schreiben</h3><ul>
+        <li>Eine Frage pro Kernaussage des Materials; 5–12 Fragen reichen.</li>
+        <li>Vier Optionen; Ablenker plausibel, aber nach dem Lesen klar falsch.</li>
+        <li>Bestehensgrenze bedenken (Standard 80 %): bei 5 Fragen fällt man mit einem Fehler schon durch.</li>
+        <li>Der Lösungsschlüssel verlässt nie den Server — Teilnehmende sehen höchstens, welche Fragen falsch waren, falls der Admin das aktiviert hat.</li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 12 ─ Speichern = Entwurf -->
+<section class="slide">
+  <div class="head"><h1>Speichern legt einen Entwurf an — es veröffentlicht nichts</h1><span class="chapter">Teil 2 · Material &amp; Test</span></div>
+  <div class="body single">
+    <div class="cards">
+      <div class="card"><h3>Speichern</h3><p>Grunddaten gehen sofort live. Inhaltsänderungen (Material, Fragen, Paket) werden als <b>Entwurf</b> abgelegt — ein vollständiger Schnappschuss dessen, was Sie vorbereiten.</p></div>
+      <div class="card"><h3>Teilnehmende</h3><p>Sehen weiterhin die <b>zuletzt veröffentlichte Version</b> und werden gegen sie bewertet. Eine Schulung mit Version 0 bleibt unsichtbar.</p></div>
+      <div class="card"><h3>Das Etikett Entwurf</h3><p>Erscheint auf der Seite Schulungen, solange unveröffentlichte Änderungen existieren. Der Editor zeigt den Entwurfsinhalt, nicht den veröffentlichten.</p></div>
+      <div class="card"><h3>Entwurf verwerfen</h3><p>Im Veröffentlichungsdialog (Knopf <b>Versionen</b>). Wirft den Entwurf weg; der veröffentlichte Inhalt bleibt.</p></div>
+    </div>
+    <div class="callout">Nach einem Speichern, das Inhalt geändert hat, bietet BrainGain sofort den Veröffentlichungsdialog an. <b>Überspringen — als Entwurf behalten</b> ist in Ordnung: arbeiten Sie über mehrere Sitzungen und veröffentlichen Sie einmal.</div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 13 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 3</div>
+  <h1>Veröffentlichen</h1>
+  <p>Live schalten, Teilnehmende benachrichtigen, Versionen verwalten.</p>
+</section>
+
+<!-- 14 ─ Veröffentlichungsdialog -->
+<section class="slide">
+  <div class="head"><h1>Der Veröffentlichungsdialog</h1><span class="chapter">Teil 3 · Veröffentlichen</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/publish.png" alt="Dialog Neue Version veröffentlichen" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li><b>Veröffentlichen und benachrichtigen</b> — alle, die die Schulung bereits absolviert haben, erhalten eine Verpflichtung mit <b>Frist</b> und eine E-Mail. Wählen Sie, was sie tun müssen:
+          <ul style="margin:6px 0 0;padding-left:18px"><li><b>Schulung erneut absolvieren</b> — Material und Test; das neue Bestehen startet ihren Zyklus neu.</li><li><b>Material sichten und bestätigen</b> — kein Test; ihr Zyklus bleibt unverändert.</li></ul></li>
+        <li><b>Still veröffentlichen</b> — der Entwurf geht als nächste Version live; niemand wird benachrichtigt, nichts wird fällig. Richtig für Tippfehler und kleine Korrekturen.</li>
+        <li>Der <b>Hinweis an die Teilnehmer</b> und die E-Mail-Vorschau lassen sich vor dem Senden bearbeiten.</li>
+      </ul>
+      <div class="callout small">Die <b>erste</b> Version wird immer still veröffentlicht — niemand hat sie bisher absolviert. E-Mails brauchen einen vom Administrator konfigurierten SMTP-Server.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 15 ─ Versionen -->
+<section class="slide">
+  <div class="head"><h1>Versionen</h1><span class="chapter">Teil 3 · Veröffentlichen</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">Der Knopf <b>Versionen</b> im Editor öffnet denselben Dialog für eine Schulung ohne offene Änderungen.</p>
+      <ul class="points">
+        <li>Er listet die <b>veröffentlichten Versionen</b> mit ihren Fristen und lässt Sie eine irrtümlich benachrichtigte Aktualisierung <b>zurückziehen</b> — die Verpflichtung verschwindet für alle.</li>
+        <li>Ohne Entwurf <b>kündigt</b> eine Veröffentlichung den aktuellen Inhalt <b>erneut an</b>: nützlich, um nach einer Richtlinienänderung ein erneutes Absolvieren zu verlangen, ohne das Material anzufassen.</li>
+        <li>Versionsnummern steigen nur; Zurückziehen vergibt keine Nummer neu.</li>
+        <li>Jedes Veröffentlichen, Zurückziehen und Verwerfen wird mit Ihrem Namen in den Audit-Trail geschrieben.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/versions.png" alt="Versionsdialog einer veröffentlichten Schulung" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 16 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 4</div>
+  <h1>SCORM-Kurse</h1>
+  <p>Einen interaktiven Kurs importieren und seine Abschlussregel wählen.</p>
+</section>
+
+<!-- 17 ─ Anforderungen -->
+<section class="slide">
+  <div class="head"><h1>Was BrainGain akzeptiert</h1><span class="chapter">Teil 4 · SCORM-Kurse</span></div>
+  <div class="body single">
+    <p class="lead">SCORM ist das Standard-Exportformat von E-Learning-Autorenwerkzeugen. Exportieren Sie Ihren Kurs als <b>SCORM-1.2</b>- oder <b>SCORM-2004</b>-Paket — ein ZIP mit <b>imsmanifest.xml</b> — und laden Sie es im Editor hoch.</p>
+    <div class="two">
+      <div class="card"><h3><span class="pill green">Akzeptiert</span></h3><ul>
+        <li>SCORM 1.2, SCORM 2004 (3rd/4th Edition)</li>
+        <li>Genau eine startbare Lektion (<b>Single SCO</b>)</li>
+        <li>Bis 500 MB entpackt, bis 2000 Dateien</li>
+        <li>Exporte aus Articulate Storyline/Rise, Adobe Captivate, iSpring und ähnlichen Werkzeugen</li>
+      </ul></div>
+      <div class="card"><h3><span class="pill rose">Abgelehnt</span></h3><ul>
+        <li>Keine imsmanifest.xml — kein SCORM-Paket</li>
+        <li>Mehrere Lektionen (Multi-SCO) — als Single SCO exportieren</li>
+        <li>cmi5-/xAPI-Pakete — stattdessen als SCORM exportieren</li>
+        <li>Verschlüsselte ZIPs, unsichere Pfade, symbolische Links, verdächtig stark komprimierte Archive</li>
+        <li>Eine Startdatei, die keine HTML-Seite ist</li>
+      </ul></div>
+    </div>
+    <div class="callout small">Ein abgelehntes Paket zeigt den genauen Grund im Editor. Korrigieren Sie den Export im Autorenwerkzeug und laden Sie erneut hoch.</div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 18 ─ Import -->
+<section class="slide">
+  <div class="head"><h1>Ein Paket importieren</h1><span class="chapter">Teil 4 · SCORM-Kurse</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <ul class="steps">
+        <li><span class="n">1</span><div>Inhaltstyp auf <b>SCORM-Kurs</b> stellen.</div></li>
+        <li><span class="n">2</span><div><b>SCORM-Paket hochladen (.zip)</b> klicken. Der Upload wird auf dem Server geprüft und entpackt.</div></li>
+        <li><span class="n">3</span><div>Die <b>Manifest-Karte</b> zeigt, was gefunden wurde: Version, Titel, Startdatei, Bestehensgrenze des Pakets, Dateianzahl, entpackte Größe.</div></li>
+        <li><span class="n">4</span><div>Enthält das Paket ein Titelbild, bietet BrainGain es als <b>Vorschaubild</b> der Schulung an.</div></li>
+        <li><span class="n">5</span><div><b>Speichern</b>, dann <b>veröffentlichen</b> — das Paket ist Inhalt und läuft wie Material über den Entwurf.</div></li>
+      </ul>
+      <div class="callout small"><b>Paket ersetzen</b> für einen neuen Kurs-Build; <b>Paket entfernen</b> bringt die Quizfragen zurück.</div>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/editor-scorm.png" alt="Schulungseditor: Abschnitt SCORM-Kurs mit Manifest-Karte" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 19 ─ Optionen -->
+<section class="slide">
+  <div class="head"><h1>Abschlussregel und Optionen</h1><span class="chapter">Teil 4 · SCORM-Kurse</span></div>
+  <div class="body single">
+    <p class="lead">BrainGain entscheidet <b>auf dem Server</b>, wann Teilnehmende abschließen und signieren dürfen. Wählen Sie die Regel, die zum Meldeverhalten Ihres Kurses passt:</p>
+    <table class="t">
+      <tr><th style="width:380px">Regel</th><th>Einsetzen, wenn</th></tr>
+      <tr><td><b>Wenn der Kurs bestanden/abgeschlossen meldet</b> <span class="pill green">empfohlen</span></td><td>Der Kurs setzt seinen Status korrekt (der Normalfall bei Articulate-, Captivate- und iSpring-Exporten). Ein gemeldetes „nicht bestanden“ erlaubt einen neuen Versuch.</td></tr>
+      <tr><td><b>Wenn der Kurs sauber beendet wurde, unabhängig von der Meldung</b></td><td>Der Kurs meldet nie einen Abschluss (bleibt ewig „incomplete“), beendet sich am Ende aber sauber.</td></tr>
+      <tr><td><b>Nach der Schulungsdauer an gemessener Aktivität</b></td><td>Der Kurs meldet gar nichts. BrainGain misst die tatsächlich im Inhalt verbrachte Zeit gegen die Dauer der Schulung.</td></tr>
+    </table>
+    <div class="two" style="margin-top:4px">
+      <div class="callout warn"><b>Dem Kurs erlauben, externe Server zu kontaktieren</b> — standardmäßig aus. Nur aktivieren, wenn das Paket es braucht (z. B. Video von einem CDN); der Fremdinhalt darf dann mit dem Internet kommunizieren.</div>
+      <div class="callout small"><b>Eine Sprache</b> — ein Paket hat keine Sprachvarianten; nehmen Sie einen Kurs mit eigener Sprachumschaltung oder eine Schulung pro Sprache. <b>Barrierefreiheit</b> im Kurs verantwortet dessen Autor. <b>Versuche anzeigen (Diagnose)</b> listet, was jeder Versuch gemeldet hat — die erste Anlaufstelle, wenn „nichts passiert“.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 20 ─ Teilnehmersicht -->
+<section class="slide">
+  <div class="head"><h1>Was Ihre Teilnehmenden erleben</h1><span class="chapter">Teil 4 · SCORM-Kurse</span></div>
+  <div class="body single">
+    <div class="cards">
+      <div class="card"><h3>Starten öffnet den Kurs</h3><p>Keine Materialliste — der Kurs öffnet sich direkt, gekennzeichnet als Inhalt von Dritten.</p></div>
+      <div class="card"><h3>Fortschritt wird gespeichert</h3><p>Jede Meldung des Kurses wird serverseitig gespeichert. <b>Beenden und später fortsetzen</b> setzt fort; <b>Von vorn beginnen</b> verwirft.</p></div>
+      <div class="card"><h3>Abschließen und signieren</h3><p>Ist Ihre Abschlussregel erfüllt, erscheint <b>Abschließen und signieren</b> — die übliche Identitätsbestätigung. Das gemeldete Ergebnis wird angezeigt.</p></div>
+      <div class="card"><h3>Versionen sind fixiert</h3><p>Veröffentlichen fixiert die Kursversion; bereits laufende Versuche enden auf der Version, mit der sie begonnen haben.</p></div>
+    </div>
+    <div class="callout warn">„Material sichten und bestätigen“ ist für SCORM-Schulungen <b>nicht verfügbar</b> — neue Kursinhalte müssen durchlaufen werden, daher ist eine benachrichtigte Aktualisierung immer ein erneutes Absolvieren.</div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 21 ─ Abschnitt -->
+<section class="slide section">
+  <div class="num">Teil 5</div>
+  <h1>Nachhalten</h1>
+  <p>Wer Ihre Schulung absolvieren muss, Erinnerungen, und wie Teilnehmende zugewiesen werden.</p>
+</section>
+
+<!-- 22 ─ Teilnehmer -->
+<section class="slide">
+  <div class="head"><h1>Die Seite Teilnehmer</h1><span class="chapter">Teil 5 · Nachhalten</span></div>
+  <div class="body">
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/trainees.png" alt="Seite Teilnehmer" /></div>
+    </div>
+    <div class="col narrow">
+      <ul class="points">
+        <li>Ein Block pro Schulung, die Sie verantworten: <b>alle, deren Funktionen sie verlangen</b>, mit Status und Fälligkeitsdatum.</li>
+        <li><b>Nur fällige / überfällige anzeigen</b> engt die Liste auf die Personen ein, die handeln müssen.</li>
+        <li><b>Teilnehmer anschreiben</b> sendet eine Erinnerung an die Fälligen einer Schulung; <b>Alle anschreiben</b> deckt alle Ihre Schulungen ab. Betreff und Text sind editierbar.</li>
+      </ul>
+      <div class="callout small">E-Mails brauchen den in den <b>Einstellungen</b> konfigurierten SMTP-Server — Aufgabe eines Administrators. Bis dahin sagt es Ihnen der Knopf.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 23 ─ Funktionen -->
+<section class="slide">
+  <div class="head"><h1>Wie Teilnehmende Ihre Schulung bekommen</h1><span class="chapter">Teil 5 · Nachhalten</span></div>
+  <div class="body">
+    <div class="col narrow">
+      <p class="lead">Sie weisen nie Personen direkt zu. Ein Administrator fügt Ihre Schulung den <b>Funktionen</b> hinzu, die sie verlangen; jeder Benutzer mit dieser Funktion sieht sie.</p>
+      <ul class="points">
+        <li>Die Pflichtschulungen einer Person sind die Vereinigung aller ihrer Funktionen — ohne Dubletten.</li>
+        <li>Benutzer gehören zu <b>Organisationseinheiten</b>; Bereichsleitungen sehen den Status ihrer Leute unter <b>Mein Team</b> und können den Schulungsstatus-Bericht exportieren.</li>
+        <li>Sagen Sie nach dem Veröffentlichen von Version 1 Ihrem Administrator, welche Funktionen die Schulung absolvieren müssen.</li>
+      </ul>
+    </div>
+    <div class="col wide">
+      <div class="shot"><img src="../shots/de/roles.png" alt="Seite Funktionen (Administrator)" /></div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+<!-- 24 ─ Checkliste -->
+<section class="slide">
+  <div class="head"><h1>Checkliste vor dem Veröffentlichen</h1><span class="chapter">Bereit für den Test</span></div>
+  <div class="body">
+    <div class="col">
+      <ul class="steps">
+        <li><span class="n">1</span><div><b>Grunddaten vollständig</b> — Name in den Sprachen, die Sie bedienen, Kategorie, ehrliche Dauer, Beschreibung.</div></li>
+        <li><span class="n">2</span><div><b>Zeitplan passt zur Anforderung</b> — Zyklus, Fenster, Kulanz.</div></li>
+        <li><span class="n">3</span><div><b>Material öffnet sich</b> — jedes in der Vorschau des Editors anklicken; Bezeichnungen sagen, was die Datei ist.</div></li>
+        <li><span class="n">4</span><div><b>Quiz ist fair</b> — jede Frage aus dem Material beantwortbar; richtige Antworten angekreuzt; Bestehensgrenze im Blick.</div></li>
+        <li><span class="n">5</span><div><b>SCORM</b> — Manifest-Karte plausibel, Abschlussregel gewählt, externer Zugriff aus, sofern nicht nötig.</div></li>
+        <li><span class="n">6</span><div><b>Veröffentlichen</b> — Version 1 still; spätere Versionen nur mit Benachrichtigung, wenn Teilnehmende wirklich handeln müssen.</div></li>
+        <li><span class="n">7</span><div><b>Funktionen</b> — den Administrator bitten, die Schulung den richtigen Funktionen hinzuzufügen.</div></li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <div class="card" style="background:var(--petrol-50)">
+        <h3>Jetzt: der Test</h3>
+        <p>Schließen Sie diesen Viewer mit <b>‹ Zurück</b>, klicken Sie <b>Test starten →</b>, bestätigen Sie das Material und beantworten Sie die Fragen.</p>
+        <p style="margin-top:10px"><b>12 Fragen</b> · Single und Multiple Choice · unbegrenzte Versuche</p>
+      </div>
+      <div class="callout small">Ausprobieren? Legen Sie eine Schulung an und lassen Sie sie auf Version 0 — niemand sieht sie, bis Sie veröffentlichen.</div>
+    </div>
+  </div>
+  <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
+</section>
+
+</body>
+</html>
