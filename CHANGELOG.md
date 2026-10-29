@@ -10,6 +10,36 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-10-29
+
+### Added
+- **Trainings can be assigned by org unit and to everyone, not only by job role** (SR-197, SR-198,
+  SR-199). The training editor has a new *Assignment* section: an *Everyone* switch, the job roles that
+  require the training (the same data as the role editor, kept in sync and audited as role changes) and
+  org units in tree order, each with an *incl. sub-units* switch that is on by default. A user must take a
+  training when any rule matches: one of their roles requires it, their org unit is assigned (directly or
+  through a parent with sub-units included) or it is assigned to everyone. *Everyone* covers every account
+  that can sign in; accounts pending activation are excluded. Administrators may set the assignment on
+  any training, trainers on their own. Assignment is master data: changing it never creates a draft or a
+  new version. Dashboard, Trainees, My Team, Status Report, update notifications and the SCORM launch
+  gate all follow the same rules (SYS-TRN-21, SYS-TRN-22, SYS-TRN-23).
+- **Training Plan report** (SR-200, SYS-DOC-11): the trainings table carries an *Everyone* column, and a
+  new *Org units × trainings* matrix (underlined cross = incl. sub-units) precedes the members matrix.
+- **BrainGain self-trainings** — *BrainGain for Trainees* and *BrainGain for Trainers* — teach the app
+  inside the app with slide PDFs and a quiz, in English and German, generated from screenshots of the
+  running app (`npm run self-training`, tools/self-training).
+- **"AA Jira Issue Management System (IMS)" training** (slides and quiz, English and German) generated
+  from its decks by tools/ims-training; both generators ship a Node-only installer for servers.
+
+### Changed
+- Trainers can tick the job roles that require their own training directly in the training editor.
+- Deleting an org unit also removes it from every training's assignment (SYS-ORG-09).
+- Personal data files under backend/src/data (users, sessions, audit trail, SCORM attempts, update
+  acknowledgements, backups) are no longer tracked in git.
+
+### Data migrations
+- none — `assignment` is an optional field on trainings; records without it keep the role-only rule.
+
 ## [1.6.0] — 2026-10-15
 
 ### Changed
