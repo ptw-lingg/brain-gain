@@ -9,3 +9,12 @@ dist/data/tls/
 # Server-side backup archives — full data dumps incl. password hashes; never commit
 src/data/backups/
 dist/data/backups/
+
+# Individual data files — never commit
+src/data/users.json
+src/data/sessions.json
+src/data/audit.ndjson
+src/data/scormAttempts.json
+src/data/scorm-attempts/
+src/data/updateAcks.json
+src/data/tls/
