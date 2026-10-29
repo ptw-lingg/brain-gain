@@ -153,6 +153,7 @@ const traineeTraining = await api('POST', '/trainings', trainerToken, {
   windowAfterMonths: TRAINEE.windowAfterMonths,
   materials: [{ variants }],
   questions: TRAINEE.questions,
+  assignment: { everyone: true, orgUnits: [] },
 });
 await api('POST', `/trainings/${traineeTraining.id}/publish-update`, trainerToken, { kind: 'silent' });
 const roles = await api('GET', '/roles', adminToken);
@@ -347,6 +348,10 @@ async function captureLocale(locale) {
     await settle(page);
     await shot(page, 'editor-schedule');
     await section('trainingForm.sectionSchedule').click();
+    await section('trainingForm.assignment.section').click();
+    await settle(page);
+    await shot(page, 'editor-assignment');
+    await section('trainingForm.assignment.section').click();
     await section('trainingForm.material').click();
     await settle(page);
     await shot(page, 'editor-materials');

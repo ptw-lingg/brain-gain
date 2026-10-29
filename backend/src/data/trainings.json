@@ -1106,7 +1106,7 @@
             "file": {
               "id": "b7a1e0c0-0001-4000-8000-f00000000001",
               "name": "braingain-for-trainees.pdf",
-              "size": 2305962,
+              "size": 2301803,
               "type": "application/pdf"
             }
           },
@@ -1116,7 +1116,7 @@
             "file": {
               "id": "b7a1e0c0-0001-4000-8000-f00000000002",
               "name": "braingain-fuer-trainees.pdf",
-              "size": 2356930,
+              "size": 2355438,
               "type": "application/pdf"
             }
           }
@@ -1156,18 +1156,10 @@
       {
         "id": "b7a1e0c0-0001-4000-8000-b00000000002",
         "text": {
-          "en": "Who decides which trainings appear on your dashboard?",
-          "de": "Wer bestimmt, welche Schulungen auf Ihrem Dashboard erscheinen?"
+          "en": "Which trainings appear on your dashboard?",
+          "de": "Welche Schulungen erscheinen auf Ihrem Dashboard?"
         },
         "options": [
-          {
-            "en": "The trainings required by your job roles, assigned by an administrator",
-            "de": "Die Schulungen, die Ihre Funktionen verlangen — zugewiesen von einem Administrator"
-          },
-          {
-            "en": "Your unit head picks them per month",
-            "de": "Ihre Bereichsleitung wählt sie monatlich aus"
-          },
           {
             "en": "Everyone sees every training",
             "de": "Alle sehen alle Schulungen"
@@ -1175,10 +1167,18 @@
           {
             "en": "You pick them yourself from a catalog",
             "de": "Sie wählen sie selbst aus einem Katalog"
+          },
+          {
+            "en": "Your unit head picks them per month",
+            "de": "Ihre Bereichsleitung wählt sie monatlich aus"
+          },
+          {
+            "en": "Those assigned to you — through a job role, your org unit, or because they apply to everyone",
+            "de": "Die Ihnen zugewiesenen — über eine Funktion, Ihre Organisationseinheit oder weil sie für alle gelten"
           }
         ],
         "correctIndices": [
-          0
+          3
         ],
         "type": "single"
       },
@@ -1424,7 +1424,7 @@
       }
     ],
     "version": 1,
-    "publishedAt": "2026-10-28T15:44:27.821Z",
+    "publishedAt": "2026-10-29T08:05:09.709Z",
     "updates": [],
     "createdAt": "2026-10-27T14:52:38.921Z"
   },
@@ -1458,7 +1458,7 @@
             "file": {
               "id": "b7a1e0c0-0002-4000-8000-f00000000001",
               "name": "braingain-for-trainers.pdf",
-              "size": 1775634,
+              "size": 1851501,
               "type": "application/pdf"
             }
           },
@@ -1468,7 +1468,7 @@
             "file": {
               "id": "b7a1e0c0-0002-4000-8000-f00000000002",
               "name": "braingain-fuer-trainer.pdf",
-              "size": 1862420,
+              "size": 1941922,
               "type": "application/pdf"
             }
           }
@@ -1753,8 +1753,8 @@
         },
         "options": [
           {
-            "en": "An administrator adds it to the job roles that require it",
-            "de": "Ein Administrator fügt sie den Funktionen hinzu, die sie verlangen"
+            "en": "Through its Assignment section: job roles, org units or everyone — set by the owning trainer or an administrator",
+            "de": "Über den Abschnitt Zuweisung: Funktionen, Organisationseinheiten oder alle — gesetzt vom verantwortlichen Trainer oder einem Administrator"
           },
           {
             "en": "Trainees subscribe to it themselves",
@@ -1836,7 +1836,7 @@
       }
     ],
     "version": 1,
-    "publishedAt": "2026-10-28T15:43:29.849Z",
+    "publishedAt": "2026-10-29T08:05:09.709Z",
     "updates": [],
     "createdAt": "2026-10-27T14:52:38.921Z"
   },
@@ -2294,6 +2294,10 @@
     "version": 2,
     "publishedAt": "2026-10-28T15:50:00.445Z",
     "updates": [],
-    "createdAt": "2026-10-28T15:37:07.591Z"
+    "createdAt": "2026-10-28T15:37:07.591Z",
+    "assignment": {
+      "everyone": true,
+      "orgUnits": []
+    }
   }
 ]

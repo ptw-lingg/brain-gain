@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X, ChevronUp, ChevronDown, Package, AlertTriangle, Image as ImageIcon } from 'lucide-vue-next';
+import { Plus, Trash2, Link as LinkIcon, HelpCircle, Paperclip, Upload, Loader2, FileText, Info, CalendarClock, X, ChevronUp, ChevronDown, Package, AlertTriangle, Image as ImageIcon, Users } from 'lucide-vue-next';
 import axios from 'axios';
 import client from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 import CollapsibleSection from '@/components/CollapsibleSection.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
-import type { LocalizedText, Material, MaterialFile, MaterialVariant, Question, SafeUser, ScormAttemptSummary, ScormPackageRef, Training } from '@/types';
+import type { JobRole, LocalizedText, Material, MaterialFile, MaterialVariant, OrgUnit, Question, SafeUser, ScormAttemptSummary, ScormPackageRef, Training } from '@/types';
 import { formatBytes, formatDuration } from '@/utils/display';
 import { MATERIAL_LOCALES, resolveLocalized } from '@/utils/locales';
 import { usePreviewImage } from '@/composables/usePreviewImage';
@@ -20,6 +20,8 @@ const props = defineProps<{
   draft: Training;
   isAdmin: boolean;
   owners: SafeUser[];
+  roles: JobRole[];
+  orgUnits: OrgUnit[];
 }>();
 
 // The fixed content languages — one editable row per language on materials, questions and answers,
@@ -40,7 +42,7 @@ const windowOptions = [0, 1, 2, 3];
 // The record grows without bound (each question with four options adds ~15 controls), so the editor is
 // grouped into collapsible sections. Basics is open on arrival; the rest report what they hold in a
 // summary badge so nothing is hidden without a trace, and anything the author adds opens itself.
-const open = ref({ basics: true, schedule: false, material: false, scorm: false, questions: false });
+const open = ref({ basics: true, schedule: false, assignment: false, material: false, scorm: false, questions: false });
 const openQuestions = ref<Record<number, boolean>>({});
 const toggle = (key: keyof typeof open.value): void => { open.value[key] = !open.value[key]; };
 const toggleQuestion = (i: number): void => { openQuestions.value[i] = !openQuestions.value[i]; };
@@ -84,6 +86,74 @@ const questionsSummary = computed(() =>
 );
 // A section that holds nothing reads as a prompt to fill it, not as a neutral count.
 const emptyTint = 'bg-amber-100 text-amber-700';
+
+// ── assignment ────────────────────────────────────────────────────────────────────────────────────
+// The editor copy always carries `assignment` and `roleIds` (TrainingsPage seeds them), so the
+// section binds straight to the draft; the guards below only protect a stale caller.
+const assignment = computed(() => (props.draft.assignment ??= { everyone: false, orgUnits: [] }));
+const roleIds = computed(() => (props.draft.roleIds ??= []));
+const sortedRoles = computed(() => [...props.roles].sort((a, b) => a.name.localeCompare(b.name)));
+function toggleRole(id: string): void {
+  const list = roleIds.value;
+  const at = list.indexOf(id);
+  if (at === -1) list.push(id);
+  else list.splice(at, 1);
+}
+// Units in tree order (depth-first, siblings alphabetical) so the picker reads as the hierarchy.
+const orderedUnits = computed<OrgUnit[]>(() => {
+  const byParent = new Map<string | null, OrgUnit[]>();
+  for (const u of props.orgUnits) {
+    if (!byParent.has(u.parentId)) byParent.set(u.parentId, []);
+    byParent.get(u.parentId)!.push(u);
+  }
+  for (const list of byParent.values()) list.sort((a, b) => a.name.localeCompare(b.name));
+  const out: OrgUnit[] = [];
+  const walk = (parentId: string | null): void => {
+    for (const u of byParent.get(parentId) ?? []) {
+      out.push(u);
+      walk(u.id);
+    }
+  };
+  walk(null);
+  for (const u of props.orgUnits) if (!out.includes(u)) out.push(u);
+  return out;
+});
+const unitDepth = (u: OrgUnit): number => {
+  let depth = 0;
+  let cur: OrgUnit | undefined = u;
+  const seen = new Set<string>();
+  while (cur?.parentId && !seen.has(cur.id)) {
+    seen.add(cur.id);
+    cur = props.orgUnits.find((x) => x.id === cur!.parentId);
+    if (cur) depth++;
+  }
+  return depth;
+};
+const availableUnits = computed(() =>
+  orderedUnits.value.filter((u) => !assignment.value.orgUnits.some((e) => e.orgUnitId === u.id)),
+);
+const unitName = (id: string): string => props.orgUnits.find((u) => u.id === id)?.name ?? t('common.none');
+function addOrgUnit(id: string): void {
+  if (!id || assignment.value.orgUnits.some((e) => e.orgUnitId === id)) return;
+  assignment.value.orgUnits.push({ orgUnitId: id, includeSubunits: true }); // sub-units on by default
+}
+function removeOrgUnit(id: string): void {
+  const list = assignment.value.orgUnits;
+  const at = list.findIndex((e) => e.orgUnitId === id);
+  if (at !== -1) list.splice(at, 1);
+}
+// "Everyone" alone, else the role/unit counts; nothing assigned reads as a prompt (amber tint).
+const assignmentCount = computed(() =>
+  (assignment.value.everyone ? 1 : 0) + roleIds.value.length + assignment.value.orgUnits.length,
+);
+const assignmentSummary = computed(() => {
+  if (assignment.value.everyone) return t('trainingForm.assignment.everyone');
+  if (assignmentCount.value === 0) return t('trainingForm.assignment.nobody');
+  return [
+    roleIds.value.length ? t('trainingForm.assignment.summaryRoles', { count: roleIds.value.length }, roleIds.value.length) : '',
+    assignment.value.orgUnits.length ? t('trainingForm.assignment.summaryOrgUnits', { count: assignment.value.orgUnits.length }, assignment.value.orgUnits.length) : '',
+  ].filter(Boolean).join(' · ');
+});
 
 // The first filled language of a localized string, English preferred — for titles and summaries.
 // The editor seeds every language with '', so blank strings must fall through, not just missing ones.
@@ -675,6 +745,97 @@ async function loadScormAttempts(): Promise<void> {
       </div>
     </CollapsibleSection>
 
+    <!-- ASSIGNMENT: who must take this training. Three rules, any one suffices — everyone, the
+         members of a job role, or the members of an org unit (optionally with its sub-units).
+         Roles are the same data the role editor writes; org units and "everyone" live on the
+         training. Master data: applied on save, never part of the content draft. -->
+    <CollapsibleSection
+      :title="t('trainingForm.assignment.section')"
+      :summary="assignmentSummary"
+      :summary-class="assignmentCount === 0 ? emptyTint : undefined"
+      :open="open.assignment"
+      data-testid="assignment-section"
+      @toggle="toggle('assignment')"
+    >
+      <template #icon><Users class="h-4 w-4 shrink-0 text-accent" /></template>
+      <p class="mb-3 font-mono text-[11px] text-ink-light">{{ t('trainingForm.assignment.hint') }}</p>
+
+      <label class="check-card" :class="assignment.everyone ? 'border-accent bg-accent-light/30' : ''">
+        <input
+          v-model="assignment.everyone"
+          type="checkbox"
+          class="mt-0.5 accent-accent"
+          data-testid="assignment-everyone"
+        />
+        <span>
+          <span class="block text-sm font-semibold text-ink">{{ t('trainingForm.assignment.everyone') }}</span>
+          <span class="block font-mono text-[11px] text-ink-light">{{ t('trainingForm.assignment.everyoneHint') }}</span>
+        </span>
+      </label>
+
+      <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <!-- Roles -->
+        <div>
+          <span class="form-label">{{ t('trainingForm.assignment.roles') }}</span>
+          <div v-if="roles.length" class="mt-1 flex max-h-72 flex-col gap-1 overflow-y-auto pr-1" data-testid="assignment-roles">
+            <label
+              v-for="r in sortedRoles"
+              :key="r.id"
+              class="check-card"
+              :class="roleIds.includes(r.id) ? 'border-accent bg-accent-light/30' : ''"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 accent-accent"
+                :checked="roleIds.includes(r.id)"
+                @change="toggleRole(r.id)"
+              />
+              <span class="text-sm text-ink">{{ r.name }}</span>
+            </label>
+          </div>
+          <p v-else class="mt-1 font-mono text-[11px] text-ink-light">{{ t('trainingForm.assignment.noRoles') }}</p>
+        </div>
+
+        <!-- Org units -->
+        <div>
+          <span class="form-label">{{ t('trainingForm.assignment.orgUnits') }}</span>
+          <div class="mt-1 flex flex-col gap-1" data-testid="assignment-org-units">
+            <div
+              v-for="entry in assignment.orgUnits"
+              :key="entry.orgUnitId"
+              class="flex flex-wrap items-center gap-2 rounded-md border border-line bg-white px-3 py-2"
+            >
+              <span class="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{{ unitName(entry.orgUnitId) }}</span>
+              <label class="flex items-center gap-1.5 font-mono text-[11px] text-ink-muted">
+                <input v-model="entry.includeSubunits" type="checkbox" class="accent-accent" />
+                {{ t('trainingForm.assignment.includeSubunits') }}
+              </label>
+              <button
+                type="button"
+                class="text-ink-light hover:text-rose-600"
+                :title="t('trainingForm.assignment.removeOrgUnit')"
+                :aria-label="t('trainingForm.assignment.removeOrgUnit')"
+                @click="removeOrgUnit(entry.orgUnitId)"
+              >
+                <X class="h-4 w-4" />
+              </button>
+            </div>
+            <select
+              v-if="availableUnits.length"
+              class="bg-input"
+              :value="''"
+              data-testid="assignment-add-org-unit"
+              @change="addOrgUnit(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="" disabled>{{ t('trainingForm.assignment.addOrgUnit') }}</option>
+              <option v-for="u in availableUnits" :key="u.id" :value="u.id">{{ '\u00a0\u00a0'.repeat(unitDepth(u)) + u.name }}</option>
+            </select>
+            <p v-else-if="assignment.orgUnits.length === 0" class="font-mono text-[11px] text-ink-light">{{ t('trainingForm.assignment.noOrgUnits') }}</p>
+          </div>
+        </div>
+      </div>
+    </CollapsibleSection>
+
     <!-- CONTENT KIND: material + quiz, or an imported SCORM course — the trainer decides, and the
          editor shows exactly one of the two. Switching is reversible (nothing is deleted until
          saved), but inputs for both never appear together. -->
@@ -1109,6 +1270,7 @@ async function loadScormAttempts(): Promise<void> {
               <input
                 v-else
                 type="checkbox"
+                :name="`qkey-${qi}`"
                 :checked="isCorrect(q, oi)"
                 :disabled="isCorrect(q, oi) && correctCount(q) === 1"
                 :title="isCorrect(q, oi) && correctCount(q) === 1 ? t('trainingForm.needOneCorrect') : t('trainingForm.markCorrect')"

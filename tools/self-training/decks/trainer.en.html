@@ -20,13 +20,14 @@
 <section class="slide">
   <div class="head"><h1>Your role as a trainer</h1><span class="chapter">Overview</span></div>
   <div class="body single">
-    <p class="lead">A trainer owns trainings. An administrator decides who must take them. Both sides meet in the job roles.</p>
+    <p class="lead">A trainer owns trainings and decides who must take them — by job role, by org unit, or everyone. An administrator maintains the roles, units and users these rules refer to.</p>
     <div class="two">
       <div class="card">
         <h3>You — Trainer</h3>
         <ul>
           <li><b>Trainings</b> page: create and edit the trainings you own, upload materials, write the quiz or attach a SCORM course.</li>
           <li><b>Publish</b> versions: the first one makes a training visible, later ones can oblige trainees to retake or confirm.</li>
+          <li><b>Assignment</b> section in the editor: assign your training to everyone, to org units (with or without their sub-units), or tick the job roles that require it.</li>
           <li><b>Trainees</b> page: see who must take your trainings and who is due; send reminder emails.</li>
           <li>You are the contact shown to trainees inside your trainings.</li>
         </ul>
@@ -35,12 +36,12 @@
         <h3>Administrator</h3>
         <ul>
           <li>Sees and edits <b>all</b> trainings, sets the owner, orders the list, exports the Training Plan PDF.</li>
-          <li>Manages <b>users</b>, <b>job roles</b> (which trainings a role requires) and <b>org units</b>.</li>
+          <li>Manages <b>users</b>, <b>job roles</b> and <b>org units</b> — and may assign any training, not only their own.</li>
           <li>Settings: pass threshold, email (SMTP), Microsoft sign-in, backups.</li>
         </ul>
       </div>
     </div>
-    <div class="callout">Trainees see a training only when (a) version 1 is published and (b) one of their job roles requires it.</div>
+    <div class="callout">Trainees see a training only when (a) version 1 is published and (b) an assignment rule reaches them: a job role of theirs requires it, their org unit is assigned, or it is assigned to everyone.</div>
   </div>
   <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
 </section>
@@ -398,15 +399,16 @@
   <div class="head"><h1>How trainees get your training</h1><span class="chapter">Part 5 · Following up</span></div>
   <div class="body">
     <div class="col narrow">
-      <p class="lead">You never assign people directly. An administrator adds your training to the <b>job roles</b> that require it; every user with that role sees it.</p>
+      <p class="lead">You never pick people one by one. The editor's <b>Assignment</b> section holds three rules; any one of them is enough:</p>
       <ul class="points">
-        <li>A user's required trainings are the union of all their roles — no duplicates.</li>
-        <li>Users belong to <b>org units</b>; unit heads see their people's status on <b>My Team</b> and can export the Training Status Report.</li>
-        <li>After publishing version 1, tell your administrator which roles must take the training.</li>
+        <li><b>Everyone</b> — every account that can sign in, trainers and administrators included.</li>
+        <li><b>Job roles</b> — tick the roles that require the training; this is the same list the administrator sees in Job Roles.</li>
+        <li><b>Org units</b> — add a unit; <b>incl. sub-units</b> (on by default) covers everything below it, off means exactly that unit.</li>
+        <li>Nothing ticked = nobody. The summary badge says what applies. Unit heads see their people's status on <b>My Team</b>.</li>
       </ul>
     </div>
     <div class="col wide">
-      <div class="shot"><img src="../shots/en/roles.png" alt="Job Roles page (administrator)" /></div>
+      <div class="shot"><img src="../shots/en/editor-assignment.png" alt="Training editor: Assignment section" /></div>
     </div>
   </div>
   <div class="foot"><span>BrainGain for Trainers</span><span class="page"></span></div>
@@ -424,7 +426,7 @@
         <li><span class="n">4</span><div><b>Quiz is fair</b> — every question answerable from the material; correct answers ticked; threshold in mind.</div></li>
         <li><span class="n">5</span><div><b>SCORM</b> — manifest card plausible, completion rule chosen, external access off unless needed.</div></li>
         <li><span class="n">6</span><div><b>Publish</b> — v1 silently; later versions notify only when trainees really must act.</div></li>
-        <li><span class="n">7</span><div><b>Roles</b> — ask the administrator to add the training to the right job roles.</div></li>
+        <li><span class="n">7</span><div><b>Assignment</b> — everyone, the right job roles, or the right org units; nothing ticked means nobody sees it.</div></li>
       </ul>
     </div>
     <div class="col narrow">

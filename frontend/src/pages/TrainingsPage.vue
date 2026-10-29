@@ -6,7 +6,7 @@ import type { TCreatedPdf } from 'pdfmake/interfaces';
 import client from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
-import type { JobRole, LocalizedText, MyTeam, Question, SafeUser, Settings, Training, TrainingDraft } from '@/types';
+import type { JobRole, LocalizedText, MyTeam, OrgUnit, Question, SafeUser, Settings, Training, TrainingDraft } from '@/types';
 import TrainingForm from '@/components/TrainingForm.vue';
 import PublishUpdateDialog from '@/components/PublishUpdateDialog.vue';
 import ListControls from '@/components/ListControls.vue';
@@ -25,6 +25,10 @@ const allTexts = (lt: LocalizedText): string[] => Object.values(lt ?? {});
 
 const trainings = ref<Training[]>([]);
 const owners = ref<SafeUser[]>([]);
+// Assignment targets for the editor: every role (the training side of JobRole.trainingIds) and the
+// org-unit tree. Both are readable by every signed-in user.
+const roles = ref<JobRole[]>([]);
+const orgUnits = ref<OrgUnit[]>([]);
 const loading = ref(true);
 // The editor is a modal dialog: `draft` non-null means it's open (a blank training = create, an
 // existing id = edit/details). Replaces the former inline expand-in-place editor.
@@ -80,10 +84,11 @@ async function openTrainingPlan(): Promise<void> {
   try {
     // The full training catalog + all roles, plus the members the user is responsible for: an admin
     // oversees the whole organization; a head oversees the members in the units they head (subtree).
-    const [allTrainingsRes, rolesRes, settingsRes] = await Promise.all([
+    const [allTrainingsRes, rolesRes, settingsRes, orgUnitsRes] = await Promise.all([
       client.get<Training[]>('/trainings'),
       client.get<JobRole[]>('/roles'),
       client.get<Settings>('/settings'),
+      client.get<OrgUnit[]>('/org-units'),
     ]);
     let members: SafeUser[];
     let responsibleFor: string;
@@ -99,7 +104,7 @@ async function openTrainingPlan(): Promise<void> {
     const { createPdf } = await import('@/utils/pdf');
     const { renderPdfToImages } = await import('@/utils/pdfPreview');
     const { def, fileName, docId, title } = buildTrainingPlan(
-      { trainings: allTrainingsRes.data, roles: rolesRes.data, members },
+      { trainings: allTrainingsRes.data, roles: rolesRes.data, orgUnits: orgUnitsRes.data, members },
       {
         company: settingsRes.data.companyName ?? '',
         preparedBy: auth.user?.name ?? '',
@@ -156,6 +161,8 @@ function blankTraining(): Training {
     materials: [],
     questions: [],
     previewImage: null,
+    assignment: { everyone: false, orgUnits: [] },
+    roleIds: [],
     version: 0,
     createdAt: '',
   };
@@ -165,13 +172,17 @@ async function load(): Promise<void> {
   loading.value = true;
   try {
     const params = isAdmin.value ? {} : { mine: '1' };
-    const [t, u] = await Promise.all([
+    const [t, u, r, o] = await Promise.all([
       client.get<Training[]>('/trainings', { params }),
       isAdmin.value
         ? client.get<SafeUser[]>('/users')
         : Promise.resolve({ data: [] as SafeUser[] }),
+      client.get<JobRole[]>('/roles'),
+      client.get<OrgUnit[]>('/org-units'),
     ]);
     trainings.value = t.data; // kept in the deliberate display order (admin drag-to-reorder)
+    roles.value = r.data;
+    orgUnits.value = o.data;
     owners.value = u.data
       .filter((x) => x.isTrainer || x.isAdmin)
       .sort((a, b) => a.name.localeCompare(b.name)); // alphabetical owner dropdown
@@ -204,6 +215,12 @@ function openTraining(t: Training): void {
   // The WIP package reference, same present-or-keep shape as materials/questions. null (not
   // undefined) when absent, so a removal survives JSON serialization on save.
   clone.scormPackageId = t.draft?.scormPackageId ?? t.scormPackageId ?? null;
+  // Assignment is edited on the training: its own rules (deep-cloned, defaulting to none) plus the
+  // roles that currently require it — the role side of the same data, sent back as `roleIds`.
+  clone.assignment = t.assignment
+    ? JSON.parse(JSON.stringify(t.assignment))
+    : { everyone: false, orgUnits: [] };
+  clone.roleIds = roles.value.filter((r) => r.trainingIds.includes(t.id)).map((r) => r.id);
   delete clone.draft;
   draft.value = clone;
 }
@@ -582,6 +599,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
               :draft="draft"
               :is-admin="isAdmin"
               :owners="owners"
+              :roles="roles"
+              :org-units="orgUnits"
               @add-question="addQuestion"
               @remove-question="removeQuestion"
               @add-option="addOption"

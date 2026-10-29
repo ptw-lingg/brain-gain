@@ -2,7 +2,7 @@
 // resolving who is affected by a publish, and the boot/post-restore data migrations for the
 // version field and the updateAcks store.
 
-import type { JobRole, Training, TrainingSession, UpdateAck, User } from '../types';
+import type { JobRole, OrgUnit, Training, TrainingSession, UpdateAck, User } from '../types';
 import { readStore, writeStore } from './fileStore';
 import { requiredTrainingIdsFor } from './training';
 
@@ -28,19 +28,21 @@ export function normalizeDeadline(input: unknown, now: Date = new Date()): strin
 }
 
 /**
- * Users affected by publishing an update on this training: assigned via their job roles AND with
+ * Users affected by publishing an update on this training: assigned (via a job role, their org unit
+ * or "everyone") AND with
  * at least one passing session that predates the publish. Users who never passed are deliberately
  * excluded — they meet the current content on their first pass anyway.
  */
 export function affectedUsers(
-  training: Pick<Training, 'id'>,
+  training: Training,
   users: User[],
   roles: JobRole[],
   sessions: TrainingSession[],
+  orgUnits: OrgUnit[] = [],
 ): User[] {
   const completed = new Set(sessions.filter((s) => s.trainingId === training.id).map((s) => s.userId));
   return users.filter(
-    (u) => completed.has(u.id) && requiredTrainingIdsFor(u, roles).has(training.id),
+    (u) => completed.has(u.id) && requiredTrainingIdsFor(u, roles, [training], orgUnits).has(training.id),
   );
 }
 

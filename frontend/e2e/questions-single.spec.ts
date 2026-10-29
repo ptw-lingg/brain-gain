@@ -78,7 +78,7 @@ test.describe('Quiz questions — single choice', () => {
 
     // Make it multiple-choice with two correct answers.
     await dialog.getByRole('radio', { name: 'Multiple choice' }).check();
-    const keyBoxes = dialog.locator('input[type="checkbox"]');
+    const keyBoxes = dialog.locator('input[type="checkbox"][name^="qkey-"]');
     await keyBoxes.nth(1).check();
 
     // Two correct answers → the question cannot present as single choice.

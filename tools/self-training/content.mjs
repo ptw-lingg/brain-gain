@@ -45,10 +45,10 @@ export const TRAINEE = {
       [0],
     ),
     q(
-      'Who decides which trainings appear on your dashboard?',
-      'Wer bestimmt, welche Schulungen auf Ihrem Dashboard erscheinen?',
+      'Which trainings appear on your dashboard?',
+      'Welche Schulungen erscheinen auf Ihrem Dashboard?',
       [
-        ['The trainings required by your job roles, assigned by an administrator', 'Die Schulungen, die Ihre Funktionen verlangen — zugewiesen von einem Administrator'],
+        ['Those assigned to you — through a job role, your org unit, or because they apply to everyone', 'Die Ihnen zugewiesenen — über eine Funktion, Ihre Organisationseinheit oder weil sie für alle gelten'],
         ['You pick them yourself from a catalog', 'Sie wählen sie selbst aus einem Katalog'],
         ['Everyone sees every training', 'Alle sehen alle Schulungen'],
         ['Your unit head picks them per month', 'Ihre Bereichsleitung wählt sie monatlich aus'],
@@ -271,7 +271,7 @@ export const TRAINER = {
       'How does a training reach the trainees who must take it?',
       'Wie gelangt eine Schulung zu den Personen, die sie absolvieren müssen?',
       [
-        ['An administrator adds it to the job roles that require it', 'Ein Administrator fügt sie den Funktionen hinzu, die sie verlangen'],
+        ['Through its Assignment section: job roles, org units or everyone — set by the owning trainer or an administrator', 'Über den Abschnitt Zuweisung: Funktionen, Organisationseinheiten oder alle — gesetzt vom verantwortlichen Trainer oder einem Administrator'],
         ['The trainer picks trainees one by one in the editor', 'Der Trainer wählt die Personen einzeln im Editor aus'],
         ['Every published training is mandatory for everyone', 'Jede veröffentlichte Schulung ist für alle verpflichtend'],
         ['Trainees subscribe to it themselves', 'Die Personen abonnieren sie selbst'],

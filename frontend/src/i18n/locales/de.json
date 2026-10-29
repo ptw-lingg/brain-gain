@@ -382,6 +382,22 @@
       "classicHint": "Lernmaterialien zum Durcharbeiten plus der eingebaute Test, bewertet von BrainGain.",
       "scorm": "SCORM-Kurs",
       "scormHint": "Ein importierter interaktiver Kurs (z. B. aus Articulate, Captivate, iSpring), der Inhalt und Test selbst mitbringt."
+    },
+    "assignment": {
+      "section": "Zuweisung",
+      "hint": "Wer diese Schulung absolvieren muss. Eine Regel genügt: alle, eine Funktion oder eine Organisationseinheit.",
+      "everyone": "Alle",
+      "everyoneHint": "Jedes Konto, das sich anmelden kann, einschließlich Trainer und Administratoren.",
+      "roles": "Funktionen, die sie verlangen",
+      "noRoles": "Es existieren noch keine Funktionen.",
+      "orgUnits": "Organisationseinheiten, deren Mitglieder sie absolvieren müssen",
+      "noOrgUnits": "Keine Organisationseinheit zugewiesen.",
+      "addOrgUnit": "Organisationseinheit hinzufügen…",
+      "removeOrgUnit": "Organisationseinheit entfernen",
+      "includeSubunits": "inkl. Untereinheiten",
+      "nobody": "Noch niemand",
+      "summaryRoles": "{count} Funktion | {count} Funktionen",
+      "summaryOrgUnits": "{count} Einheit | {count} Einheiten"
     }
   },
   "trainees": {
@@ -725,12 +741,12 @@
     "generatedOn": "Erstellt",
     "preparedByLabel": "Erstellt von",
     "scope": "Umfang",
-    "scopeValue": "{trainings} Schulungen · {roles} Rollen · {members} Mitglieder",
+    "scopeValue": "{trainings} Schulungen · {roles} Rollen · {orgUnits} Einheiten · {members} Mitglieder",
     "responsibleFor": "Verantwortlich für",
     "scopeAll": "Gesamte Organisation",
     "sectionTrainings": "1  Schulungen ({count})",
     "sectionRoles": "2  Job-Rollen & zugewiesene Schulungen ({count})",
-    "sectionMembers": "3  Mitglieder & zugewiesene Rollen ({count})",
+    "sectionMembers": "4  Mitglieder & zugewiesene Rollen ({count})",
     "colTraining": "Schulung",
     "colCategory": "Kategorie",
     "colDuration": "Dauer",
@@ -744,7 +760,12 @@
     "reviewedBy": "Geprüft von",
     "approvedBy": "Freigegeben von",
     "signatureLine": "Name / Unterschrift / Datum",
-    "footer": "KONTROLLIERTES DOKUMENT — Revision vor Gebrauch prüfen."
+    "footer": "KONTROLLIERTES DOKUMENT — Revision vor Gebrauch prüfen.",
+    "colEveryone": "Alle",
+    "sectionOrgUnits": "3  Organisationseinheiten & zugewiesene Schulungen ({count})",
+    "colOrgUnit": "Organisationseinheit",
+    "noOrgUnits": "Keine Organisationseinheiten definiert.",
+    "orgUnitsLegend": "Kreuz = Mitglieder der Einheit · unterstrichenes Kreuz = einschließlich aller Untereinheiten. Mit „Alle“ markierte Schulungen gelten für jedes Konto."
   },
   "backups": {
     "title": "Backups",

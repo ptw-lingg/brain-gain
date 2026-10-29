@@ -32,7 +32,7 @@ test.describe('Quiz questions — several correct answers', () => {
 
     // The prompt tells the trainer several answers may be ticked, and the control is a checkbox.
     await expect(dialog.getByText(/Tick every correct answer/)).toBeVisible();
-    const keyBoxes = dialog.locator('input[type="checkbox"]');
+    const keyBoxes = dialog.locator('input[type="checkbox"][name^="qkey-"]');
     await expect(keyBoxes).toHaveCount(4);
 
     // Option 1 is correct by default; also mark options 2 and 3 → three correct answers.
@@ -59,7 +59,7 @@ test.describe('Quiz questions — several correct answers', () => {
     await expect(questionRow).toContainText('3 correct');
     await questionRow.click();
 
-    const saved = reopened.locator('input[type="checkbox"]');
+    const saved = reopened.locator('input[type="checkbox"][name^="qkey-"]');
     await expect(saved.nth(0)).toBeChecked();
     await expect(saved.nth(1)).toBeChecked();
     await expect(saved.nth(2)).toBeChecked();
@@ -79,7 +79,7 @@ test.describe('Quiz questions — several correct answers', () => {
 
     // A fresh question has exactly one correct answer, and that one is locked so the question can
     // never end up with no correct answer at all.
-    const keyBoxes = dialog.locator('input[type="checkbox"]');
+    const keyBoxes = dialog.locator('input[type="checkbox"][name^="qkey-"]');
     await expect(keyBoxes.nth(0)).toBeChecked();
     await expect(keyBoxes.nth(0)).toBeDisabled();
 

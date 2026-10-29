@@ -41,7 +41,7 @@ router.get('/my-team', async (req: AuthRequest, res) => {
   const members = users
     .filter((u) => u.orgUnitId && scope.has(u.orgUnitId))
     .map((u) => {
-      const requiredIds = requiredTrainingIdsFor(u, roles);
+      const requiredIds = requiredTrainingIdsFor(u, roles, trainings, orgUnits);
       const memberTrainings = [...requiredIds]
         .map((id) => trainingById.get(id))
         .filter((t): t is Training => Boolean(t))
@@ -182,6 +182,17 @@ router.delete('/:id', requireAdmin, async (req: AuthRequest, res) => {
         'orgUnits',
         orgUnits.filter((o) => o.id !== unit.id),
       );
+      // A training assigned to the unit loses that entry — never a dangling id in an assignment.
+      const trainings = await readStore<Training>('trainings');
+      let stripped = false;
+      for (const t of trainings) {
+        if (!t.assignment?.orgUnits.some((e) => e.orgUnitId === unit.id)) continue;
+        const rest = t.assignment.orgUnits.filter((e) => e.orgUnitId !== unit.id);
+        if (rest.length === 0 && !t.assignment.everyone) delete t.assignment;
+        else t.assignment = { ...t.assignment, orgUnits: rest };
+        stripped = true;
+      }
+      if (stripped) await writeStore('trainings', trainings);
       return { unit };
     },
   );

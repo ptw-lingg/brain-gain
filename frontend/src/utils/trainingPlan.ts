@@ -1,12 +1,15 @@
-// Builds the "Training Plan" controlled document: the company's trainings, a roles × trainings matrix
-// (which trainings each job role requires) and a members × roles matrix (which roles each member
-// holds), scoped to the members the generating user is responsible for. It carries a controlled-
+// Builds the "Training Plan" controlled document: the company's trainings (with an "Everyone" mark
+// for trainings assigned to every account), a roles × trainings matrix (which trainings each job
+// role requires), an org units × trainings matrix (which trainings a unit's members must take —
+// a plain cross for the unit alone, an underlined cross when its sub-units are included) and a
+// members × roles matrix (which roles each member holds), scoped to the members the generating
+// user is responsible for. It carries a controlled-
 // document header (id, date, prepared/reviewed/approved signature lines) so it can be reviewed and
 // filed in a DMS, mirroring the Training Status Report. Pure function (pdfmake document definition +
 // file name); the page lazy-imports it with pdf.ts/pdfPreview.ts so pdfmake/pdf.js stay out of the
 // initial bundle.
 import type { Content, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
-import type { JobRole, LocalizedText, SafeUser, Training } from '@/types';
+import type { JobRole, LocalizedText, OrgUnit, SafeUser, Training } from '@/types';
 import { i18n } from '@/i18n';
 import { cycleLabel, formatDuration } from './display';
 import { resolveLocalized } from './locales';
@@ -16,8 +19,12 @@ type TFn = (key: string, named?: Record<string, unknown>) => string;
 export interface TrainingPlanData {
   trainings: Training[];
   roles: JobRole[];
+  orgUnits: OrgUnit[];
   members: SafeUser[]; // the members the generating user is responsible for
 }
+
+/** A matrix cell: assigned, assigned including the subtree ('sub'), or not. */
+type Mark = boolean | 'sub';
 
 export interface TrainingPlanMeta {
   company: string;
@@ -105,7 +112,7 @@ export function buildTrainingPlan(
   function matrix(
     title: string,
     cornerLabel: string,
-    rows: { label: string; on: (colId: string) => boolean }[],
+    rows: { label: string; on: (colId: string) => Mark; indent?: number }[],
     cols: { id: string; name: string }[],
     emptyMsg: string,
   ): Content[] {
@@ -139,12 +146,16 @@ export function buildTrainingPlan(
     };
 
     const crossLeft = Math.max(0, (colW - 6 - 8) / 2); // centre the ~8pt cross in the cell content box
-    const cross = (on: boolean): Content =>
+    // 'sub' (an org unit assigned together with its sub-units) underlines the cross.
+    const cross = (on: Mark): Content =>
       on
         ? {
             canvas: [
               { type: 'line', x1: 0, y1: 0, x2: 8, y2: 8, lineWidth: 1.4, lineColor: GREEN },
               { type: 'line', x1: 8, y1: 0, x2: 0, y2: 8, lineWidth: 1.4, lineColor: GREEN },
+              ...(on === 'sub'
+                ? [{ type: 'line' as const, x1: -1, y1: 10.5, x2: 9, y2: 10.5, lineWidth: 1, lineColor: GREEN }]
+                : []),
             ],
             margin: [crossLeft, 1, 0, 1],
           }
@@ -154,7 +165,11 @@ export function buildTrainingPlan(
       { text: cornerLabel, bold: true, fontSize: 8, color: ACCENT, margin: [0, headerH - 12, 0, 0] },
       ...wrapped.map((lines) => rotated(lines)),
     ];
-    const body: TableCell[][] = rows.map((r) => [td(r.label), ...cols.map((c) => cross(r.on(c.id)))]);
+    // `indent` (pt) nests org units under their parents — leading spaces would be collapsed.
+    const body: TableCell[][] = rows.map((r) => [
+      { ...(td(r.label) as object), margin: [r.indent ?? 0, 0, 0, 0] } as TableCell,
+      ...cols.map((c) => cross(r.on(c.id))),
+    ]);
     const estHeight = TITLE_H + headerH + rows.length * 12.5 + 18;
     return [
       {
@@ -178,21 +193,33 @@ export function buildTrainingPlan(
   const trainings = [...data.trainings].sort(
     (a, b) => a.order - b.order || resolved(a.name).localeCompare(resolved(b.name)),
   );
+  // A drawn cross (the default fonts carry no check glyph), centred under the "Everyone" header.
+  const everyoneMark = (tr: Training): TableCell =>
+    tr.assignment?.everyone
+      ? {
+          canvas: [
+            { type: 'line', x1: 0, y1: 0, x2: 8, y2: 8, lineWidth: 1.4, lineColor: GREEN },
+            { type: 'line', x1: 8, y1: 0, x2: 0, y2: 8, lineWidth: 1.4, lineColor: GREEN },
+          ],
+          margin: [14, 1, 0, 1],
+        }
+      : { text: '' };
   const trainingRows: TableCell[][] = trainings.map((tr) => [
     td(resolved(tr.name)),
     td(resolved(tr.category)),
     td(formatDuration(tr.durationMinutes)),
     td(cycleLabel(t, tr.cycleYears)),
+    everyoneMark(tr),
   ]);
   const trainingsTitle = t('trainingPlan.sectionTrainings', { count: trainings.length });
   const trainingsTable: Content = trainings.length
     ? {
         table: {
           headerRows: 2,
-          widths: ['*', 'auto', 'auto', 'auto'],
+          widths: ['*', 'auto', 'auto', 'auto', 'auto'],
           body: [
-            titleRow(trainingsTitle, 4),
-            [th(t('trainingPlan.colTraining')), th(t('trainingPlan.colCategory')), th(t('trainingPlan.colDuration')), th(t('trainingPlan.colCycle'))],
+            titleRow(trainingsTitle, 5),
+            [th(t('trainingPlan.colTraining')), th(t('trainingPlan.colCategory')), th(t('trainingPlan.colDuration')), th(t('trainingPlan.colCycle')), th(t('trainingPlan.colEveryone'))],
             ...trainingRows,
           ],
         },
@@ -212,7 +239,39 @@ export function buildTrainingPlan(
     t('trainingPlan.noRoles'),
   );
 
-  // 3 — Members × roles matrix (rows = members the user is responsible for, columns = roles).
+  // 3 — Org units × trainings matrix (rows = units in tree order, indented by depth; columns =
+  // trainings). A unit assigned with its sub-units is marked with the underlined cross.
+  const byParent = new Map<string | null, OrgUnit[]>();
+  for (const u of data.orgUnits) {
+    if (!byParent.has(u.parentId)) byParent.set(u.parentId, []);
+    byParent.get(u.parentId)!.push(u);
+  }
+  for (const list of byParent.values()) list.sort((a, b) => a.name.localeCompare(b.name));
+  const orgUnits: { unit: OrgUnit; depth: number }[] = [];
+  const walk = (parentId: string | null, depth: number): void => {
+    for (const u of byParent.get(parentId) ?? []) {
+      orgUnits.push({ unit: u, depth });
+      walk(u.id, depth + 1);
+    }
+  };
+  walk(null, 0);
+  for (const u of data.orgUnits) if (!orgUnits.some((o) => o.unit === u)) orgUnits.push({ unit: u, depth: 0 });
+  const unitMark = (unit: OrgUnit, trainingId: string): Mark => {
+    const entry = trainings.find((tr) => tr.id === trainingId)?.assignment?.orgUnits.find((e) => e.orgUnitId === unit.id);
+    return entry ? (entry.includeSubunits ? 'sub' : true) : false;
+  };
+  const orgUnitsMatrix = [
+    ...matrix(
+      t('trainingPlan.sectionOrgUnits', { count: orgUnits.length }),
+      t('trainingPlan.colOrgUnit'),
+      orgUnits.map(({ unit, depth }) => ({ label: unit.name, indent: depth * 10, on: (trainingId: string) => unitMark(unit, trainingId) })),
+      trainings.map((tr) => ({ id: tr.id, name: resolved(tr.name) })),
+      t('trainingPlan.noOrgUnits'),
+    ),
+    ...(orgUnits.length && trainings.length ? [note(t('trainingPlan.orgUnitsLegend'))] : []),
+  ];
+
+  // 4 — Members × roles matrix (rows = members the user is responsible for, columns = roles).
   const members = [...data.members].sort((a, b) => a.name.localeCompare(b.name));
   const membersMatrix = matrix(
     t('trainingPlan.sectionMembers', { count: members.length }),
@@ -231,7 +290,7 @@ export function buildTrainingPlan(
         [label(t('trainingPlan.document')), val(title), label(t('trainingPlan.documentId')), val(TRAINING_PLAN_DOC_ID)],
         [label(t('trainingPlan.company')), val(meta.company || '—'), label(t('trainingPlan.generatedOn')), val(meta.generatedOn)],
         [label(t('trainingPlan.preparedByLabel')), val(meta.preparedBy || '—'), label(t('trainingPlan.responsibleFor')), val(meta.responsibleFor || '—')],
-        [label(t('trainingPlan.scope')), { text: t('trainingPlan.scopeValue', { trainings: trainings.length, roles: roles.length, members: members.length }), colSpan: 3, fontSize: 9, color: INK }, {}, {}],
+        [label(t('trainingPlan.scope')), { text: t('trainingPlan.scopeValue', { trainings: trainings.length, roles: roles.length, orgUnits: orgUnits.length, members: members.length }), colSpan: 3, fontSize: 9, color: INK }, {}, {}],
       ],
     },
     layout: {
@@ -291,6 +350,7 @@ export function buildTrainingPlan(
       metaTable,
       trainingsTable,
       ...rolesMatrix,
+      ...orgUnitsMatrix,
       ...membersMatrix,
       signatureBlock,
     ],

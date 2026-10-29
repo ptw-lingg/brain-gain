@@ -44,7 +44,13 @@ import {
 } from '../middleware/auth';
 import { acksFor, computeDue, sessionsFor } from '../services/due';
 import { normalizeCorrectIndices, questionType, sanitizeLocalizedText } from '../services/questions';
-import { requiredTrainingIds } from '../services/training';
+import {
+  requiredTrainingIds,
+  requiredTrainingIdsFor,
+  sanitizeAssignment,
+  sanitizeRoleIds,
+  syncRoleAssignment,
+} from '../services/training';
 import { affectedUsers, normalizeDeadline } from '../services/updates';
 import { isSmtpConfigured, sendMail } from '../services/mail';
 import { auditEvent, diffEntities } from '../services/audit';
@@ -158,6 +164,19 @@ async function readOrderedTrainings(): Promise<Training[]> {
 }
 
 // GET /api/trainings  (admin: all; trainer with ?mine=1: only owned)
+// Roles changed through the training editor are audited exactly like edits in the role editor —
+// one 'update' per role with the trainingIds diff — so the audit trail reads the same either way.
+async function auditRoleChanges(req: AuthRequest, changed: { before: JobRole; after: JobRole }[]): Promise<void> {
+  for (const { before, after } of changed) {
+    await auditEvent(
+      req.user ?? null,
+      'update',
+      { type: 'role', id: after.id, name: after.name },
+      { changes: diffEntities(before, after) },
+    );
+  }
+}
+
 router.get('/', async (req: AuthRequest, res) => {
   const trainings = await readOrderedTrainings();
   const pkgs = await packageMap();
@@ -195,25 +214,24 @@ router.get('/mine', async (req: AuthRequest, res) => {
 
 // GET /api/trainings/trainees  — who must do my (or all) trainings, grouped
 router.get('/trainees', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
-  const [trainings, roles, users, sessions, acks] = await Promise.all([
+  const [trainings, roles, users, sessions, acks, orgUnits] = await Promise.all([
     readOrderedTrainings(),
     readStore<JobRole>('roles'),
     readStore<User>('users'),
     readStore<TrainingSession>('sessions'),
     readStore<UpdateAck>('updateAcks'),
+    readStore<OrgUnit>('orgUnits'),
   ]);
 
   const owned = req.user?.isAdmin
     ? trainings
     : trainings.filter((t) => t.ownerId === req.user?.id);
 
+  // Each user's required set once (roles, org unit, everyone) — then grouped per training.
+  const requiredByUser = new Map(users.map((u) => [u.id, requiredTrainingIdsFor(u, roles, trainings, orgUnits)] as const));
   const groups: TraineeGroup[] = owned.map((training) => {
-    // Roles that demand this training → users holding any of those roles.
-    const demandingRoleIds = roles
-      .filter((r) => r.trainingIds.includes(training.id))
-      .map((r) => r.id);
     const trainees = users
-      .filter((u) => u.roleIds.some((rid) => demandingRoleIds.includes(rid)))
+      .filter((u) => requiredByUser.get(u.id)!.has(training.id))
       .map((u) => {
         const due = computeDue(
           training,
@@ -445,9 +463,18 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   // The card cover, validated against the stored upload (master data — never staged).
   const preview = await sanitizePreviewImage(b.previewImage ?? null);
   if (!preview.ok) return res.status(400).json({ error: preview.error });
-  // Read, validate against the current store and append under the store lock.
-  const outcome = await transaction(async (): Promise<{ status: number; error: string } | { training: Training }> => {
+  // Read, validate against the current store and append under the store lock. The org-unit /
+  // everyone assignment and the roles that require the training (`roleIds`) are master data set
+  // right here — a trainer may assign their own training, an admin any (SR-199).
+  type PostOutcome =
+    | { status: number; error: string }
+    | { training: Training; changedRoles: { before: JobRole; after: JobRole }[] };
+  const outcome = await transaction(async (): Promise<PostOutcome> => {
   const trainings = await readStore<Training>('trainings');
+  const orgUnits = await readStore<OrgUnit>('orgUnits');
+  const roles = await readStore<JobRole>('roles');
+  const assignment = sanitizeAssignment(b.assignment, orgUnits);
+  const roleIds = sanitizeRoleIds(b.roleIds, roles);
   // New trainings go to the end of the ordering.
   const maxOrder = trainings.reduce(
     (max, t) => (typeof t.order === 'number' && t.order > max ? t.order : max),
@@ -471,6 +498,7 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
     durationMinutes: Math.max(0, Math.round(Number(b.durationMinutes) || 0)),
     category: sanitizeLocalizedText(b.category, MATERIAL_LOCALES),
     ...(preview.file ? { previewImage: preview.file } : {}),
+    ...(assignment ? { assignment } : {}),
     ownerId,
     cycleYears: clamp(b.cycleYears, 1, 5, 1),
     windowBeforeMonths: clamp(b.windowBeforeMonths, 0, 3, 3),
@@ -494,11 +522,14 @@ router.post('/', requireTrainerOrAdmin, async (req: AuthRequest, res) => {
   };
   trainings.push(training);
   await writeStore('trainings', trainings);
-  return { training };
+  const changedRoles = roleIds ? syncRoleAssignment(roles, training.id, roleIds) : [];
+  if (changedRoles.length) await writeStore('roles', roles);
+  return { training, changedRoles };
   });
   if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
-  const { training } = outcome;
+  const { training, changedRoles } = outcome;
   await auditEvent(req.user ?? null, 'create', { type: 'training', id: training.id, name: trainingLabel(training) });
+  await auditRoleChanges(req, changedRoles);
   return res.status(201).json(training);
 });
 
@@ -534,12 +565,28 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   // needs only the before/after records and runs outside the lock.
   type PutOutcome =
     | { status: number; error: string }
-    | { current: Training; updated: Training; candScormId: string | null; nextPreview: MaterialFile | undefined };
+    | {
+        current: Training;
+        updated: Training;
+        candScormId: string | null;
+        nextPreview: MaterialFile | undefined;
+        changedRoles: { before: JobRole; after: JobRole }[];
+      };
   const outcome = await transaction(async (): Promise<PutOutcome> => {
   const trainings = await readStore<Training>('trainings');
   const idx = trainings.findIndex((t) => t.id === req.params.id);
   if (idx === -1) return { status: 404, error: 'Not found' };
   const current = trainings[idx];
+  // Assignment (org units / everyone): present-or-keep like the other master data; null clears it.
+  // Validated against the current org-unit store so a deleted unit can never be (re)assigned.
+  let nextAssignment = current.assignment;
+  if (b.assignment !== undefined) {
+    nextAssignment = b.assignment === null ? undefined : sanitizeAssignment(b.assignment, await readStore<OrgUnit>('orgUnits'));
+  }
+  // The roles that require this training — the same data the role editor writes (JobRole.trainingIds),
+  // edited from the training side. Absent = roles untouched.
+  const roles = await readStore<JobRole>('roles');
+  const roleIds = sanitizeRoleIds(b.roleIds, roles);
   // Only admins may reassign ownership.
   const ownerId =
     req.user?.isAdmin && typeof b.ownerId === 'string' ? b.ownerId : current.ownerId;
@@ -639,11 +686,15 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
   // The spread above carried the old cover along; apply the decision (kept, replaced or removed).
   if (nextPreview) trainings[idx].previewImage = nextPreview;
   else delete trainings[idx].previewImage;
+  if (nextAssignment) trainings[idx].assignment = nextAssignment;
+  else delete trainings[idx].assignment;
   await writeStore('trainings', trainings);
-  return { current, updated: trainings[idx], candScormId, nextPreview };
+  const changedRoles = roleIds ? syncRoleAssignment(roles, current.id, roleIds) : [];
+  if (changedRoles.length) await writeStore('roles', roles);
+  return { current, updated: trainings[idx], candScormId, nextPreview, changedRoles };
   });
   if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error });
-  const { current, updated, candScormId, nextPreview } = outcome;
+  const { current, updated, candScormId, nextPreview, changedRoles } = outcome;
   // A draft's file may have been removed or replaced: delete bytes referenced by the OLD draft
   // that neither the new draft nor the published content still uses. Published bytes are never
   // deleted here — PUT cannot change the published content. Best-effort, as before.
@@ -669,6 +720,7 @@ router.put('/:id', requireAdminOrOwner, async (req: AuthRequest, res) => {
     { type: 'training', id: updated.id, name: trainingLabel(updated) },
     { changes: diffEntities(current, updated) },
   );
+  await auditRoleChanges(req, changedRoles);
   return res.json(updated);
 });
 
@@ -793,15 +845,17 @@ router.post('/:id/publish-update', requireAdminOrOwner, async (req: AuthRequest,
     return res.status(201).json({ version });
   }
 
-  // Affected = assigned via roles AND passed before this publish; disabled accounts can't sign in,
-  // so they are not emailed (their obligation surfaces on reactivation through the due list).
-  const [users, roles, sessions, settings] = await Promise.all([
+  // Affected = assigned (role, org unit or everyone) AND passed before this publish; disabled
+  // accounts can't sign in, so they are not emailed (their obligation surfaces on reactivation
+  // through the due list).
+  const [users, roles, sessions, settings, orgUnits] = await Promise.all([
     readStore<User>('users'),
     readStore<JobRole>('roles'),
     readStore<TrainingSession>('sessions'),
     readSettings(),
+    readStore<OrgUnit>('orgUnits'),
   ]);
-  const affected = affectedUsers(training, users, roles, sessions);
+  const affected = affectedUsers(training, users, roles, sessions, orgUnits);
   const recipients = affected.filter((u) => !u.isDisabled).map((u) => u.email);
 
   let email: { sent: number } | { skipped: 'not-configured' | 'no-recipients' } | { failed: true };

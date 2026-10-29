@@ -20,13 +20,14 @@
 <section class="slide">
   <div class="head"><h1>Ihre Rolle als Trainer</h1><span class="chapter">Überblick</span></div>
   <div class="body single">
-    <p class="lead">Ein Trainer verantwortet Schulungen. Ein Administrator entscheidet, wer sie absolvieren muss. Beide Seiten treffen sich in den Funktionen (Jobrollen).</p>
+    <p class="lead">Ein Trainer verantwortet Schulungen und entscheidet, wer sie absolvieren muss — nach Funktion, nach Organisationseinheit oder alle. Ein Administrator pflegt die Funktionen, Einheiten und Benutzer, auf die sich diese Regeln beziehen.</p>
     <div class="two">
       <div class="card">
         <h3>Sie — Trainer</h3>
         <ul>
           <li>Seite <b>Schulungen</b>: eigene Schulungen anlegen und bearbeiten, Material hochladen, Quiz schreiben oder SCORM-Kurs anhängen.</li>
           <li><b>Versionen veröffentlichen</b>: die erste macht eine Schulung sichtbar, spätere können Teilnehmende zum erneuten Absolvieren oder Bestätigen verpflichten.</li>
+          <li>Abschnitt <b>Zuweisung</b> im Editor: Ihre Schulung allen zuweisen, Organisationseinheiten (mit oder ohne Untereinheiten) oder die Funktionen ankreuzen, die sie verlangen.</li>
           <li>Seite <b>Teilnehmer</b>: sehen, wer Ihre Schulungen absolvieren muss und wer fällig ist; Erinnerungs-E-Mails senden.</li>
           <li>Sie sind der Kontakt, der Teilnehmenden in Ihren Schulungen angezeigt wird.</li>
         </ul>
@@ -35,12 +36,12 @@
         <h3>Administrator</h3>
         <ul>
           <li>Sieht und bearbeitet <b>alle</b> Schulungen, setzt den Verantwortlichen, ordnet die Liste, exportiert den Schulungsplan als PDF.</li>
-          <li>Verwaltet <b>Benutzer</b>, <b>Funktionen</b> (welche Schulungen eine Funktion verlangt) und <b>Organisationseinheiten</b>.</li>
+          <li>Verwaltet <b>Benutzer</b>, <b>Funktionen</b> und <b>Organisationseinheiten</b> — und darf jede Schulung zuweisen, nicht nur eigene.</li>
           <li>Einstellungen: Bestehensgrenze, E-Mail (SMTP), Microsoft-Anmeldung, Backups.</li>
         </ul>
       </div>
     </div>
-    <div class="callout">Teilnehmende sehen eine Schulung nur, wenn (a) Version 1 veröffentlicht ist und (b) eine ihrer Funktionen sie verlangt.</div>
+    <div class="callout">Teilnehmende sehen eine Schulung nur, wenn (a) Version 1 veröffentlicht ist und (b) eine Zuweisungsregel sie erreicht: eine ihrer Funktionen verlangt sie, ihre Organisationseinheit ist zugewiesen, oder sie gilt für alle.</div>
   </div>
   <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
 </section>
@@ -398,15 +399,16 @@
   <div class="head"><h1>Wie Teilnehmende Ihre Schulung bekommen</h1><span class="chapter">Teil 5 · Nachhalten</span></div>
   <div class="body">
     <div class="col narrow">
-      <p class="lead">Sie weisen nie Personen direkt zu. Ein Administrator fügt Ihre Schulung den <b>Funktionen</b> hinzu, die sie verlangen; jeder Benutzer mit dieser Funktion sieht sie.</p>
+      <p class="lead">Sie wählen nie einzelne Personen aus. Der Abschnitt <b>Zuweisung</b> im Editor kennt drei Regeln; eine davon genügt:</p>
       <ul class="points">
-        <li>Die Pflichtschulungen einer Person sind die Vereinigung aller ihrer Funktionen — ohne Dubletten.</li>
-        <li>Benutzer gehören zu <b>Organisationseinheiten</b>; Bereichsleitungen sehen den Status ihrer Leute unter <b>Mein Team</b> und können den Schulungsstatus-Bericht exportieren.</li>
-        <li>Sagen Sie nach dem Veröffentlichen von Version 1 Ihrem Administrator, welche Funktionen die Schulung absolvieren müssen.</li>
+        <li><b>Alle</b> — jedes Konto, das sich anmelden kann, Trainer und Administratoren eingeschlossen.</li>
+        <li><b>Funktionen</b> — kreuzen Sie die Funktionen an, die die Schulung verlangen; das ist dieselbe Liste, die der Administrator unter Funktionen sieht.</li>
+        <li><b>Organisationseinheiten</b> — fügen Sie eine Einheit hinzu; <b>inkl. Untereinheiten</b> (standardmäßig an) erfasst alles darunter, aus heißt genau diese Einheit.</li>
+        <li>Nichts angekreuzt = niemand. Die Zusammenfassung zeigt, was gilt. Bereichsleitungen sehen den Status ihrer Leute unter <b>Mein Team</b>.</li>
       </ul>
     </div>
     <div class="col wide">
-      <div class="shot"><img src="../shots/de/roles.png" alt="Seite Funktionen (Administrator)" /></div>
+      <div class="shot"><img src="../shots/de/editor-assignment.png" alt="Schulungseditor: Abschnitt Zuweisung" /></div>
     </div>
   </div>
   <div class="foot"><span>BrainGain für Trainer</span><span class="page"></span></div>
@@ -424,7 +426,7 @@
         <li><span class="n">4</span><div><b>Quiz ist fair</b> — jede Frage aus dem Material beantwortbar; richtige Antworten angekreuzt; Bestehensgrenze im Blick.</div></li>
         <li><span class="n">5</span><div><b>SCORM</b> — Manifest-Karte plausibel, Abschlussregel gewählt, externer Zugriff aus, sofern nicht nötig.</div></li>
         <li><span class="n">6</span><div><b>Veröffentlichen</b> — Version 1 still; spätere Versionen nur mit Benachrichtigung, wenn Teilnehmende wirklich handeln müssen.</div></li>
-        <li><span class="n">7</span><div><b>Funktionen</b> — den Administrator bitten, die Schulung den richtigen Funktionen hinzuzufügen.</div></li>
+        <li><span class="n">7</span><div><b>Zuweisung</b> — alle, die richtigen Funktionen oder die richtigen Organisationseinheiten; nichts angekreuzt heißt, niemand sieht sie.</div></li>
       </ul>
     </div>
     <div class="col narrow">

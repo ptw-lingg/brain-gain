@@ -382,6 +382,22 @@
       "classicHint": "Learning materials to study plus the built-in test, graded by BrainGain.",
       "scorm": "SCORM course",
       "scormHint": "An imported interactive course (e.g. from Articulate, Captivate, iSpring) that carries its own content and test."
+    },
+    "assignment": {
+      "section": "Assignment",
+      "hint": "Who must take this training. Any one rule is enough: everyone, a job role, or an org unit.",
+      "everyone": "Everyone",
+      "everyoneHint": "Every account that can sign in, including trainers and administrators.",
+      "roles": "Job roles that require it",
+      "noRoles": "No job roles exist yet.",
+      "orgUnits": "Org units whose members must take it",
+      "noOrgUnits": "No org unit assigned.",
+      "addOrgUnit": "Add org unit…",
+      "removeOrgUnit": "Remove org unit",
+      "includeSubunits": "incl. sub-units",
+      "nobody": "Nobody yet",
+      "summaryRoles": "{count} role | {count} roles",
+      "summaryOrgUnits": "{count} org unit | {count} org units"
     }
   },
   "trainees": {
@@ -725,12 +741,12 @@
     "generatedOn": "Generated",
     "preparedByLabel": "Prepared by",
     "scope": "Scope",
-    "scopeValue": "{trainings} trainings · {roles} roles · {members} members",
+    "scopeValue": "{trainings} trainings · {roles} roles · {orgUnits} org units · {members} members",
     "responsibleFor": "Responsible for",
     "scopeAll": "Entire organization",
     "sectionTrainings": "1  Trainings ({count})",
     "sectionRoles": "2  Job Roles & assigned trainings ({count})",
-    "sectionMembers": "3  Members & assigned roles ({count})",
+    "sectionMembers": "4  Members & assigned roles ({count})",
     "colTraining": "Training",
     "colCategory": "Category",
     "colDuration": "Duration",
@@ -744,7 +760,12 @@
     "reviewedBy": "Reviewed by",
     "approvedBy": "Approved by",
     "signatureLine": "Name / Signature / Date",
-    "footer": "CONTROLLED DOCUMENT — verify revision before use."
+    "footer": "CONTROLLED DOCUMENT — verify revision before use.",
+    "colEveryone": "Everyone",
+    "sectionOrgUnits": "3  Org units & assigned trainings ({count})",
+    "colOrgUnit": "Org unit",
+    "noOrgUnits": "No org units defined.",
+    "orgUnitsLegend": "Cross = members of the unit · underlined cross = including all sub-units. Trainings marked “Everyone” apply to every account."
   },
   "backups": {
     "title": "Backups",

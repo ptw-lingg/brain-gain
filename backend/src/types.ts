@@ -80,6 +80,23 @@ export interface TrainingUpdate {
   version: number; // the training version this publish created (2, 3, 4, …)
 }
 
+// One org unit a training is assigned to. `includeSubunits` extends the assignment to every unit
+// below it (the same subtree rule My Team uses); off = exactly that unit.
+export interface OrgUnitAssignment {
+  orgUnitId: string;
+  includeSubunits: boolean;
+}
+
+// Assignment rules that live ON the training, next to the role-based rule that lives on the job
+// roles (JobRole.trainingIds). A user must take a training when ANY rule matches: one of their
+// roles requires it, their org unit is assigned (directly or via a subtree), or it is assigned to
+// everyone. `everyone` covers every account that can sign in — accounts pending activation
+// (isDisabled) are excluded. Absent on legacy records = no training-side rule (roles only).
+export interface TrainingAssignment {
+  everyone: boolean;
+  orgUnits: OrgUnitAssignment[];
+}
+
 export interface Training {
   id: string;
   // Localized training master data — per-language maps like Question.text. The name keeps at least
@@ -129,6 +146,9 @@ export interface Training {
   // back to its category tint). Bytes are deleted when the image is replaced, removed or the
   // training is deleted.
   previewImage?: MaterialFile;
+  // Org-unit / everyone assignment (see TrainingAssignment). MASTER DATA like the schedule: applied
+  // immediately by PUT, editable by admins and the owning trainer. Absent = none.
+  assignment?: TrainingAssignment;
   createdAt: string;
 }
 

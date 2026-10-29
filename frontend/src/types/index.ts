@@ -137,6 +137,19 @@ export interface TrainingUpdate {
   version: number; // the training version this publish created (2, 3, 4, …)
 }
 
+// One org unit a training is assigned to; `includeSubunits` extends it to the whole subtree.
+export interface OrgUnitAssignment {
+  orgUnitId: string;
+  includeSubunits: boolean;
+}
+
+// Assignment rules stored ON the training (role assignment lives on JobRole.trainingIds): the
+// training is required by everyone who can sign in, and/or by the members of the listed org units.
+export interface TrainingAssignment {
+  everyone: boolean;
+  orgUnits: OrgUnitAssignment[];
+}
+
 export interface Training {
   id: string;
   // Localized training master data — per-language maps like Question.text. The name keeps at least
@@ -170,6 +183,11 @@ export interface Training {
   previewImage?: MaterialFile | null;
   scormPackages?: { published: ScormPackageRef | null; draft: ScormPackageRef | null };
   scorm?: PublicScormInfo;
+  // Org-unit / everyone assignment — master data applied immediately on save. Absent = none.
+  assignment?: TrainingAssignment;
+  // EDITOR copy only: the roles that require this training (derived from JobRole.trainingIds when
+  // the dialog opens, written back through PUT/POST `roleIds`). Never present on server payloads.
+  roleIds?: string[];
   createdAt: string;
 }
 
