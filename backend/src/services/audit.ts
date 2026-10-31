@@ -125,7 +125,8 @@ const SKIP_FIELDS = new Set(['id', 'createdAt']);
 // Emitted with both values masked: the CHANGE is on record, the secret never is. `questions` is
 // masked wholesale because a training's answer key (correctIndices) lives inside it — and `draft`
 // (the training's staged WIP content) for the same reason: it carries a full questions snapshot.
-const REDACT_FIELDS = new Set(['passwordHash', 'activationToken', 'entraOid', 'questions', 'draft']);
+// avatar is not secret, just a bulky data URL — the entry records that the picture changed.
+const REDACT_FIELDS = new Set(['passwordHash', 'activationToken', 'entraOid', 'questions', 'draft', 'avatar']);
 
 // passwordHash is reported under the name the admin actually thinks in.
 const FIELD_LABELS: Record<string, string> = { passwordHash: 'password' };

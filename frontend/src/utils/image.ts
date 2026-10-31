@@ -40,3 +40,21 @@ export async function downscalePreviewImage(file: Blob): Promise<Blob> {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encoding failed'))), 'image/jpeg', 0.86);
   });
 }
+
+// Profile pictures are shown at most ~64 px, so 128 px keeps them sharp on HiDPI at ~5–10 KB.
+export const AVATAR_SIZE = 128;
+
+/** Centre-crop `file` to a square, scale it to AVATAR_SIZE and return a JPEG data URL. Throws when it is not an image. */
+export async function fileToAvatar(file: Blob): Promise<string> {
+  const img = await loadImage(file);
+  const side = Math.min(img.naturalWidth, img.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = AVATAR_SIZE;
+  canvas.height = AVATAR_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas unavailable');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  return canvas.toDataURL('image/jpeg', 0.85);
+}

@@ -56,7 +56,7 @@ test.describe('Users page — admin CRUD via the dialog (SYS-USR-02)', () => {
     await expect(dialog.locator('input[type="password"]')).toHaveValue('');
 
     const newName = `Renamed Member ${STAMP}`;
-    const nameInput = dialog.locator('input').first();
+    const nameInput = dialog.getByLabel('Name', { exact: true }); // an existing account's editor starts with the picture
     await nameInput.fill(newName);
     await dialog.getByRole('button', { name: 'Save' }).click();
 

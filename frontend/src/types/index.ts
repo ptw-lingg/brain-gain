@@ -222,6 +222,8 @@ export interface SafeUser {
   locale?: string;
   // Persisted per-user UI preferences — the "show only due" filter flags per view.
   prefs?: Partial<Record<UiPrefKey, boolean>>;
+  // Profile picture as a small data URL (128 px square); absent → initials. Sending null removes it.
+  avatar?: string | null;
   createdAt: string;
 }
 
@@ -433,4 +435,5 @@ export interface TrainerContact {
   name: string;
   email: string;
   orgUnitName: string;
+  avatar: string | null; // profile picture data URL; null → initials
 }

@@ -206,12 +206,25 @@ export interface User {
   // Persisted per-user UI preferences — the "show only due" filter flags. Whitelisted keys only
   // (UI_PREF_KEYS); merged per-key by PUT /api/auth/me so each view updates just its own flag.
   prefs?: Partial<Record<UiPrefKey, boolean>>;
+  // Profile picture as a small data:image URL — the client crops and downscales any picked image to
+  // a 128 px square before upload (isAvatarValue checks shape and size). Absent → initials. Set by
+  // the user (PUT /api/auth/me) or an administrator (PUT /api/users/:id); a null write removes it.
+  avatar?: string;
   createdAt: string;
 }
 
 /** Keys of persisted per-user UI preferences — the "show only due" filter flags per view. */
 export const UI_PREF_KEYS = ['dashboardOnlyDue', 'myTeamOnlyDue', 'traineesOnlyDue'] as const;
 export type UiPrefKey = (typeof UI_PREF_KEYS)[number];
+
+// A stored avatar is a base64 data URL of a raster image the browser can render inline — SVG is
+// refused (it can carry script). 100 000 chars is ~75 KB of image, far above a 128 px JPEG (~7 KB).
+const AVATAR_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+export const AVATAR_MAX_LENGTH = 100_000;
+
+/** A valid avatar write: a small PNG/JPEG/WebP data URL, or null to remove the picture. */
+export const isAvatarValue = (v: unknown): v is string | null =>
+  v === null || (typeof v === 'string' && v.length <= AVATAR_MAX_LENGTH && AVATAR_RE.test(v));
 
 // Only PASSED attempts are persisted.
 export interface TrainingSession {

@@ -99,6 +99,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // The user picked (data URL) or removed (null) their profile picture. Unlike locale and prefs there
+  // is no local state to fall back on, so a failed write throws for the caller to report.
+  async function saveAvatar(avatar: string | null): Promise<void> {
+    const { data } = await client.put<SafeUser>('/auth/me', { avatar });
+    user.value = data;
+  }
+
   // Admin → "view as" a user. The admin token (currently active) is parked, and the
   // server-issued impersonation token takes over, so the whole app renders as the target user.
   // Deliberately NOT applyUser: the target's locale must not switch the admin's UI language.
@@ -146,6 +153,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchMe,
     saveLocale,
     savePref,
+    saveAvatar,
     startImpersonation,
     stopImpersonation,
     logout,

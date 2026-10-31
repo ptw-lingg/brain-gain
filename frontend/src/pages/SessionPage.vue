@@ -23,6 +23,7 @@ import ContentViewer from '@/components/ContentViewer.vue';
 import LocaleFlag from '@/components/LocaleFlag.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import ScormPlayer from '@/components/ScormPlayer.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { useScormAttempt } from '@/composables/useScormAttempt';
 import { formatBytes } from '@/utils/display';
 import { fetchBlobUrl, downloadFile as saveFile } from '@/utils/download';
@@ -154,16 +155,6 @@ const confirmOnly = computed(() => pendingUpdate.value?.mode === 'confirm');
 // In confirm-mode the update banner already says the confirmation completes it. A SCORM training
 // has no questions either — but a test follows inside the course, so the hint would be a lie.
 const showNoQuestionsHint = computed(() => !hasQuestions.value && !isScorm.value && !confirmOnly.value);
-
-// Avatar initials from the trainer's name, e.g. "Tom Trainer" → "TT".
-const trainerInitials = computed(() =>
-  (trainer.value?.name ?? '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]!.toUpperCase())
-    .join(''),
-);
 
 // ── content language ──────────────────────────────────────────────────────────────────────────────
 // The session content follows the UI language — the language switch in the user menu is the ONE
@@ -641,9 +632,7 @@ onMounted(() => {
               class="mt-4 flex items-start gap-3 rounded-lg border border-petrol-200 bg-gradient-to-br from-pastel-cyan/50 to-white p-4"
               data-testid="trainer-contact"
             >
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
-                {{ trainerInitials }}
-              </div>
+              <UserAvatar :name="trainer.name" :avatar="trainer.avatar" size="md" class="bg-accent shadow-soft" />
               <div class="min-w-0 flex-1">
                 <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
                 <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>
@@ -895,9 +884,7 @@ onMounted(() => {
             class="flex w-full max-w-md items-start gap-3 rounded-lg border border-petrol-200 bg-white/80 p-4 text-left shadow-soft"
             data-testid="trainer-contact"
           >
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent font-sans text-sm font-bold text-white shadow-soft">
-              {{ trainerInitials }}
-            </div>
+            <UserAvatar :name="trainer.name" :avatar="trainer.avatar" size="md" class="bg-accent shadow-soft" />
             <div class="min-w-0 flex-1">
               <p class="font-mono text-[11px] text-ink-light">{{ t('session.trainerHint') }}</p>
               <p class="mt-0.5 font-sans text-sm font-bold leading-snug text-ink">{{ trainer.name }}</p>

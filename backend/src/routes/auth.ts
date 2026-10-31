@@ -1,7 +1,7 @@
 import { asyncRouter } from '../middleware/asyncRouter';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
-import { UI_PREF_KEYS, type OrgUnit, type SafeUser, type User } from '../types';
+import { UI_PREF_KEYS, isAvatarValue, type OrgUnit, type SafeUser, type User } from '../types';
 import { readSettings, readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { UI_LOCALES } from '../services/locales';
 import { rootOrgUnitId } from '../services/orgUnits';
@@ -146,8 +146,9 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   return res.json(await identityUser(user));
 });
 
-// PUT /api/auth/me  { locale?, prefs? }  — the only self-service profile write: persist the user's
-// language and/or UI preferences (the "show only due" filter flags). The profile locale doubles as
+// PUT /api/auth/me  { locale?, prefs?, avatar? }  — the only self-service profile write: persist the
+// user's language, UI preferences (the "show only due" filter flags) and/or profile picture (a small
+// data URL, or null to remove it — see isAvatarValue). The profile locale doubles as
 // the UI language, and the UI exists only in en/de — material languages are a separate, wider list
 // governed by Settings.materialLocales. `prefs` accepts only whitelisted boolean flags and is merged
 // per key, so each view updates just its own flag. Refused while impersonating: the token carries
@@ -157,9 +158,12 @@ router.put('/me', authenticate, async (req: AuthRequest, res) => {
   if (req.user?.impersonatorId) {
     return res.status(403).json({ error: 'The profile cannot be changed while impersonating' });
   }
-  const { locale, prefs } = req.body ?? {};
-  if (locale === undefined && prefs === undefined) {
-    return res.status(400).json({ error: 'locale or prefs is required' });
+  const { locale, prefs, avatar } = req.body ?? {};
+  if (locale === undefined && prefs === undefined && avatar === undefined) {
+    return res.status(400).json({ error: 'locale, prefs or avatar is required' });
+  }
+  if (avatar !== undefined && !isAvatarValue(avatar)) {
+    return res.status(400).json({ error: 'avatar must be null or a small data:image/png|jpeg|webp URL' });
   }
   if (locale !== undefined && (typeof locale !== 'string' || !(UI_LOCALES as readonly string[]).includes(locale))) {
     return res.status(400).json({ error: `locale must be one of: ${UI_LOCALES.join(', ')}` });
@@ -178,6 +182,8 @@ router.put('/me', authenticate, async (req: AuthRequest, res) => {
     if (!user) return null;
     if (locale !== undefined) user.locale = locale;
     if (prefs !== undefined) user.prefs = { ...user.prefs, ...prefs };
+    if (avatar === null) delete user.avatar;
+    else if (avatar !== undefined) user.avatar = avatar;
     return users;
   });
   if (!user) return res.status(404).json({ error: 'User not found' });

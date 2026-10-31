@@ -2,37 +2,25 @@
   "app": "BrainGain",
   "dataVersion": "1.7.0",
   "appVersion": "1.7.0",
-  "migratedAt": "2026-10-31T11:19:31.468Z",
+  "migratedAt": "2026-10-31T11:20:22.546Z",
   "history": [
     {
       "version": "1.2.0",
-      "at": "2026-10-12T11:50:30.631Z",
+      "at": "2026-10-31T11:20:01.618Z",
       "action": "adopted",
       "note": "existing data directory adopted at the versioning baseline"
     },
     {
       "version": "1.3.0",
-      "at": "2026-10-12T11:53:19.790Z",
+      "at": "2026-10-31T11:20:22.536Z",
       "action": "migrated",
       "changed": false,
       "note": "no unknown keys in settings.json"
     },
     {
-      "version": "1.5.0",
-      "at": "2026-10-12T11:53:19.821Z",
-      "action": "upgraded"
-    },
-    {
-      "version": "1.6.0",
-      "at": "2026-10-15T08:39:49.874Z",
-      "action": "upgraded",
-      "note": "no migration step was due"
-    },
-    {
       "version": "1.7.0",
-      "at": "2026-10-31T11:19:31.468Z",
-      "action": "upgraded",
-      "note": "no migration step was due"
+      "at": "2026-10-31T11:20:22.546Z",
+      "action": "upgraded"
     }
   ]
 }

@@ -40,7 +40,10 @@
     "roleTrainer": "Trainer",
     "roleMember": "Mitglied",
     "about": "Über BrainGain",
-    "changePassword": "Passwort ändern"
+    "changePassword": "Passwort ändern",
+    "avatarChange": "Bild ändern",
+    "avatarRemove": "Entfernen",
+    "avatarError": "Dieses Bild kann nicht verwendet werden — bitte JPEG oder PNG versuchen."
   },
   "about": {
     "title": "Über BrainGain",
@@ -513,6 +516,7 @@
     "activateHintSso": "Ohne Passwort meldet sich der Benutzer mit Microsoft an.",
     "activateHintNeedPassword": "Geben Sie oben ein Passwort ein, um das Konto zu aktivieren.",
     "passwordActivates": "Das Speichern eines Passworts aktiviert dieses Konto.",
+    "avatar": "Profilbild",
     "linkLabel": "Aktivierungslink"
   },
   "usersImport": {
