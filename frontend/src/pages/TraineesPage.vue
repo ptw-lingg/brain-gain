@@ -8,6 +8,7 @@ import { useToastStore } from '@/stores/toast';
 import type { DueStatus, Settings, TraineeGroup } from '@/types';
 import { dueLabel, dueClasses, formatDate } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { resolveLocalized } from '@/utils/locales';
 
@@ -182,6 +183,7 @@ onMounted(load);
               :key="tr.user.id"
               class="flex items-center gap-3 px-5 py-2.5 even:bg-pastel-sky/10"
             >
+              <UserAvatar :name="tr.user.name" :avatar="tr.user.avatar" class="bg-petrol-400" />
               <div class="min-w-0 flex-1">
                 <div class="text-sm font-medium text-ink">{{ tr.user.name }}</div>
                 <div class="truncate font-mono text-xs text-ink-light" :title="tr.user.email">{{ tr.user.email }}</div>

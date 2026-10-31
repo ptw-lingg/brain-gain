@@ -102,11 +102,12 @@ test('SYS-SES-10 / SR-162 / VT-172: grading a question-less training passes at 1
   assert.equal(audit.body.entries[0].details, 'score 100% · signed: password', 'the completion carries the signature method');
 });
 
-test('SYS-SES-11 / SR-163 / VT-174: the trainer contact card carries exactly name, email and org unit', async () => {
+test('SYS-SES-11 / SR-163 / VT-174: the trainer contact card carries exactly name, email, org unit and picture', async () => {
   // noQuizTraining was created by the admin, so the admin is its owning trainer.
   const card = await srv.request('GET', `/api/trainings/${noQuizTraining.id}/trainer`, { token: memberToken });
   assert.equal(card.status, 200, 'any authenticated user may resolve the trainer');
-  assert.deepEqual(Object.keys(card.body).sort(), ['email', 'name', 'orgUnitName'], 'nothing but the contact card leaves the server');
+  assert.deepEqual(Object.keys(card.body).sort(), ['avatar', 'email', 'name', 'orgUnitName'], 'nothing but the contact card leaves the server');
+  assert.equal(card.body.avatar, null, 'the seeded admin has no picture');
 
   // The fields match the owner's user record and their unit's name.
   const users = await srv.request('GET', '/api/users', { token: adminToken });

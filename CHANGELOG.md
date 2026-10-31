@@ -10,6 +10,18 @@ step the backend applies at start-up when it finds data written by an older vers
 
 ## [Unreleased]
 
+### Added
+- **Profile pictures** (SR-201). Users set, replace or remove their own picture from the user menu
+  (*Change picture* / *Remove*); administrators do the same for any account in the Users editor. A picked
+  image is cropped to a square and scaled to 128 px in the browser before upload; only PNG, JPEG and WebP
+  data URLs up to 100 000 characters are stored. The picture replaces the initials in the user menu, the
+  Users, Trainees and My Team lists and the trainer contact card; people without one keep their initials.
+  Not available while viewing the app as another user; the audit trail records an administrator's change
+  without the image data (SYS-USR-06, SYS-USR-07, SYS-UI-10).
+
+### Data migrations
+- none — `avatar` is a new optional field on the user record.
+
 ## [1.7.0] — 2026-10-29
 
 ### Added

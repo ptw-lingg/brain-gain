@@ -2,18 +2,22 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { Eye, Info, KeyRound, Languages, LogOut, X } from 'lucide-vue-next';
+import { Camera, Eye, Info, KeyRound, Languages, LogOut, Trash2, X } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth';
 import { useLayoutStore } from '@/stores/layout';
+import { useToastStore } from '@/stores/toast';
+import { fileToAvatar } from '@/utils/image';
 import { SUPPORTED_LOCALES, type LocaleCode } from '@/i18n';
 import AboutDialog from './AboutDialog.vue';
 import ChangePasswordDialog from './ChangePasswordDialog.vue';
 import AppSidebar from './AppSidebar.vue';
 import BrainGainLogo from './BrainGainLogo.vue';
 import LocaleFlag from './LocaleFlag.vue';
+import UserAvatar from './UserAvatar.vue';
 
 const auth = useAuthStore();
 const layout = useLayoutStore();
+const toast = useToastStore();
 const route = useRoute();
 const router = useRouter();
 const { t, locale } = useI18n();
@@ -52,15 +56,6 @@ const today = computed(() =>
   }),
 );
 
-const initials = computed(() =>
-  (auth.user?.name ?? '?')
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase(),
-);
-
 const roleLabel = computed(() =>
   auth.user?.isAdmin
     ? t('nav.roleAdmin')
@@ -87,6 +82,28 @@ const canChangePassword = computed(() => !!auth.user?.hasPassword && !auth.isImp
 function openChangePassword(): void {
   menuOpen.value = false;
   passwordOpen.value = true;
+}
+
+// Own profile picture: pick any image (cropped and downscaled in the browser), or remove it. Not
+// while impersonating — the active token belongs to the TARGET user (the server refuses it too).
+const avatarInput = ref<HTMLInputElement | null>(null);
+async function onAvatarPick(e: Event): Promise<void> {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = ''; // picking the same file again must fire change again
+  if (!file) return;
+  try {
+    await auth.saveAvatar(await fileToAvatar(file));
+  } catch {
+    toast.error(t('nav.avatarError'));
+  }
+}
+async function removeAvatar(): Promise<void> {
+  try {
+    await auth.saveAvatar(null);
+  } catch {
+    toast.error(t('nav.avatarError'));
+  }
 }
 
 function onDocClick(e: MouseEvent): void {
@@ -135,14 +152,15 @@ function logout(): void {
       </div>
       <div ref="menuRoot" class="relative flex items-center justify-end">
         <button
-          class="flex h-8 w-8 items-center justify-center rounded-full bg-petrol-500 text-xs font-bold text-white transition hover:bg-petrol-400"
+          class="rounded-full transition hover:ring-2 hover:ring-petrol-400"
           :title="auth.user?.name"
           :aria-label="t('nav.userMenu')"
           aria-haspopup="menu"
           :aria-expanded="menuOpen"
+          data-testid="user-menu"
           @click="menuOpen = !menuOpen"
         >
-          {{ initials }}
+          <UserAvatar :name="auth.user?.name ?? '?'" :avatar="auth.user?.avatar" class="bg-petrol-500" />
         </button>
 
         <Transition name="fade-slide">
@@ -151,11 +169,28 @@ function logout(): void {
             class="card absolute right-0 top-10 z-50 w-64 overflow-hidden p-0 text-left"
             role="menu"
           >
-            <div class="border-b border-line px-4 py-3">
-              <div class="truncate text-sm font-semibold text-ink">{{ auth.user?.name }}</div>
-              <div class="truncate text-xs text-ink-muted">{{ auth.user?.email }}</div>
-              <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
-                {{ roleLabel }}
+            <div class="flex items-center gap-3 border-b border-line px-4 py-3">
+              <UserAvatar :name="auth.user?.name ?? '?'" :avatar="auth.user?.avatar" size="lg" class="bg-petrol-500" />
+              <div class="min-w-0">
+                <div class="truncate text-sm font-semibold text-ink">{{ auth.user?.name }}</div>
+                <div class="truncate text-xs text-ink-muted">{{ auth.user?.email }}</div>
+                <div class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
+                  {{ roleLabel }}
+                </div>
+                <div v-if="!auth.isImpersonating" class="mt-1 flex gap-3 text-xs font-medium">
+                  <button class="inline-flex items-center gap-1 text-accent hover:underline" data-testid="avatar-change" @click="avatarInput?.click()">
+                    <Camera class="h-3.5 w-3.5" /> {{ t('nav.avatarChange') }}
+                  </button>
+                  <button
+                    v-if="auth.user?.avatar"
+                    class="inline-flex items-center gap-1 text-ink-muted hover:text-ink hover:underline"
+                    data-testid="avatar-remove"
+                    @click="removeAvatar"
+                  >
+                    <Trash2 class="h-3.5 w-3.5" /> {{ t('nav.avatarRemove') }}
+                  </button>
+                </div>
+                <input ref="avatarInput" type="file" accept="image/*" class="hidden" data-testid="avatar-input" @change="onAvatarPick" />
               </div>
             </div>
 

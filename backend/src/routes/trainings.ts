@@ -412,8 +412,8 @@ router.get('/:id/scorm-attempts', requireAdminOrOwner, async (req: AuthRequest, 
 
 // GET /api/trainings/:id/trainer — the owning trainer's contact card for any authenticated user.
 // The session page shows it so a trainee with questions can reach the right person; name, org unit
-// and email are exactly what identifies the trainer in the company address list (SR-163). Only these
-// three fields leave the server — never the full user record.
+// and email are exactly what identifies the trainer in the company address list (SR-163), plus the
+// profile picture the card shows. Only these fields leave the server — never the full user record.
 router.get('/:id/trainer', async (req: AuthRequest, res) => {
   const trainings = await readStore<Training>('trainings');
   const training = trainings.find((t) => t.id === req.params.id);
@@ -423,7 +423,7 @@ router.get('/:id/trainer', async (req: AuthRequest, res) => {
   if (!owner) return res.status(404).json({ error: 'Trainer not found' }); // owner account was deleted
   const orgUnits = await readStore<OrgUnit>('orgUnits');
   const orgUnitName = orgUnits.find((o) => o.id === owner.orgUnitId)?.name ?? '';
-  return res.json({ name: owner.name, email: owner.email, orgUnitName });
+  return res.json({ name: owner.name, email: owner.email, orgUnitName, avatar: owner.avatar ?? null });
 });
 
 // GET /api/trainings/:id  — single training, answer key stripped for non-owners. Owners/admins

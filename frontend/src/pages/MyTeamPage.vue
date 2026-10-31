@@ -9,6 +9,7 @@ import { useToastStore } from '@/stores/toast';
 import type { DueStatus, LocalizedText, MyTeam, Settings, TeamMember } from '@/types';
 import { dueClasses, dueLabel } from '@/utils/display';
 import ListControls from '@/components/ListControls.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { matchesQuery } from '@/utils/listFilter';
 import { resolveLocalized } from '@/utils/locales';
 
@@ -198,6 +199,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 class="h-4 w-4 shrink-0 text-ink-light transition"
                 :class="openId === m.user.id ? '' : '-rotate-90'"
               />
+              <UserAvatar :name="m.user.name" :avatar="m.user.avatar" class="bg-petrol-400" />
               <div class="min-w-0 flex-1">
                 <div class="text-sm font-semibold text-ink">{{ m.user.name }}</div>
                 <div class="truncate font-mono text-xs text-ink-light">{{ m.user.email }}</div>

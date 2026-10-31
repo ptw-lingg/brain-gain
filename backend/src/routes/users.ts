@@ -1,7 +1,7 @@
 import { asyncRouter } from '../middleware/asyncRouter';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
-import type { JobRole, OrgUnit, User } from '../types';
+import { isAvatarValue, type JobRole, type OrgUnit, type User } from '../types';
 import { readSettings, readStore, transaction, updateStore, writeStore } from '../services/fileStore';
 import { issueActivation, markActivated } from '../services/activation';
 import { MailError, isSmtpConfigured, sendMail } from '../services/mail';
@@ -376,7 +376,10 @@ router.post('/import', async (req: AuthRequest, res) => {
 
 // PUT /api/users/:id
 router.put('/:id', async (req: AuthRequest, res) => {
-  const { name, email, roleIds, isAdmin, isTrainer, password, orgUnitId } = req.body ?? {};
+  const { name, email, roleIds, isAdmin, isTrainer, password, orgUnitId, avatar } = req.body ?? {};
+  if (avatar !== undefined && !isAvatarValue(avatar)) {
+    return res.status(400).json({ error: 'avatar must be null or a small data:image/png|jpeg|webp URL' });
+  }
   // Hash BEFORE taking the store lock (~100 ms, independent of store state).
   const newHash = typeof password === 'string' && password.length > 0 ? await bcrypt.hash(password, 10) : undefined;
   const outcome = await transaction(
@@ -401,6 +404,8 @@ router.put('/:id', async (req: AuthRequest, res) => {
         isTrainer: typeof isTrainer === 'boolean' ? isTrainer : current.isTrainer,
         passwordHash: newHash ?? current.passwordHash,
       };
+      if (avatar === null) delete updated.avatar;
+      else if (avatar !== undefined) updated.avatar = avatar;
       // Setting a password for a pending account IS activating it — before 1.5.0 the password was
       // stored but the account stayed disabled, and its link died with it (no way back in).
       if (newHash && updated.isDisabled) markActivated(updated);

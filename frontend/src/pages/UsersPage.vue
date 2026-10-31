@@ -3,14 +3,16 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
-import { Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus, Clock, Link2, Mail, UserCheck } from 'lucide-vue-next';
+import { Camera, Plus, Save, Trash2, X, ShieldCheck, GraduationCap, Eye, User, UserPlus, Clock, Link2, Mail, UserCheck } from 'lucide-vue-next';
 import client from '@/api/client';
 import { formatDate } from '@/utils/display';
+import { fileToAvatar } from '@/utils/image';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
 import type { JobRole, OrgUnit, SafeUser } from '@/types';
 import ListControls from '@/components/ListControls.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
+import UserAvatar from '@/components/UserAvatar.vue';
 import { matchesQuery } from '@/utils/listFilter';
 
 const toast = useToastStore();
@@ -206,6 +208,20 @@ function close(): void {
   draft.value = null;
 }
 
+// Profile picture in the editor: cropped and downscaled in the browser, sent with Save.
+const avatarInput = ref<HTMLInputElement | null>(null);
+async function onAvatarPick(e: Event): Promise<void> {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = ''; // picking the same file again must fire change again
+  if (!file || !draft.value) return;
+  try {
+    draft.value.avatar = await fileToAvatar(file);
+  } catch {
+    toast.error(t('nav.avatarError'));
+  }
+}
+
 // Close the edit dialog on Escape (the dialog has no always-focused element to bind to).
 function onKeydown(e: KeyboardEvent): void {
   if (e.key === 'Escape' && draft.value) close();
@@ -322,14 +338,19 @@ onMounted(loadIntegrations);
             @click="openEdit(u)"
           >
             <td class="px-5 py-3 text-sm font-semibold text-ink">
-              {{ u.name }}
-              <span
-                v-if="u.isDisabled"
-                class="pill pill-col ml-2 bg-amber-100 text-amber-700"
-                data-testid="user-pending-badge"
-              >
-                <Clock class="h-3 w-3" /> {{ linkExpired(u) ? t('users.linkExpired') : t('users.pending') }}
-              </span>
+              <div class="flex items-center gap-2.5">
+                <UserAvatar :name="u.name" :avatar="u.avatar" size="xs" class="bg-petrol-400" />
+                <span>
+                  {{ u.name }}
+                  <span
+                    v-if="u.isDisabled"
+                    class="pill pill-col ml-2 bg-amber-100 text-amber-700"
+                    data-testid="user-pending-badge"
+                  >
+                    <Clock class="h-3 w-3" /> {{ linkExpired(u) ? t('users.linkExpired') : t('users.pending') }}
+                  </span>
+                </span>
+              </div>
             </td>
             <td class="px-5 py-3 font-mono text-xs text-ink-muted">{{ u.email }}</td>
             <td class="hidden px-5 py-3 font-mono text-xs text-ink-light lg:table-cell">
@@ -378,6 +399,28 @@ onMounted(loadIntegrations);
           </div>
 
           <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
+          <!-- Profile picture — saved with the form. Existing accounts only: a new one gets it later. -->
+          <div v-if="!isNew" class="flex items-center gap-3">
+            <UserAvatar :name="draft.name || '?'" :avatar="draft.avatar" size="lg" class="bg-petrol-400" />
+            <div class="flex flex-col gap-1">
+              <span class="form-label">{{ t('users.avatar') }}</span>
+              <div class="flex gap-2">
+                <button type="button" class="btn-ghost btn-sm" data-testid="user-avatar-change" @click="avatarInput?.click()">
+                  <Camera class="h-3.5 w-3.5" /> {{ t('nav.avatarChange') }}
+                </button>
+                <button
+                  v-if="draft.avatar"
+                  type="button"
+                  class="btn-ghost btn-sm"
+                  data-testid="user-avatar-remove"
+                  @click="draft.avatar = null"
+                >
+                  <Trash2 class="h-3.5 w-3.5" /> {{ t('nav.avatarRemove') }}
+                </button>
+              </div>
+              <input ref="avatarInput" type="file" accept="image/*" class="hidden" data-testid="user-avatar-input" @change="onAvatarPick" />
+            </div>
+          </div>
           <!-- Identity fields in a two-column grid — the wide dialog keeps the form flat. -->
           <div class="grid gap-4 sm:grid-cols-2">
           <label class="flex flex-col gap-1">
