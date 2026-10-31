@@ -1,8 +1,8 @@
 {
   "app": "BrainGain",
-  "dataVersion": "1.6.0",
-  "appVersion": "1.6.0",
-  "migratedAt": "2026-10-15T08:39:49.874Z",
+  "dataVersion": "1.7.0",
+  "appVersion": "1.7.0",
+  "migratedAt": "2026-10-31T11:19:31.468Z",
   "history": [
     {
       "version": "1.2.0",
@@ -25,6 +25,12 @@
     {
       "version": "1.6.0",
       "at": "2026-10-15T08:39:49.874Z",
+      "action": "upgraded",
+      "note": "no migration step was due"
+    },
+    {
+      "version": "1.7.0",
+      "at": "2026-10-31T11:19:31.468Z",
       "action": "upgraded",
       "note": "no migration step was due"
     }
