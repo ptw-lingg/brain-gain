@@ -18,3 +18,5 @@ src/data/scormAttempts.json
 src/data/scorm-attempts/
 src/data/updateAcks.json
 src/data/tls/
+# Holds the SMTP password in plain text — the app writes defaults when it is missing
+src/data/settings.json
